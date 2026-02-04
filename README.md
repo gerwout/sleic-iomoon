@@ -34,7 +34,7 @@ The IO Moon uses a **dual-CPU architecture**:
 | Coprocessor | Zilog Z80A @ 8 MHz                                   |
 | Main ROM    | 2× 27C040 (512 KB each, 1 MB total)                  |
 | Sound ROM   | 2× 27C040 (512 KB each, 1 MB total)                  |
-| Z80 ROM     | 27C256 (32 KB) + 27C128 (16 KB)                      |
+| Z80 ROM     | 27C256 (32 KB)                      |
 | Display     | 128×32 DMD (Dot Matrix Display), 4 brightness levels |
 | Sound       | OKI MSM6376 ADPCM speech synthesizer and Yamaha YM3812            |
 | Power       | 220V AC (European market)                            |
