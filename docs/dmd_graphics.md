@@ -70,6 +70,32 @@ Frame data is stored with **inverted bits**: a `0` bit in the ROM means the pixe
 
 ---
 
+## DMD Signal Decoding
+
+The DMD data signals are encoded such that a 2-bit-per-pixel frame can be perceived. The first plane, representing the most significant bit (MSB), is displayed for approximately 6.25 ms. The second plane, representing the least significant bit (LSB), is then displayed for approximately 1.87 ms.
+
+Interestingly, the LSB plane contains an additional “garbage” row of data at row 33. Since the display itself only has 32 rows, this extra row is ignored by the hardware and effectively discarded.
+
+After the LSB plane is processed and the garbage row is thrown out, the display remains blank for roughly 5.64 ms before the next frame begins, again starting with the MSB plane.
+
+Based on these observations, several conclusions can be drawn. All timing and signal information described above was obtained using a logic analyzer capture, available [here.](https://github.com/PPUC/dmdreader/tree/ppuc/logicanalyzer/Sleic)
+
+
+### DMD Signal Summary
+
+| FPS          | Pattern                 | Brightness split   |
+|--------------|-------------------------|--------------------|
+| 72 (13.85ms) | 2 plane MSB + LSB merge | 0%, 23%, 76%, 100% |
+
+Interesting notes:
+
+- Sleic has an unusual brightness split. Other manufacturers such as Bally / Williams and Data East / Sega implement 2bpp brightness levels as `0%, 33%, 67%, 100%`, which is far more logical.
+- Only one other system appears to handle DMD signaling in a similar way: the Spike 1 system introduced in 2015. Unlike Sleic, which combines two planes to produce a 2bpp frame, the Spike 1 system combines four planes to produce a 4bpp frame. 
+   - Important to mention here is that Sleic handles the MSB plane first, Spike handles LSB first. So Sleic is unique at that.
+- Very unusual compared to the other manufacturers: Sleic appears to blank the DMD after every MSB + LSB cycle (approximately 8.12 ms) for an additional ~5.64 ms, resulting in a total frame time of roughly 13.85 ms. During this 5.64 ms interval, no activity is present on any signal line. In theory, this idle period could have been used to achieve a higher refresh rate, but Sleic clearly chose not to do so. 
+
+---
+
 ## Static Screens
 
 **274 static screens** are stored in ROM1 (`0x82000`–`0xC0000`). These are used for text displays: game messages, score labels, player names, etc.
