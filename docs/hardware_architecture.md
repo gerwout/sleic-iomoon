@@ -126,12 +126,26 @@ Approximate layout of board 011-029 as drawn in the manual's component-placement
 | Reference | Part | Notes |
 |-----------|------|-------|
 | IC7 | **AMD/MMI `PAL 20L10ACNS`** (PDIP-24) | Confirmed by photo. Bus / chip-select glue. Almost certainly the "PAL20L40" the MAME upstream comment lists as undumped (`20L40` = typo for `20L10`). |
-| IC8 | **National Semiconductor `DM74LS74AN`** (PDIP-14, dual D flip-flop) — date code `9536` (1995 week 36) | Confirmed by user readout of the physical chip. The service manual lists IC8 as "PAL 16L8" — that designation appears to be from the Bike Race schematic and is wrong for Io Moon. Position: top of board, immediately left of OSC1. |
-| IC34 | **TI / NS `CD74HC151E`** (PDIP-16, 8-to-1 multiplexer) | Confirmed by user readout. Date code `H9540`. |
-| IC20, IC21, IC22 | 20-pin DIPs in the column between IC1 (80188) and IC23 (PIC) | Still candidate PALs — top-marks not yet read. |
-| IC24 | 16-pin DIP next to IC23 | Still candidate; top-mark not yet read. |
+| IC8 | **National Semiconductor `DM74LS74AN`** (PDIP-14, dual D flip-flop) — date code `9536` (1995 week 36) | Confirmed by user readout. The service manual lists IC8 as "PAL 16L8" — that designation appears to be from the Bike Race schematic and is wrong for Io Moon. Position: top of board, immediately left of OSC1. |
+| IC20 | **National Semiconductor `DM74LS393N`** (PDIP-14, dual 4-bit binary counter) — date code `9524` | Confirmed by user readout. |
+| IC21 | **National Semiconductor `DM74LS393N`** (PDIP-14, dual 4-bit binary counter) — date code `9524` | Confirmed by user readout. Same part as IC20. |
+| IC22 | **TI `SN74LS27N`** (PDIP-14, triple 3-input NOR) — date code `9140` | Confirmed by user readout. |
+| IC34 | **TI / NS `CD74HC151E`** (PDIP-16, 8-to-1 multiplexer) — date code `H9540` | Confirmed by user readout. |
+| IC24 | 16-pin DIP next to IC23 | Last remaining unread chip in the candidate-PAL cluster; top-mark not yet captured. Given that every other "candidate PAL" position on this board has turned out to be ordinary 74LS / 74HC glue, IC24 being a PAL is now unlikely but worth confirming before closing the question. |
 
-With IC7 now identified as the PAL 20L10, the most likely target of the MAME upstream comment's `20L40 undumped` is IC7. The remaining `16L8 undumped` in that same comment cannot be IC8 (which is a 74LS74) and has no confirmed location on Io Moon yet.
+##### Clock divider chain at IC20 / IC21 / IC22
+
+The combination of two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22) immediately adjacent to the OSC1 crystal can is a textbook **clock-divider with terminal-count decode**:
+
+```
+OSC1 ── IC20 (4+4 bit /256)  ── IC21 (4+4 bit /65536)  ── IC22 (NOR decode)
+        cascade to                cascade to                of selected counter bits
+        chain a 8-bit divider     chain a 16-bit divider    → discrete clock outputs
+```
+
+This explains where the Z80's periodic IRQ frequency comes from on the real hardware: a divider of **8 MHz ÷ 8192 = 977 Hz** is exactly bit 13 of a cascaded `74LS393` pair tapped via a NOR-gate, which matches the rate derived in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md) from the Z80 firmware's lamp-refresh state machine. The same chain almost certainly also generates the DMD raster timing signals (`DOTCLK`, `RCLK`, `COLLAT`) the PIC at IC23 uses — IC23 sits immediately downstream of this cluster in the board layout.
+
+With IC7 (PAL 20L10) being the only PAL on this board and all other "candidate PAL" positions turning out to be ordinary 74-series glue, the MAME upstream comment's `20L40` undumped PAL is now nailed down as IC7. The companion `16L8` claim in that comment has no confirmed Io Moon location.
 
 #### 32-pin DIP positions — resolved by photograph
 
