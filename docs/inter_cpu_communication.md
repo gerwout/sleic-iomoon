@@ -31,13 +31,13 @@ This is a **polling-based** scheme — there are no direct interrupt lines betwe
 | `4000:1135` | Display flags | 80188 writes, Z80 reads |
 | `4000:1138` | Display control register shadow | 80188 writes |
 | `4000:1147` | START button state | Z80 writes, 80188 reads |
-| `4000:114C` | Command queue write pointer | 80188 writes |
-| `4000:114E` | Command queue read pointer | 80188 reads |
+| `4000:114C` | Command queue **head** (consumer side — read pointer) | 80188 writes (initialiser only) |
+| `4000:114E` | Command queue **tail** (producer side — write pointer) | 80188 writes (every push) |
 | `4000:1150` | Display buffer pointer 1 | 80188 writes |
 | `4000:1152` | Display buffer segment 1 | 80188 writes |
 | `4000:1154` | Display buffer pointer 2 | 80188 writes |
 | `4000:1156` | Display buffer segment 2 | 80188 writes |
-| `4000:1158`+ | Command / display buffer start | Both CPUs |
+| `4000:1158`+ | **Command queue body** — circular byte FIFO read by an external coprocessor (almost certainly the PIC at IC34 or IC57); see [`../research/80188_to_z80_mailbox.md`](../research/80188_to_z80_mailbox.md). Despite the section title, **this queue is NOT consumed by the Z80** — the Z80 has no reads outside its `0x0000-0x7FFF` ROM and `0xC000-0xC7FF` RAM. |
 | `4000:1200`+ | String buffer (used by text display) | 80188 writes |
 | `4000:1220`+ | Secondary buffer | Both CPUs |
 
@@ -51,17 +51,21 @@ A separate 1 KB DMD frame buffer at segment `7000h` (`0x70000`–`0x703FF`) is a
 
 ### Switch Events (Z80 → 80188)
 
-The Z80 scans the switch matrix and writes detected switch codes to `0xC0FC` in its local RAM. The 80188 reads this value during its main loop to process switch events.
+The Z80 scans the switch matrix and writes detected switch codes to `0xC0FC` in its local RAM. The `send_to_80188` routine (Z80 ROM `0x0116`) then latches that byte into the 80188's view of shared RAM at **physical `0x41496`** (`413C:00D6`, labelled `last_switch_code` in the 80188 disassembly) via port `0x80` + port `0x81` bit 1 + bit 2 strobe. The 80188 polls `413C:00D6` during its main loop to process switch events.
 
 The switch code byte uses a single-producer / single-consumer model: the Z80 writes a code when a switch closure is detected, and the 80188 clears it after processing.
 
-### Sound Commands (80188 → Z80)
+### Sound / Command Queue (80188 → coprocessor — **NOT Z80**)
 
-The 80188 sends sound trigger commands to the Z80 via the shared mailbox. The Z80 reads these commands and drives the OKI MSM6376 sound chip via ports `0x80`–`0x81`.
+A previous draft of this document described "Sound Commands (80188 → Z80)" via shared mailbox. That description was **wrong about the consumer.** The 80188 does push commands into a circular byte queue at `4000:1158+`, with a producer-tail pointer at `4000:114E` and a consumer-head pointer at `4000:114C` (push routine `cmd_queue_push` at `0xD0138`, ~80 call sites at game events). But the Z80 has no memory reads outside its own ROM (`0x0000-0x7FFF`) and RAM (`0xC000-0xC7FF`), so it **cannot** consume the queue.
+
+The actual consumer is almost certainly the undocumented Microchip PIC at IC34 (PDIP-28) or IC57 (PDIP-18) on the 16-bit board — see [`hardware_architecture.md`](hardware_architecture.md) for the photographic evidence and [`../research/80188_to_z80_mailbox.md`](../research/80188_to_z80_mailbox.md) for the full investigation. Confirming requires dumping one of those PICs.
+
+The Z80 drives the OKI MSM6376 directly through ports `0x80` + `0x81` from local Z80 RAM (`0xC008` = `ram_sound_cmd`), generated locally from solenoid events — *not* from any byte the 80188 sends.
 
 ### Display Commands
 
-The 80188 maintains a **command queue** using write/read pointers at `4000:114C` and `4000:114E`. Display update commands are queued by the game logic and processed by the display update routines within the 80188's main loop.
+The display-buffer pointers at `4000:1150-1156` are the 80188's internal double-buffering state — not a Z80-facing interface. The 80188 fills one buffer while the PIC raster coprocessor at IC23 streams the other to the plasma panel.
 
 ### Lamp and Solenoid State
 
