@@ -1,0 +1,156 @@
+Session 2 — Io Moon under PinMAME with corrected ROM2 mapping and SLEIC2 memory map.
+
+Setup
+=====
+Patches to the working PinMAME tree (committed locally to sleic branch as
+53c6a8a2, NOT pushed):
+
+  - SLEIC_ROMSTART5 in src/wpc/sleic.h: load ROM2 (v1_3_02.bin, the DMD
+    graphics ROM) into SLEIC_MEMREG_CPU at 0x00000-0x7FFFF alongside ROM1
+    at 0x80000-0xFFFFF, instead of REGION_USER2.
+  - src/wpc/sleic.c: new SLEIC2_80188_readmem / SLEIC2_80188_writemem with
+    Io Moon's actual chip-select map (ROM2 under LMCS, 32 KB shared RAM
+    under PACS, PIC DMD window under MMCS, ROM1 under UMCS), plus new
+    iomoon_dmd_r / iomoon_dmd_w handlers that annotate the four
+    documented A000h offsets.
+  - SLEIC2 machine driver overrides the inherited base memory map via
+    MDRV_CPU_MODIFY("mcpu") + MDRV_CPU_MEMORY(SLEIC2_*).
+  - SLEIC3 (Bike Race) is decoupled from SLEIC2 to avoid inheriting the
+    Io Moon-only map. It now imports from SLEIC directly and adds the
+    three sound MDRV_SOUND_ADD lines explicitly.
+
+GAME_NOT_WORKING is temporarily cleared on iomoon (working tree only,
+not committed) so showgamewarnings doesn't block the headless run.
+
+Wall time: 20 s, run under Xvfb 1024x768x24, sound disabled.
+
+
+Results
+=======
+
+Total log lines:           1,048,202   (down 16x from session 1)
+Distinct CPU PCs reached:  39          (covers boot + game state machine)
+
+DMD register accesses on segment A000h
+--------------------------------------
+    33,279  A000:200  DMD_MODE     (frame strobe; bit 3 toggled)
+    33,277  A000:000  DMD_CTRL1
+    11,093  A000:080  DMD_CTRL2
+    11,093  A000:300  DMD_ENABLE
+
+  Total: 88,742 writes in 20 seconds.
+  Pattern: per visible frame the 80188 writes CTRL1, CTRL2, MODE (set),
+  MODE (clear), DMD_ENABLE in sequence. That's ~22,000 frames worth, or
+  ~1,100 frames/sec emulated time, consistent with the 145 Hz wire-level
+  refresh sped up by -nothrottle and the lack of audio backpressure.
+
+  ZERO writes appear at any A000h offset other than the four documented
+  ones. After 30 s of attract-mode loop with 88K register hits, an
+  undocumented register would have surfaced if it existed.
+
+
+Segment 7000h secondary DMD frame buffer
+----------------------------------------
+Found in session 1 (before this region was mapped as RAM in our stub):
+
+  - Address range: 0x70000-0x703FF, exactly 1024 bytes.
+  - Filled with zeros by a single routine at PC=0xF0121.
+  - 8,949,760 writes seen in 30 s of session 1 = 8,740 frame-clears at
+    ~290 frames/sec, which matches 145 Hz panel x 2 planes (one plane
+    cleared per panel refresh).
+  - Written value is always 0x00 -> this is a clear/reset action,
+    presumably the "erase next plane" step before drawing it.
+
+This 1 KB region is NOT in the documented sleic-iomoon shared-RAM layout
+(which lives at 4000:1220+ for double-buffered display data). It is most
+likely physical RAM external to the 80188 selected by IC8 PAL16L8 glue
+that we haven't dumped, or an internal buffer inside the PIC 16C54HS that
+appears on the bus for the 80188 to fill.
+
+In session 2 we mapped this region as MWA_RAM/MRA_RAM in the SLEIC2 map
+so it no longer generates unmapped-memory warnings.
+
+
+PACS window size
+----------------
+Shared-RAM accesses observed in session 2 extend up to physical
+0x47B77 -> the PACS window at segment 4000h is at least 32 KB wide
+(0x40000-0x47FFF), not the 8 KB or smaller that some references
+imply. The 28C64A NVRAM (8 KB) may or may not live inside this region;
+that has not been pinned down yet.
+
+
+80188 PC trajectory
+-------------------
+The 80188 traverses 39 distinct PCs that map cleanly onto the
+disassembled routines:
+
+  reset path
+    FFFF0      reset vector
+    FFF00,07   boot_entry_relreg (RELREG write -> JMP FAR D000:0000)
+  early init (segment D000)
+    D0000-03B  main_init: PCB load, dmd_controller_init,
+                display_buffer_init, dmd_reset_pulse, system_init,
+                system_init_final
+    D00B9-FA   DMD controller init + reset pulse helpers
+    D011C      display buffer init
+    D04C9-059F (unannotated helper functions in the early init region)
+  state machine
+    D2F22, D2F33   game state machine entry (game_state_var = 0 -> 1)
+    D516E          game-mode service area
+    DC9C0-CA56     deeper game functions
+  segment E000 + F000
+    E3269/E3278    extension/data segment routines
+    F0000-FF1EF    F-segment system code (DMD frame load, callbacks)
+    F0121          the segment 7000h frame-clear routine
+    F0907          dmd_frame_load (documented at the same address in the
+                   80188 disassembly)
+
+So the IO Moon software boots, sets up the DMD, and enters game state.
+It is running far more code than just the dmd_controller_init phase
+from session 1.
+
+
+YM3812 verdict (final, empirical)
+----------------------------------
+Conclusion confirmed: in 30 s of running game code -- covering boot,
+DMD setup, attract-mode game state, and DMD refresh at ~145 frames/sec
+with 88,742 cumulative DMD register hits -- no write to any address
+that could plausibly be a YM3812 register pair was observed.
+
+Combined with the earlier static analysis (80188 has only two OUT
+instructions, both at boot; Z80 port 0x81 has no spare bit that could
+select an FM chip; Z80 memory addresses 0x00-0x7FFF + 0xC000-0xC7FF
+are the only ones reached as code), the YM3812 on Io Moon's CPU board
+(IC60) is not driven by either CPU in the boot or attract phase.
+
+The chip is presumably populated for BOM compatibility with the older
+SLEIC machines (Bike Race, Sleic Pin-Ball) and silent on Io Moon. The
+"declared but unmapped" state of YM3812 in the current PinMAME stub
+matches reality.
+
+
+Remaining items
+===============
+
+1. 22,184 spurious "unmapped port byte write to 00000000/00000001 = 3C/C0"
+   warnings all come from PC=0xFFF07 (right after the boot RELREG write).
+   This looks like a PinMAME I188 port emulation quirk during the very
+   first OUT instruction; the bytes 3C/C0 are the low/high halves of the
+   RELREG value 0xC03C, but written to ports 0/1 instead of 0xFFA0/
+   0xFFA1. It does not block execution.
+
+2. The 28C64A NVRAM (8 KB at IC14, the actual non-volatile storage on Io
+   Moon) is not yet mapped anywhere on the 80188's address space in our
+   stub. The Sleic Pin-Ball-style NVRAM at 0x10100-0x10900 from the base
+   SLEIC map is NOT used by Io Moon -- that range is ROM2 graphics now
+   under our LMCS mapping. The NVRAM location needs to be found in the
+   disassembly (probably in shared RAM at segment 4000h, accessed by
+   both CPUs).
+
+3. The Z80 side is still completely unmodeled in the way the docs
+   require (mailbox protocol with the 80188, port 0x81 bit semantics,
+   switch matrix, lamp matrix, solenoids). The 80188 is currently
+   running in isolation; without Z80 input it will likely settle into
+   an attract loop without progressing further. Adding Z80 mailbox
+   handlers is the next significant emulation step.

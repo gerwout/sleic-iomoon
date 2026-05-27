@@ -44,6 +44,23 @@ The PIC reads these pointers on every frame strobe and rasterizes the buffer at 
 
 Source references: `dmd_controller_init` (D00B9), `dmd_reset_pulse` (D00FA), `display_buffer_init` (D011C).
 
+### Secondary frame buffer at segment `7000h`
+
+In addition to the shared-RAM buffer at `4000:1220`, the 80188 also writes a **1 KB bitmap buffer at `7000:0000`–`7000:03FF`**. Two routines in the F-segment system code zero out this entire region:
+
+- `0xF0113` — annotated as `dmd_pixel_set` in `asm/80188_annotated.asm` but actually a frame-buffer clear: `ES=7000h, DI=0, CX=0x400, AL=0; REP STOSB`.
+- `0xF0124` — annotated as `dmd_pixel_clear` with identical logic to `F0113`.
+
+A PinMAME debugger trace (see `research/pinmame_session_2/`) shows `F0121` (the inner STOSB of `F0113`) firing **at ~290 times per second**, which matches the 145 Hz panel × 2 planes refresh rate from `dmd_wire_protocol.md`. So one of these routines is called once per plane refresh, clearing the next plane before it is drawn.
+
+This second buffer is not described in the existing inter-CPU documentation. It is most likely physical RAM external to the 80188, selected by IC8 PAL16L8 glue (which has not been dumped), and read by the PIC 16C54HS in addition to or instead of `4000:1220`. The exact division of labour between `4000:1220` and `7000:0000` is still to be worked out — possible interpretations:
+
+- `4000:1220` carries **rendering primitives / command stream**; `7000:0000` is the **rasterised 1 KB framebuffer** that the PIC streams to the panel.
+- The two buffers correspond to the two bitplanes (one plane = 512 bytes; two planes = 1024 bytes) and are alternated.
+- One is the "active" buffer the PIC reads, the other is the "preparing" buffer the 80188 writes; the strobe at `A000:0200` bit 3 swaps them.
+
+The `display_buf_ptr1` at `4000:1150` always points to `4000:1220` after `display_buffer_init`, so the segment-`7000h` buffer cannot be selected by the documented pointer-swap mechanism — it must be either a fixed second buffer or part of the 1-plane-only "fast bitmap" path. Further reverse engineering of the `F0113` / `F0124` callers (`F0011` / `F0016` in the disassembly XREFs) should clarify.
+
 ---
 
 ## Animated Frame Format

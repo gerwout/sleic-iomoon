@@ -41,6 +41,10 @@ This is a **polling-based** scheme — there are no direct interrupt lines betwe
 | `4000:1200`+ | String buffer (used by text display) | 80188 writes |
 | `4000:1220`+ | Secondary buffer | Both CPUs |
 
+The PACS window at segment `4000h` is at least **32 KB wide** (`0x40000`–`0x47FFF`). A PinMAME debugger trace (see [`../research/pinmame_session_2/`](../research/pinmame_session_2/)) observed 80188 accesses up to physical `0x47B77`, well past the small `4000:11xx` mailbox area documented here. The full extent of the window is determined by the PACS register value `0x41FC` written at boot and the 80188's internal chip-select decode.
+
+A separate 1 KB DMD frame buffer at segment `7000h` (`0x70000`–`0x703FF`) is also driven by the 80188 — see [`dmd_graphics.md`](dmd_graphics.md). It is **not** part of the segment `4000h` PACS window.
+
 ---
 
 ## Communication Patterns
