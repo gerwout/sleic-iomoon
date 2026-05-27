@@ -26,20 +26,25 @@ This repository documents the results of an extensive reverse engineering effort
 
 ## Hardware Overview
 
-The IO Moon uses a **dual-CPU architecture**:
+The IO Moon uses a **three-CPU architecture**:
 
-| Component   | Specification                                        |
-|-------------|------------------------------------------------------|
-| Main CPU    | Intel/AMD 80C188 (16-bit)                            |
-| Coprocessor | Zilog Z80A @ 8 MHz                                   |
-| Main ROM    | 2× 27C040 (512 KB each, 1 MB total)                  |
-| Sound ROM   | 2× 27C040 (512 KB each, 1 MB total)                  |
-| Z80 ROM     | 27C256 (32 KB)                      |
-| Display     | 128×32 DMD (Dot Matrix Display), 4 brightness levels |
-| Sound       | OKI MSM6376 ADPCM speech synthesizer and Yamaha YM3812            |
-| Power       | 220V AC (European market)                            |
+| Component        | Specification                                                  |
+|------------------|----------------------------------------------------------------|
+| Main CPU         | Intel/AMD 80C188-10 (16-bit) — IC1 on board 011-029            |
+| I/O CPU          | Zilog Z80A @ 8 MHz — IC1 on board 011-030                      |
+| Display CPU      | Microchip PIC 16C54HS — IC23 on board 011-029                  |
+| Game ROM         | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total)               |
+| Sound ROM        | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total)               |
+| Z80 ROM          | 27C256 (IC5 `1005`, 32 KB)                                     |
+| NVRAM            | 28C64A EEPROM (IC14, 8 KB)                                     |
+| Music balance    | XICOR X9103 digital potentiometer (IC63) — *not* NVRAM         |
+| Display          | 128×32 **gas plasma** dot panel, 4 brightness levels           |
+| Sound            | OKI MSM6376 ADPCM (IC51), Yamaha YM3812 FM (IC60) + YM3014 DAC (IC61) |
+| Power            | 220 V AC (European market)                                     |
 
-The **80188** handles all game logic, the DMD display, the state machine, and scoring. The **Z80** coprocessor manages switch matrix scanning, lamp matrix control, solenoid drivers, and the OKI sound chip. The two CPUs communicate through shared RAM at segment `4000h` using a HOLD/HLDA bus arbitration scheme.
+The **80188** runs game logic, the state machine, scoring, and the inter-CPU mailbox. The **Z80** scans the switch matrix, drives the lamp matrix and solenoids, and feeds the OKI MSM6376. The **PIC 16C54HS** is dedicated to producing the DMD raster signal — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs.
+
+The 80188 and Z80 communicate through shared RAM at segment `4000h` using a HOLD/HLDA bus arbitration scheme.
 
 For a detailed breakdown of the hardware architecture, see:
 

@@ -6,11 +6,14 @@
 
 | Property | Value |
 |----------|-------|
-| Resolution | 128 × 32 pixels |
-| Color depth | 2-bit (4 brightness levels) |
+| Panel | 128 × 32 gas plasma dot matrix (board `011-022`) |
+| Color depth | 2-bit (4 brightness levels, time-multiplexed) |
 | Bitplanes | 2 (combined for 4 shades) |
-| Controller | Memory-mapped via 80188 at segment `A000h` |
-| Power supply | 95V AC / 58V AC (connectors TW3–TW6) |
+| Display coprocessor | **Microchip PIC 16C54HS** at IC23 on the CPU 16-bit board (`011-029`) |
+| Controller register window | Memory-mapped from the 80188 at segment `A000h` |
+| Panel power supply | 95 V AC / 58 V AC (connectors TW3–TW6, board `011-023`) |
+
+> The PIC 16C54HS is the actual DMD rasterizer: the 80188 writes frame buffers and control registers to segment `A000h`, and the PIC reads those, generates the scan/strobe timing the plasma panel needs, and clocks pixel data out. The MAME upstream driver header lists this PIC as "optional"; on IO Moon (service manual section 7.2.1 / page 92) it is **required** and labelled "ayudado en las funciones del display por otro de 8 bits PIC 16C54HS". The PIC's internal firmware is undumped.
 
 ---
 
