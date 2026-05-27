@@ -48,7 +48,7 @@ All listed parts are supported by the TL866II+/T48 universal programmer with its
 The earlier draft of this list called IC34 and "IC57" candidate PICs based on a subagent's reading of board photos. Both readings turned out to be wrong:
 
 - **"IC57" doesn't exist** as a silkscreen designator on the board. The chip the subagent saw is at silkscreen position **IC7**, and it is the PAL 20L10 listed above — not a PIC.
-- **IC34** is a much smaller package than the subagent thought (16-pin DIP visible in `IMG_20260527_212828.jpg`, compared to the 28-pin IC23 next to it). It is ordinary 74LS-series glue logic, not a microcontroller. Nothing to dump.
+- **IC34** is `CD74HC151E` — a TI / NS 74HC151 8-to-1 multiplexer in a 16-pin DIP, date code `H9540`. Confirmed by reading the physical chip top-mark. Ordinary HC-series combinational glue, not a microcontroller. Nothing to dump.
 
 The only microcontroller on the 16-bit board is **IC23 (PIC 16C57)** — at the top of this list.
 
