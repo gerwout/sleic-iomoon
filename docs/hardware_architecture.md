@@ -228,9 +228,12 @@ Total executable code: ~10,458 instructions (~30 KB, ~3% of ROM). The remaining 
 | Address Range | Size | Content |
 |--------------|------|---------|
 | `0x0000`–`0x7FFF` | 32 KB | ROM IC5 (27C256) — main Z80 program (`1005 v1.2`) |
+| `0x8000`–`0xBFFF` | 16 KB | ROM IC6 socket (27C128) — extended routines/data; **not dumped** |
 | `0xC000`–`0xC7FF` | 2 KB | RAM IC7 (6116) — working memory |
 
-> The service manual's principal-components list for the 8-bit board (page 95) names only IC5 as a memory chip. Earlier drafts of this document referenced a secondary `IC6 (27C128)` at `0x8000`–`0xBFFF`; that claim is **not supported** by the IO Moon manual and has been removed. If a secondary ROM exists on a hardware revision, it would need to be confirmed against an actual board.
+> **IC6 status**: the annotated Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) explicitly documents an `IC6 (27C128, 16 KB) at 0x8000–0xBFFF — extended routines/data`, with the note **"(not included)"** — meaning the socket position is part of the documented design but the chip's contents were not in the dump set used for the disassembly. The IO Moon service manual's *principal*-components table on page 95 lists only IC5; this is consistent with IC6 being either unpopulated, an optional expansion, or simply not enumerated in the "principal" list. The Z80 driver code may or may not actually call into `0x8000–0xBFFF` (the disassembly references it as "extended routines/data"). Confirmation requires inspecting an actual board to see if the IC6 socket is populated, and dumping it if so.
+>
+> An earlier revision of this document removed IC6 entirely based on the manual's principal-components list alone; that was wrong — the Z80 disassembly is the stronger source here, and the socket is reinstated above with the dumped/undumped status made explicit.
 
 ---
 
