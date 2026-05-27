@@ -19,12 +19,30 @@
 
 ## DMD Controller Registers
 
-| Register | Address | Value | Function |
-|----------|---------|-------|----------|
-| Control 1 | `A000:0000` | `0x28` | Display on |
-| Control 2 | `A000:0080` | — | Secondary control |
-| Mode | `A000:0200` | bit 3 | Strobe signal |
-| Enable | `A000:0300` | `0x80` | Display enable |
+The 80188 talks to the PIC 16C54HS rasterizer through a small set of memory-mapped registers in segment `A000h`. From the `dmd_controller_init` routine at `0xD00B9` in `asm/80188_annotated.asm`:
+
+| Register | Address | Init value | Function | RAM shadow |
+|----------|---------|------------|----------|-----------|
+| `DMD_CTRL1`  | `A000:0000` | `0x28` | Display on / format | `4000:1134` (`dmd_display_mode`) |
+| `DMD_CTRL2`  | `A000:0080` | `0x00` | Display flags | `4000:1135` (`dmd_display_flags`) |
+| `DMD_MODE`   | `A000:0200` | `0x07` | Mode register; bit 3 = swap-buffer / frame strobe | `4000:1138` (`dmd_control_shadow`) |
+| `DMD_ENABLE` | `A000:0300` | `0x80` | Master enable | — |
+
+Each register is written as a single byte. The 80188 keeps a shadow of `DMD_MODE` in shared RAM (`4000:1138`) because the hardware register is write-only — every change to bit 3 (the frame strobe) is done by reading the shadow, OR-ing in `0x08`, writing the result, NOPping four times, AND-ing out `0x08`, and writing again. That is the per-frame "swap buffers" pulse the PIC waits on.
+
+Frame buffer addresses live in shared RAM:
+
+| Address | Function |
+|---------|----------|
+| `4000:1150` | `display_buf_ptr1` — current read pointer (active buffer) |
+| `4000:1152` | `display_buf_seg1` — current buffer segment (always `4000h`) |
+| `4000:1154` | `display_buf_ptr2` — next read pointer (preparing buffer) |
+| `4000:1156` | `display_buf_seg2` — next buffer segment |
+| `4000:1220+` | Frame buffer area (double-buffered, ~1 KB per buffer) |
+
+The PIC reads these pointers on every frame strobe and rasterizes the buffer at `display_buf_ptr1` to the panel. The 80188 fills the alternate buffer in the background, then swaps pointers and toggles `DMD_MODE` bit 3.
+
+Source references: `dmd_controller_init` (D00B9), `dmd_reset_pulse` (D00FA), `display_buffer_init` (D011C).
 
 ---
 
