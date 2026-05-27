@@ -117,3 +117,18 @@ State: identical to Cirsa. The chip is present in the mixer, never written, make
 6. **The clock value in the current stub is 4 MHz** — same as Alvin G; this is the standard YM3812 master clock in pinball. Likely correct without changing.
 
 For the immediate driver work, start by **leaving the YM3812 attached-but-unmapped (current state) and run the ROM in MAME's debugger with logging on segment A000h**. Any write to A000:XXXX that's *not* one of the four DMD register offsets is a candidate YM3812 register access. If no such write ever happens after running through attract mode + a full game, hypothesis (2) — the chip is BOM-only — wins.
+
+---
+
+## Update (board-photograph evidence — `research/board_inventory.md`)
+
+The "BOM-only" hypothesis can now be **partially ruled out**:
+
+- IC60 is **confirmed populated** with a real `YAMAHA / YM3812 / JAPAN` 24-pin DIP, surrounded by decoupling cap CD60 and the support resistors / caps it would need to function. It is not a vacant placeholder.
+- Empirical PinMAME tracing of 30 seconds of running game code still shows **zero writes to any candidate YM3812 register address from either the 80188 or the Z80**.
+
+These two findings together are best explained by a **third hypothesis** that neither of the two earlier ones captured: there is a **microcontroller coprocessor** on the 16-bit board that sits between the 80188 and the YM3812. The 80188 writes sound commands into shared RAM; the coprocessor reads them and issues the YM3812 register writes itself. Neither the 80188 nor the Z80 ever appear on the YM3812 bus.
+
+Board photographs locate **two undocumented Microchip PICs**, at IC34 (PDIP-28, likely PIC 16C57) and at IC57 (PDIP-18, likely PIC 16C54-04/XL), neither of which is in the service manual's principal-components table. Either of them — most plausibly the larger PIC 16C57 at IC34 — is the natural candidate for this sound coprocessor role. Confirming requires dumping their firmware; see [`chips_to_dump.md`](chips_to_dump.md).
+
+**Implication for the PinMAME driver**: the current "attached but unmapped" YM3812 stub remains the right interim state. It produces silent audio output, matching what the emulation can know without modelling the coprocessor. Once IC34/IC57 are dumped, a future driver pass would either (a) emulate the coprocessor directly, or (b) parse its instruction stream offline and re-implement its behaviour as a piece of C code that bridges the 80188's shared-RAM sound mailbox to PinMAME's `YM3812_*_w` calls.

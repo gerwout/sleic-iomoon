@@ -56,26 +56,43 @@ The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 
 
 ### Main CPU Board — 80188 (16-bit) — SLEIC-PETACO 011-029
 
-Principal components (from service manual section 7.2.1.1, page 93):
+Principal components per the service manual section 7.2.1.1 (page 93), corrected and augmented with direct-photograph identifications (see [`../research/board_inventory.md`](../research/board_inventory.md) for the photo evidence):
 
 | Reference | Component | Part | Notes |
 |-----------|-----------|------|-------|
-| IC1 | Microprocessor | 80C188-10 | Main CPU |
-| IC23 | Microprocessor | PIC 16C54HS (Microchip) | **DMD display coprocessor** |
-| IC10 | EPROM | 27C040 | `1001 v1.2` (JUEGO — game code/data) |
-| IC11 | EPROM | 27C040 | `1002 v1.2` (BANK — banked extension) |
-| IC52 | EPROM | 27C040 | `1003 v1.2` (SONIDO 1 — sound samples) |
-| IC53 | EPROM | 27C040 | `1004 v1.2` (SONIDO 2 — sound samples) |
-| IC14 | EEPROM | 28C64A (Microchip) | 8 KB — non-volatile game settings/scores |
-| IC51 | Voice synthesizer | OKI 6376 | ADPCM speech / FX playback |
-| IC60 | Sound generator | Yamaha YM3812 | FM music |
-| IC61 | DAC | Yamaha YM3014 | YM3812 output DAC |
-| IC63 | Digital potentiometer | XICOR X9103 | Music balance (**not** NVRAM) |
-| P60  | Potentiometer | — | Music balance (paired with X9103) |
+| IC1 | Main CPU | Intel/AMD 80C188-10 (PLCC-68) | 16-bit, 10 MHz |
+| IC10 | EPROM (windowed) | 27C040 — sticker `IO MOON V1.3-02` | Game code/data — **note revision V1.3-02 was found on the photographed board, the project archive holds V1.2-04** |
+| IC11 | EPROM (windowed) | 27C040 | Banked extension (`1002 BANK`) |
+| IC52 | EPROM (windowed) | 27C040 | Sound samples 1 (`1003 SONIDO 1`) |
+| IC53 | EPROM (windowed) | 27C040 | Sound samples 2 (`1004 SONIDO 2`) |
+| IC12 | SRAM | UMC `UM62256BL-70LL` (PDIP-28) | 32 K × 8 main work RAM |
+| IC14 | EEPROM | Microchip `28C64A-25` (PDIP-28) | 8 K × 8 NVRAM (game settings, high scores) |
+| IC50 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer A** |
+| IC55 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer B** (paired with IC50) |
+| IC23 | Microcontroller | Microchip `PIC 16C54-HS/P` (PDIP-18, socketed, OTP — no UV window) | DMD raster coprocessor |
+| IC34 | Microcontroller | Likely Microchip `PIC 16C57-HC/P` (PDIP-28, markings uncertain) | **Undocumented — possible sound or DMD coprocessor** |
+| IC57 | Microcontroller | Likely Microchip `PIC 16C54-04/XL` (PDIP-18, markings uncertain) | **Undocumented — possible sound coprocessor** |
+| IC60 | Sound generator | Yamaha `YM3812 JAPAN` (PDIP-24) | FM music synthesizer — **confirmed populated** |
+| IC61 | DAC | Yamaha YM3014 (likely, PDIP/SOIC-8) | YM3812 output DAC |
+| IC51 | (manual: OKI 6376) | **Position holds an 8-pin device, not a 42-pin OKI** | See *Unresolved: OKI MSM6376 location* below |
+| IC63 | Digital potentiometer | XICOR X9103 (DIP-8) | Music balance (**not** NVRAM) |
+| IC64 | (8-pin DIP) | likely the other of YM3014 / X9103 | Audio output stage |
+| IC13 | (32-pin DIP socket) | **vacant** | Confirmed unpopulated by photograph |
+| IC54 | (32-pin DIP socket) | **vacant** | Sound-EPROM expansion socket, confirmed unpopulated |
+| IC56 | Logic | TI `SN74LS373AN` | Octal latch |
+| IC45, IC50 logic position | Logic | TI `SN74LS273N` | Octal flip-flops in the audio/output path |
+| OSC1 | Crystal can | (frequency not yet read; likely 20 MHz feeding 80188 ÷2) | Main system clock |
+| P60 | Trim potentiometer | — | Music balance (paired with X9103) |
 
-> **Note on the X9103**: prior write-ups (including the MAME upstream driver header) describe the X9103 as NVRAM. The service manual explicitly labels it as an **EEPOT** (digital potentiometer) used together with the analog trimmer `P60` for music balance. The actual non-volatile storage chip is the **28C64A at IC14**.
+> **Correction on the X9103 (IC63)**: prior write-ups (including the MAME upstream driver header) describe the X9103 as NVRAM. The service manual explicitly labels it as an **EEPOT** (digital potentiometer) used together with the analog trimmer `P60` for music balance. The actual non-volatile storage chip is the **28C64A at IC14**.
 
-The "responsibilities" attributed to the 80188 (game logic, state machine, scoring) are correct, but the DMD raster output is mediated by the PIC16C54HS coprocessor at IC23 — see the [DMD Graphics System](dmd_graphics.md) document.
+> **Correction on Sleic-PETACO board manufacturer of the Z80**: see the 8-bit board section below — the actual silicon is **GoldStar Z0840004PSC**, not Zilog/SGS as the manual lists.
+
+> **Three Microchip PICs, not one**: the service manual lists only IC23 as a microcontroller. Board photographs reveal **two more candidate PICs** at IC34 (PDIP-28) and IC57 (PDIP-18) that the manual does not enumerate. None of these PIC firmware images have been dumped. The presence of additional microcontrollers may resolve an open question about how the YM3812 is driven — see [Open question: YM3812 hookup](#open-question-ym3812-hookup) below.
+
+> **DMD frame buffer hardware identified**: the empirical PinMAME tracing in `research/pinmame_session_2/` discovered a 1 KB buffer at segment `7000h` that the 80188 fills at panel-refresh rate via the `dmd_pixel_set` / `dmd_pixel_clear` routines (F0113 / F0124). Board photography now identifies the physical RAM behind this: the paired GoldStar `GM76C29-10` SRAMs at IC50 and IC55, each 32 K × 8. The visible 1 KB at `7000:0000-7000:03FF` is only a fraction of the 64 KB total available on these two chips, suggesting the chip-select scheme maps the SRAMs across a larger range of the 80188 address space than is currently traced.
+
+The 80188's nominal responsibilities (game logic, state machine, scoring) remain correct, but the DMD raster output is mediated by IC23 — see [`dmd_graphics.md`](dmd_graphics.md).
 
 #### Board placement (from figure 7-1, page 94)
 
@@ -116,10 +133,29 @@ The manual's principal-components table does **not** list any PAL on this board,
 
 These are the most likely sites for the "PAL20L40" the MAME upstream comment mentions as undumped (almost certainly a typo for PAL20L8 or PAL20L10 — see the discussion in the project workspace `CLAUDE.md`). Worth dumping along with IC23.
 
-#### Unidentified 32-pin DIP sockets
+#### 32-pin DIP positions — resolved by photograph
 
-- **IC12, IC13** — 32-pin sockets in the IC10/IC11 EPROM column. Not in the principal-components list. Plausible interpretations: unpopulated EPROM expansion sockets, a 32-pin SRAM, or a 32-pin DIP RTC/NVRAM module (e.g. ST M48T08). Confirmation requires a board photo.
-- **IC54** — extra 32-pin socket adjacent to IC52/IC53 in the sound EPROM column. Likely an unpopulated sound-ROM expansion socket.
+- **IC12** is populated with `UMC UM62256BL-70LL` 32 K × 8 SRAM. The 80188 main work RAM.
+- **IC13** is a **vacant 32-pin socket** (an expansion option, not used by IO Moon).
+- **IC54** is a **vacant 32-pin socket** in the sound-EPROM column (sound-ROM expansion option, not used).
+
+#### Open question: OKI MSM6376 location
+
+The service manual designates IC51 as the **OKI MSM6376** voice synthesizer in a 42-pin / 600-mil DIP. Board photographs (see `research/board_inventory.md`, image 8) show the chip at the silkscreen position labelled `IC51` is **an 8-pin device**, not a 42-pin DIP. **No 42-pin DIP is visible anywhere on the 16-bit board** in any of the 11 high-resolution photographs.
+
+Possible explanations:
+
+- The manual labels the silkscreen position wrong, and the OKI MSM6376 sits at a different position (most plausibly near the IC34 / IC57 cluster, where larger DIPs are visible).
+- The OKI MSM6376 was depopulated on this board revision and IO Moon's audio is YM3812 + DAC only.
+- One of the candidate PICs at IC34 or IC57 is actually the OKI MSM6376 with the markings misidentified.
+
+This needs a fresh macro photograph of the entire IC51 / IC57 / IC34 / IC7 cluster to resolve.
+
+#### Open question: YM3812 hookup
+
+IC60 is **confirmed populated** with a real Yamaha YM3812 (top-mark `YAMAHA / YM3812 / JAPAN`, decoupling cap CD60 present). Empirical PinMAME tracing (see `research/pinmame_session_2/`) finds **zero writes to any candidate YM3812 register address from either the 80188 or the Z80** in ~30 s of running game code. The two findings are now reconciled by the following hypothesis: **one of the undocumented PICs at IC34 or IC57 is the sound coprocessor that owns the YM3812 bus**. The 80188 sends sound commands via shared RAM; an on-board PIC reads them and issues the actual YM3812 register writes. Neither of the two main CPUs ever touches the YM3812 directly, which matches the trace.
+
+Resolving this requires dumping IC34 and IC57 (see [`chips_to_dump.md`](chips_to_dump.md)).
 
 Connectors (manual section 7.2.1.2):
 
@@ -136,7 +172,7 @@ Principal components (from service manual section 7.2.2.1, page 95):
 
 | Reference | Component | Part | Notes |
 |-----------|-----------|------|-------|
-| IC1 | Microprocessor | Z80A (Zilog/SGS) | I/O CPU @ 8 MHz |
+| IC1 | Microprocessor | GoldStar `Z0840004PSC` (Z80A) | I/O CPU @ 8 MHz (board photo: not Zilog/SGS as the manual lists) |
 | IC5 | EPROM | 27C256 (Texas/SGS) | `1005 v1.2` (I/O) — 32 KB |
 | SW40 | DIP switch block | 8-position | See DIP table below |
 

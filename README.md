@@ -52,6 +52,8 @@ For a detailed breakdown of the hardware architecture, see:
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
 - [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
+- [Chips Worth Dumping](docs/chips_to_dump.md) — Prioritised list of every PAL / PIC / EPROM / EEPROM identified on the boards, with dumping procedures
+- [Physical Board Inventory](research/board_inventory.md) — Chip-by-chip identification from board photographs
 - [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — Complete I/O mapping from the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
