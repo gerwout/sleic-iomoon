@@ -50,6 +50,7 @@ For a detailed breakdown of the hardware architecture, see:
 
 - [Hardware Architecture](docs/hardware_architecture.md) — CPU boards, memory map, bus arbitration
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
+- [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
 - [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — Complete I/O mapping from the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping

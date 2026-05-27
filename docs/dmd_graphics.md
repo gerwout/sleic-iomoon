@@ -67,6 +67,8 @@ pixel_value = plane0_bit + (2 × plane1_bit)
 | 2 | 0 | 1 | Medium |
 | 3 | 1 | 1 | Bright (full) |
 
+> ⚠️ **Plane-order disagreement with the wire protocol**: the wire-side analysis in [`dmd_wire_protocol.md`](dmd_wire_protocol.md) (derived from the PPUC dmdreader Sleic decoder + a Saleae capture) finds that on the PIC → plasma ribbon, **the first bitplane sent is the MSB** (weighted ×2), not the LSB. Either (a) the PIC 16C54HS transmits the bitplanes in reverse order relative to how they sit in ROM, or (b) the ROM-side plane-to-weight mapping above needs to be inverted. Until verified against a real panel, treat both Plane 0 / Plane 1 weightings as candidates and check both when implementing an emulator.
+
 ### Bit Inversion
 
 Frame data is stored with **inverted bits**: a `0` bit in the ROM means the pixel is **lit**, and a `1` bit means it is **off**. The `dmd_viewer.py` script inverts by default for correct display.
