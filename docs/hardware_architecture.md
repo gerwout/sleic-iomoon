@@ -77,6 +77,50 @@ Principal components (from service manual section 7.2.1.1, page 93):
 
 The "responsibilities" attributed to the 80188 (game logic, state machine, scoring) are correct, but the DMD raster output is mediated by the PIC16C54HS coprocessor at IC23 — see the [DMD Graphics System](dmd_graphics.md) document.
 
+#### Board placement (from figure 7-1, page 94)
+
+Approximate layout of board 011-029 as drawn in the manual's component-placement figure:
+
+```
+   Top-Left                                    Top-Right
+   ─────────────────────────────────────────────────────────
+   IC2  IC3  IC4  IC5  (20-pin latches)        IC8  OSC1   J2 (14-pin → display)
+                                               IC22                  AR20  IC24
+                                               IC21
+                          IC1 (80188-10)       IC20      JP7  IC23   (← PIC 16C54HS)
+                          68-pin PLCC          ────────────────────
+                                               IC30  IC31  IC32  IC34   (glue logic row)
+                                               IC33  IC55
+   ─────────────────────────────────────────────────────────
+   Bottom-Left                                 Bottom-Right
+   IC10 (27C040, 1001 JUEGO)                   IC54  (32-pin DIP, unidentified)
+   IC11 (27C040, 1002 BANK)                    IC53  (27C040, 1004 SONIDO 2)
+   IC12, IC13 (32-pin DIPs, unidentified)      IC52  (27C040, 1003 SONIDO 1)
+   IC14 (28C64A NVRAM, 28-pin)                 IC56  IC50  IC44  IC45  IC43  IC46
+   IC41  IC42 (drivers / latches, 20-pin)      IC60 (YM3812)   IC51 (OKI 6376, 42-pin)
+   AR40, J1 (20-pin → CPU 8-bit)               IC61 (YM3014, 8-pin)   IC63 (X9103, 8-pin)
+                                                                       P50 (music balance trim)
+```
+
+**IC23 (PIC 16C54HS) location**: top-right region, **18-pin DIP**, drawn as socketed, immediately to the right of the IC20/IC21/IC22 stack and just left of (or below) connector J2 (the 14-pin ribbon to the plasma panel). Adjacent components: jumper JP7, IC24 (smaller DIP).
+
+#### Candidate PALs / unidentified glue ICs on board 011-029
+
+The manual's principal-components table does **not** list any PAL on this board, but several positions in figure 7-1 look like they hold programmable logic rather than ordinary 74-series glue:
+
+| Reference | Package size | Position | Why it's a PAL candidate |
+|-----------|--------------|----------|--------------------------|
+| IC8 | 20-pin DIP | top, immediately left of OSC1 | Adjacent to the oscillator — typical clock-divider / bus-arbiter location |
+| IC20, IC21, IC22 | 20-pin DIPs | vertical stack between IC1 (80188) and IC23 (PIC) | Sits exactly where 80188 chip-select / DMD-bus glue would go |
+| IC24 | 16-pin DIP | next to IC23 | Possible PAL16xx supporting the PIC |
+
+These are the most likely sites for the "PAL20L40" the MAME upstream comment mentions as undumped (almost certainly a typo for PAL20L8 or PAL20L10 — see the discussion in the project workspace `CLAUDE.md`). Worth dumping along with IC23.
+
+#### Unidentified 32-pin DIP sockets
+
+- **IC12, IC13** — 32-pin sockets in the IC10/IC11 EPROM column. Not in the principal-components list. Plausible interpretations: unpopulated EPROM expansion sockets, a 32-pin SRAM, or a 32-pin DIP RTC/NVRAM module (e.g. ST M48T08). Confirmation requires a board photo.
+- **IC54** — extra 32-pin socket adjacent to IC52/IC53 in the sound EPROM column. Likely an unpopulated sound-ROM expansion socket.
+
 Connectors (manual section 7.2.1.2):
 
 | Connector | Function |
