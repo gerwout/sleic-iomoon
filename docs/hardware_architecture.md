@@ -131,7 +131,7 @@ Approximate layout of board 011-029 as drawn in the manual's component-placement
 | IC21 | **National Semiconductor `DM74LS393N`** (PDIP-14, dual 4-bit binary counter) — date code `9524` | Confirmed by user readout. Same part as IC20. |
 | IC22 | **TI `SN74LS27N`** (PDIP-14, triple 3-input NOR) — date code `9140` | Confirmed by user readout. |
 | IC34 | **TI / NS `CD74HC151E`** (PDIP-16, 8-to-1 multiplexer) — date code `H9540` | Confirmed by user readout. |
-| IC24 | 16-pin DIP next to IC23 | Last remaining unread chip in the candidate-PAL cluster; top-mark not yet captured. Given that every other "candidate PAL" position on this board has turned out to be ordinary 74LS / 74HC glue, IC24 being a PAL is now unlikely but worth confirming before closing the question. |
+| IC24 | **TI `SN74LS07N`** (PDIP-14, hex buffer / driver, open-collector high-voltage outputs) — lot code `4CCFXRK` | Confirmed by user readout. Open-collector outputs make sense for driving the J2 plasma-display ribbon cable, which is the closest off-board destination from this chip's position adjacent to the PIC at IC23. |
 
 ##### Clock divider chain at IC20 / IC21 / IC22
 
@@ -145,7 +145,13 @@ OSC1 ── IC20 (4+4 bit /256)  ── IC21 (4+4 bit /65536)  ── IC22 (NOR 
 
 This explains where the Z80's periodic IRQ frequency comes from on the real hardware: a divider of **8 MHz ÷ 8192 = 977 Hz** is exactly bit 13 of a cascaded `74LS393` pair tapped via a NOR-gate, which matches the rate derived in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md) from the Z80 firmware's lamp-refresh state machine. The same chain almost certainly also generates the DMD raster timing signals (`DOTCLK`, `RCLK`, `COLLAT`) the PIC at IC23 uses — IC23 sits immediately downstream of this cluster in the board layout.
 
-With IC7 (PAL 20L10) being the only PAL on this board and all other "candidate PAL" positions turning out to be ordinary 74-series glue, the MAME upstream comment's `20L40` undumped PAL is now nailed down as IC7. The companion `16L8` claim in that comment has no confirmed Io Moon location.
+With **every chip in the candidate-PAL cluster on this board now read directly off the physical PCB** (IC7, IC8, IC20, IC21, IC22, IC24, IC34), the picture is unambiguous:
+
+- **Exactly two programmable parts** are present on the Io Moon 16-bit board: the **PIC 16C57-HS/P at IC23** (microcontroller) and the **PAL 20L10ACNS at IC7** (combinational logic device). Everything else is 74LS / 74HC fixed-function logic.
+- The **MAME upstream `sleic.cpp` comment's "Undumped PALs: 20L40, 16L8"** decodes to: `20L40` was a typo for the PAL `20L10` at IC7 (now identified); `16L8` has **no Io Moon chip to attribute to** — it appears to have come from the Bike Race schematic which MAME's comment notes is "the only known schematic" and which doesn't apply to this machine.
+- The clock-divider chain IC20 + IC21 + IC22 next to OSC1 is identified as the source of the Z80 periodic IRQ (8 MHz ÷ 8192 = 977 Hz) and most likely also the source of the DMD raster clocks fed to the PIC at IC23.
+
+The chip identification phase for this board is therefore complete. Dumping priorities (see [`chips_to_dump.md`](chips_to_dump.md)) reduce to the two programmable parts above plus the existing EPROMs / EEPROM for archival completeness.
 
 #### 32-pin DIP positions — resolved by photograph
 
