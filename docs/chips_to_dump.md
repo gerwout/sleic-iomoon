@@ -12,16 +12,14 @@ All listed parts are supported by the TL866II+/T48 universal programmer with its
 
 | Rank | Ref | Board | Part (best read) | Why it matters |
 |------|-----|-------|------------------|----------------|
-| 1 | **IC23** | 011-029 (16-bit) | **Microchip `PIC 16C57-HS/P`** (PDIP-28, OTP) — board photo confirms 28-pin part, NOT the PIC 16C54 the manual lists | DMD raster coprocessor. Completely undumped; opaque to current emulation. 2048 × 12-bit program memory (4× a 16C54). |
-| 2 | **IC34** | 011-029 | Likely Microchip `PIC 16C57-HC/P` (PDIP-28). Markings uncertain. | Undocumented coprocessor. **Strongest candidate for the missing YM3812 driver path**. |
-| 3 | **IC57** | 011-029 | Likely Microchip `PIC 16C54-04/XL` (PDIP-18). Markings uncertain. | Second undocumented coprocessor. Same rationale as IC34. |
-| 4 | **IC8** | 011-030 (Z80) | PAL16L8 (assumed; printed markings not photographed clearly yet) | I/O address decode for the Z80. Dumping it would complete the Z80 chip-select map. |
-| 5 | (removed — not a new revision) | — | — | An earlier draft of this list flagged the `V1.3-02` sticker on IC10 as a newer revision. That was wrong: `V1.3-02` is the chip-number convention `V<set>-<chip number>`, i.e. chip 02 of the V1.3 set — the same generation as `v1_3_02.bin` in the archive. No new revision; nothing extra to dump here. |
-| 6 | **IC20, IC21, IC22, IC24** | 011-029 | Candidate PALs (PDIP-20 stacked between the 80188 and IC23) | Possible site for the "PAL20L40" the MAME upstream comment lists as undumped (likely a typo for PAL20L8 or PAL20L10). |
-| 7 | **IC14** | 011-029 | Microchip `28C64A-25` (PDIP-28) | NVRAM. Holds runtime configuration and high scores — useful for preserving a specific operator-tuned machine, less useful for emulation since the contents are dynamic. |
-| 8 | **IC11, IC52, IC53** | 011-029 | 27C040 (PDIP-32, windowed) | Already archived as `v1_3_02/03/04.bin` but a re-dump from this exact physical board would confirm whether IC11/IC52/IC53 share the V1.2-04 or V1.3-02 revision. |
-| 9 | **IC5** | 011-030 | 27C256 (PDIP-28, windowed) — `IO MOON V1.2-04` | Already archived as `v1_3_05.bin`. Re-dump from this board confirms revision parity. |
-| 10 | **IC6** | 011-030 | PDIP-28 socket — population status unknown (covered by tape in current photos) | If populated, contents are unknown ("extended routines/data" per the Z80 disassembly). A "not included" entry in the asm listing. |
+| 1 | **IC23** | 011-029 (16-bit) | **Microchip `PIC 16C57-HS/P`** (PDIP-28, OTP) — board photo confirms 28-pin part, NOT the PIC 16C54 the manual lists | DMD raster coprocessor. **Likely also the YM3812 sound driver** (only programmable microcontroller on the board; 20 I/O pins are enough for both jobs). Completely undumped; opaque to current emulation. 2048 × 12-bit program memory (4× a 16C54). |
+| 2 | **IC7** | 011-029 | **AMD/MMI `PAL20L10ACNS`** (PDIP-24) — markings confirmed in `IMG_20260527_212833.jpg` | Bus / chip-select glue on the 80188 side. Almost certainly the "PAL20L40" that MAME upstream lists as undumped — `20L40` is a typo for `20L10`. Dumping it would complete the 80188 chip-select decode. |
+| 3 | **IC8** | 011-030 (Z80) | PAL16L8 (assumed; printed markings not photographed clearly yet) | I/O address decode for the Z80. Dumping it would complete the Z80 chip-select map. |
+| 4 | **IC20, IC21, IC22, IC24** | 011-029 | Candidate PALs (PDIP-20 stacked between the 80188 and IC23) | Possibly additional PALs in the chip-select / DMD-bus glue. Photographs do not yet resolve the top-marks; verify before assuming they are PALs vs 74LSxx. |
+| 5 | **IC14** | 011-029 | Microchip `28C64A-25` (PDIP-28) | NVRAM. Holds runtime configuration and high scores — useful for preserving a specific operator-tuned machine, less useful for emulation since the contents are dynamic. |
+| 6 | **IC11, IC52, IC53** | 011-029 | 27C040 (PDIP-32, windowed) | Already archived. The "V1.3-02" sticker on IC10 reads as set-chip notation (chip 02 of V1.3 set), NOT a sub-revision; nothing new to dump from these sticker labels alone. |
+| 7 | **IC5** | 011-030 | 27C256 (PDIP-28, windowed) — `IO MOON V1.2-04` | Already archived as `v1_3_05.bin`. Re-dump from this board confirms revision parity. |
+| 8 | **IC6** | 011-030 | PDIP-28 socket — population status unknown (covered by tape in current photos) | If populated, contents are unknown ("extended routines/data" per the Z80 disassembly). A "not included" entry in the asm listing. |
 
 ---
 
@@ -36,20 +34,23 @@ All listed parts are supported by the TL866II+/T48 universal programmer with its
 - **Code-protect fuse (CP)**: unknown until first read attempt. If CP is set, the program-memory dump returns scrambled / 0xFFF data. The PIC16C5x family is well known to have a *weak* CP — some programmers have firmware support for "unprotect" sequences (Pavel Zima's published method), but the safest assumption is "if CP is set, the chip is recoverable only via decap, which is destructive".
 - **Procedure**: pull from socket, drop into TL866II+ ZIF, run `minipro -p PIC16C54 -r config.hex -c config` first; inspect the CP bit; only if `/CP = 1` (not protected) read `minipro -p PIC16C54 -r iomoon_pic_ic23.hex -c code`.
 
-### IC34 — likely PIC 16C57
+### IC7 — PAL 20L10ACNS
 
-- **Board**: 011-029, in the glue-IC row beneath IC22.
-- **Package**: 28-pin PDIP. Socketed status not yet confirmed.
-- **Why it's interesting**: the empirical PinMAME tracing in `research/pinmame_session_2/00_summary.txt` finds zero writes to the YM3812 from either the 80188 or the Z80, but IC60 (YM3812) is confirmed populated. A coprocessor doing the writes — most naturally a PIC reading sound commands from shared RAM — explains both observations.
-- **Programmer**: TL866II+ in PIC16C57 mode if confirmed as a PIC16C57. **First step is to take a macro photo and confirm the markings** — the auto-disassembled label could read either `PIC16C57-HC/P` or `PT8SC5T-HC/P` (a possible custom Sleic-marked part). If it's a custom mask ROM, do not attempt to dump.
+- **Board**: 011-029, lower-centre, below IC60 (the YM3812) and to the left of IC56 (a 74LS139 decoder).
+- **Package**: 24-pin PDIP.
+- **Markings observed in `IMG_20260527_212833.jpg`**: top-mark reads clearly `20L10ACNS / BRDN`. This is an AMD/MMI PAL20L10 in commercial-grade plastic. The earlier subagent pass mis-read this chip as a PIC 16C54 — that was wrong.
+- **Why it's interesting**: this is almost certainly the chip the MAME upstream `sleic.cpp` comment lists as `Undumped PALs: 20L40, 16L8`. `20L40` is not a standard PAL part number; it is most plausibly a typo for `20L10` (the only other entry in that part-number range with 10-output suffix), and IC7's location next to the 80188 main bus is exactly where chip-select decode glue would sit. Dumping it would complete the 80188 chip-select map.
+- **Programmer**: TL866II+ in `PAL20L10` mode. Output is a JEDEC fuse map (`.jed`), not a binary.
+- **SEC fuse caveat**: as with all PALs, if the security fuse is blown the JEDEC dump returns all-`F`s and the only recovery is to reverse-engineer the truth table by exercising every input combination in a test fixture.
 
-### IC57 — likely PIC 16C54-04/XL
+### (Note on the chips formerly listed as IC34 and IC57)
 
-- **Board**: 011-029, bottom-right of the board.
-- **Package**: 18-pin PDIP.
-- **Markings observed**: `PIC16C(?)/04XL / 9277BNCN` — consistent with Microchip PIC16C54-04/XL (4 MHz, extended-temperature plastic).
-- **Why it's interesting**: same rationale as IC34. If both IC34 and IC57 are PICs, one of them most likely drives the YM3812 while the other handles a different audio path (OKI? DAC?).
-- **Programmer**: TL866II+ in PIC16C54 mode. Same CP caveat as IC23.
+The earlier draft of this list called IC34 and "IC57" candidate PICs based on a subagent's reading of board photos. Both readings turned out to be wrong:
+
+- **"IC57" doesn't exist** as a silkscreen designator on the board. The chip the subagent saw is at silkscreen position **IC7**, and it is the PAL 20L10 listed above — not a PIC.
+- **IC34** is a much smaller package than the subagent thought (16-pin DIP visible in `IMG_20260527_212828.jpg`, compared to the 28-pin IC23 next to it). It is ordinary 74LS-series glue logic, not a microcontroller. Nothing to dump.
+
+The only microcontroller on the 16-bit board is **IC23 (PIC 16C57)** — at the top of this list.
 
 ### IC8 — PAL16L8 (Z80 board)
 

@@ -69,9 +69,9 @@ Principal components per the service manual section 7.2.1.1 (page 93), corrected
 | IC14 | EEPROM | Microchip `28C64A-25` (PDIP-28) | 8 K × 8 NVRAM (game settings, high scores) |
 | IC50 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer A** |
 | IC55 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer B** (paired with IC50) |
-| IC23 | Microcontroller | **Microchip `PIC 16C57-HS/P`** (PDIP-28, socketed, OTP — no UV window) | DMD raster coprocessor. **Confirmed by macro crop of `IMG_20260527_212505.jpg` as a 28-pin PIC 16C57**, not the PIC 16C54 the manual lists. The 16C57 has 4× the program memory of the 16C54 (2048 × 12-bit vs 512 × 12-bit). |
-| IC34 | Microcontroller | Likely Microchip `PIC 16C57-HC/P` (PDIP-28, markings uncertain) | **Undocumented — possible sound or DMD coprocessor** |
-| IC57 | Microcontroller | Likely Microchip `PIC 16C54-04/XL` (PDIP-18, markings uncertain) | **Undocumented — possible sound coprocessor** |
+| IC23 | Microcontroller | **Microchip `PIC 16C57-HS/P`** (PDIP-28, socketed, OTP — no UV window) | DMD raster coprocessor — likely also the sound coprocessor (see [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md)). **Confirmed by macro crop of `IMG_20260527_212505.jpg` as a 28-pin PIC 16C57**, not the PIC 16C54 the manual lists. 2 K × 12-bit program memory and 20 I/O pins — comfortably enough for both DMD raster and YM3812 driving. |
+| IC7 | PAL | **AMD/MMI `PAL20L10ACNS`** (PDIP-24, OTP) | **Bus / chip-select glue.** Markings clearly visible in `IMG_20260527_212833.jpg` close-up: `20L10ACNS / BRDN`. Almost certainly the "PAL20L40" the MAME upstream comment lists as undumped — `20L40` being a typo for `20L10`. Worth dumping (see [`chips_to_dump.md`](chips_to_dump.md)). |
+| IC34 | Logic | 74LS-series glue (likely 16-pin or 14-pin DIP) | Earlier draft of these docs claimed IC34 was a PIC 16C57; that was a subagent misread. The chip body in `IMG_20260527_212828.jpg` is **much smaller than IC23**, ~16 pins — not a 28-pin DIP. |
 | IC60 | Sound generator | Yamaha `YM3812 JAPAN` (PDIP-24) | FM music synthesizer — **confirmed populated** |
 | IC61 | DAC | Yamaha YM3014 (likely, PDIP/SOIC-8) | YM3812 output DAC |
 | IC51 | Voice synthesizer | **OKI MSM6376** (PDIP-42) | ADPCM speech / FX playback — **confirmed populated**, visible as the first chip on the top-right side of the board in `IMG_20260527_212505.jpg`. The original `research/board_inventory.md` subagent pass mis-attributed the IC51 silkscreen label to an adjacent 8-pin device; the correct IC51 is the 42-pin DIP. |
@@ -88,7 +88,7 @@ Principal components per the service manual section 7.2.1.1 (page 93), corrected
 
 > **Correction on Sleic-PETACO board manufacturer of the Z80**: see the 8-bit board section below — the actual silicon is **GoldStar Z0840004PSC**, not Zilog/SGS as the manual lists.
 
-> **Three Microchip PICs, not one**: the service manual lists only IC23 as a microcontroller. Board photographs reveal **two more candidate PICs** at IC34 (PDIP-28) and IC57 (PDIP-18) that the manual does not enumerate. None of these PIC firmware images have been dumped. The presence of additional microcontrollers may resolve an open question about how the YM3812 is driven — see [Open question: YM3812 hookup](#open-question-ym3812-hookup) below.
+> **One PIC + one PAL on the Intel board**: the service manual lists only IC23 as a microcontroller. Board photographs confirm: **only IC23 is a PIC**. An earlier draft of these docs claimed IC34 and "IC57" were additional PICs based on subagent misreads — both were wrong. The chip at silkscreen position **IC7** is an **AMD/MMI PAL 20L10** (programmable *logic* — combinatorial, no firmware in the microcontroller sense); the chip at IC34 is small-package 74LS-series glue logic. "IC57" doesn't exist on the board — the subagent was reading "IC7" with an extra digit.
 
 > **DMD frame buffer hardware identified**: the empirical PinMAME tracing in `research/pinmame_session_2/` discovered a 1 KB buffer at segment `7000h` that the 80188 fills at panel-refresh rate via the `dmd_pixel_set` / `dmd_pixel_clear` routines (F0113 / F0124). Board photography now identifies the physical RAM behind this: the paired GoldStar `GM76C29-10` SRAMs at IC50 and IC55, each 32 K × 8. The visible 1 KB at `7000:0000-7000:03FF` is only a fraction of the 64 KB total available on these two chips, suggesting the chip-select scheme maps the SRAMs across a larger range of the 80188 address space than is currently traced.
 
@@ -145,9 +145,11 @@ The service manual designates IC51 as the **OKI MSM6376** voice synthesizer in a
 
 #### Open question: YM3812 hookup
 
-IC60 is **confirmed populated** with a real Yamaha YM3812 (top-mark `YAMAHA / YM3812 / JAPAN`, decoupling cap CD60 present). Empirical PinMAME tracing (see `research/pinmame_session_2/`) finds **zero writes to any candidate YM3812 register address from either the 80188 or the Z80** in ~30 s of running game code. The two findings are now reconciled by the following hypothesis: **one of the undocumented PICs at IC34 or IC57 is the sound coprocessor that owns the YM3812 bus**. The 80188 sends sound commands via shared RAM; an on-board PIC reads them and issues the actual YM3812 register writes. Neither of the two main CPUs ever touches the YM3812 directly, which matches the trace.
+IC60 is **confirmed populated** with a real Yamaha YM3812 (top-mark `YAMAHA / YM3812 / JAPAN`, decoupling cap CD60 present). Empirical PinMAME tracing (see `research/pinmame_session_2/`) finds **zero writes to any candidate YM3812 register address from either the 80188 or the Z80** in ~30 s of running game code. The independent investigation of the 80188 → coprocessor command queue at `4000:1158+` (see [`../research/80188_to_z80_mailbox.md`](../research/80188_to_z80_mailbox.md)) confirms the Z80 can not be the consumer — its memory bus only reaches its own 32 KB ROM and 2 KB RAM. Something between the 80188 and the YM3812 reads that queue and emits the register writes.
 
-Resolving this requires dumping IC34 and IC57 (see [`chips_to_dump.md`](chips_to_dump.md)).
+There is **only one programmable microcontroller** on the 16-bit board: **IC23 (PIC 16C57-HS/P)**. It is documented as the DMD raster coprocessor. The 16C57 has 2 K × 12-bit instruction memory (4× a 16C54's) and 20 I/O pins — comfortably enough to drive both the DMD wire protocol (6 signals on J2) and the YM3812 register-write interface (~11 signals — D0–D7 + A0 + WR + CS) in a single chip. The most economical hypothesis is therefore that **IC23 does both jobs**: DMD raster and sound command dispatch.
+
+Resolving this requires dumping IC23 (see [`chips_to_dump.md`](chips_to_dump.md)). If the firmware turns out to be DMD-only, the YM3812 driver must be hiding in either the PAL20L10 at IC7 (combinatorial logic isn't typically that capable, but a PAL with registered outputs could implement a simple latch-and-strobe) or in a chip we still haven't identified.
 
 Connectors (manual section 7.2.1.2):
 

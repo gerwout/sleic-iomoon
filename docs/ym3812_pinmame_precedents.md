@@ -122,13 +122,16 @@ For the immediate driver work, start by **leaving the YM3812 attached-but-unmapp
 
 ## Update (board-photograph evidence — `research/board_inventory.md`)
 
-The "BOM-only" hypothesis can now be **partially ruled out**:
+The "BOM-only" hypothesis can now be **ruled out**:
 
 - IC60 is **confirmed populated** with a real `YAMAHA / YM3812 / JAPAN` 24-pin DIP, surrounded by decoupling cap CD60 and the support resistors / caps it would need to function. It is not a vacant placeholder.
 - Empirical PinMAME tracing of 30 seconds of running game code still shows **zero writes to any candidate YM3812 register address from either the 80188 or the Z80**.
+- An independent disassembly grep (see [`../research/80188_to_z80_mailbox.md`](../research/80188_to_z80_mailbox.md)) shows the 80188 pushes 80+ events into a circular byte queue at `4000:1158+`. The Z80 cannot consume the queue (no reads outside `0x0000-0x7FFF` ROM and `0xC000-0xC7FF` RAM), so something else does. That something else is the YM3812 driver.
 
-These two findings together are best explained by a **third hypothesis** that neither of the two earlier ones captured: there is a **microcontroller coprocessor** on the 16-bit board that sits between the 80188 and the YM3812. The 80188 writes sound commands into shared RAM; the coprocessor reads them and issues the YM3812 register writes itself. Neither the 80188 nor the Z80 ever appear on the YM3812 bus.
+The natural candidate for this role is a **microcontroller coprocessor** between the 80188 and the YM3812 — and a refined reading of the board photos identifies exactly one such device on the 16-bit board: **IC23, the `PIC 16C57-HS/P`**. This is the chip the service manual already documents as the DMD raster coprocessor.
 
-Board photographs locate **two undocumented Microchip PICs**, at IC34 (PDIP-28, likely PIC 16C57) and at IC57 (PDIP-18, likely PIC 16C54-04/XL), neither of which is in the service manual's principal-components table. Either of them — most plausibly the larger PIC 16C57 at IC34 — is the natural candidate for this sound coprocessor role. Confirming requires dumping their firmware; see [`chips_to_dump.md`](chips_to_dump.md).
+The earlier draft of this document hypothesised two *additional* PICs at IC34 and "IC57". Both readings turned out to be wrong: IC34 is a smaller 74LS-series glue chip, and "IC57" doesn't exist on the board — the subagent had been reading IC7 (which holds a `PAL 20L10`, not a PIC). The clean architecture is therefore: **one PIC, two jobs**.
 
-**Implication for the PinMAME driver**: the current "attached but unmapped" YM3812 stub remains the right interim state. It produces silent audio output, matching what the emulation can know without modelling the coprocessor. Once IC34/IC57 are dumped, a future driver pass would either (a) emulate the coprocessor directly, or (b) parse its instruction stream offline and re-implement its behaviour as a piece of C code that bridges the 80188's shared-RAM sound mailbox to PinMAME's `YM3812_*_w` calls.
+The PIC 16C57 has **2 K × 12-bit program memory** (4× a PIC 16C54) and **20 I/O pins**. Driving the DMD wire protocol takes 6 signals (DE, RDATA, RCLK, COLLAT, DOTCLK, SDATA per [`dmd_wire_protocol.md`](dmd_wire_protocol.md)); driving a YM3812 takes about 11 signals (D0–D7, A0, /WR, /CS). Total: 17 pins — fits comfortably in the 20 the chip has. The program memory is also more than enough to host both routines plus a small command-queue reader for the 80188's `4000:1158+` mailbox.
+
+**Implication for the PinMAME driver**: the current "attached but unmapped" YM3812 stub remains the right interim state. It produces silent audio output, matching what the emulation can know without modelling the coprocessor. Once IC23 is dumped, a future driver pass would either (a) emulate the PIC 16C57 directly (PinMAME has no PIC 16C5x core today, so this would be net-new work), or (b) parse its instruction stream offline and re-implement its behaviour as a piece of C code that bridges the 80188's `4000:1158+` command queue to PinMAME's `YM3812_*_w` calls.
