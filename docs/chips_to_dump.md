@@ -12,11 +12,11 @@ All listed parts are supported by the TL866II+/T48 universal programmer with its
 
 | Rank | Ref | Board | Part (best read) | Why it matters |
 |------|-----|-------|------------------|----------------|
-| 1 | **IC23** | 011-029 (16-bit) | Microchip `PIC 16C54-HS/P` (PDIP-18, OTP) | DMD raster coprocessor. Completely undumped; opaque to current emulation. |
+| 1 | **IC23** | 011-029 (16-bit) | **Microchip `PIC 16C57-HS/P`** (PDIP-28, OTP) — board photo confirms 28-pin part, NOT the PIC 16C54 the manual lists | DMD raster coprocessor. Completely undumped; opaque to current emulation. 2048 × 12-bit program memory (4× a 16C54). |
 | 2 | **IC34** | 011-029 | Likely Microchip `PIC 16C57-HC/P` (PDIP-28). Markings uncertain. | Undocumented coprocessor. **Strongest candidate for the missing YM3812 driver path**. |
 | 3 | **IC57** | 011-029 | Likely Microchip `PIC 16C54-04/XL` (PDIP-18). Markings uncertain. | Second undocumented coprocessor. Same rationale as IC34. |
 | 4 | **IC8** | 011-030 (Z80) | PAL16L8 (assumed; printed markings not photographed clearly yet) | I/O address decode for the Z80. Dumping it would complete the Z80 chip-select map. |
-| 5 | **IC10** at revision V1.3-02 | 011-029 | 27C040 — sticker `IO MOON V1.3-02` | The project archive currently has `v1_3_01.bin` (V1.2-04). Photograph evidence shows a **V1.3-02** sticker on this physical board — a newer revision than what is archived. Worth a fresh dump + diff. |
+| 5 | (removed — not a new revision) | — | — | An earlier draft of this list flagged the `V1.3-02` sticker on IC10 as a newer revision. That was wrong: `V1.3-02` is the chip-number convention `V<set>-<chip number>`, i.e. chip 02 of the V1.3 set — the same generation as `v1_3_02.bin` in the archive. No new revision; nothing extra to dump here. |
 | 6 | **IC20, IC21, IC22, IC24** | 011-029 | Candidate PALs (PDIP-20 stacked between the 80188 and IC23) | Possible site for the "PAL20L40" the MAME upstream comment lists as undumped (likely a typo for PAL20L8 or PAL20L10). |
 | 7 | **IC14** | 011-029 | Microchip `28C64A-25` (PDIP-28) | NVRAM. Holds runtime configuration and high scores — useful for preserving a specific operator-tuned machine, less useful for emulation since the contents are dynamic. |
 | 8 | **IC11, IC52, IC53** | 011-029 | 27C040 (PDIP-32, windowed) | Already archived as `v1_3_02/03/04.bin` but a re-dump from this exact physical board would confirm whether IC11/IC52/IC53 share the V1.2-04 or V1.3-02 revision. |
@@ -27,12 +27,12 @@ All listed parts are supported by the TL866II+/T48 universal programmer with its
 
 ## Per-chip dumping notes
 
-### IC23 — PIC 16C54 (DMD coprocessor)
+### IC23 — PIC 16C57-HS/P (DMD coprocessor)
 
 - **Board**: 011-029, top-right region next to J2 (the 14-pin display ribbon). Adjacent components: JP7 jumper, IC24 small DIP, IC20/IC21/IC22 column.
-- **Package**: 18-pin PDIP. **Confirmed socketed.** No UV window — this is the OTP variant.
-- **Speed-grade suffix**: photograph evidence is consistent with `-HS/P` (matches the manual) but the suffix itself was not readable at the photo resolution. Could also be `-04/P` (4 MHz), `-XT/P`, or `-RC/P`.
-- **Programmer**: TL866II+ in PIC16C54 mode. Read program memory (512 × 12-bit) and the configuration word separately.
+- **Package**: **28-pin PDIP** — confirmed by macro crop of `IMG_20260527_212505.jpg`, top-mark reads `PIC16C57-HS/P / 9526 CCH/W / Microchip`. The service manual claims this position holds a PIC 16C54 (18-pin part), but the physical chip is a PIC 16C57 (28-pin). **Confirmed socketed.** No UV window — OTP variant.
+- **Why 16C57 matters**: 2048 × 12-bit program memory vs the 16C54's 512 × 12-bit, and 20 I/O pins vs 12 on the 16C54. Enough difference that the firmware reverse-engineering process is qualitatively different.
+- **Programmer**: TL866II+ in **PIC16C57** mode. Read program memory (2048 × 12-bit) and the configuration word separately.
 - **Code-protect fuse (CP)**: unknown until first read attempt. If CP is set, the program-memory dump returns scrambled / 0xFFF data. The PIC16C5x family is well known to have a *weak* CP — some programmers have firmware support for "unprotect" sequences (Pavel Zima's published method), but the safest assumption is "if CP is set, the chip is recoverable only via decap, which is destructive".
 - **Procedure**: pull from socket, drop into TL866II+ ZIF, run `minipro -p PIC16C54 -r config.hex -c config` first; inspect the CP bit; only if `/CP = 1` (not protected) read `minipro -p PIC16C54 -r iomoon_pic_ic23.hex -c code`.
 

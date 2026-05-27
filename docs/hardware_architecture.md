@@ -61,7 +61,7 @@ Principal components per the service manual section 7.2.1.1 (page 93), corrected
 | Reference | Component | Part | Notes |
 |-----------|-----------|------|-------|
 | IC1 | Main CPU | Intel/AMD 80C188-10 (PLCC-68) | 16-bit, 10 MHz |
-| IC10 | EPROM (windowed) | 27C040 — sticker `IO MOON V1.3-02` | Game code/data — **note revision V1.3-02 was found on the photographed board, the project archive holds V1.2-04** |
+| IC10 | EPROM (windowed) | 27C040 — sticker `IO MOON V1.3-xx` | Game code/data (`1001 JUEGO`). The "V1.3-NN" sticker convention is `V<set>-<chip number within the set>`: V1.3 is the ROM-set version, the trailing two digits are the chip's position in the set (01 = JUEGO, 02 = BANK, 03 = SONIDO 1, 04 = SONIDO 2, 05 = Z80 I/O). The "-02" sticker seen on the photographed chip does **not** indicate a sub-revision of V1.3 — it just identifies which chip within the V1.3 set this is, matching `v1_3_02.bin` in the archive. |
 | IC11 | EPROM (windowed) | 27C040 | Banked extension (`1002 BANK`) |
 | IC52 | EPROM (windowed) | 27C040 | Sound samples 1 (`1003 SONIDO 1`) |
 | IC53 | EPROM (windowed) | 27C040 | Sound samples 2 (`1004 SONIDO 2`) |
@@ -69,12 +69,12 @@ Principal components per the service manual section 7.2.1.1 (page 93), corrected
 | IC14 | EEPROM | Microchip `28C64A-25` (PDIP-28) | 8 K × 8 NVRAM (game settings, high scores) |
 | IC50 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer A** |
 | IC55 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer B** (paired with IC50) |
-| IC23 | Microcontroller | Microchip `PIC 16C54-HS/P` (PDIP-18, socketed, OTP — no UV window) | DMD raster coprocessor |
+| IC23 | Microcontroller | **Microchip `PIC 16C57-HS/P`** (PDIP-28, socketed, OTP — no UV window) | DMD raster coprocessor. **Confirmed by macro crop of `IMG_20260527_212505.jpg` as a 28-pin PIC 16C57**, not the PIC 16C54 the manual lists. The 16C57 has 4× the program memory of the 16C54 (2048 × 12-bit vs 512 × 12-bit). |
 | IC34 | Microcontroller | Likely Microchip `PIC 16C57-HC/P` (PDIP-28, markings uncertain) | **Undocumented — possible sound or DMD coprocessor** |
 | IC57 | Microcontroller | Likely Microchip `PIC 16C54-04/XL` (PDIP-18, markings uncertain) | **Undocumented — possible sound coprocessor** |
 | IC60 | Sound generator | Yamaha `YM3812 JAPAN` (PDIP-24) | FM music synthesizer — **confirmed populated** |
 | IC61 | DAC | Yamaha YM3014 (likely, PDIP/SOIC-8) | YM3812 output DAC |
-| IC51 | (manual: OKI 6376) | **Position holds an 8-pin device, not a 42-pin OKI** | See *Unresolved: OKI MSM6376 location* below |
+| IC51 | Voice synthesizer | **OKI MSM6376** (PDIP-42) | ADPCM speech / FX playback — **confirmed populated**, visible as the first chip on the top-right side of the board in `IMG_20260527_212505.jpg`. The original `research/board_inventory.md` subagent pass mis-attributed the IC51 silkscreen label to an adjacent 8-pin device; the correct IC51 is the 42-pin DIP. |
 | IC63 | Digital potentiometer | XICOR X9103 (DIP-8) | Music balance (**not** NVRAM) |
 | IC64 | (8-pin DIP) | likely the other of YM3014 / X9103 | Audio output stage |
 | IC13 | (32-pin DIP socket) | **vacant** | Confirmed unpopulated by photograph |
@@ -139,17 +139,9 @@ These are the most likely sites for the "PAL20L40" the MAME upstream comment men
 - **IC13** is a **vacant 32-pin socket** (an expansion option, not used by IO Moon).
 - **IC54** is a **vacant 32-pin socket** in the sound-EPROM column (sound-ROM expansion option, not used).
 
-#### Open question: OKI MSM6376 location
+#### Resolved: OKI MSM6376 at IC51
 
-The service manual designates IC51 as the **OKI MSM6376** voice synthesizer in a 42-pin / 600-mil DIP. Board photographs (see `research/board_inventory.md`, image 8) show the chip at the silkscreen position labelled `IC51` is **an 8-pin device**, not a 42-pin DIP. **No 42-pin DIP is visible anywhere on the 16-bit board** in any of the 11 high-resolution photographs.
-
-Possible explanations:
-
-- The manual labels the silkscreen position wrong, and the OKI MSM6376 sits at a different position (most plausibly near the IC34 / IC57 cluster, where larger DIPs are visible).
-- The OKI MSM6376 was depopulated on this board revision and IO Moon's audio is YM3812 + DAC only.
-- One of the candidate PICs at IC34 or IC57 is actually the OKI MSM6376 with the markings misidentified.
-
-This needs a fresh macro photograph of the entire IC51 / IC57 / IC34 / IC7 cluster to resolve.
+The service manual designates IC51 as the **OKI MSM6376** voice synthesizer in a 42-pin / 600-mil DIP, and this is **confirmed correct**. The 42-pin DIP at the top-right of the 16-bit board, clearly visible in `IMG_20260527_212505.jpg`, is the OKI. An earlier pass of `research/board_inventory.md` mis-attributed the IC51 silkscreen label to an adjacent 8-pin device; that note has been superseded.
 
 #### Open question: YM3812 hookup
 
