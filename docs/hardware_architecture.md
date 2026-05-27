@@ -121,17 +121,17 @@ Approximate layout of board 011-029 as drawn in the manual's component-placement
 
 **IC23 (PIC 16C54HS) location**: top-right region, **18-pin DIP**, drawn as socketed, immediately to the right of the IC20/IC21/IC22 stack and just left of (or below) connector J2 (the 14-pin ribbon to the plasma panel). Adjacent components: jumper JP7, IC24 (smaller DIP).
 
-#### Candidate PALs / unidentified glue ICs on board 011-029
+#### Confirmed and candidate ICs on board 011-029 (not in the manual's principal-components table)
 
-The manual's principal-components table does **not** list any PAL on this board, but several positions in figure 7-1 look like they hold programmable logic rather than ordinary 74-series glue:
+| Reference | Part | Notes |
+|-----------|------|-------|
+| IC7 | **AMD/MMI `PAL 20L10ACNS`** (PDIP-24) | Confirmed by photo. Bus / chip-select glue. Almost certainly the "PAL20L40" the MAME upstream comment lists as undumped (`20L40` = typo for `20L10`). |
+| IC8 | **National Semiconductor `DM74LS74AN`** (PDIP-14, dual D flip-flop) — date code `9536` (1995 week 36) | Confirmed by user readout of the physical chip. The service manual lists IC8 as "PAL 16L8" — that designation appears to be from the Bike Race schematic and is wrong for Io Moon. Position: top of board, immediately left of OSC1. |
+| IC34 | **TI / NS `CD74HC151E`** (PDIP-16, 8-to-1 multiplexer) | Confirmed by user readout. Date code `H9540`. |
+| IC20, IC21, IC22 | 20-pin DIPs in the column between IC1 (80188) and IC23 (PIC) | Still candidate PALs — top-marks not yet read. |
+| IC24 | 16-pin DIP next to IC23 | Still candidate; top-mark not yet read. |
 
-| Reference | Package size | Position | Why it's a PAL candidate |
-|-----------|--------------|----------|--------------------------|
-| IC8 | 20-pin DIP | top, immediately left of OSC1 | Adjacent to the oscillator — typical clock-divider / bus-arbiter location |
-| IC20, IC21, IC22 | 20-pin DIPs | vertical stack between IC1 (80188) and IC23 (PIC) | Sits exactly where 80188 chip-select / DMD-bus glue would go |
-| IC24 | 16-pin DIP | next to IC23 | Possible PAL16xx supporting the PIC |
-
-These are the most likely sites for the "PAL20L40" the MAME upstream comment mentions as undumped (almost certainly a typo for PAL20L8 or PAL20L10 — see the discussion in the project workspace `CLAUDE.md`). Worth dumping along with IC23.
+With IC7 now identified as the PAL 20L10, the most likely target of the MAME upstream comment's `20L40 undumped` is IC7. The remaining `16L8 undumped` in that same comment cannot be IC8 (which is a 74LS74) and has no confirmed location on Io Moon yet.
 
 #### 32-pin DIP positions — resolved by photograph
 
@@ -176,9 +176,10 @@ Additional ICs identified from board photographs / disassembly (not listed as "p
 |-----------|-----------|------|-------|
 | IC7 | RAM | 6116 (2 KB) | Z80 working memory @ `0xC000`–`0xC7FF` |
 | IC15 | Watchdog | MAX699 | Reset supervision |
-| IC8 | PAL | 16L8 | I/O address decoding (equations not dumped) |
 | IC41, IC51 | Transistor arrays | ULN2803 | Lamp / solenoid driver buffers |
 | X10 | Crystal | 8 MHz | Z80 clock |
+
+> The Io Moon service manual claims a `PAL 16L8` at IC8 on this board. The user's direct readout of the physical chip on a real machine establishes two corrections: (a) **IC8 is on the 16-bit board, not on the Z80 board**, and (b) it is a `DM74LS74AN` dual D flip-flop, not a PAL — see the "Candidate PALs / unidentified glue ICs on board 011-029" section above. The 16L8 reference therefore appears to be a manual / schematic cross-contamination artefact (MAME's own comment notes the only known schematic is for Bike Race, not Io Moon). **There is no confirmed PAL on the Io Moon Z80 board**; the I/O port decode is implemented in straight 74LS-series glue.
 
 Connectors (manual section 7.2.2.2):
 

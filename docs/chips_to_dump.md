@@ -14,7 +14,7 @@ All listed parts are supported by the TL866II+/T48 universal programmer with its
 |------|-----|-------|------------------|----------------|
 | 1 | **IC23** | 011-029 (16-bit) | **Microchip `PIC 16C57-HS/P`** (PDIP-28, OTP) — board photo confirms 28-pin part, NOT the PIC 16C54 the manual lists | DMD raster coprocessor. **Likely also the YM3812 sound driver** (only programmable microcontroller on the board; 20 I/O pins are enough for both jobs). Completely undumped; opaque to current emulation. 2048 × 12-bit program memory (4× a 16C54). |
 | 2 | **IC7** | 011-029 | **AMD/MMI `PAL20L10ACNS`** (PDIP-24) — markings confirmed in `IMG_20260527_212833.jpg` | Bus / chip-select glue on the 80188 side. Almost certainly the "PAL20L40" that MAME upstream lists as undumped — `20L40` is a typo for `20L10`. Dumping it would complete the 80188 chip-select decode. |
-| 3 | **IC8** | 011-030 (Z80) | PAL16L8 (assumed; printed markings not photographed clearly yet) | I/O address decode for the Z80. Dumping it would complete the Z80 chip-select map. |
+| 3 | (removed) | (was listed as 011-030 / Z80) | IC8 was previously listed as a candidate PAL16L8 per the service manual. Two corrections from direct chip readout: (a) IC8 is on the **16-bit board** `011-029`, not the Z80 board; (b) it is a National Semiconductor `DM74LS74AN` dual D flip-flop (PDIP-14, date code 9536). Nothing programmable to dump at this position. The Z80 board has no confirmed PAL at all. |
 | 4 | **IC20, IC21, IC22, IC24** | 011-029 | Candidate PALs (PDIP-20 stacked between the 80188 and IC23) | Possibly additional PALs in the chip-select / DMD-bus glue. Photographs do not yet resolve the top-marks; verify before assuming they are PALs vs 74LSxx. |
 | 5 | **IC14** | 011-029 | Microchip `28C64A-25` (PDIP-28) | NVRAM. Holds runtime configuration and high scores — useful for preserving a specific operator-tuned machine, less useful for emulation since the contents are dynamic. |
 | 6 | **IC11, IC52, IC53** | 011-029 | 27C040 (PDIP-32, windowed) | Already archived. The "V1.3-02" sticker on IC10 reads as set-chip notation (chip 02 of V1.3 set), NOT a sub-revision; nothing new to dump from these sticker labels alone. |
@@ -52,13 +52,16 @@ The earlier draft of this list called IC34 and "IC57" candidate PICs based on a 
 
 The only microcontroller on the 16-bit board is **IC23 (PIC 16C57)** — at the top of this list.
 
-### IC8 — PAL16L8 (Z80 board)
+### (Note on the chip formerly listed as IC8 = PAL16L8)
 
-- **Board**: 011-030, top-centre, immediately to the right of the SW40 DIP switch block.
-- **Package**: 20-pin PDIP.
-- **Why it's interesting**: this PAL generates the chip-select signals for the Z80's I/O ports (`0x00-0x04 IN`, `0x80-0x87 OUT`) and possibly for the inter-CPU bus access. Its equations would tell us where the IC6 socket (extension ROM) is selected, and whether any other ports decode to peripherals we have not yet identified.
-- **Programmer**: TL866II+ in PAL16L8 mode. PAL16L8 is fuse-mapped, so the dump is a `.jed` file rather than a binary, and reading it back into PAL equations requires a JEDEC decoder.
-- **Security fuse (SEC)**: as with PICs, if the security fuse is blown, the chip returns no useful data. Older Sleic boards (mid-1990s) generally did not secure their PALs but it is not guaranteed. If SEC is set the only recovery is to **reverse the truth table by clipping the chip in-circuit and exercising every input combination** while reading every output.
+The Io Moon service manual labels IC8 as a `PAL 16L8` on the Z80 board. User readout of the physical chip shows two things wrong with that label:
+
+1. **IC8 is on the 16-bit board `011-029`, not the Z80 board.** The Z80 board (`011-030`) has no IC8 silkscreen position.
+2. **The chip's top-mark is `NP9536SD / DM74LS74AN`** — a National Semiconductor `DM74LS74AN` dual D-type flip-flop in 14-pin PDIP, manufactured 1995 week 36. Not a PAL.
+
+The most likely source of the manual's "PAL 16L8 at IC8" claim is cross-contamination from the Bike Race schematic — MAME's own comment in `sleic.cpp` explicitly notes that "the only known schematic is for Bike Race". Bike Race may have a 16L8 at its IC8 on its Z80 board; Io Moon does not.
+
+**There is no known PAL on the Io Moon Z80 board.** The Z80 I/O port decode (ports 0x80–0x87 OUT, 0x00–0x04 IN) is therefore implemented in straight 74LS-series glue rather than a programmable device. The earlier hypothesis that an undumped PAL16L8 was responsible for routing the OKI 6376 strobe or the inter-CPU bus access has no chip to attribute it to. If a fresh inspection finds a 20-pin DIP elsewhere on the 8-bit board with a `PAL` / `GAL` part number, this section needs revising.
 
 ### IC20, IC21, IC22, IC24 — candidate PALs on the 16-bit board
 
