@@ -83,11 +83,7 @@ case DMD_SLEIC: {
 
   i.e. **plane 0 → shift left by 1 (MSB)**, **plane 1 → shift left by 0 (LSB)**.
 
-> **Plane-order discrepancy with `dmd_graphics.md`**: the ROM-side analysis in [`dmd_graphics.md`](dmd_graphics.md) states `pixel_value = plane0_bit + (2 × plane1_bit)`, i.e. plane 0 is LSB-weighted. The wire-side analysis above says plane 0 is **MSB-weighted**. There are two possible explanations:
-> 1. The PIC 16C54HS transmits the bitplanes in **reverse order** relative to how they are laid out in ROM (sends plane 1 first, plane 0 second). The dmdreader's "plane 0" is then physically plane 1 in the ROM, and the weighting is consistent.
-> 2. One of the two analyses has the plane-to-weight mapping backwards.
->
-> This needs to be resolved before encoding the DMD output in any emulator. The cleanest way is to load a known static frame from the ROM, decode it with both conventions, and compare to the picture on the real panel (or against a frame captured with `dmd_viewer.py`).
+> ✅ **Resolved**: an earlier draft of this document flagged a plane-order disagreement with `dmd_graphics.md`. That disagreement turned out to be a labelling error in `dmd_graphics.md` / `dmd_viewer.py`, not a real protocol question. The PIC 16C54HS streams bitplanes in ROM order — ROM plane 0 = wire plane 0 = **MSB (weight ×2)**. Verified by (a) PPUC `dmdreader` working on real IO Moon hardware per the project maintainer, and (b) side-by-side rendering of ROM frames with both conventions — MSB-first produces natural antialiased gradients, LSB-first does not. See [`dmd_graphics.md`](dmd_graphics.md) for the corrected pixel-encoding table.
 
 ---
 

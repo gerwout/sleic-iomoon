@@ -75,17 +75,28 @@ Offset 0x206 – 0x405: Plane 1 (512 bytes: 16 bytes/row × 32 rows)
 Each pixel value is computed from the two bitplanes:
 
 ```
-pixel_value = plane0_bit + (2 × plane1_bit)
+pixel_value = (2 × plane0_bit) + plane1_bit
 ```
 
-| Value | Plane 0 | Plane 1 | Appearance |
-|-------|---------|---------|------------|
+| Value | Plane 0 (MSB ×2) | Plane 1 (LSB ×1) | Appearance |
+|-------|------------------|-------------------|------------|
 | 0 | 0 | 0 | Off (black) |
-| 1 | 1 | 0 | Dim |
-| 2 | 0 | 1 | Medium |
+| 1 | 0 | 1 | Dim |
+| 2 | 1 | 0 | Medium |
 | 3 | 1 | 1 | Bright (full) |
 
-> ⚠️ **Plane-order disagreement with the wire protocol**: the wire-side analysis in [`dmd_wire_protocol.md`](dmd_wire_protocol.md) (derived from the PPUC dmdreader Sleic decoder + a Saleae capture) finds that on the PIC → plasma ribbon, **the first bitplane sent is the MSB** (weighted ×2), not the LSB. Either (a) the PIC 16C54HS transmits the bitplanes in reverse order relative to how they sit in ROM, or (b) the ROM-side plane-to-weight mapping above needs to be inverted. Until verified against a real panel, treat both Plane 0 / Plane 1 weightings as candidates and check both when implementing an emulator.
+> 🛠️ **Correction (verified against real hardware)**: an earlier version of this document had Plane 0 as the *LSB* (weight ×1) and Plane 1 as the MSB. That was wrong. The corrected mapping above matches:
+>
+> 1. The PPUC `dmdreader` Sleic decoder (see [`dmd_wire_protocol.md`](dmd_wire_protocol.md)) — the wire-side authoritative source. Confirmed by the maintainer to work correctly on a real IO Moon machine.
+> 2. A visual comparison of `dmd_viewer.py` output against the swapped convention. The MSB-first interpretation produces natural antialiased halos (orange-brown gradient at the edges of bright shapes); the LSB-first interpretation produces unnaturally dark "shadow" halos. See the side-by-side comparison below.
+>
+> The PIC 16C54HS appears to stream bitplanes in ROM order, so ROM Plane 0 = wire Plane 0 = MSB. There is no plane-order reversal in the PIC.
+>
+> 📷 Visual comparison of three frames (`#0`, `#50`, `#200`), left column = old LSB-first interpretation, right column = corrected MSB-first interpretation:
+>
+> ![Plane-order comparison](../images/dmd_plane_order_comparison.png)
+>
+> ⚠️ **`scripts/dmd_viewer.py` still uses the old LSB-first convention** in `decode_frame()` (see `dmd_viewer.py:348`): `image[row, col] = p0_bit + 2 * p1_bit`. To match real hardware it should be `image[row, col] = 2 * p0_bit + p1_bit`. The visible difference is small — only pixels at brightness levels 1 and 2 are affected; levels 0 and 3 are unchanged. The script's static-screen and font rendering are unaffected (single-bitplane).
 
 ### Bit Inversion
 
