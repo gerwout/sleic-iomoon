@@ -38,9 +38,24 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
 
 ## IC7 — PAL 20L10ACNS
 
-- **Role**: 80188 chip-select / bus glue. Dumping it completes the 80188 chip-select decode map.
+- **Role**: combinational chip-select / bus glue on the 80188 main bus.
+
+  The 80188's internal chip-select unit (UMCS / LMCS / MMCS / PACS, programmed at boot via RELREG = `C03C`) covers the obvious large blocks — the program EPROMs at IC10 / IC11, the 32 K × 8 main work RAM at IC12, and a 64-byte peripheral block. The rest of the 80188 address space has to be decoded externally, which is what IC7 does. With 14 inputs, 10 active-low outputs, and a position on the address bus immediately next to the 80188, it is the only part on the board with the I/O budget to do the per-peripheral decode.
+
+  The 80188 touches several memory-mapped peripherals that fall outside the internal CSU:
+
+  - The **DMD controller hardware registers at segment `A000h`**, where the 80188 hands frames to the PIC at IC23.
+  - The **shared-RAM mailbox window at segment `4000h`**, where the 80188 and the Z80 swap commands under HOLD / HLDA bus arbitration.
+  - The **scratchpad SRAM at IC33** (2 K × 8) and the **28C64A NVRAM at IC14**.
+  - The output latches **IC40 / IC50** that buffer command and data writes on their way to the YM3812 and the DMD bus.
+
+  IC7 generates the per-peripheral chip-selects for each of those, plus very likely the write-enable gating that protects the NVRAM from spurious writes during power transitions (in tandem with the MAX699 supervisor at IC6).
+
 - **Mounting**: soldered.
+
 - **Security fuse**: standard PAL behaviour — if blown, the JEDEC read returns all-`F`s. A protected PAL can only be recovered by exercising every input combination in a test fixture and reconstructing the truth table by hand.
+
+- **Why dumping it matters**: with the fuse map archived, the full 80188-side memory map is documented and PinMAME can be made to honour real chip-select boundaries rather than the permissive `MRA_RAM` / `MWA_RAM` placeholders the current driver uses.
 
 ### Procedure
 
