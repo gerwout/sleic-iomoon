@@ -34,7 +34,7 @@
 
 ## Board Inventory
 
-From the service manual, section 7.1 (page 91 of the manual / SLEIC reference codes):
+From the service manual, section 7.1:
 
 | Board | Designator | Function | Location |
 |-------|-----------|----------|----------|
@@ -56,45 +56,17 @@ The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 
 
 ### Main CPU Board — 80188 (16-bit) — SLEIC-PETACO 011-029
 
-Principal components per the service manual section 7.2.1.1 (page 93), corrected and augmented with direct-photograph identifications (see [`../research/board_inventory.md`](../research/board_inventory.md) for the photo evidence):
+The 80188 board carries the main 16-bit CPU (`AMD N80C188`, 10 MHz), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster and almost certainly the YM3812 as well.
 
-| Reference | Component | Part | Notes |
-|-----------|-----------|------|-------|
-| IC1 | Main CPU | Intel/AMD 80C188-10 (PLCC-68) | 16-bit, 10 MHz |
-| IC10 | EPROM (windowed) | 27C040 — sticker `IO MOON V1.3-xx` | Game code/data (`1001 JUEGO`). The "V1.3-NN" sticker convention is `V<set>-<chip number within the set>`: V1.3 is the ROM-set version, the trailing two digits are the chip's position in the set (01 = JUEGO, 02 = BANK, 03 = SONIDO 1, 04 = SONIDO 2, 05 = Z80 I/O). The "-02" sticker seen on the photographed chip does **not** indicate a sub-revision of V1.3 — it just identifies which chip within the V1.3 set this is, matching `v1_3_02.bin` in the archive. |
-| IC11 | EPROM (windowed) | 27C040 | Banked extension (`1002 BANK`) |
-| IC52 | EPROM (windowed) | 27C040 | Sound samples 1 (`1003 SONIDO 1`) |
-| IC53 | EPROM (windowed) | 27C040 | Sound samples 2 (`1004 SONIDO 2`) |
-| IC12 | SRAM | UMC `UM62256BL-70LL` (PDIP-28) | 32 K × 8 main work RAM |
-| IC14 | EEPROM | Microchip `28C64A-25` (PDIP-28) | 8 K × 8 NVRAM (game settings, high scores) |
-| IC50 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer A** |
-| IC55 | SRAM | GoldStar `GM76C29-10` (PDIP-28) | 32 K × 8 — **DMD frame buffer B** (paired with IC50) |
-| IC23 | Microcontroller | **Microchip `PIC 16C57-HS/P`** (PDIP-28, socketed, OTP — no UV window) | DMD raster coprocessor — likely also the sound coprocessor (see [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md)). **Confirmed by macro crop of `IMG_20260527_212505.jpg` as a 28-pin PIC 16C57**, not the PIC 16C54 the manual lists. 2 K × 12-bit program memory and 20 I/O pins — comfortably enough for both DMD raster and YM3812 driving. |
-| IC7 | PAL | **AMD/MMI `PAL20L10ACNS`** (PDIP-24, OTP) | **Bus / chip-select glue.** Markings clearly visible in `IMG_20260527_212833.jpg` close-up: `20L10ACNS / BRDN`. Almost certainly the "PAL20L40" the MAME upstream comment lists as undumped — `20L40` being a typo for `20L10`. Worth dumping (see [`chips_to_dump.md`](chips_to_dump.md)). |
-| IC34 | Logic | TI / NS `CD74HC151E` (PDIP-16, 8-to-1 multiplexer) | Date code `H9540` (1995 week 40). User-confirmed reading from the physical board. Earlier draft of these docs claimed IC34 was a PIC 16C57; that was a subagent misread — IC34 is ordinary HC-series glue logic, almost certainly used in switch-matrix or status-line selection on the 80188 side. |
-| IC60 | Sound generator | Yamaha `YM3812 JAPAN` (PDIP-24) | FM music synthesizer — **confirmed populated** |
-| IC61 | DAC | Yamaha YM3014 (likely, PDIP/SOIC-8) | YM3812 output DAC |
-| IC51 | Voice synthesizer | **OKI MSM6376** (PDIP-42) | ADPCM speech / FX playback — **confirmed populated**, visible as the first chip on the top-right side of the board in `IMG_20260527_212505.jpg`. The original `research/board_inventory.md` subagent pass mis-attributed the IC51 silkscreen label to an adjacent 8-pin device; the correct IC51 is the 42-pin DIP. |
-| IC63 | Digital potentiometer | XICOR X9103 (DIP-8) | Music balance (**not** NVRAM) |
-| IC64 | (8-pin DIP) | likely the other of YM3014 / X9103 | Audio output stage |
-| IC13 | (32-pin DIP socket) | **vacant** | Confirmed unpopulated by photograph |
-| IC54 | (32-pin DIP socket) | **vacant** | Sound-EPROM expansion socket, confirmed unpopulated |
-| IC56 | Logic | TI `SN74LS373AN` | Octal latch |
-| IC45, IC50 logic position | Logic | TI `SN74LS273N` | Octal flip-flops in the audio/output path |
-| OSC1 | Crystal can | (frequency not yet read; likely 20 MHz feeding 80188 ÷2) | Main system clock |
-| P60 | Trim potentiometer | — | Music balance (paired with X9103) |
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029_ics.md`](board_011-029_ics.md). Two programmable parts on this board are undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
-> **Correction on the X9103 (IC63)**: prior write-ups (including the MAME upstream driver header) describe the X9103 as NVRAM. The service manual explicitly labels it as an **EEPOT** (digital potentiometer) used together with the analog trimmer `P60` for music balance. The actual non-volatile storage chip is the **28C64A at IC14**.
+The YM3812 is driven via a shared-RAM command queue at `4000:1158+` consumed by the PIC at IC23. Background on this and the PinMAME precedents for handling undumped sound coprocessors is in [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
 
-> **Correction on Sleic-PETACO board manufacturer of the Z80**: see the 8-bit board section below — the actual silicon is **GoldStar Z0840004PSC**, not Zilog/SGS as the manual lists.
+#### Clocking
 
-> **One PIC + one PAL on the Intel board**: the service manual lists only IC23 as a microcontroller. Board photographs confirm: **only IC23 is a PIC**. An earlier draft of these docs claimed IC34 and "IC57" were additional PICs based on subagent misreads — both were wrong. The chip at silkscreen position **IC7** is an **AMD/MMI PAL 20L10** (programmable *logic* — combinatorial, no firmware in the microcontroller sense); the chip at IC34 is small-package 74LS-series glue logic. "IC57" doesn't exist on the board — the subagent was reading "IC7" with an extra digit.
+The 80188 runs at 10 MHz from OSC1. The Z80 on board `011-030` derives its periodic-IRQ frequency from a divider chain on the 16-bit board: two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22), positioned next to OSC1. The chain yields 8 MHz ÷ 8192 = **977 Hz**, which matches the rate derived from the Z80 firmware's lamp-refresh state machine in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md). The same chain almost certainly generates the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23.
 
-> **DMD frame buffer hardware identified**: the empirical PinMAME tracing in `research/pinmame_session_2/` discovered a 1 KB buffer at segment `7000h` that the 80188 fills at panel-refresh rate via the `dmd_pixel_set` / `dmd_pixel_clear` routines (F0113 / F0124). Board photography now identifies the physical RAM behind this: the paired GoldStar `GM76C29-10` SRAMs at IC50 and IC55, each 32 K × 8. The visible 1 KB at `7000:0000-7000:03FF` is only a fraction of the 64 KB total available on these two chips, suggesting the chip-select scheme maps the SRAMs across a larger range of the 80188 address space than is currently traced.
-
-The 80188's nominal responsibilities (game logic, state machine, scoring) remain correct, but the DMD raster output is mediated by IC23 — see [`dmd_graphics.md`](dmd_graphics.md).
-
-#### Board placement (from figure 7-1, page 94)
+#### Board placement (from figure 7-1)
 
 Approximate layout of board 011-029 as drawn in the manual's component-placement figure:
 
@@ -104,74 +76,24 @@ Approximate layout of board 011-029 as drawn in the manual's component-placement
    IC2  IC3  IC4  IC5  (20-pin latches)        IC8  OSC1   J2 (14-pin → display)
                                                IC22                  AR20  IC24
                                                IC21
-                          IC1 (80188-10)       IC20      JP7  IC23   (← PIC 16C54HS)
+                          IC1 (80188-10)       IC20      JP7  IC23   (← PIC 16C57)
                           68-pin PLCC          ────────────────────
                                                IC30  IC31  IC32  IC34   (glue logic row)
                                                IC33  IC55
    ─────────────────────────────────────────────────────────
    Bottom-Left                                 Bottom-Right
-   IC10 (27C040, 1001 JUEGO)                   IC54  (32-pin DIP, unidentified)
+   IC10 (27C040, 1001 JUEGO)                   IC54  (32-pin DIP socket, vacant)
    IC11 (27C040, 1002 BANK)                    IC53  (27C040, 1004 SONIDO 2)
-   IC12, IC13 (32-pin DIPs, unidentified)      IC52  (27C040, 1003 SONIDO 1)
-   IC14 (28C64A NVRAM, 28-pin)                 IC56  IC50  IC44  IC45  IC43  IC46
-   IC41  IC42 (drivers / latches, 20-pin)      IC60 (YM3812)   IC51 (OKI 6376, 42-pin)
-   AR40, J1 (20-pin → CPU 8-bit)               IC61 (YM3014, 8-pin)   IC63 (X9103, 8-pin)
-                                                                       P50 (music balance trim)
+   IC12 (UM62256, main RAM)                    IC52  (27C040, 1003 SONIDO 1)
+   IC13 (32-pin DIP socket, vacant)            IC56  IC50  IC44  IC45  IC43  IC46
+   IC14 (28C64A NVRAM, 28-pin)                 IC60 (YM3812)   IC51 (OKI 6376, 42-pin)
+   IC41  IC42 (drivers / latches, 20-pin)      IC61 (YM3014)   IC63 (X9C503P, 8-pin)
+   AR40, J1 (20-pin → CPU 8-bit)                                  P50 (music balance trim)
 ```
 
-**IC23 (PIC 16C54HS) location**: top-right region, **18-pin DIP**, drawn as socketed, immediately to the right of the IC20/IC21/IC22 stack and just left of (or below) connector J2 (the 14-pin ribbon to the plasma panel). Adjacent components: jumper JP7, IC24 (smaller DIP).
+IC13 and IC54 are unpopulated 32-pin DIP sockets — both are expansion options not used by IO Moon.
 
-#### Confirmed and candidate ICs on board 011-029 (not in the manual's principal-components table)
-
-| Reference | Part | Notes |
-|-----------|------|-------|
-| IC7 | **AMD/MMI `PAL 20L10ACNS`** (PDIP-24) | Confirmed by photo. Bus / chip-select glue. Almost certainly the "PAL20L40" the MAME upstream comment lists as undumped (`20L40` = typo for `20L10`). |
-| IC8 | **National Semiconductor `DM74LS74AN`** (PDIP-14, dual D flip-flop) — date code `9536` (1995 week 36) | Confirmed by user readout. The service manual lists IC8 as "PAL 16L8" — that designation appears to be from the Bike Race schematic and is wrong for Io Moon. Position: top of board, immediately left of OSC1. |
-| IC20 | **National Semiconductor `DM74LS393N`** (PDIP-14, dual 4-bit binary counter) — date code `9524` | Confirmed by user readout. |
-| IC21 | **National Semiconductor `DM74LS393N`** (PDIP-14, dual 4-bit binary counter) — date code `9524` | Confirmed by user readout. Same part as IC20. |
-| IC22 | **TI `SN74LS27N`** (PDIP-14, triple 3-input NOR) — date code `9140` | Confirmed by user readout. |
-| IC34 | **TI / NS `CD74HC151E`** (PDIP-16, 8-to-1 multiplexer) — date code `H9540` | Confirmed by user readout. |
-| IC24 | **TI `SN74LS07N`** (PDIP-14, hex buffer / driver, open-collector high-voltage outputs) — lot code `4CCFXRK` | Confirmed by user readout. Open-collector outputs make sense for driving the J2 plasma-display ribbon cable, which is the closest off-board destination from this chip's position adjacent to the PIC at IC23. |
-
-##### Clock divider chain at IC20 / IC21 / IC22
-
-The combination of two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22) immediately adjacent to the OSC1 crystal can is a textbook **clock-divider with terminal-count decode**:
-
-```
-OSC1 ── IC20 (4+4 bit /256)  ── IC21 (4+4 bit /65536)  ── IC22 (NOR decode)
-        cascade to                cascade to                of selected counter bits
-        chain a 8-bit divider     chain a 16-bit divider    → discrete clock outputs
-```
-
-This explains where the Z80's periodic IRQ frequency comes from on the real hardware: a divider of **8 MHz ÷ 8192 = 977 Hz** is exactly bit 13 of a cascaded `74LS393` pair tapped via a NOR-gate, which matches the rate derived in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md) from the Z80 firmware's lamp-refresh state machine. The same chain almost certainly also generates the DMD raster timing signals (`DOTCLK`, `RCLK`, `COLLAT`) the PIC at IC23 uses — IC23 sits immediately downstream of this cluster in the board layout.
-
-With **every chip in the candidate-PAL cluster on this board now read directly off the physical PCB** (IC7, IC8, IC20, IC21, IC22, IC24, IC34), the picture is unambiguous:
-
-- **Exactly two programmable parts** are present on the Io Moon 16-bit board: the **PIC 16C57-HS/P at IC23** (microcontroller) and the **PAL 20L10ACNS at IC7** (combinational logic device). Everything else is 74LS / 74HC fixed-function logic.
-- The **MAME upstream `sleic.cpp` comment's "Undumped PALs: 20L40, 16L8"** decodes to: `20L40` was a typo for the PAL `20L10` at IC7 (now identified); `16L8` has **no Io Moon chip to attribute to** — it appears to have come from the Bike Race schematic which MAME's comment notes is "the only known schematic" and which doesn't apply to this machine.
-- The clock-divider chain IC20 + IC21 + IC22 next to OSC1 is identified as the source of the Z80 periodic IRQ (8 MHz ÷ 8192 = 977 Hz) and most likely also the source of the DMD raster clocks fed to the PIC at IC23.
-
-The chip identification phase for this board is therefore complete. Dumping priorities (see [`chips_to_dump.md`](chips_to_dump.md)) reduce to the two programmable parts above plus the existing EPROMs / EEPROM for archival completeness.
-
-#### 32-pin DIP positions — resolved by photograph
-
-- **IC12** is populated with `UMC UM62256BL-70LL` 32 K × 8 SRAM. The 80188 main work RAM.
-- **IC13** is a **vacant 32-pin socket** (an expansion option, not used by IO Moon).
-- **IC54** is a **vacant 32-pin socket** in the sound-EPROM column (sound-ROM expansion option, not used).
-
-#### Resolved: OKI MSM6376 at IC51
-
-The service manual designates IC51 as the **OKI MSM6376** voice synthesizer in a 42-pin / 600-mil DIP, and this is **confirmed correct**. The 42-pin DIP at the top-right of the 16-bit board, clearly visible in `IMG_20260527_212505.jpg`, is the OKI. An earlier pass of `research/board_inventory.md` mis-attributed the IC51 silkscreen label to an adjacent 8-pin device; that note has been superseded.
-
-#### Open question: YM3812 hookup
-
-IC60 is **confirmed populated** with a real Yamaha YM3812 (top-mark `YAMAHA / YM3812 / JAPAN`, decoupling cap CD60 present). Empirical PinMAME tracing (see `research/pinmame_session_2/`) finds **zero writes to any candidate YM3812 register address from either the 80188 or the Z80** in ~30 s of running game code. The independent investigation of the 80188 → coprocessor command queue at `4000:1158+` (see [`../research/80188_to_z80_mailbox.md`](../research/80188_to_z80_mailbox.md)) confirms the Z80 can not be the consumer — its memory bus only reaches its own 32 KB ROM and 2 KB RAM. Something between the 80188 and the YM3812 reads that queue and emits the register writes.
-
-There is **only one programmable microcontroller** on the 16-bit board: **IC23 (PIC 16C57-HS/P)**. It is documented as the DMD raster coprocessor. The 16C57 has 2 K × 12-bit instruction memory (4× a 16C54's) and 20 I/O pins — comfortably enough to drive both the DMD wire protocol (6 signals on J2) and the YM3812 register-write interface (~11 signals — D0–D7 + A0 + WR + CS) in a single chip. The most economical hypothesis is therefore that **IC23 does both jobs**: DMD raster and sound command dispatch.
-
-Resolving this requires dumping IC23 (see [`chips_to_dump.md`](chips_to_dump.md)). If the firmware turns out to be DMD-only, the YM3812 driver must be hiding in either the PAL20L10 at IC7 (combinatorial logic isn't typically that capable, but a PAL with registered outputs could implement a simple latch-and-strobe) or in a chip we still haven't identified.
-
-Connectors (manual section 7.2.1.2):
+#### Connectors (manual section 7.2.1.2)
 
 | Connector | Function |
 |-----------|----------|
@@ -182,26 +104,18 @@ Connectors (manual section 7.2.1.2):
 
 ### Sound/Switch CPU Board — Z80 (8-bit) — SLEIC-PETACO 011-030
 
-Principal components (from service manual section 7.2.2.1, page 95):
-
 | Reference | Component | Part | Notes |
 |-----------|-----------|------|-------|
-| IC1 | Microprocessor | GoldStar `Z0840004PSC` (Z80A) | I/O CPU @ 8 MHz (board photo: not Zilog/SGS as the manual lists) |
-| IC5 | EPROM | 27C256 (Texas/SGS) | `1005 v1.2` (I/O) — 32 KB |
-| SW40 | DIP switch block | 8-position | See DIP table below |
-
-Additional ICs identified from board photographs / disassembly (not listed as "principal" in the manual):
-
-| Reference | Component | Part | Notes |
-|-----------|-----------|------|-------|
-| IC7 | RAM | 6116 (2 KB) | Z80 working memory @ `0xC000`–`0xC7FF` |
+| IC1 | Microprocessor | GoldStar `Z0840004PSC` (Z80A) | I/O CPU @ 8 MHz |
+| IC5 | EPROM | 27C256 | `1005 v1.2` (I/O) — 32 KB |
+| IC6 | EPROM socket (PDIP-28) | optional, population not yet confirmed | The Z80 disassembly references `0x8000–0xBFFF` as "extended routines/data" — see Memory Map below |
+| IC7 | RAM | 6116 (2 KB) | Z80 working memory at `0xC000`–`0xC7FF` |
 | IC15 | Watchdog | MAX699 | Reset supervision |
 | IC41, IC51 | Transistor arrays | ULN2803 | Lamp / solenoid driver buffers |
 | X10 | Crystal | 8 MHz | Z80 clock |
+| SW40 | DIP switch block | 8-position | See DIP table below |
 
-> The Io Moon service manual claims a `PAL 16L8` at IC8 on this board. The user's direct readout of the physical chip on a real machine establishes two corrections: (a) **IC8 is on the 16-bit board, not on the Z80 board**, and (b) it is a `DM74LS74AN` dual D flip-flop, not a PAL — see the "Candidate PALs / unidentified glue ICs on board 011-029" section above. The 16L8 reference therefore appears to be a manual / schematic cross-contamination artefact (MAME's own comment notes the only known schematic is for Bike Race, not Io Moon). **There is no confirmed PAL on the Io Moon Z80 board**; the I/O port decode is implemented in straight 74LS-series glue.
-
-Connectors (manual section 7.2.2.2):
+#### Connectors (manual section 7.2.2.2)
 
 | Connector | Function |
 |-----------|----------|
@@ -214,7 +128,7 @@ Connectors (manual section 7.2.2.2):
 | J7 | Direct switch inputs (flippers, START, coin, tilt, test) |
 | J8 | Switch matrix row return (RET) inputs |
 
-### DIP Switch SW40 (CPU 8-bit board)
+#### DIP Switch SW40
 
 From service manual section 7.2.2.3:
 
@@ -279,12 +193,10 @@ Total executable code: ~10,458 instructions (~30 KB, ~3% of ROM). The remaining 
 | Address Range | Size | Content |
 |--------------|------|---------|
 | `0x0000`–`0x7FFF` | 32 KB | ROM IC5 (27C256) — main Z80 program (`1005 v1.2`) |
-| `0x8000`–`0xBFFF` | 16 KB | ROM IC6 socket (27C128) — extended routines/data; **not dumped** |
+| `0x8000`–`0xBFFF` | 16 KB | ROM IC6 socket — extended routines/data (population not yet confirmed) |
 | `0xC000`–`0xC7FF` | 2 KB | RAM IC7 (6116) — working memory |
 
-> **IC6 status**: the annotated Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) explicitly documents an `IC6 (27C128, 16 KB) at 0x8000–0xBFFF — extended routines/data`, with the note **"(not included)"** — meaning the socket position is part of the documented design but the chip's contents were not in the dump set used for the disassembly. The IO Moon service manual's *principal*-components table on page 95 lists only IC5; this is consistent with IC6 being either unpopulated, an optional expansion, or simply not enumerated in the "principal" list. The Z80 driver code may or may not actually call into `0x8000–0xBFFF` (the disassembly references it as "extended routines/data"). Confirmation requires inspecting an actual board to see if the IC6 socket is populated, and dumping it if so.
->
-> An earlier revision of this document removed IC6 entirely based on the manual's principal-components list alone; that was wrong — the Z80 disassembly is the stronger source here, and the socket is reinstated above with the dumped/undumped status made explicit.
+The Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) references `0x8000–0xBFFF` as "extended routines/data" but flags the IC6 dump as "not included" — meaning the socket position is part of the documented design but the chip's contents were not in the dump set. Confirmation requires inspecting an actual board.
 
 ---
 
