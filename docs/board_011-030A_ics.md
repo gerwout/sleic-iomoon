@@ -1,10 +1,18 @@
-# 011-030 (8-bit / Z80 board) — IC inventory
+# 011-030A (8-bit / Z80 board) — IC inventory
 
 [← Back to main README](../README.md)
 
-This is the complete list of integrated circuits populated on the IO Moon Z80 / I/O board (silkscreen `011-030`), together with the function of each part. Identifications are based on direct readout of the chip top-marks plus public datasheets for the part numbers.
+<p align="center">
+  <a href="../images/z80-sleic-011-030A.jpg" target="_blank" rel="noopener">
+    <img src="../images/z80-sleic-011-030A_thumb.jpg" alt="011-030A Z80 board — click for full resolution" width="900">
+  </a>
+  <br>
+  <em>011-030A — 8-bit / Z80 I/O board. Click the image for the full 4096 × 3072 photograph.</em>
+</p>
 
-The 16-bit / 80188 board (`011-029`) is documented separately in [`board_011-029_ics.md`](board_011-029_ics.md).
+This is the complete list of integrated circuits populated on the IO Moon Z80 / I/O board (silkscreen `011-030A`), together with the function of each part. Identifications are based on direct readout of the chip top-marks plus public datasheets for the part numbers.
+
+The 16-bit / 80188 board (`011-029A`) is documented separately in [`board_011-029A_ics.md`](board_011-029A_ics.md).
 
 ## Summary by function
 

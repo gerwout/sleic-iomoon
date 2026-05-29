@@ -13,7 +13,7 @@ From the service manual (§7.2.2.1, p.95) and the board inventory:
 
 | Item | Value |
 |------|-------|
-| Z80 part | GoldStar `Z0840004PSC` (Z80A) — IC1 on board 011-030 |
+| Z80 part | GoldStar `Z0840004PSC` (Z80A) — IC1 on board 011-030A |
 | Crystal | X10 = **8 MHz** (HC-49 can, bottom-right of board) |
 | ROM IC5 | 27C256, 32 KB, `IO MOON V1.2-04` |
 | Watchdog | MAX699 (IC15) — **reset-only**, no clock output |
@@ -129,7 +129,7 @@ the IRQ must come from one of:
 1. **Clock divider on X10 (8 MHz) → carry feeds /INT.**  Standard practice on
    Spanish boards (cf. JP `4 MHz/4096`).  Requires one 74HC4040, 74HC4060
    or 74LS393 — easily hidden in the un-labelled DIP cluster on the left
-   edge of board 011-030.
+   edge of board 011-030A.
 2. **50 Hz mains-derived signal.**  Possible but unlikely — would give
    only 50 Hz lamp refresh / 6.25 Hz per column, which would flicker.
 3. **NE555 RC oscillator.**  No 8-pin DIP near X10 other than IC15

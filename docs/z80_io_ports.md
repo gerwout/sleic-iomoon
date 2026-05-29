@@ -60,7 +60,7 @@ The YM3812 FM synthesizer (IC60, on the 80188 board) is conspicuously absent fro
 Two remaining possibilities:
 
 1. **The YM3812 is memory-mapped inside the MMCS window (segment `A000h`)** at offsets the current reverse-engineering hasn't traced cleanly. The DMD registers live at offsets `0x0000`, `0x0080`, `0x0200`, `0x0300`; the YM3812's index/data register pair could be at e.g. `A000:0100`/`A000:0101` or similar. Confirming this requires tracing memory accesses while ES=A000h through a non-trivial portion of the 80188 game code (or running the ROM in a CPU simulator).
-2. **The YM3812 is physically populated on the IO Moon board but never actually used by the IO Moon software** — its presence on the principal-components list of `011-029` could be inherited from earlier SLEIC machines (Bike Race / Sleic Pin-Ball) that *do* use it. The OKI MSM6376 alone is responsible for both speech and music in IO Moon.
+2. **The YM3812 is physically populated on the IO Moon board but never actually used by the IO Moon software** — its presence on the principal-components list of `011-029A` could be inherited from earlier SLEIC machines (Bike Race / Sleic Pin-Ball) that *do* use it. The OKI MSM6376 alone is responsible for both speech and music in IO Moon.
 
 For PinMAME emulation purposes, the safe default is to *attach* a YM3812 to the IO Moon machine driver but not expect it to be driven; if (1) is true, the address eventually surfaces during emulation; if (2) is true, no driver code ever writes to it and the chip stays silent — which matches reality.
 

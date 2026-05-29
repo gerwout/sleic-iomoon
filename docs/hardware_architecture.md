@@ -2,6 +2,14 @@
 
 [← Back to main README](../README.md)
 
+<p align="center">
+  <a href="../images/overview_backbox_all_boards.jpg" target="_blank" rel="noopener">
+    <img src="../images/overview_backbox_all_boards_thumb.jpg" alt="IO Moon backbox — all boards in situ" width="900">
+  </a>
+  <br>
+  <em>The IO Moon backbox with all boards in situ. Click the image for the full 4096 × 3072 photograph.</em>
+</p>
+
 ## General Specifications
 
 | Property | Value |
@@ -38,9 +46,9 @@ From the service manual, section 7.1:
 
 | Board | Designator | Function | Location |
 |-------|-----------|----------|----------|
-| C.P.U. 16 bits | `011-029` | Control, Audio, Video | Head |
-| C.P.U. 8 bits | `011-030` | Lights, Solenoids, Switches | Head |
-| Drivers | `011-027` | Light & solenoid power drivers | Head |
+| C.P.U. 16 bits | `011-029A` | Control, Audio, Video | Head |
+| C.P.U. 8 bits | `011-030A` | Lights, Solenoids, Switches | Head |
+| Drivers | `011-027A` | Light & solenoid power drivers | Head |
 | Audio amplifier | `011-024` | Audio power output | Head |
 | Plasma display power | — | Display PSU | Head |
 | Visualizador Plasma | `011-022` | The DMD itself (gas plasma panel) | Head |
@@ -50,25 +58,43 @@ From the service manual, section 7.1:
 
 The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 58 V AC supply requirement (connectors TW3–TW6).
 
+### Driver board (`011-027A`) and audio amplifier (`011-024`)
+
+<p align="center">
+  <a href="../images/driver_board_sleic_011-027A.jpg" target="_blank" rel="noopener">
+    <img src="../images/driver_board_sleic_011-027A_thumb.jpg" alt="011-027A driver board — click for full resolution" width="800">
+  </a>
+  <br>
+  <em>011-027A — light and solenoid power-driver board.</em>
+</p>
+
+<p align="center">
+  <a href="../images/sound_amplifier_board_sleic_011-024.jpg" target="_blank" rel="noopener">
+    <img src="../images/sound_amplifier_board_sleic_011-024_thumb.jpg" alt="011-024 audio amplifier board — click for full resolution" width="800">
+  </a>
+  <br>
+  <em>011-024 — audio power amplifier board.</em>
+</p>
+
 ---
 
 ## CPU Boards
 
-### Main CPU Board — 80188 (16-bit) — SLEIC-PETACO 011-029
+### Main CPU Board — 80188 (16-bit) — SLEIC-PETACO 011-029A
 
 The 80188 board carries the main 16-bit CPU (`AMD N80C188`, 10 MHz), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster and almost certainly the YM3812 as well.
 
-For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029_ics.md`](board_011-029_ics.md). Two programmable parts on this board are undumped: see [`chips_to_dump.md`](chips_to_dump.md).
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). Two programmable parts on this board are undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
 The YM3812 is driven via a shared-RAM command queue at `4000:1158+` consumed by the PIC at IC23. Background on this and the PinMAME precedents for handling undumped sound coprocessors is in [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
 
 #### Clocking
 
-The 80188 runs at 10 MHz from OSC1. The Z80 on board `011-030` derives its periodic-IRQ frequency from a divider chain on the 16-bit board: two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22), positioned next to OSC1. The chain yields 8 MHz ÷ 8192 = **977 Hz**, which matches the rate derived from the Z80 firmware's lamp-refresh state machine in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md). The same chain almost certainly generates the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23.
+The 80188 runs at 10 MHz from OSC1. The Z80 on board `011-030A` derives its periodic-IRQ frequency from a divider chain on the 16-bit board: two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22), positioned next to OSC1. The chain yields 8 MHz ÷ 8192 = **977 Hz**, which matches the rate derived from the Z80 firmware's lamp-refresh state machine in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md). The same chain almost certainly generates the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23.
 
 #### Board placement (from figure 7-1)
 
-Approximate layout of board 011-029 as drawn in the manual's component-placement figure:
+Approximate layout of board 011-029A as drawn in the manual's component-placement figure:
 
 ```
    Top-Left                                    Top-Right
@@ -102,11 +128,11 @@ IC13 and IC54 are unpopulated 32-pin DIP sockets — both are expansion options 
 | J3 | Audio output to amplifier (shielded mesh+active) |
 | J4 | Power input (+5 V / GND) |
 
-### Sound/Switch CPU Board — Z80 (8-bit) — SLEIC-PETACO 011-030
+### Sound/Switch CPU Board — Z80 (8-bit) — SLEIC-PETACO 011-030A
 
 The Z80 board carries the 8-bit I/O CPU (`Goldstar Z8400A PS`, 8 MHz), its 32 KB program ROM (IC5) and 2 KB work RAM (Goldstar GM76C28-10 at IC7), the lamp / solenoid / switch-matrix latches and buffers, two ULN2803 Darlington arrays for current drive, four GL339 quad comparators for switch-return level sensing, a hardware watchdog (CD4040 counter + 74LS133 NAND + ADM699 supervisor) and a PAL16L8 at IC8 that does the Z80 memory and I/O decode.
 
-For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-030_ics.md`](board_011-030_ics.md). The PAL at IC8 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-030A_ics.md`](board_011-030A_ics.md). The PAL at IC8 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
 The Z80 board itself does not generate its own periodic IRQ — the 977 Hz rate the firmware expects comes from the divider chain on the 16-bit board described above and reaches the Z80 through the J3 ribbon.
 

@@ -6,15 +6,15 @@ Three programmable chips across the two CPU boards contain undumped firmware. Al
 
 | Rank | Ref  | Part                       | Package        | Board            |
 |------|------|----------------------------|----------------|------------------|
-| 1    | IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029 (16-bit) |
-| 2    | IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029 (16-bit) |
-| 3    | IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030 (Z80)    |
+| 1    | IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029A (16-bit) |
+| 2    | IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029A (16-bit) |
+| 3    | IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030A (Z80)    |
 
-Everything else on the IO Moon boards is either already archived (the 27C040 program / display / sound EPROMs and the 27C256 Z80 ROM) or runtime-mutable (the 28C64A NVRAM at IC14 on the 16-bit board). For the full board IC lists and the function of every other chip, see [`board_011-029_ics.md`](board_011-029_ics.md) and [`board_011-030_ics.md`](board_011-030_ics.md).
+Everything else on the IO Moon boards is either already archived (the 27C040 program / display / sound EPROMs and the 27C256 Z80 ROM) or runtime-mutable (the 28C64A NVRAM at IC14 on the 16-bit board). For the full board IC lists and the function of every other chip, see [`board_011-029A_ics.md`](board_011-029A_ics.md) and [`board_011-030A_ics.md`](board_011-030A_ics.md).
 
 ---
 
-## IC23 — PIC 16C57-HS/P  (16-bit board, 011-029)
+## IC23 — PIC 16C57-HS/P  (16-bit board, 011-029A)
 
 - **Role**: DMD raster coprocessor and (almost certainly) the YM3812 sound driver. The only microcontroller on the board apart from the 80188; the 80188 pushes 80+ commands into a shared-RAM queue at offset `4000:1158+` that nothing else has the bus access to consume.
 - **Memory**: 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins.
@@ -37,7 +37,7 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
 
 ---
 
-## IC7 — PAL 20L10ACNS  (16-bit board, 011-029)
+## IC7 — PAL 20L10ACNS  (16-bit board, 011-029A)
 
 - **Role**: combinational chip-select / bus glue on the 80188 main bus.
 
@@ -70,7 +70,7 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
 
 ---
 
-## IC8 — PAL 16L8A-2CN  (Z80 board, 011-030)
+## IC8 — PAL 16L8A-2CN  (Z80 board, 011-030A)
 
 - **Role**: combinational chip-select / bus glue on the Z80 main bus.
 

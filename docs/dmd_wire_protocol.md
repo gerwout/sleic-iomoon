@@ -2,7 +2,7 @@
 
 [← Back to main README](../README.md)
 
-This document describes the **serial signal protocol** that the PIC 16C54HS at IC23 produces on the 14-pin display ribbon (connector J2 on board 011-029) and that drives the gas plasma panel (board 011-022). It is independent of how the 80188 writes frames into the DMD register window at segment `A000h` — that is the *upstream* interface, this document describes the *downstream* one.
+This document describes the **serial signal protocol** that the PIC 16C54HS at IC23 produces on the 14-pin display ribbon (connector J2 on board 011-029A) and that drives the gas plasma panel (board 011-022). It is independent of how the 80188 writes frames into the DMD register window at segment `A000h` — that is the *upstream* interface, this document describes the *downstream* one.
 
 The protocol was identified by:
 

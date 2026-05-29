@@ -26,31 +26,39 @@ This repository documents the results of an extensive reverse engineering effort
 
 ## Hardware Overview
 
+<p align="center">
+  <a href="images/overview_backbox_all_boards.jpg" target="_blank" rel="noopener">
+    <img src="images/overview_backbox_all_boards_thumb.jpg" alt="IO Moon backbox — all boards in situ" width="800">
+  </a>
+  <br>
+  <em>The IO Moon backbox with all five boards in situ. Click for the full 4096 × 3072 photograph.</em>
+</p>
+
 The IO Moon uses a **three-CPU architecture**:
 
 | Component             | Specification                                                                          |
 |-----------------------|----------------------------------------------------------------------------------------|
-| Main CPU              | AMD N80C188-10 (16-bit) — IC1 on board 011-029                                         |
-| Main work RAM         | UMC UM62256D-70LL 32 K × 8 SRAM — IC12 on board 011-029                                |
-| 80188 chip-select PAL | AMD/MMI PAL20L10ACNS — IC7 on board 011-029 (**undumped**)                             |
-| 80188 reset / watchdog | Maxim MAX699 supervisor — IC6 on board 011-029                                        |
-| Game ROM              | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total) on board 011-029                      |
-| Display CPU           | Microchip PIC 16C57-HS/P — IC23 on board 011-029 (**undumped**)                        |
+| Main CPU              | AMD N80C188-10 (16-bit) — IC1 on board 011-029A                                         |
+| Main work RAM         | UMC UM62256D-70LL 32 K × 8 SRAM — IC12 on board 011-029A                                |
+| 80188 chip-select PAL | AMD/MMI PAL20L10ACNS — IC7 on board 011-029A (**undumped**)                             |
+| 80188 reset / watchdog | Maxim MAX699 supervisor — IC6 on board 011-029A                                        |
+| Game ROM              | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total) on board 011-029A                      |
+| Display CPU           | Microchip PIC 16C57-HS/P — IC23 on board 011-029A (**undumped**)                        |
 | Display               | 128 × 32 **gas plasma** dot panel, 4 brightness levels                                 |
-| FM sound              | Yamaha YM3812 (IC60) + Yamaha YM3014B DAC (IC61) on board 011-029                      |
-| Voice synth           | OKI MSM6376 ADPCM — IC51 on board 011-029                                              |
-| Sound ROM             | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total) on board 011-029                      |
-| NVRAM                 | Microchip 28C64A EEPROM — IC14 on board 011-029 (8 KB)                                 |
-| Music balance         | Xicor X9C503P digital potentiometer — IC63 on board 011-029                            |
-| I/O CPU               | Goldstar Z8400A PS Z80A @ 8 MHz — IC1 on board 011-030                                 |
-| Z80 work RAM          | Goldstar GM76C28-10 2 K × 8 SRAM — IC7 on board 011-030                                |
-| Z80 I/O decode PAL    | AMD PAL16L8A-2CN — IC8 on board 011-030 (**undumped**)                                 |
-| Z80 reset / watchdog  | Analog Devices ADM699AN supervisor — IC15 on board 011-030                             |
-| Z80 ROM               | 27C256 — IC5 (`1005`, 32 KB) on board 011-030                                          |
-| Driver arrays         | 2× ULN2803 — IC41 / IC51 on board 011-030 (lamp / solenoid current drive)              |
+| FM sound              | Yamaha YM3812 (IC60) + Yamaha YM3014B DAC (IC61) on board 011-029A                      |
+| Voice synth           | OKI MSM6376 ADPCM — IC51 on board 011-029A                                              |
+| Sound ROM             | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total) on board 011-029A                      |
+| NVRAM                 | Microchip 28C64A EEPROM — IC14 on board 011-029A (8 KB)                                 |
+| Music balance         | Xicor X9C503P digital potentiometer — IC63 on board 011-029A                            |
+| I/O CPU               | Goldstar Z8400A PS Z80A @ 8 MHz — IC1 on board 011-030A                                 |
+| Z80 work RAM          | Goldstar GM76C28-10 2 K × 8 SRAM — IC7 on board 011-030A                                |
+| Z80 I/O decode PAL    | AMD PAL16L8A-2CN — IC8 on board 011-030A (**undumped**)                                 |
+| Z80 reset / watchdog  | Analog Devices ADM699AN supervisor — IC15 on board 011-030A                             |
+| Z80 ROM               | 27C256 — IC5 (`1005`, 32 KB) on board 011-030A                                          |
+| Driver arrays         | 2× ULN2803 — IC41 / IC51 on board 011-030A (lamp / solenoid current drive)              |
 | Power                 | 220 V AC (European market)                                                             |
 
-For the complete chip-by-chip inventory of each board, see [`docs/board_011-029_ics.md`](docs/board_011-029_ics.md) (16-bit board) and [`docs/board_011-030_ics.md`](docs/board_011-030_ics.md) (Z80 board).
+For the complete chip-by-chip inventory of each board, see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md) (16-bit board) and [`docs/board_011-030A_ics.md`](docs/board_011-030A_ics.md) (Z80 board).
 
 The **80188** runs game logic, the state machine, scoring, and the inter-CPU mailbox. The **Z80** scans the switch matrix, drives the lamp matrix and solenoids, and feeds the OKI MSM6376. The **PIC 16C57-HS/P** at IC23 drives the DMD raster signal — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs. The same PIC almost certainly also drives the YM3812 FM synthesizer (see [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md)).
 
@@ -59,8 +67,8 @@ The 80188 and Z80 communicate through shared RAM at segment `4000h` using a HOLD
 For a detailed breakdown of the hardware architecture, see:
 
 - [Hardware Architecture](docs/hardware_architecture.md) — CPU boards, memory map, bus arbitration
-- [16-bit Board IC Inventory](docs/board_011-029_ics.md) — Every populated chip on the 80188 board with part number and function
-- [Z80 Board IC Inventory](docs/board_011-030_ics.md) — Every populated chip on the Z80 board with part number and function
+- [16-bit Board IC Inventory](docs/board_011-029A_ics.md) — Every populated chip on the 80188 board with part number and function
+- [Z80 Board IC Inventory](docs/board_011-030A_ics.md) — Every populated chip on the Z80 board with part number and function
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
 - [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
@@ -86,7 +94,12 @@ sleic-io-moon/
 │   ├── extract_oki_msm6376.md         # OKI extractor documentation
 │   ├── press_start_patch.md           # PRESS START patch documentation
 │   ├── hardware_architecture.md       # Hardware architecture overview
+│   ├── board_011-029A_ics.md          # 16-bit / 80188 board IC inventory
+│   ├── board_011-030A_ics.md          # 8-bit / Z80 board IC inventory
+│   ├── chips_to_dump.md               # Undumped programmable parts + procedures
 │   ├── dmd_graphics.md                # DMD graphics format & encoding
+│   ├── dmd_wire_protocol.md           # PIC → plasma panel wire protocol
+│   ├── ym3812_pinmame_precedents.md   # YM3812 hookup precedents in PinMAME
 │   ├── switch_lamp_solenoid.md        # Switch, lamp, and solenoid tables
 │   ├── z80_io_ports.md                # Z80 I/O port map & scan routine
 │   ├── 80188_config.md                # 80188 peripheral configuration
@@ -113,13 +126,18 @@ sleic-io-moon/
 │       └── Start-Tournament-Patch/    # Tournament patch for this ROM set
 │           ├── README.md
 │           └── V1 3_01.bin            # Patched Display ROM 1
-├── images/                            # Screenshots from the DMD viewer
+├── images/                            # Screenshots and board photographs
 │   ├── dmd_single_frame.png
 │   ├── dmd_static_screen.png
 │   ├── dmd_grid_animated.png
 │   ├── dmd_fonts.png
 │   ├── dmd_dot_comparison.png
-│   └── dmd_invert_comparison.png
+│   ├── dmd_invert_comparison.png
+│   ├── overview_backbox_all_boards.jpg        # Full-resolution backbox photo
+│   ├── 80188_board_011_029A.jpg               # 16-bit board photo
+│   ├── z80-sleic-011-030A.jpg                 # Z80 board photo
+│   ├── driver_board_sleic_011-027A.jpg        # Drivers board photo
+│   └── sound_amplifier_board_sleic_011-024.jpg # Audio amplifier board photo
 └── manuals/
     ├── README.md
     └── sleic_io_moon_manual_es.pdf    # Original Spanish service manual

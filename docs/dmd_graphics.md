@@ -9,7 +9,7 @@
 | Panel | 128 × 32 gas plasma dot matrix (board `011-022`) |
 | Color depth | 2-bit (4 brightness levels, time-multiplexed) |
 | Bitplanes | 2 (combined for 4 shades) |
-| Display coprocessor | **Microchip PIC 16C54HS** at IC23 on the CPU 16-bit board (`011-029`) |
+| Display coprocessor | **Microchip PIC 16C54HS** at IC23 on the CPU 16-bit board (`011-029A`) |
 | Controller register window | Memory-mapped from the 80188 at segment `A000h` |
 | Panel power supply | 95 V AC / 58 V AC (connectors TW3–TW6, board `011-023`) |
 

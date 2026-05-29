@@ -1,7 +1,24 @@
 # IO Moon — Physical Board Inventory from Photographs
 
-Source: 11 photographs in `/home/gerwout/iomoon/Io moon board/` taken 2026-05-27.
-Cross-reference: `docs/hardware_architecture.md`.
+> **Status note.** This file records the *original* photo-by-photo research pass.
+> The findings here have been consolidated into the per-board IC inventories
+> ([`../docs/board_011-029A_ics.md`](../docs/board_011-029A_ics.md) and
+> [`../docs/board_011-030A_ics.md`](../docs/board_011-030A_ics.md)), which are now
+> the canonical reference. The eleven `IMG_20260527_XXXXXX.jpg` files originally
+> photographed during this pass have since been superseded by five
+> high-resolution composite board photographs in [`../images/`](../images/):
+>
+> | New image                                       | Original photos it consolidates                                                              |
+> |-------------------------------------------------|----------------------------------------------------------------------------------------------|
+> | `overview_backbox_all_boards.jpg`               | `IMG_20260527_212447.jpg` (full backbox overview)                                            |
+> | `80188_board_011_029A.jpg`                      | `IMG_20260527_212505.jpg`, `_212802.jpg`, `_212824.jpg`, `_212828.jpg`, `_212830.jpg`, `_212833.jpg` |
+> | `z80-sleic-011-030A.jpg`                        | `IMG_20260527_212606.jpg`, `_212607.jpg`                                                     |
+> | `driver_board_sleic_011-027A.jpg`               | `IMG_20260527_212637.jpg`                                                                    |
+> | `sound_amplifier_board_sleic_011-024.jpg`       | *(audio amplifier board, not photographed in the original pass)*                              |
+>
+> Within this document the original `IMG_XXX.jpg` filenames have been replaced
+> by the new consolidated filenames. The `+5 V / lamp / solenoid power supply`
+> photo (`IMG_20260527_212457.jpg`) below has no high-resolution replacement yet.
 
 This document records what is *visible on the actual boards*. Where a marking
 was difficult to read, the entry is flagged with "likely" / "uncertain" so the
@@ -11,15 +28,15 @@ re-photographing the chip at a tighter angle.
 The photographs were taken with the boards still wired into the backbox, so
 some chips are partially obscured by ribbon cables and the right-side
 silkscreen border of the 16-bit board reads "SLEIC-PETACO 011-" with the
-trailing digits clipped. The 8-bit board's silkscreen "SLEIC-PETACO 011-030"
-is fully visible at the right edge of images `IMG_20260527_212606.jpg` and
-`IMG_20260527_212607.jpg`.
+trailing digits clipped. The 8-bit board's silkscreen "SLEIC-PETACO 011-030A"
+is fully visible at the right edge of the consolidated `z80-sleic-011-030A.jpg`
+photograph.
 
 ---
 
 ## Per-image inventory
 
-### 1. `IMG_20260527_212447.jpg` — full backbox overview
+### 1. `overview_backbox_all_boards.jpg` — full backbox overview
 
 Shows the entire head with all five major PCBs visible. Useful for layout
 orientation; chip-level reading impossible at this zoom.
@@ -28,9 +45,9 @@ orientation; chip-level reading impossible at this zoom.
 |-----------------|-------|
 | Top-left | Audio amplifier (011-024) — small green PCB, large electrolytics, finned heatsinks |
 | Top-right | Plasma display power supply (011-023) — row of TW3/TW6 spade connectors at the top edge |
-| Centre-left | CPU 16-bit board (011-029) — PLCC68 visible mid-board |
-| Centre-right | CPU 8-bit board (011-030) — Z80 board, ribbon cables exiting left and bottom |
-| Bottom-centre and bottom-right | Drivers board (011-027) — bank of TO-220 power transistors |
+| Centre-left | CPU 16-bit board (011-029A) — PLCC68 visible mid-board |
+| Centre-right | CPU 8-bit board (011-030A) — Z80 board, ribbon cables exiting left and bottom |
+| Bottom-centre and bottom-right | Drivers board (011-027A) — bank of TO-220 power transistors |
 | Inter-board cabling | 20-pin ribbon between J1 (16-bit) and J3 (8-bit) visible crossing the gap |
 
 No chip-level entries possible from this image.
@@ -50,9 +67,9 @@ designator not visible on this photo). Components visible:
 
 No DIP-packaged logic ICs are present on this PCB beyond the daughter card.
 
-### 3. `IMG_20260527_212505.jpg` — CPU 16-bit board (011-029), full board overview
+### 3. `80188_board_011_029A.jpg` — CPU 16-bit board (011-029A), full board overview
 
-Wide shot of the entire 011-029 board. Useful for confirming the layout
+Wide shot of the entire 011-029A board. Useful for confirming the layout
 described in figure 7-1 (page 94) of the service manual. Silkscreen
 "SLEIC-PETACO 011-..." visible right edge, partially clipped.
 
@@ -79,9 +96,9 @@ Bottom edge: IC12 (24-pin SRAM)  IC13 (32-pin EMPTY socket)  IC14 (28C64A EEPROM
 
 Chip-level identification deferred to the close-up images that follow.
 
-### 4. `IMG_20260527_212606.jpg` — CPU 8-bit board (011-030), full board overview
+### 4. `z80-sleic-011-030A.jpg` — CPU 8-bit board (011-030A), full board overview
 
-Wide shot of the Z80 board. Silkscreen `SLEIC-PETACO 011-030` clearly visible
+Wide shot of the Z80 board. Silkscreen `SLEIC-PETACO 011-030A` clearly visible
 along the right edge. White paper tape covers IC6 socket area.
 
 | Region | Visible components |
@@ -95,7 +112,7 @@ along the right edge. White paper tape covers IC6 socket area.
 | Bottom-left | Multiple ribbon connector headers (J2, J4, J6, J7, J8) |
 | Bottom-right | X10 8 MHz crystal can |
 
-### 5. `IMG_20260527_212607.jpg` — CPU 8-bit board (011-030), variant angle
+### 5. `z80-sleic-011-030A.jpg` — CPU 8-bit board (011-030A), variant angle
 
 Same board as image 4, very similar angle, very slightly closer crop. Same
 identifications apply. The two views combined give clearer reads on:
@@ -125,7 +142,7 @@ Approximate full chip list visible (close-ups would let me read each one):
 | X10 | HC-49 can | 8 MHz crystal | Z80 clock |
 | (~30 unlabelled 14/16/20-pin DIPs) | 74LSxx | 74LS244 / 74LS373 / 74LS138 family | Glue logic |
 
-### 6. `IMG_20260527_212637.jpg` — Drivers board (011-027)
+### 6. `driver_board_sleic_011-027A.jpg` — Drivers board (011-027A)
 
 Visible features:
 
@@ -144,9 +161,9 @@ Visible features:
 The drivers board is purely an analog/power switching stage; no firmware is
 involved.
 
-### 7. `IMG_20260527_212802.jpg` — CPU 16-bit board, slightly oblique overview
+### 7. `80188_board_011_029A.jpg` — CPU 16-bit board, slightly oblique overview
 
-Another full-board view of 011-029. Same chips as image 3 but a different
+Another full-board view of 011-029A. Same chips as image 3 but a different
 camera angle that lets me see:
 
 - The 32-pin DIP socket IC13 is **clearly empty** — through-hole pins
@@ -157,7 +174,7 @@ camera angle that lets me see:
 - The 80188 PLCC68 (IC1) and a 100-pin square chip below-left of it are
   visible.
 
-### 8. `IMG_20260527_212824.jpg` — close-up: bottom-right of 16-bit board (sound / output)
+### 8. `80188_board_011_029A.jpg` — close-up: bottom-right of 16-bit board (sound / output)
 
 Excellent close-up of the YM3812 / OKI / glue region. Reading silkscreen
 labels paired with chip top-marks:
@@ -196,7 +213,7 @@ A focused close-up of every chip in the IC51 / IC57 / IC7 cluster would
 resolve this. As-photographed, the OKI MSM6376 designation given in
 `hardware_architecture.md` cannot be confirmed.
 
-### 9. `IMG_20260527_212828.jpg` — close-up: upper-centre/left of 16-bit board (CPU, EPROMs, PIC, DMD RAM)
+### 9. `80188_board_011_029A.jpg` — close-up: upper-centre/left of 16-bit board (CPU, EPROMs, PIC, DMD RAM)
 
 Very clear close-up of the most important region.
 
@@ -214,7 +231,7 @@ Very clear close-up of the most important region.
 | IC2, IC3, IC4, IC5 | 20-pin DIPs at top-left | 74LSxx latches | PDIP-20 | |
 | IC35 (visible at bottom-left of this image) | 28-pin DIP | likely a third SRAM or sound EPROM | PDIP-28 | |
 
-### 10. `IMG_20260527_212830.jpg` — close-up: bottom-left of 16-bit board (CPU + EPROMs + clock)
+### 10. `80188_board_011_029A.jpg` — close-up: bottom-left of 16-bit board (CPU + EPROMs + clock)
 
 Provides clearer reads on IC1, IC10, IC11, and IC14 region:
 
@@ -227,7 +244,7 @@ Provides clearer reads on IC1, IC10, IC11, and IC14 region:
 | IC55 / IC50 | (top-right of view) `GoldStar GM76C29-10` × 2 | GoldStar GM76C29 32K×8 SRAM × 2 | PDIP-28 | DMD framebuffer (pair) |
 | IC60 | (top-right of view, partial) `YAMAHA YM3812` | YM3812 | PDIP-24 | |
 
-### 11. `IMG_20260527_212833.jpg` — close-up: bottom of 16-bit board (IC12/13/14, IC60, J1 ribbon)
+### 11. `80188_board_011_029A.jpg` — close-up: bottom of 16-bit board (IC12/13/14, IC60, J1 ribbon)
 
 Best image for confirming the IC12 / IC13 / IC14 column and the IC57 chip.
 
@@ -246,7 +263,7 @@ Best image for confirming the IC12 / IC13 / IC14 column and the IC57 chip.
 | IC47 | 16-pin DIP, decoder pattern | 74HCT138 | PDIP-16 | |
 | IC41, IC42, IC43, IC44 | 14/16-pin 74LS family | 74LSxx | PDIP-14 / 16 | |
 | AR42 (visible at right) | 20-pin SIP / DIP resistor pack near J1 | resistor network | SIP-20 | Pull-ups for J1 bus |
-| J1 | 20-pin ribbon header (right edge of view) | Inter-CPU bus to 011-030 J3 | 20-pin shrouded male | Silkscreen `J1` label visible nearby |
+| J1 | 20-pin ribbon header (right edge of view) | Inter-CPU bus to 011-030A J3 | 20-pin shrouded male | Silkscreen `J1` label visible nearby |
 
 ---
 
@@ -257,7 +274,7 @@ Entries marked **(uncertain)** have a low-confidence reading and should be
 re-verified with a tighter close-up before relying on the part number for
 dumping / firmware work.
 
-### CPU 16-bit board (011-029)
+### CPU 16-bit board (011-029A)
 
 | Ref | Part number | Manufacturer | Package | Function | Populated? | Confidence |
 |-----|-------------|--------------|---------|----------|------------|------------|
@@ -299,7 +316,7 @@ dumping / firmware work.
 | J4 | power input | — | molex | +5 V / GND | Yes | High |
 | JP7 | jumper | — | 2-pin / 3-pin | Configuration | Yes | High |
 
-### CPU 8-bit board (011-030)
+### CPU 8-bit board (011-030A)
 
 | Ref | Part number | Manufacturer | Package | Function | Populated? | Confidence |
 |-----|-------------|--------------|---------|----------|------------|------------|
@@ -318,7 +335,7 @@ dumping / firmware work.
 | J2, J4, J6, J7, J8 | ribbon connectors | — | various | Lamp/solenoid/switch matrix | Yes | High |
 | J3 | 20-pin ribbon to CPU 16-bit J1 | — | shrouded male | Inter-CPU bus | Yes | High |
 
-### Drivers board (011-027)
+### Drivers board (011-027A)
 
 | Component | Description | Notes |
 |-----------|-------------|-------|
@@ -342,18 +359,18 @@ supports PIC16C5x, PAL16L8, 27Cxxx EPROMs and 28Cxx EEPROMs out of the box).
 
 | Ref | Board | Part (best read) | Package | Socketed? | Dumping difficulty | Programmer notes |
 |-----|-------|------------------|---------|-----------|--------------------|------------------|
-| IC10 | 011-029 (16-bit) | 27C040 — `IO MOON V1.3-02` | PDIP-32 windowed | Yes (socketed in 32-pin DIP socket) | Easy | TL866II+ → 27C040; pull from socket, read directly. Already dumped per project state (verify against `IO_MOON V1.3-02` rev — note this differs from V1.2-04 elsewhere). |
-| IC11 | 011-029 | 27C040 — game data | PDIP-32 windowed | Yes | Easy | TL866II+ → 27C040 |
-| IC52 | 011-029 | 27C040 — sound 1 | PDIP-32 windowed | Yes | Easy | TL866II+ → 27C040 |
-| IC53 | 011-029 | 27C040 — sound 2 | PDIP-32 windowed | Yes | Easy | TL866II+ → 27C040 |
-| IC14 | 011-029 | 28C64A-25 | PDIP-28 | Yes (28-pin socket) | Easy | TL866II+ → AT28C64A. Live NVRAM — read, then put it back; or read in-situ via a clip if you want to preserve settings. |
-| IC23 | 011-029 | PIC16C54-HS/P (likely; could be PIC16C57-HS/P — depends on actual pin count) | PDIP-18 | **Yes — clearly socketed** | Medium | TL866II+ → PIC16C54 / 16C57 mode. **CP fuse may be set**; check before assuming a clean read. If CP is set, the device is OTP and will return scrambled data — no recovery without etch / decap, which is destructive. |
-| IC34 (uncertain) | 011-029 | possibly PIC16C57-HC/P (or custom Sleic-marked part) | PDIP-28 | Likely socketed (needs close-up to confirm) | Medium — but **first verify it is actually a PIC**, not a custom mask part | TL866II+ → PIC16C57 mode if it's a 16C57. If marked as a non-Microchip part, do not attempt — could be a one-time mask ROM. |
-| IC57 (uncertain) | 011-029 | possibly PIC16C54-04/XL | PDIP-18 | Likely socketed | Medium | TL866II+ → PIC16C54. Same CP-fuse caveat. |
-| IC8 | 011-030 (8-bit) | PAL16L8 (assumed) | PDIP-20 | Likely socketed | Medium-Hard | PAL16L8 must be dumped by *replay* via a PAL reader (TL866II+ does support 16L8 read). If the SEC fuse is blown, the part is unreadable and must be reverse-engineered by logic-probing the inputs/outputs through a full input truth table. |
-| IC5 | 011-030 | 27C256 — `IO MOON V1.2-04` | PDIP-28 windowed | Yes | Easy | TL866II+ → 27C256. Already dumped. |
-| IC6 | 011-030 | possibly 27C128 — `IO MOON V1.x` | PDIP-28 socket | Unclear (tape covers socket) | Easy IF populated | TL866II+ → 27C128 (or whatever the actual part). Confirm population first. |
-| IC20, IC21, IC22, IC24 | 011-029 | candidate PAL16L8s (markings unverified) | PDIP-20 / 16 | Likely socketed | Medium — first verify these are PALs (not 74LSxx) | TL866II+ if they turn out to be PALs |
+| IC10 | 011-029A (16-bit) | 27C040 — `IO MOON V1.3-02` | PDIP-32 windowed | Yes (socketed in 32-pin DIP socket) | Easy | TL866II+ → 27C040; pull from socket, read directly. Already dumped per project state (verify against `IO_MOON V1.3-02` rev — note this differs from V1.2-04 elsewhere). |
+| IC11 | 011-029A | 27C040 — game data | PDIP-32 windowed | Yes | Easy | TL866II+ → 27C040 |
+| IC52 | 011-029A | 27C040 — sound 1 | PDIP-32 windowed | Yes | Easy | TL866II+ → 27C040 |
+| IC53 | 011-029A | 27C040 — sound 2 | PDIP-32 windowed | Yes | Easy | TL866II+ → 27C040 |
+| IC14 | 011-029A | 28C64A-25 | PDIP-28 | Yes (28-pin socket) | Easy | TL866II+ → AT28C64A. Live NVRAM — read, then put it back; or read in-situ via a clip if you want to preserve settings. |
+| IC23 | 011-029A | PIC16C54-HS/P (likely; could be PIC16C57-HS/P — depends on actual pin count) | PDIP-18 | **Yes — clearly socketed** | Medium | TL866II+ → PIC16C54 / 16C57 mode. **CP fuse may be set**; check before assuming a clean read. If CP is set, the device is OTP and will return scrambled data — no recovery without etch / decap, which is destructive. |
+| IC34 (uncertain) | 011-029A | possibly PIC16C57-HC/P (or custom Sleic-marked part) | PDIP-28 | Likely socketed (needs close-up to confirm) | Medium — but **first verify it is actually a PIC**, not a custom mask part | TL866II+ → PIC16C57 mode if it's a 16C57. If marked as a non-Microchip part, do not attempt — could be a one-time mask ROM. |
+| IC57 (uncertain) | 011-029A | possibly PIC16C54-04/XL | PDIP-18 | Likely socketed | Medium | TL866II+ → PIC16C54. Same CP-fuse caveat. |
+| IC8 | 011-030A (8-bit) | PAL16L8 (assumed) | PDIP-20 | Likely socketed | Medium-Hard | PAL16L8 must be dumped by *replay* via a PAL reader (TL866II+ does support 16L8 read). If the SEC fuse is blown, the part is unreadable and must be reverse-engineered by logic-probing the inputs/outputs through a full input truth table. |
+| IC5 | 011-030A | 27C256 — `IO MOON V1.2-04` | PDIP-28 windowed | Yes | Easy | TL866II+ → 27C256. Already dumped. |
+| IC6 | 011-030A | possibly 27C128 — `IO MOON V1.x` | PDIP-28 socket | Unclear (tape covers socket) | Easy IF populated | TL866II+ → 27C128 (or whatever the actual part). Confirm population first. |
+| IC20, IC21, IC22, IC24 | 011-029A | candidate PAL16L8s (markings unverified) | PDIP-20 / 16 | Likely socketed | Medium — first verify these are PALs (not 74LSxx) | TL866II+ if they turn out to be PALs |
 
 Dumping priority (most-valuable first):
 
@@ -382,7 +399,7 @@ to the principal-components table on pages 93 and 95 of the service manual.
 1. **IC51 / OKI MSM6376 (16-bit board) — population status not confirmed**.
    The manual designates IC51 as `OKI 6376` (42-pin DIP, 600 mil). The chip
    present at the silkscreen position closest to "IC51" in image
-   `IMG_20260527_212824.jpg` is an **8-pin device**, not a 42-pin DIP. No
+   `80188_board_011_029A.jpg` is an **8-pin device**, not a 42-pin DIP. No
    42-pin DIP is visible anywhere on the 16-bit board in any photograph. This
    means **one of three things**: (a) the manual mislabels the IC51 position,
    and the OKI MSM6376 lives at a different silkscreen reference (most
@@ -394,7 +411,7 @@ to the principal-components table on pages 93 and 95 of the service manual.
    6376 ADPCM speech / FX playback" is unverified.
 
 2. **IC57 — undocumented chip, likely another PIC**. The chip at silkscreen
-   `IC57` (in `IMG_20260527_212833.jpg`) carries Microchip-style markings
+   `IC57` (in `80188_board_011_029A.jpg`) carries Microchip-style markings
    `PIC16C(?)/04XL / 9277BNCN`. This chip is *not* listed in the principal
    components table. It is in an 18-pin DIP package — same pin-count as
    IC23 — and therefore plausibly a **second PIC16C54** or similar. If
@@ -403,17 +420,17 @@ to the principal-components table on pages 93 and 95 of the service manual.
    the top-mark on this chip from above with macro lighting.
 
 3. **IC34 — undocumented chip, possibly a third PIC (PIC16C57)**. The chip
-   at silkscreen `IC34` (in `IMG_20260527_212828.jpg`) carries markings that
+   at silkscreen `IC34` (in `80188_board_011_029A.jpg`) carries markings that
    could read either `PIC16C57-HC/P` or `PT8SC5T-HC/P` (the latter being a
    custom Sleic-marked part). The date code `9215 GCT/P` style is Microchip.
    28-pin DIP package. **Action:** as above, macro photo to confirm.
 
 4. **IC13 (32-pin socket) is genuinely unpopulated** — confirmed by image
-   `IMG_20260527_212833.jpg`. The manual leaves this slot ambiguous; we can
+   `80188_board_011_029A.jpg`. The manual leaves this slot ambiguous; we can
    now state with confidence that it is a vacant expansion socket.
 
 5. **IC54 (32-pin socket in the sound-EPROM column) is unpopulated** —
-   confirmed by image `IMG_20260527_212802.jpg`. The "third sound EPROM"
+   confirmed by image `80188_board_011_029A.jpg`. The "third sound EPROM"
    socket is empty.
 
 6. **IC12 is populated and is an SRAM, not an EPROM**. Marking
@@ -434,18 +451,18 @@ to the principal-components table on pages 93 and 95 of the service manual.
    manual.
 
 10. **ROM revision discrepancy: IC10 sticker reads `V1.3-02`** in
-    `IMG_20260527_212830.jpg`, while elsewhere on the board (and on the Z80
+    `80188_board_011_029A.jpg`, while elsewhere on the board (and on the Z80
     board IC5) the sticker reads `V1.2-04`. This may be a hand-mixed set,
     or a service-replacement ROM. The project's currently-archived dump
     set should be checked against this — if only V1.2-04 is in the
     archive, V1.3-02 is a new revision worth dumping.
 
-11. **Drivers board (011-027) has exactly one logic IC**, an unmarked
+11. **Drivers board (011-027A) has exactly one logic IC**, an unmarked
     PDIP-14 with Malaysia date code `9140K / 3910103-008`. The board is
     otherwise entirely passive + power transistors. No correction needed
     for the architecture document; just adding inventory completeness.
 
-12. **Z80 board (011-030) IC6 socket population is indeterminate from the
+12. **Z80 board (011-030A) IC6 socket population is indeterminate from the
     photos** — covered by paper tape in both available images. The
     architecture document already flags IC6 as "either unpopulated,
     optional expansion, or not enumerated". This remains unresolved.
@@ -462,7 +479,7 @@ to the principal-components table on pages 93 and 95 of the service manual.
 The principal motivation of the empirical PinMAME tracing — "is the YM3812
 populated at all?" — is now answered visually.
 
-**Image `IMG_20260527_212824.jpg` and `IMG_20260527_212833.jpg` both clearly
+**Image `80188_board_011_029A.jpg` and `80188_board_011_029A.jpg` both clearly
 show a 24-pin DIP at silkscreen IC60 with the visible top-marking `YAMAHA /
 YM3812 / JAPAN`.** The chip is fully seated in its socket (or directly
 soldered — hard to tell from this angle); decoupling capacitor CD60 is
@@ -499,7 +516,7 @@ heavy lifting.
 
 ## Finding on the PIC at IC23
 
-`IMG_20260527_212828.jpg` shows IC23 (top-right region of the 16-bit board,
+`80188_board_011_029A.jpg` shows IC23 (top-right region of the 16-bit board,
 next to JP7 and IC24, just below the top edge of the board) as a small DIP
 in a socket. Counting pins on the package as photographed: **~9 pins per
 side = 18-pin DIP**, consistent with the PIC16C54 (18-pin) part documented.
@@ -524,15 +541,15 @@ state it is in until you try.
 ## Inter-board signal observations
 
 The 14-pin J2 ribbon leaving the top-left edge of the 16-bit board toward
-the plasma display is visible in `IMG_20260527_212447.jpg`,
-`IMG_20260527_212505.jpg`, and `IMG_20260527_212828.jpg`. The silkscreen
+the plasma display is visible in `overview_backbox_all_boards.jpg`,
+`80188_board_011_029A.jpg`, and `80188_board_011_029A.jpg`. The silkscreen
 near J2 is partially obscured by the ribbon itself and by the paper labels
 on the EPROMs — **no individual pin labels are legible in any photo**. A
 fresh photo of the J2 region with the ribbon disconnected would be needed
 to read the signal names from the silkscreen.
 
 The 20-pin J1↔J3 ribbon between the two CPU boards is visible crossing the
-gap between the boards in `IMG_20260527_212447.jpg`. The connectors
+gap between the boards in `overview_backbox_all_boards.jpg`. The connectors
 themselves are shrouded male headers; no per-pin silkscreen labels are
 visible from the angle photographed.
 

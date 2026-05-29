@@ -1,10 +1,18 @@
-# 011-029 (16-bit / 80188 board) — IC inventory
+# 011-029A (16-bit / 80188 board) — IC inventory
 
 [← Back to main README](../README.md)
 
-This is the complete list of integrated circuits populated on the IO Moon 16-bit CPU board (silkscreen `011-029`), together with the function of each part. Identifications are based on direct readout of the chip top-marks plus public datasheets for the part numbers.
+<p align="center">
+  <a href="../images/80188_board_011_029A.jpg" target="_blank" rel="noopener">
+    <img src="../images/80188_board_011_029A_thumb.jpg" alt="011-029A 16-bit board — click for full resolution" width="900">
+  </a>
+  <br>
+  <em>011-029A — 16-bit / 80188 CPU board. Click the image for the full 4096 × 3072 photograph.</em>
+</p>
 
-The Z80 / sound-driver board (`011-030`) is documented separately.
+This is the complete list of integrated circuits populated on the IO Moon 16-bit CPU board (silkscreen `011-029A`), together with the function of each part. Identifications are based on direct readout of the chip top-marks plus public datasheets for the part numbers.
+
+The Z80 / sound-driver board (`011-030A`) is documented separately.
 
 ## Summary by function
 
