@@ -28,32 +28,43 @@ This repository documents the results of an extensive reverse engineering effort
 
 The IO Moon uses a **three-CPU architecture**:
 
-| Component        | Specification                                                  |
-|------------------|----------------------------------------------------------------|
-| Main CPU         | Intel/AMD 80C188-10 (16-bit) — IC1 on board 011-029            |
-| I/O CPU          | Zilog Z80A @ 8 MHz — IC1 on board 011-030                      |
-| Display CPU      | Microchip PIC 16C54HS — IC23 on board 011-029                  |
-| Game ROM         | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total)               |
-| Sound ROM        | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total)               |
-| Z80 ROM          | 27C256 (IC5 `1005`, 32 KB)                                     |
-| NVRAM            | 28C64A EEPROM (IC14, 8 KB)                                     |
-| Music balance    | XICOR X9103 digital potentiometer (IC63) — *not* NVRAM         |
-| Display          | 128×32 **gas plasma** dot panel, 4 brightness levels           |
-| Sound            | OKI MSM6376 ADPCM (IC51), Yamaha YM3812 FM (IC60) + YM3014 DAC (IC61) |
-| Power            | 220 V AC (European market)                                     |
+| Component             | Specification                                                                          |
+|-----------------------|----------------------------------------------------------------------------------------|
+| Main CPU              | AMD N80C188-10 (16-bit) — IC1 on board 011-029                                         |
+| Main work RAM         | UMC UM62256D-70LL 32 K × 8 SRAM — IC12 on board 011-029                                |
+| 80188 chip-select PAL | AMD/MMI PAL20L10ACNS — IC7 on board 011-029 (**undumped**)                             |
+| 80188 reset / watchdog | Maxim MAX699 supervisor — IC6 on board 011-029                                        |
+| Game ROM              | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total) on board 011-029                      |
+| Display CPU           | Microchip PIC 16C57-HS/P — IC23 on board 011-029 (**undumped**)                        |
+| Display               | 128 × 32 **gas plasma** dot panel, 4 brightness levels                                 |
+| FM sound              | Yamaha YM3812 (IC60) + Yamaha YM3014B DAC (IC61) on board 011-029                      |
+| Voice synth           | OKI MSM6376 ADPCM — IC51 on board 011-029                                              |
+| Sound ROM             | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total) on board 011-029                      |
+| NVRAM                 | Microchip 28C64A EEPROM — IC14 on board 011-029 (8 KB)                                 |
+| Music balance         | Xicor X9C503P digital potentiometer — IC63 on board 011-029                            |
+| I/O CPU               | Goldstar Z8400A PS Z80A @ 8 MHz — IC1 on board 011-030                                 |
+| Z80 work RAM          | Goldstar GM76C28-10 2 K × 8 SRAM — IC7 on board 011-030                                |
+| Z80 I/O decode PAL    | AMD PAL16L8A-2CN — IC8 on board 011-030 (**undumped**)                                 |
+| Z80 reset / watchdog  | Analog Devices ADM699AN supervisor — IC15 on board 011-030                             |
+| Z80 ROM               | 27C256 — IC5 (`1005`, 32 KB) on board 011-030                                          |
+| Driver arrays         | 2× ULN2803 — IC41 / IC51 on board 011-030 (lamp / solenoid current drive)              |
+| Power                 | 220 V AC (European market)                                                             |
 
-The **80188** runs game logic, the state machine, scoring, and the inter-CPU mailbox. The **Z80** scans the switch matrix, drives the lamp matrix and solenoids, and feeds the OKI MSM6376. The **PIC 16C54HS** is dedicated to producing the DMD raster signal — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs.
+For the complete chip-by-chip inventory of each board, see [`docs/board_011-029_ics.md`](docs/board_011-029_ics.md) (16-bit board) and [`docs/board_011-030_ics.md`](docs/board_011-030_ics.md) (Z80 board).
+
+The **80188** runs game logic, the state machine, scoring, and the inter-CPU mailbox. The **Z80** scans the switch matrix, drives the lamp matrix and solenoids, and feeds the OKI MSM6376. The **PIC 16C57-HS/P** at IC23 drives the DMD raster signal — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs. The same PIC almost certainly also drives the YM3812 FM synthesizer (see [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md)).
 
 The 80188 and Z80 communicate through shared RAM at segment `4000h` using a HOLD/HLDA bus arbitration scheme.
 
 For a detailed breakdown of the hardware architecture, see:
 
 - [Hardware Architecture](docs/hardware_architecture.md) — CPU boards, memory map, bus arbitration
+- [16-bit Board IC Inventory](docs/board_011-029_ics.md) — Every populated chip on the 80188 board with part number and function
+- [Z80 Board IC Inventory](docs/board_011-030_ics.md) — Every populated chip on the Z80 board with part number and function
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
 - [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
-- [Chips Worth Dumping](docs/chips_to_dump.md) — Prioritised list of every PAL / PIC / EPROM / EEPROM identified on the boards, with dumping procedures
-- [Physical Board Inventory](research/board_inventory.md) — Chip-by-chip identification from board photographs
+- [Chips Worth Dumping](docs/chips_to_dump.md) — The undumped programmable parts (one PIC, two PALs) with dumping procedures
 - [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — Complete I/O mapping from the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
