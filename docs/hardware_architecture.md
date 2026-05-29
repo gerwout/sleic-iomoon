@@ -104,16 +104,16 @@ IC13 and IC54 are unpopulated 32-pin DIP sockets — both are expansion options 
 
 ### Sound/Switch CPU Board — Z80 (8-bit) — SLEIC-PETACO 011-030
 
-| Reference | Component | Part | Notes |
-|-----------|-----------|------|-------|
-| IC1 | Microprocessor | GoldStar `Z0840004PSC` (Z80A) | I/O CPU @ 8 MHz |
-| IC5 | EPROM | 27C256 | `1005 v1.2` (I/O) — 32 KB |
-| IC6 | EPROM socket (PDIP-28) | optional, population not yet confirmed | The Z80 disassembly references `0x8000–0xBFFF` as "extended routines/data" — see Memory Map below |
-| IC7 | RAM | 6116 (2 KB) | Z80 working memory at `0xC000`–`0xC7FF` |
-| IC15 | Watchdog | MAX699 | Reset supervision |
-| IC41, IC51 | Transistor arrays | ULN2803 | Lamp / solenoid driver buffers |
-| X10 | Crystal | 8 MHz | Z80 clock |
-| SW40 | DIP switch block | 8-position | See DIP table below |
+The Z80 board carries the 8-bit I/O CPU (`Goldstar Z8400A PS`, 8 MHz), its 32 KB program ROM (IC5) and 2 KB work RAM (Goldstar GM76C28-10 at IC7), the lamp / solenoid / switch-matrix latches and buffers, two ULN2803 Darlington arrays for current drive, four GL339 quad comparators for switch-return level sensing, a hardware watchdog (CD4040 counter + 74LS133 NAND + ADM699 supervisor) and a PAL16L8 at IC8 that does the Z80 memory and I/O decode.
+
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-030_ics.md`](board_011-030_ics.md). The PAL at IC8 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
+
+The Z80 board itself does not generate its own periodic IRQ — the 977 Hz rate the firmware expects comes from the divider chain on the 16-bit board described above and reaches the Z80 through the J3 ribbon.
+
+| Reference | Component | Notes |
+|-----------|-----------|-------|
+| SW40 | DIP switch block, 8-position | See DIP table below |
+| X10  | 8 MHz crystal                | Z80 clock |
 
 #### Connectors (manual section 7.2.2.2)
 
@@ -193,10 +193,10 @@ Total executable code: ~10,458 instructions (~30 KB, ~3% of ROM). The remaining 
 | Address Range | Size | Content |
 |--------------|------|---------|
 | `0x0000`–`0x7FFF` | 32 KB | ROM IC5 (27C256) — main Z80 program (`1005 v1.2`) |
-| `0x8000`–`0xBFFF` | 16 KB | ROM IC6 socket — extended routines/data (population not yet confirmed) |
-| `0xC000`–`0xC7FF` | 2 KB | RAM IC7 (6116) — working memory |
+| `0x8000`–`0xBFFF` | 16 KB | IC6 socket — vacant on the inspected board |
+| `0xC000`–`0xC7FF` | 2 KB  | RAM IC7 (Goldstar GM76C28-10) — working memory |
 
-The Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) references `0x8000–0xBFFF` as "extended routines/data" but flags the IC6 dump as "not included" — meaning the socket position is part of the documented design but the chip's contents were not in the dump set. Confirmation requires inspecting an actual board.
+The Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) references `0x8000`–`0xBFFF` as "extended routines/data" and flags the position `IC6` as "not included" in the dump set. Inspection of a real board confirms the IC6 socket is unpopulated, so the disassembly's note simply documents an expansion option that this machine does not use.
 
 ---
 
