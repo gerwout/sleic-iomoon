@@ -133,14 +133,23 @@ sleic-io-moon/
 │   ├── dmd_fonts.png
 │   ├── dmd_dot_comparison.png
 │   ├── dmd_invert_comparison.png
+│   ├── dmd_plane_order_comparison.png
 │   ├── overview_backbox_all_boards.jpg        # Full-resolution backbox photo
 │   ├── 80188_board_011_029A.jpg               # 16-bit board photo
 │   ├── z80-sleic-011-030A.jpg                 # Z80 board photo
 │   ├── driver_board_sleic_011-027A.jpg        # Drivers board photo
 │   └── sound_amplifier_board_sleic_011-024.jpg # Audio amplifier board photo
-└── manuals/
-    ├── README.md
-    └── sleic_io_moon_manual_es.pdf    # Original Spanish service manual
+│   # Each board JPG also has a smaller *_thumb.jpg companion used for inline previews.
+├── manuals/
+│   ├── README.md
+│   └── sleic_io_moon_manual_es.pdf    # Original Spanish service manual
+└── research/                          # Investigative notes that informed the docs
+    ├── board_inventory.md             # Original photo-by-photo IC inventory
+    ├── 80188_to_z80_mailbox.md        # Shared-RAM mailbox discovery
+    ├── z80_irq_timing.md              # Z80 periodic-IRQ rate derivation
+    ├── ym3812_oki_workarounds.md      # YM3812 hookup investigation
+    ├── pinmame_boot_log/              # PinMAME first-boot tracing
+    └── pinmame_session_2/             # PinMAME follow-up tracing
 ```
 
 ---
