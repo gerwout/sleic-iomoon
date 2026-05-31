@@ -4,13 +4,24 @@
 
 Three programmable chips across the two CPU boards contain undumped firmware. All three are required for a complete emulation.
 
-| Rank | Ref  | Part                       | Package        | Board            |
-|------|------|----------------------------|----------------|------------------|
+| Rank | Ref  | Part                       | Package        | Board             |
+|------|------|----------------------------|----------------|-------------------|
 | 1    | IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029A (16-bit) |
 | 2    | IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029A (16-bit) |
 | 3    | IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030A (Z80)    |
 
 Everything else on the IO Moon boards is either already archived (the 27C040 program / display / sound EPROMs and the 27C256 Z80 ROM) or runtime-mutable (the 28C64A NVRAM at IC14 on the 16-bit board). For the full board IC lists and the function of every other chip, see [`board_011-029A_ics.md`](board_011-029A_ics.md) and [`board_011-030A_ics.md`](board_011-030A_ics.md).
+
+## How to read this document
+
+Every one of the three chips can be in one of two states, and the recovery path depends on which:
+
+- **Unlocked** — the security / code-protect fuse has never been blown. A direct read returns the real contents.
+- **Locked** — the security / code-protect fuse is blown. A direct read returns garbage (`0xFFF` for the PIC, all-`F`s for a PAL). Recovery requires substantially more work, equipment, or money.
+
+You only discover which state a chip is in by attempting a read. Each chip section below lists both paths. The locked path is always harder and more expensive than the unlocked one.
+
+A common misconception is that a TL866II+ / T48 universal programmer can read every chip on this list. That is **not true** for the two PALs — see the bipolar-PAL note below.
 
 ---
 
@@ -19,9 +30,10 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
 - **Role**: DMD raster coprocessor and (almost certainly) the YM3812 sound driver. The only microcontroller on the board apart from the 80188; the 80188 pushes 80+ commands into a shared-RAM queue at offset `4000:1158+` that nothing else has the bus access to consume.
 - **Memory**: 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins.
 - **Mounting**: soldered.
-- **Code-protect fuse (CP)**: state unknown until first read. If set, the program-memory dump comes back as `0xFFF`. The 16C5x family has no software unprotect — a protected chip is recoverable only via destructive decap.
 
-### Procedure
+### Path A — chip is unlocked (CP fuse not blown)
+
+The 16C5x family is CMOS and is supported by the TL866II+ / T48 universal programmer driven by `minipro`. Total cost of the tooling: ~$50 USD for the programmer.
 
 1. Power down the machine and let the PSU discharge (~2 min).
 2. Remove the chip with hot-air rework or a low-thermal-shock alloy like Chip-Quik. Install a 28-pin DIP socket in its place so future dumps are non-destructive.
@@ -34,6 +46,15 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
    minipro -p PIC16C57 -r ic23_code.hex -c code
    ```
 5. Re-insert the chip pin-1-oriented and visually inspect before powering up.
+
+### Path B — chip is locked (CP fuse blown)
+
+The 16C5x family has no software unprotect. A locked PIC will return `0xFFF` from the program-memory read regardless of the programmer. The realistic options:
+
+- **Ship the chip to a specialised chip-recovery lab.** Several commercial outfits offer PIC decap + microscope readout or electrical-glitch attacks against the security fuse. Cost is typically $200–$2000 USD per chip, depending on the lab and how much the firmware is worth.
+- **Hobbyist decapping** is documented in the academic literature (Skorobogatov and others) but the success rate without specialised equipment is very low. Not realistic for a one-off preservation effort.
+
+In practice, if the chip turns out to be locked, sending it to a recovery lab is the only path that has a meaningful chance of success.
 
 ---
 
@@ -54,19 +75,46 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
 
 - **Mounting**: soldered.
 
-- **Security fuse**: standard PAL behaviour — if blown, the JEDEC read returns all-`F`s. A protected PAL can only be recovered by exercising every input combination in a test fixture and reconstructing the truth table by hand.
-
 - **Why dumping it matters**: with the fuse map archived, the full 80188-side memory map is documented and PinMAME can be made to honour real chip-select boundaries rather than the permissive `MRA_RAM` / `MWA_RAM` placeholders the current driver uses.
 
-### Procedure
+### Important — this is a bipolar PAL, not a CMOS PALCE
+
+The `PAL20L10ACNS` is a **bipolar fuse-link PAL** from the original AMD/MMI process, not one of the CMOS-EEPROM PALCE / PALC / ATF / GAL successors. This matters because the modern budget programmers — including the **TL866II+ and the T48** — only support the CMOS variants. Their chip libraries do not cover the original bipolar PAL family at all. Reading a bipolar PAL requires a programmer that can drive the higher fuse-verify voltages and time the read sequence the way the bipolar process expects. This rules out the cheap-and-easy tooling that handles the PIC and the EPROMs.
+
+### Path A — security fuse intact (unlocked)
+
+A vintage / professional programmer with native bipolar PAL support is required. Realistic options:
+
+| Programmer                       | Notes                                                                                                  |
+|----------------------------------|--------------------------------------------------------------------------------------------------------|
+| Data I/O 2900 / 3900 / Unisite   | Industry standard for bipolar PALs in the late 80s. €300–€800 used in working order, but software and adapter-block sourcing is non-trivial. |
+| Stag PP41 / PP42 / Quasar        | UK-made, widely supported in the era. Similar price range, similar sourcing difficulty.                 |
+| Hi-LO ALL-11 / ALL-100 / ALL-200 | Mid-range Taiwanese; still supports bipolar PALs. €500–€1500 used.                                      |
+| BeeProg2 / BeeProg2C / BeeProg3  | Modern professional unit that still covers bipolar PALs. €1000+ used, €2000+ new.                       |
+| Galep-5 / Galep-5D               | German, supports bipolar PALs. €1500+.                                                                  |
+
+All of these are professional-grade equipment, not hobbyist hardware. They are realistically obtainable second-hand from EPROM-programmer specialists or chip-recovery communities; new units are €1500+.
+
+Steps once a compatible programmer is available:
 
 1. Power down the machine and let the PSU discharge.
 2. Remove the chip with hot-air or Chip-Quik. Install a 24-pin DIP socket in its place.
-3. Read into a JEDEC fuse map:
-   ```
-   minipro -p PAL20L10 -r ic7.jed
-   ```
+3. Read into a JEDEC fuse map using the programmer's `PAL20L10` device profile. Output is a `.jed` file.
 4. Re-insert and inspect.
+
+### Path B — security fuse blown (locked)
+
+A locked bipolar PAL returns all-`F`s on a direct read. The fuse map cannot be recovered with any commercial programmer. The only path is to **reverse-engineer the truth table** by exercising every input combination, observing the outputs, and synthesising the table back into a `.jed`.
+
+Two practical approaches, in preferred order:
+
+1. **[DuPAL](https://github.com/jhallen/dupal3) or similar homebrew reader.** An Arduino / FPGA-based brute-force test rig that walks every input combination, reads every output, and constructs the truth table. Cost: ~€30–80 to build. Output is a synthesised `.jed`.
+
+   *PAL20L10 is a good DuPAL candidate from the chip side*: it has 14 dedicated inputs and 10 dedicated outputs with no bidirectional I/O pins, so DuPAL can drive all 14 inputs independently and read all 10 outputs at each of the 2¹⁴ = 16 384 input combinations — fully tractable.
+
+   **DuPAL fails when an output is wired back to an input on the PCB.** If the IO Moon 16-bit board routes one of IC7's outputs through other on-board logic and back to one of IC7's input pins, DuPAL cannot reproduce that path on the bench — DuPAL works with the chip removed and operated in isolation. The truth table DuPAL captures is the chip's intrinsic behaviour, which is the correct fuse map; but if you only have the chip and not also the on-PCB wiring, the system-level behaviour cannot be fully reconstructed from the DuPAL output alone.
+
+2. **Logic-analyser capture during live operation.** If DuPAL is not applicable — either because of on-board feedback as above, or because the chip turns out to be partially registered after all — clip a multi-channel logic analyser onto every pin of the chip, run the machine through every state of normal operation, and reconstruct the truth table from the captured traces. Requires a 16-or-more-channel analyser (Saleae Pro 16, Kingst LA5016, Logic Pro 16 — €200–€500). Coverage of every input combination is not guaranteed and may require many hours of careful state-exercising.
 
 ---
 
@@ -85,31 +133,46 @@ Everything else on the IO Moon boards is either already archived (the 27C040 pro
 
 - **Mounting**: soldered.
 
-- **Security fuse**: standard PAL behaviour — if blown, the JEDEC read returns all-`F`s. A protected PAL can only be recovered by exercising every input combination in a test fixture and reconstructing the truth table by hand.
-
 - **Why dumping it matters**: with the fuse map archived, the Z80-side I/O and memory decode is documented exactly rather than inferred from firmware traces. The current PinMAME `z80_read_port` / `z80_write_port` handlers cover ports `0x80`–`0x87` based on disassembly evidence; an IC8 dump would either confirm that decode is complete or surface peripherals at addresses the firmware does not exercise in the trace window.
 
-### Procedure
+### Important — bipolar PAL with bidirectional I/O pins
 
-1. Power down the machine and let the PSU discharge.
-2. Remove the chip with hot-air or Chip-Quik. Install a 20-pin DIP socket in its place.
-3. Read into a JEDEC fuse map:
-   ```
-   minipro -p PAL16L8 -r ic8.jed
-   ```
-4. Re-insert and inspect.
+Same bipolar-vs-CMOS caveat as IC7: the TL866II+ / T48 cannot read this part. A vintage / professional programmer is required.
+
+Unlike the PAL20L10 at IC7, the **PAL16L8 has 6 bidirectional I/O pins** (pins 13–18). Each I/O pin can be configured as an input or an output, and the state of each I/O pin feeds back into the AND array internally. This affects both paths:
+
+- The internal feedback is part of what the truth table has to capture, but is fully observable from outside the chip if every I/O pin is monitored as both an input *and* an output.
+- The on-board feedback risk that affects DuPAL on IC7 also applies here, and is more likely to occur on a chip that has so many bidirectional pins available to the designer.
+
+### Path A — security fuse intact (unlocked)
+
+Same family of vintage / professional programmers as for IC7 (see the IC7 Path A table). Read into JEDEC using the programmer's `PAL16L8` device profile.
+
+1. Power down, desolder, install a 20-pin DIP socket.
+2. Read with the `PAL16L8` profile.
+3. Re-insert and inspect.
+
+### Path B — security fuse blown (locked)
+
+- **DuPAL** if the on-board wiring does not route one I/O pin's output back to another I/O pin's input. The 16L8 case requires DuPAL to discover each I/O pin's direction in turn, which is harder than the 20L10 case but still tractable for a purely combinational design without external feedback.
+- **Logic-analyser capture** if the design uses on-board I/O-pin feedback that DuPAL cannot reproduce. Same caveats as IC7 Path B option 2.
 
 ---
 
-## Equipment
+## Equipment summary
 
-| Item                                  | Use                                                       |
-|---------------------------------------|-----------------------------------------------------------|
-| TL866II+ / T48 universal programmer   | Reads both parts in one tool (~$50 USD).                  |
-| Linux `minipro` CLI                   | Open-source driver for the TL866II+.                      |
-| 28-pin, 24-pin and 20-pin DIP sockets | Install on the board so future dumps are non-destructive. |
-| Hot-air rework station or Chip-Quik   | Either works for desoldering. Chip-Quik is cheaper and lower-thermal-shock. |
-| IC extractor, magnification, ESD strap | Standard rework hygiene.                                  |
+| Item | What it can read here | Cost (rough) |
+|------|-----------------------|--------------|
+| TL866II+ / T48 + `minipro` | **PIC 16C57 only** if unlocked. Also useful for re-dumping the EPROMs / EEPROM if needed. **Does not read the bipolar PALs at IC7 / IC8.** | ~$50 USD |
+| Vintage bipolar PAL programmer (Data I/O 2900/3900, Stag, Hi-LO ALL-11/100/200, BeeProg2/3, Galep-5) | PAL20L10 + PAL16L8 if either is unlocked. | €300–€1500 used, €1500+ new |
+| DuPAL or similar homebrew reader | Truth-table reconstruction for **locked combinational PALs without on-board I/O feedback**. | ~€30–80 to build |
+| 16+-channel logic analyser (Saleae Pro 16, Kingst LA5016, Logic Pro 16) | Truth-table capture from a live board when DuPAL is not applicable. | €200–€500 |
+| Specialised chip-recovery lab | Decap / electrical-glitch readout of a locked PIC 16C57. | $200–$2000+ per chip |
+| 28-pin, 24-pin and 20-pin DIP sockets | Install on the boards so future dumps are non-destructive. | <€1 each |
+| Hot-air rework station or Chip-Quik | Desoldering the chips for the first read. Chip-Quik is cheaper and lower-thermal-shock; hot-air is faster. | €15–100 |
+| IC extractor, magnification, ESD strap | Standard rework hygiene. | — |
+
+The two PALs are the awkward case: there is no cheap modern programmer that reads them, and there is no software workaround if the security fuse is blown. The realistic preservation strategy is to attempt Path A first with a borrowed or second-hand vintage programmer (or a willing party in the chip-preservation community), and only fall back to DuPAL / logic-analyser reconstruction if that fails.
 
 ---
 
