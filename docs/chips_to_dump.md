@@ -79,21 +79,39 @@ In practice, if the chip turns out to be locked, sending it to a recovery lab is
 
 ### Important — this is a bipolar PAL, not a CMOS PALCE
 
-The `PAL20L10ACNS` is a **bipolar fuse-link PAL** from the original AMD/MMI process, not one of the CMOS-EEPROM PALCE / PALC / ATF / GAL successors. This matters because the modern budget programmers — including the **TL866II+ and the T48** — only support the CMOS variants. Their chip libraries do not cover the original bipolar PAL family at all. Reading a bipolar PAL requires a programmer that can drive the higher fuse-verify voltages and time the read sequence the way the bipolar process expects. This rules out the cheap-and-easy tooling that handles the PIC and the EPROMs.
+The `PAL20L10ACNS` is a **bipolar fuse-link PAL** from the original AMD/MMI process, not one of the CMOS-EEPROM PALCE / PALC / ATF / GAL successors. This matters because the modern budget programmers do not cover the original bipolar PAL family at all — their device libraries jump straight to the CMOS variants. Reading a bipolar PAL requires a programmer that can drive the higher fuse-verify voltages and time the read sequence the way the bipolar process expects. This rules out almost every piece of cheap-and-easy tooling that handles the PIC and the EPROMs.
 
 ### Path A — security fuse intact (unlocked)
 
-A vintage / professional programmer with native bipolar PAL support is required. Realistic options:
+A vintage or professional programmer with native bipolar PAL support is required. The following list was assembled by checking manufacturer device files for explicit `PAL16L8` / `PAL20L10` entries.
 
-| Programmer                       | Notes                                                                                                  |
-|----------------------------------|--------------------------------------------------------------------------------------------------------|
-| Data I/O 2900 / 3900 / Unisite   | Industry standard for bipolar PALs in the late 80s. €300–€800 used in working order, but software and adapter-block sourcing is non-trivial. |
-| Stag PP41 / PP42 / Quasar        | UK-made, widely supported in the era. Similar price range, similar sourcing difficulty.                 |
-| Hi-LO ALL-11 / ALL-100 / ALL-200 | Mid-range Taiwanese; still supports bipolar PALs. €500–€1500 used.                                      |
-| BeeProg2 / BeeProg2C / BeeProg3  | Modern professional unit that still covers bipolar PALs. €1000+ used, €2000+ new.                       |
-| Galep-5 / Galep-5D               | German, supports bipolar PALs. €1500+.                                                                  |
+**Confirmed capable** (bipolar `PAL16L8` *and* `PAL20L10` both in the verified device list):
 
-All of these are professional-grade equipment, not hobbyist hardware. They are realistically obtainable second-hand from EPROM-programmer specialists or chip-recovery communities; new units are €1500+.
+| Programmer                                                                                  | Notes                                                                                                                                       |
+|---------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| Elnec **BeeProg2** (non-C), **BeeProg+**, original **BeeProg**, **LabProg+**, **B&K 864/866** | Same Elnec lineage. The **Dataman 48Pro2** is the same hardware under a different badge and is also capable.                                |
+| **Stag ZL30 / ZL30A / ZL30B**                                                               | RS-232 stand-alone units. Their device file lists `PAL16L8A-2` and `PAL20L10A` explicitly.                                                  |
+| **Hi-Lo ALL-11**                                                                            | The 20L10 family appears in the official ALL-11 device list ([device.pdf, Jul 2000](https://elmicro.com/files/hilo/all11p3/device.pdf)).    |
+| **Xeltek SuperPro** legacy / **6100** / **6100N**                                           | The newer SuperPro 7xxx / IS01 / S01 models have dropped bipolar PALs — older models only.                                                  |
+| **BPM Microsystems**                                                                        | `PAL16L8` DIP-20 and `PAL20L10A` both appear in the BPM device database.                                                                    |
+| **Advin PILOT-MVP**                                                                         | Period-correct universal programmer with bipolar PAL support.                                                                               |
+| **Data I/O UniSite / 2900 / 3900 / 3980 / System 29A/29B**                                  | **Only** with the **LogicPak / PLD pin-driver module** installed. The base unit alone cannot read bipolar PALs.                             |
+
+All of the above are professional-grade equipment, not hobbyist hardware. Realistic sourcing is second-hand from EPROM-programmer specialists or the chip-preservation community; working units typically run €300–€1500 used.
+
+**Confirmed NOT capable** (CMOS PALCE / GAL / PEEL only — no bipolar PAL16L8 / PAL20L10 in the device file):
+
+| Programmer                                          | Why it falls short                                                                                                       |
+|-----------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| **XGecu TL866II+ / T48** (with `minipro`)           | Device library is CMOS PALCE / GAL only. This is the single most common cause of failed bipolar PAL dumps.               |
+| **Retro Chip Tester Professional**                  | CMOS only, *and* limited to 8 outputs — cannot handle the 10-output PAL20L10 even electrically.                          |
+| **Batronix BX48 Batego II**                         | CMOS PALCE / GAL only.                                                                                                   |
+| **Conitec Galep-3 / Galep-4 / Galep-5 / Galep-5D**  | Device list covers only PALCE / GAL / PEEL CMOS parts — verified for Galep-5 directly.                                   |
+| Elnec **BeeProg2C** and **BeeProg3**                | The newer Elnec flagships **dropped** bipolar PAL support from their device files — only the older models still cover it. |
+| **Hi-Lo ALL-100**                                   | CMOS PALCE / PALLV only. (The older **ALL-11** *is* capable — see the table above.)                                       |
+| **Wellon VP-598 / VP-998**                          | CMOS only.                                                                                                               |
+
+Note that some of these (e.g. BeeProg2C, BeeProg3) cost significantly more than capable units like the older BeeProg2 or a second-hand ZL30 — newer and more expensive does not imply more device coverage in this corner of the market.
 
 Steps once a compatible programmer is available:
 
@@ -108,7 +126,7 @@ A locked bipolar PAL returns all-`F`s on a direct read. The fuse map cannot be r
 
 Two practical approaches, in preferred order:
 
-1. **[DuPAL](https://github.com/jhallen/dupal3) or similar homebrew reader.** An Arduino / FPGA-based brute-force test rig that walks every input combination, reads every output, and constructs the truth table. Cost: ~€30–80 to build. Output is a synthesised `.jed`.
+1. **[DuPAL](https://github.com/jhallen/dupal3) or [dupico](https://github.com/Murunius/dupico) (DuPAL V3, RP2040-based).** A brute-force test rig that walks every input combination, reads every output, and constructs the truth table. Cost: ~€30–80 to build. Output is a synthesised `.jed`. The dupico detects input / output / hi-Z per pin and is not limited to 8 outputs, which is what makes it tractable for the 10-output PAL20L10 (a fact that rules out, for example, the Retro Chip Tester Professional even as a fuse-state-independent reader).
 
    *PAL20L10 is a good DuPAL candidate from the chip side*: it has 14 dedicated inputs and 10 dedicated outputs with no bidirectional I/O pins, so DuPAL can drive all 14 inputs independently and read all 10 outputs at each of the 2¹⁴ = 16 384 input combinations — fully tractable.
 
@@ -137,7 +155,7 @@ Two practical approaches, in preferred order:
 
 ### Important — bipolar PAL with bidirectional I/O pins
 
-Same bipolar-vs-CMOS caveat as IC7: the TL866II+ / T48 cannot read this part. A vintage / professional programmer is required.
+Same bipolar-vs-CMOS caveat as IC7: the budget CMOS-only programmers (TL866II+ / T48, Batronix BX48, Wellon VP-598/998, Conitec Galep-3/4/5/5D, Elnec BeeProg2C/3, Hi-Lo ALL-100, etc.) cannot read this part. A vintage or professional programmer from the IC7 *confirmed capable* list is required.
 
 Unlike the PAL20L10 at IC7, the **PAL16L8 has 6 bidirectional I/O pins** (pins 13–18). Each I/O pin can be configured as an input or an output, and the state of each I/O pin feeds back into the AND array internally. This affects both paths:
 
@@ -146,7 +164,7 @@ Unlike the PAL20L10 at IC7, the **PAL16L8 has 6 bidirectional I/O pins** (pins 1
 
 ### Path A — security fuse intact (unlocked)
 
-Same family of vintage / professional programmers as for IC7 (see the IC7 Path A table). Read into JEDEC using the programmer's `PAL16L8` device profile.
+Same family of confirmed-capable programmers as for IC7 (see the IC7 Path A *Confirmed capable* table). Read into JEDEC using the programmer's `PAL16L8` device profile.
 
 1. Power down, desolder, install a 20-pin DIP socket.
 2. Read with the `PAL16L8` profile.
@@ -154,7 +172,7 @@ Same family of vintage / professional programmers as for IC7 (see the IC7 Path A
 
 ### Path B — security fuse blown (locked)
 
-- **DuPAL** if the on-board wiring does not route one I/O pin's output back to another I/O pin's input. The 16L8 case requires DuPAL to discover each I/O pin's direction in turn, which is harder than the 20L10 case but still tractable for a purely combinational design without external feedback.
+- **DuPAL / dupico** if the on-board wiring does not route one I/O pin's output back to another I/O pin's input. The 16L8 case requires the tool to discover each I/O pin's direction in turn, which is harder than the 20L10 case but still tractable for a purely combinational design without external feedback. The dupico (RP2040-based DuPAL V3) is the current best-of-breed: it detects input / output / hi-Z per pin, is not limited to 8 outputs, and handles both the 8-output PAL16L8 and the 10-output PAL20L10.
 - **Logic-analyser capture** if the design uses on-board I/O-pin feedback that DuPAL cannot reproduce. Same caveats as IC7 Path B option 2.
 
 ---
@@ -163,16 +181,18 @@ Same family of vintage / professional programmers as for IC7 (see the IC7 Path A
 
 | Item | What it can read here | Cost (rough) |
 |------|-----------------------|--------------|
-| TL866II+ / T48 + `minipro` | **PIC 16C57 only** if unlocked. Also useful for re-dumping the EPROMs / EEPROM if needed. **Does not read the bipolar PALs at IC7 / IC8.** | ~$50 USD |
-| Vintage bipolar PAL programmer (Data I/O 2900/3900, Stag, Hi-LO ALL-11/100/200, BeeProg2/3, Galep-5) | PAL20L10 + PAL16L8 if either is unlocked. | €300–€1500 used, €1500+ new |
-| DuPAL or similar homebrew reader | Truth-table reconstruction for **locked combinational PALs without on-board I/O feedback**. | ~€30–80 to build |
+| TL866II+ / T48 + `minipro` | **PIC 16C57 only** if unlocked. Also useful for re-dumping the EPROMs / EEPROM if needed. **Cannot read the bipolar PALs at IC7 / IC8** — its device library is CMOS PALCE / GAL only. | ~$50 USD |
+| Confirmed-capable bipolar PAL programmer (BeeProg2 non-C / BeeProg+ / BeeProg / LabProg+ / B&K 864 / 866 / Dataman 48Pro2, Stag ZL30 series, Hi-Lo ALL-11, Xeltek SuperPro legacy / 6100 / 6100N, BPM Microsystems, Advin PILOT-MVP, or Data I/O 2900 / 3900 / 3980 / 29A / 29B / UniSite **with** LogicPak / PLD module) | PAL20L10 + PAL16L8 if either is unlocked. | €300–€1500 used, €1500+ new |
+| DuPAL / dupico (RP2040 DuPAL V3) | Truth-table reconstruction for **locked combinational PALs without on-board I/O feedback**. Works regardless of fuse state. Not limited to 8 outputs, so handles the 10-output PAL20L10. | ~€30–80 to build |
 | 16+-channel logic analyser (Saleae Pro 16, Kingst LA5016, Logic Pro 16) | Truth-table capture from a live board when DuPAL is not applicable. | €200–€500 |
 | Specialised chip-recovery lab | Decap / electrical-glitch readout of a locked PIC 16C57. | $200–$2000+ per chip |
 | 28-pin, 24-pin and 20-pin DIP sockets | Install on the boards so future dumps are non-destructive. | <€1 each |
 | Hot-air rework station or Chip-Quik | Desoldering the chips for the first read. Chip-Quik is cheaper and lower-thermal-shock; hot-air is faster. | €15–100 |
 | IC extractor, magnification, ESD strap | Standard rework hygiene. | — |
 
-The two PALs are the awkward case: there is no cheap modern programmer that reads them, and there is no software workaround if the security fuse is blown. The realistic preservation strategy is to attempt Path A first with a borrowed or second-hand vintage programmer (or a willing party in the chip-preservation community), and only fall back to DuPAL / logic-analyser reconstruction if that fails.
+**Programmers that will *not* help on the bipolar PALs** (sometimes marketed in ways that suggest otherwise): XGecu TL866II+ / T48, Retro Chip Tester Professional, Batronix BX48 Batego II, Conitec Galep-3 / Galep-4 / Galep-5 / Galep-5D, Elnec BeeProg2C, Elnec BeeProg3, Hi-Lo ALL-100, Wellon VP-598 / VP-998. All of these are CMOS PALCE / GAL only in their current device files.
+
+The two PALs are the awkward case: there is no cheap modern programmer that reads them, and there is no software workaround if the security fuse is blown. The realistic preservation strategy is to attempt Path A first with a borrowed or second-hand confirmed-capable programmer (or a willing party in the chip-preservation community), and only fall back to DuPAL / logic-analyser reconstruction if that fails.
 
 ---
 
