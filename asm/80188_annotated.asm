@@ -1339,6 +1339,330 @@ d0163:  89 36 4e 11                                mov        [114eh], si   ; cm
 d0167:  89 36 4c 11                                mov        [114ch], si   ; cmd_queue_write_ptr - Command queue write pointer (circular buffer)
 d016b:  eb e9                                      jmp short  loc_d0156
 
+; -----------------------------------------------------------------------------
+; dmd_vblank_isr (0xD016D)
+; DMD VBLANK interrupt service routine. Toggles DMD control bits, advances
+; the display buffer pointer, and re-arms the frame timer [1140h].
+; -----------------------------------------------------------------------------
+d016d:  9c                    dmd_vblank_isr:           pushf
+d016e:  50                                         push       ax
+d016f:  53                                         push       bx
+d0170:  51                                         push       cx
+d0171:  52                                         push       dx
+d0172:  56                                         push       si
+d0173:  57                                         push       di
+d0174:  55                                         push       bp
+d0175:  06                                         push       es
+d0176:  1e                                         push       ds
+d0177:  b8 00 a0                                   mov        ax, 0a000h
+d017a:  8e c0                                      mov        es, ax
+d017c:  b8 00 40                                   mov        ax, 4000h
+d017f:  8e d8                                      mov        ds, ax
+d0181:  a0 38 11                                   mov        al, [1138h]   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d0184:  0c d0                                      or         al, 0d0h
+d0186:  90                                         nop
+d0187:  90                                         nop
+d0188:  26 a2 00 02                                mov        es:[0200h], al ; DMD_MODE - DMD mode register (bit 3 = strobe signal)
+d018c:  26 a0 00 01                                mov        al, es:[0100h]
+d0190:  3c 32                                      cmp        al, 32h
+d0192:  75 07                                      jne        loc_d019b
+d0194:  fe 06 44 11                                inc        byte [1144h]
+d0198:  eb 2a                                      jmp short  loc_d01c4
+d019a:  90                                         nop
+
+;  XREF: d0192
+d019b:  8b 36 54 11           loc_d019b:           mov        si, [1154h]   ; display_buf_ptr2 - Display buffer pointer 2
+d019f:  80 3c 00                                   cmp        byte [si], 00h
+d01a2:  74 0f                                      je         loc_d01b3
+d01a4:  bf e8 12                                   mov        di, 12e8h
+d01a7:  3b fe                                      cmp        di, si
+d01a9:  74 08                                      je         loc_d01b3
+d01ab:  46                                         inc        si
+d01ac:  89 36 54 11                                mov        [1154h], si   ; display_buf_ptr2 - Display buffer pointer 2
+d01b0:  eb 0c                                      jmp short  loc_d01be
+d01b2:  90                                         nop
+
+;  XREF: d01a2, d01a9
+d01b3:  be 20 12              loc_d01b3:           mov        si, 1220h
+d01b6:  89 36 54 11                                mov        [1154h], si   ; display_buf_ptr2 - Display buffer pointer 2
+d01ba:  89 36 50 11                                mov        [1150h], si   ; display_buf_ptr1 - Display buffer pointer 1 (current read position)
+
+;  XREF: d01b0
+d01be:  88 04                 loc_d01be:           mov        [si], al
+d01c0:  46                                         inc        si
+d01c1:  c6 04 00                                   mov        byte [si], 00h
+
+;  XREF: d0198
+d01c4:  b0 ff                 loc_d01c4:           mov        al, 0ffh
+d01c6:  a2 47 11                                   mov        [1147h], al
+d01c9:  a0 38 11                                   mov        al, [1138h]   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d01cc:  0c 80                                      or         al, 80h
+d01ce:  90                                         nop
+d01cf:  90                                         nop
+d01d0:  26 a2 00 02                                mov        es:[0200h], al ; DMD_MODE - DMD mode register (bit 3 = strobe signal)
+d01d4:  c7 06 40 11 10 00                          mov        word [1140h], 0010h
+d01da:  1f                                         pop        ds
+d01db:  07                                         pop        es
+d01dc:  5d                                         pop        bp
+d01dd:  5f                                         pop        di
+d01de:  5e                                         pop        si
+d01df:  5a                                         pop        dx
+d01e0:  59                                         pop        cx
+d01e1:  5b                                         pop        bx
+d01e2:  58                                         pop        ax
+d01e3:  9d                                         popf
+d01e4:  cf                                         iret
+
+;  XREF: d0392
+
+; -----------------------------------------------------------------------------
+; dmd_queue_service (0xD01E5)
+; Service the DMD display command queue: every 4th call, pull one byte from
+; [114ch] and push it to the DMD controller (A000:0080 / strobe A000:0200).
+; -----------------------------------------------------------------------------
+d01e5:  80 3e 45 11 00        dmd_queue_service:           cmp        byte [1145h], 00h
+d01ea:  74 05                                      je         loc_d01f1
+d01ec:  fe 0e 45 11                                dec        byte [1145h]
+d01f0:  c3                                         ret
+
+;  XREF: d01ea
+d01f1:  c6 06 45 11 03        loc_d01f1:           mov        byte [1145h], 03h
+d01f6:  8b 36 4c 11                                mov        si, [114ch]
+d01fa:  8a 04                                      mov        al, [si]
+d01fc:  22 c0                                      and        al, al
+d01fe:  75 01                                      jne        loc_d0201
+d0200:  c3                                         ret
+
+;  XREF: d01fe
+d0201:  bb 00 a0              loc_d0201:           mov        bx, 0a000h
+d0204:  8e c3                                      mov        es, bx
+d0206:  26 f6 06 80 01 01                          test       byte es:[0180h], 01h
+d020c:  75 01                                      jne        loc_d020f
+d020e:  c3                                         ret
+
+;  XREF: d020c
+d020f:  26 a2 80 00           loc_d020f:           mov        es:[0080h], al ; DMD_CTRL2 - DMD control byte 2
+d0213:  a0 38 11                                   mov        al, [1138h]   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d0216:  0c 40                                      or         al, 40h
+d0218:  26 a2 00 02                                mov        es:[0200h], al ; DMD_MODE - DMD mode register (bit 3 = strobe signal)
+d021c:  a2 38 11                                   mov        [1138h], al   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d021f:  c6 04 00                                   mov        byte [si], 00h
+d0222:  46                                         inc        si
+d0223:  89 36 4c 11                                mov        [114ch], si
+d0227:  a0 38 11                                   mov        al, [1138h]   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d022a:  0c 20                                      or         al, 20h
+d022c:  a2 38 11                                   mov        [1138h], al   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d022f:  26 a2 00 02                                mov        es:[0200h], al ; DMD_MODE - DMD mode register (bit 3 = strobe signal)
+d0233:  90                                         nop
+d0234:  90                                         nop
+d0235:  90                                         nop
+d0236:  90                                         nop
+d0237:  90                                         nop
+d0238:  90                                         nop
+d0239:  90                                         nop
+d023a:  90                                         nop
+d023b:  90                                         nop
+d023c:  90                                         nop
+d023d:  90                                         nop
+d023e:  90                                         nop
+d023f:  90                                         nop
+d0240:  a0 38 11                                   mov        al, [1138h]   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d0243:  24 df                                      and        al, 0dfh
+d0245:  24 bf                                      and        al, 0bfh
+d0247:  a2 38 11                                   mov        [1138h], al   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d024a:  26 a2 00 02                                mov        es:[0200h], al ; DMD_MODE - DMD mode register (bit 3 = strobe signal)
+d024e:  c3                                         ret
+
+; -----------------------------------------------------------------------------
+; sound_timer_isr (0xD024F)
+; Sound/music timer interrupt service routine. Dispatches the two OKI MSM6376
+; voices (channel A [12FDh], channel B [1300h]), runs the per-frame FM player
+; tick, then issues an end-of-interrupt to the 80188 timer (TCUCON 0FF2Ch).
+; -----------------------------------------------------------------------------
+d024f:  9c                    sound_timer_isr:           pushf
+d0250:  50                                         push       ax
+d0251:  53                                         push       bx
+d0252:  51                                         push       cx
+d0253:  52                                         push       dx
+d0254:  56                                         push       si
+d0255:  57                                         push       di
+d0256:  55                                         push       bp
+d0257:  06                                         push       es
+d0258:  1e                                         push       ds
+d0259:  b8 00 40                                   mov        ax, 4000h
+d025c:  8e d8                                      mov        ds, ax
+d025e:  80 3e f0 10 00                             cmp        byte [10f0h], 00h ; foreground task flag set -> call BIOS f000:114a
+d0263:  74 05                                      je         loc_d026a
+d0265:  9a 4a 11 00 f0                             call far   0f000h:114ah
+
+;  XREF: d0263
+d026a:  83 3e fd 12 00        loc_d026a:           cmp        word [12fdh], 0000h
+d026f:  75 28                                      jne        loc_d0299
+d0271:  80 3e 02 13 00                             cmp        byte [1302h], 00h ; OKI channel A: trigger pending?
+d0276:  74 36                                      je         loc_d02ae
+d0278:  80 3e 03 13 00                             cmp        byte [1303h], 00h
+d027d:  74 0a                                      je         loc_d0289
+d027f:  c6 06 03 13 00                             mov        byte [1303h], 00h
+d0284:  9a 09 0d 00 d0                             call       dmd_display_enable
+
+;  XREF: d027d
+d0289:  c6 06 02 13 00        loc_d0289:           mov        byte [1302h], 00h ; OKI channel A: clear trigger
+d028e:  a0 f9 12                                   mov        al, [12f9h]   ; AL = sample number [12F9h]
+d0291:  9a 57 0c 00 d0                             call       config_load_defaults ; play sample (config_load_defaults dispatch table)
+d0296:  eb 16                                      jmp short  loc_d02ae
+d0298:  90                                         nop
+
+;  XREF: d026f
+d0299:  ff 0e fd 12           loc_d0299:           dec        word [12fdh]
+d029d:  83 3e fd 12 00                             cmp        word [12fdh], 0000h
+d02a2:  75 0a                                      jne        loc_d02ae
+d02a4:  c6 06 fc 12 00                             mov        byte [12fch], 00h
+d02a9:  80 26 04 13 0f                             and        byte [1304h], 0fh
+
+;  XREF: d0276, d0296, d02a2
+d02ae:  83 3e 00 13 00        loc_d02ae:           cmp        word [1300h], 0000h
+d02b3:  75 17                                      jne        loc_d02cc
+d02b5:  80 3e 02 13 00                             cmp        byte [1302h], 00h ; OKI channel B: trigger pending?
+d02ba:  74 25                                      je         loc_d02e1
+d02bc:  c6 06 02 13 00                             mov        byte [1302h], 00h
+d02c1:  a0 f9 12                                   mov        al, [12f9h]   ; AL = sample number [12F9h]
+d02c4:  9a 84 0c 00 d0                             call       config_load_eeprom ; play sample (config_load_eeprom dispatch table)
+d02c9:  eb 16                                      jmp short  loc_d02e1
+d02cb:  90                                         nop
+
+;  XREF: d02b3
+d02cc:  ff 0e 00 13           loc_d02cc:           dec        word [1300h]
+d02d0:  83 3e 00 13 00                             cmp        word [1300h], 0000h
+d02d5:  75 0a                                      jne        loc_d02e1
+d02d7:  c6 06 ff 12 00                             mov        byte [12ffh], 00h
+d02dc:  80 26 04 13 f0                             and        byte [1304h], 0f0h
+
+;  XREF: d02ba, d02c9, d02d5
+d02e1:  83 3e 39 11 00        loc_d02e1:           cmp        word [1139h], 0000h
+d02e6:  74 04                                      je         loc_d02ec
+d02e8:  ff 0e 39 11                                dec        word [1139h]
+
+;  XREF: d02e6
+d02ec:  83 3e 3b 11 00        loc_d02ec:           cmp        word [113bh], 0000h
+d02f1:  74 04                                      je         loc_d02f7
+d02f3:  ff 0e 3b 11                                dec        word [113bh]
+
+;  XREF: d02f1
+d02f7:  83 3e 3d 11 00        loc_d02f7:           cmp        word [113dh], 0000h
+d02fc:  74 04                                      je         loc_d0302
+d02fe:  ff 0e 3d 11                                dec        word [113dh]
+
+;  XREF: d02fc
+d0302:  80 3e 3f 11 09        loc_d0302:           cmp        byte [113fh], 09h ; FM frame counter 0..8 wrap
+d0307:  72 08                                      jb         loc_d0311
+d0309:  c6 06 3f 11 00                             mov        byte [113fh], 00h
+d030e:  eb 05                                      jmp short  loc_d0315
+d0310:  90                                         nop
+
+;  XREF: d0307
+d0311:  fe 06 3f 11           loc_d0311:           inc        byte [113fh]
+
+;  XREF: d030e
+d0315:  ff 0e 40 11           loc_d0315:           dec        word [1140h]  ; per-frame FM player tick countdown
+d0319:  75 03                                      jne        loc_d031e
+d031b:  e8 13 00                                   call       dmd_strobe_clear ; tick expired -> service music sequencer
+
+;  XREF: d0319
+d031e:  ba 2c ff              loc_d031e:           mov        dx, 0ff2ch    ; EOI to 80188 INT0 (TCUCON 0FF2Ch, clear bit0)
+d0321:  ed                                         in         ax, dx
+d0322:  25 fe 00                                   and        ax, 00feh
+d0325:  ef                                         out        dx, ax
+d0326:  1f                                         pop        ds
+d0327:  07                                         pop        es
+d0328:  5d                                         pop        bp
+d0329:  5f                                         pop        di
+d032a:  5e                                         pop        si
+d032b:  5a                                         pop        dx
+d032c:  59                                         pop        cx
+d032d:  5b                                         pop        bx
+d032e:  58                                         pop        ax
+d032f:  9d                                         popf
+d0330:  cf                                         iret                     ; return from timer ISR
+
+;  XREF: d031b
+
+; -----------------------------------------------------------------------------
+; dmd_strobe_clear (0xD0331)
+; Clear DMD strobe bit 7 of the control shadow [1138h] (A000:0200).
+; -----------------------------------------------------------------------------
+d0331:  b8 00 a0              dmd_strobe_clear:           mov        ax, 0a000h
+d0334:  8e c0                                      mov        es, ax
+d0336:  a0 38 11                                   mov        al, [1138h]   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d0339:  24 7f                                      and        al, 7fh
+d033b:  a2 38 11                                   mov        [1138h], al   ; dmd_control_shadow - Shadow of DMD control register A000:0200
+d033e:  26 a2 00 02                                mov        es:[0200h], al ; DMD_MODE - DMD mode register (bit 3 = strobe signal)
+d0342:  c3                                         ret
+
+; -----------------------------------------------------------------------------
+; frame_isr (0xD0343)
+; Per-frame interrupt service routine. Runs the BIOS sound/display helpers,
+; services the music sequencer (d000:0D1B) and the DMD queue (d000:01E5),
+; then issues the timer end-of-interrupt (TCUCON 0FF2Ch).
+; -----------------------------------------------------------------------------
+d0343:  9c                    frame_isr:           pushf
+d0344:  50                                         push       ax
+d0345:  53                                         push       bx
+d0346:  51                                         push       cx
+d0347:  52                                         push       dx
+d0348:  56                                         push       si
+d0349:  57                                         push       di
+d034a:  55                                         push       bp
+d034b:  06                                         push       es
+d034c:  1e                                         push       ds
+d034d:  b8 00 40                                   mov        ax, 4000h
+d0350:  8e d8                                      mov        ds, ax
+d0352:  80 3e 42 11 00                             cmp        byte [1142h], 00h ; frame-busy gate [1142h]
+d0357:  75 25                                      jne        loc_d037e
+d0359:  c6 06 42 11 ff                             mov        byte [1142h], 0ffh
+d035e:  9a eb 08 00 f0                             call far   0f000h:08ebh  ; BIOS f000:08EB (sound/display helper, undisassembled)
+d0363:  80 3e f1 10 00                             cmp        byte [10f1h], 00h
+d0368:  74 05                                      je         loc_d036f
+d036a:  9a 03 13 00 f0                             call far   0f000h:1303h  ; BIOS f000:1303 (sound/display helper, undisassembled)
+
+;  XREF: d0368
+d036f:  80 3e dd 10 00        loc_d036f:           cmp        byte [10ddh], 00h
+d0374:  74 2b                                      je         loc_d03a1
+d0376:  9a 93 0f 00 f0                             call far   0f000h:0f93h  ; BIOS f000:0F93 (sound/display helper, undisassembled)
+d037b:  eb 30                                      jmp short  loc_d03ad
+d037d:  90                                         nop
+
+;  XREF: d0357
+d037e:  c6 06 42 11 00        loc_d037e:           mov        byte [1142h], 00h
+d0383:  9a a5 08 00 f0                             call far   0f000h:08a5h  ; BIOS f000:08A5 (sound/display helper, undisassembled)
+d0388:  c6 06 48 11 00                             mov        byte [1148h], 00h
+d038d:  9a 1b 0d 00 d0                             call       music_sequencer ; service music sequencer (d000:0D1B)
+d0392:  e8 50 fe                                   call       dmd_queue_service ; service DMD queue (d000:01E5)
+d0395:  80 3e d5 10 00                             cmp        byte [10d5h], 00h
+d039a:  74 05                                      je         loc_d03a1
+d039c:  9a 1a 0e 00 f0                             call far   0f000h:0e1ah  ; BIOS f000:0E1A (sound/display helper, undisassembled)
+
+;  XREF: d0374, d039a
+d03a1:  80 3e e2 10 00        loc_d03a1:           cmp        byte [10e2h], 00h
+d03a6:  74 05                                      je         loc_d03ad
+d03a8:  9a 54 10 00 f0                             call far   0f000h:1054h  ; BIOS f000:1054 (sound/display helper, undisassembled)
+
+;  XREF: d037b, d03a6
+d03ad:  ba 2c ff              loc_d03ad:           mov        dx, 0ff2ch    ; EOI to 80188 INT (TCUCON 0FF2Ch, clear bit4)
+d03b0:  ed                                         in         ax, dx
+d03b1:  25 ef 00                                   and        ax, 00efh
+d03b4:  ef                                         out        dx, ax
+d03b5:  1f                                         pop        ds
+d03b6:  07                                         pop        es
+d03b7:  5d                                         pop        bp
+d03b8:  5f                                         pop        di
+d03b9:  5e                                         pop        si
+d03ba:  5a                                         pop        dx
+d03bb:  59                                         pop        cx
+d03bc:  5b                                         pop        bx
+d03bd:  58                                         pop        ax
+d03be:  9d                                         popf
+d03bf:  cf                                         iret
+
 ;  XREF: d08db, d0b24
 
 ; -----------------------------------------------------------------------------
@@ -2254,6 +2578,136 @@ d0cff:  24 df                                      and        al, dfh
 d0d01:  a2 34 11                                   mov        [1134h], al   ; dmd_display_mode - Current DMD display mode (init: 0x28)
 d0d04:  26 a2 00 00                                mov        es:[0000h], al
 d0d08:  c3                                         ret
+
+;  XREF: d0284
+
+; -----------------------------------------------------------------------------
+; dmd_display_enable (0xD0D09)
+; Set DMD display-enable bit 5 of the control byte [1134h] (A000:0000).
+; -----------------------------------------------------------------------------
+d0d09:  b8 00 a0              dmd_display_enable:           mov        ax, 0a000h
+d0d0c:  8e c0                                      mov        es, ax
+d0d0e:  a0 34 11                                   mov        al, [1134h]   ; dmd_display_mode - Current DMD display mode (init: 0x28)
+d0d11:  0c 20                                      or         al, 20h
+d0d13:  a2 34 11                                   mov        [1134h], al   ; dmd_display_mode - Current DMD display mode (init: 0x28)
+d0d16:  26 a2 00 00                                mov        es:[0000h], al ; DMD_CTRL1 - DMD control byte 1 (0x28 = display on)
+d0d1a:  cb                                         retf
+
+;  XREF: d038d
+
+; -----------------------------------------------------------------------------
+; music_sequencer (0xD0D1B)
+; Music sequencer / FM player. Walks the song byte-stream at CS:[12EAh] one
+; (opcode,value) pair at a time: 0EEh=note duration, 0EFh=tempo divisor,
+; 0FFh=end of song, 0DDh=jump; any other byte is written as a YM3812
+; (register,data) pair via the OPL2 write primitive.
+; -----------------------------------------------------------------------------
+d0d1b:  1e                    music_sequencer:           push       ds      ; music sequencer entry (called from frame ISR)
+d0d1c:  b8 00 40                                   mov        ax, 4000h
+d0d1f:  8e d8                                      mov        ds, ax
+d0d21:  80 3e ee 12 00                             cmp        byte [12eeh], 00h ; sequencer enabled? [12EEh]
+d0d26:  75 02                                      jne        loc_d0d2a
+d0d28:  1f                                         pop        ds
+d0d29:  cb                                         retf
+
+;  XREF: d0d26
+d0d2a:  83 3e ec 12 00        loc_d0d2a:           cmp        word [12ech], 0000h ; note duration countdown [12ECh]
+d0d2f:  74 06                                      je         loc_d0d37
+d0d31:  ff 0e ec 12                                dec        word [12ech]
+d0d35:  1f                                         pop        ds
+d0d36:  cb                                         retf
+
+;  XREF: d0d2f
+d0d37:  b8 00 a0              loc_d0d37:           mov        ax, 0a000h    ; music sequencer: load (reg,val) pair from CS:[12EAh]
+d0d3a:  8e c0                                      mov        es, ax
+d0d3c:  8b 36 ea 12                                mov        si, [12eah]
+
+;  XREF: d0d6f, d0d83, d0d97
+d0d40:  2e 8a 24              loc_d0d40:           mov        ah, cs:[si]   ; AH = opcode/reg, AL = value; advance pointer
+d0d43:  46                                         inc        si
+d0d44:  2e 8a 04                                   mov        al, cs:[si]
+d0d47:  46                                         inc        si
+d0d48:  89 36 ea 12                                mov        [12eah], si
+d0d4c:  80 fc ee                                   cmp        ah, 0eeh      ; opcode 0EEh = note duration
+d0d4f:  75 03                                      jne        loc_d0d54
+d0d51:  eb 1e                                      jmp short  loc_d0d71
+d0d53:  90                                         nop
+
+;  XREF: d0d4f
+d0d54:  80 fc ef              loc_d0d54:           cmp        ah, 0efh      ; opcode 0EFh = set tempo divisor
+d0d57:  75 03                                      jne        loc_d0d5c
+d0d59:  eb 25                                      jmp short  loc_d0d80
+d0d5b:  90                                         nop
+
+;  XREF: d0d57
+d0d5c:  80 fc ff              loc_d0d5c:           cmp        ah, 0ffh      ; opcode 0FFh = end of song
+d0d5f:  75 03                                      jne        loc_d0d64
+d0d61:  eb 22                                      jmp short  loc_d0d85
+d0d63:  90                                         nop
+
+;  XREF: d0d5f
+d0d64:  80 fc dd              loc_d0d64:           cmp        ah, 0ddh      ; opcode 0DDh = jump (set pointer)
+d0d67:  75 03                                      jne        loc_d0d6c
+d0d69:  eb 27                                      jmp short  loc_d0d92
+d0d6b:  90                                         nop
+
+;  XREF: d0d67
+d0d6c:  e8 2a 00              loc_d0d6c:           call       ym3812_write  ; default: write (reg,val) to YM3812
+d0d6f:  eb cf                                      jmp short  loc_d0d40
+
+;  XREF: d0d51
+d0d71:  8a 0e ef 12           loc_d0d71:           mov        cl, [12efh]   ; note duration: duration = value * tempo[12EFh]
+d0d75:  32 ed                                      xor        ch, ch
+d0d77:  32 e4                                      xor        ah, ah
+d0d79:  f7 e1                                      mul        cx
+d0d7b:  a3 ec 12                                   mov        [12ech], ax
+d0d7e:  1f                                         pop        ds
+d0d7f:  cb                                         retf
+
+;  XREF: d0d59
+d0d80:  a2 ef 12              loc_d0d80:           mov        [12efh], al   ; set tempo divisor [12EFh]
+d0d83:  eb bb                                      jmp short  loc_d0d40
+
+;  XREF: d0d61
+d0d85:  c6 06 ee 12 00        loc_d0d85:           mov        byte [12eeh], 00h ; end of song: stop sequencer
+d0d8a:  c7 06 ec 12 00 00                          mov        word [12ech], 0000h
+d0d90:  1f                                         pop        ds
+d0d91:  cb                                         retf
+
+;  XREF: d0d69
+d0d92:  2e 8a 24              loc_d0d92:           mov        ah, cs:[si]   ; jump: load new pointer from CS:[si]
+d0d95:  8b f0                                      mov        si, ax
+d0d97:  eb a7                                      jmp short  loc_d0d40
+
+;  XREF: d0d6c
+
+; -----------------------------------------------------------------------------
+; ym3812_write (0xD0D99)
+; YM3812 (OPL2) register write primitive. Writes the register index to the
+; PCS5 latch A000:0280 then the data byte to A000:0281, with the mandatory
+; OPL2 inter-write settling delay after each access.
+; -----------------------------------------------------------------------------
+d0d99:  26 88 26 80 02        ym3812_write:           mov        es:[0280h], ah ; YM3812 register-index write (PCS5 0xA0280)
+d0d9e:  e8 08 00                                   call       opl2_delay
+d0da1:  26 a2 81 02                                mov        es:[0281h], al ; YM3812 register-data write (0xA0281)
+d0da5:  e8 01 00                                   call       opl2_delay
+d0da8:  c3                                         ret
+
+;  XREF: d0d9e, d0da5
+
+; -----------------------------------------------------------------------------
+; opl2_delay (0xD0DA9)
+; OPL2 inter-write settling delay (busy-wait, ~10 iterations).
+; -----------------------------------------------------------------------------
+d0da9:  50                    opl2_delay:           push       ax           ; OPL2 inter-write settling delay
+d0daa:  b0 0a                                      mov        al, 0ah
+
+;  XREF: d0db0
+d0dac:  fe c8                 loc_d0dac:           dec        al
+d0dae:  22 c0                                      and        al, al
+d0db0:  75 fa                                      jne        loc_d0dac
+d0db2:  58                                         pop        ax
+d0db3:  c3                                         ret
 
 ;  XREF: d2ffc, d30e2, d381f, d3834, d3903 (+5 more)
 

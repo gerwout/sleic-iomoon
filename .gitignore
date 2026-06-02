@@ -7,6 +7,9 @@ __pycache__/
 # Output directories from scripts
 output/
 
+# Local gameplay capture videos (not for commit)
+video/
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -90,7 +90,7 @@ The 80188 board carries the main 16-bit CPU (`AMD N80C188`, 10 MHz), the program
 
 For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). Two programmable parts on this board are undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
-The YM3812's chip-select is **/PCS5** (an 80188 peripheral chip-select; sheet 011-029-07), so if it is driven at all it is addressed by the 80188 directly — not by the PIC, and not through the `4000:1158` command queue. (That queue's consumer is itself an open question — see [`inter_cpu_communication.md`](inter_cpu_communication.md) — but it is neither the Z80 nor the DMD-only PIC.) Whether the IO Moon software actually writes the YM3812 is still unconfirmed; background and the PinMAME precedents for handling undumped sound coprocessors are in [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
+The YM3812's chip-select is **/PCS5** (an 80188 peripheral chip-select; sheet 011-029-07) = memory address `0xA0280` (index) / `0xA0281` (data). It **is** driven by the 80188 directly — not by the PIC, not via the `4000:1158` queue: the IO Moon software plays **10 FM music tracks** through it. The driver code is byte-verified in ROM1 (write primitive `D000:0D99`, music sequencer `D000:0D37`, song table `CS:0DE5`) — see [`z80_io_ports.md`](z80_io_ports.md) ("YM3812 routing") and [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
 
 #### Clocking
 
@@ -207,13 +207,13 @@ Total executable code: ~10,458 instructions (~30 KB, ~3% of ROM). The remaining 
 
 | Segment | Linear Range | Function |
 |---------|-------------|----------|
-| `4000h` | `0x40000` | Work RAM (shared with Z80) |
+| `4000h` | `0x40000` | Work RAM (80188-private; MMCS mid-range window) |
 | `4130h` | `0x41300` | Game configuration data |
 | `4134h` | `0x41340` | Game configuration (146 references) |
 | `4137h` | `0x41370` | Game mode data (32 references) |
 | `413Ch` | `0x413C0` | Game state variables (920 references) |
 | `4152h` | `0x41520` | Stack segment (SP init = `0x0205`) |
-| `A000h` | `0xA0000` | DMD controller hardware registers |
+| `A000h` | `0xA0000` | Peripheral chip-select block (PCS0–PCS6): DMD control, OKI control latch, **YM3812 at /PCS5 = `0xA0280`/`0xA0281`** |
 | `D000h` | `0xD0000` | Main program code |
 | `E000h` | `0xE0000` | Extended code/data |
 | `F000h` | `0xF0000` | System code / BIOS |
@@ -247,6 +247,6 @@ The Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) references `0x8000`–`0
 
 ## Inter-board cabling
 
-The two CPU boards are linked by a single 20-pin ribbon between the **16-bit board J1** and the **8-bit board J3** (manual sections 7.2.1.2 and 7.2.2.2). This is the physical channel that carries the multiplexed 80188 data bus signals used by the shared-RAM mailbox protocol described in [Inter-CPU Communication](inter_cpu_communication.md).
+The two CPU boards are linked by a single 20-pin ribbon between the **16-bit board J1** and the **8-bit board J3** (manual sections 7.2.1.2 and 7.2.2.2). This is the physical channel for the **J1 8-bit handshaken byte-port** between the two CPUs — there is no shared RAM and no address bus on J1; see [Inter-CPU Communication](inter_cpu_communication.md).
 
 Switch matrix, lamp matrix, and solenoid drivers are all anchored on the 8-bit board (connectors J2, J4, J6, J7, J8). The 16-bit board has **no** direct switch-matrix or driver connections — all I/O passes through the Z80.

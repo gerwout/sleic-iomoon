@@ -113,6 +113,16 @@ from session 1.
 
 YM3812 verdict (final, empirical)
 ----------------------------------
+[CORRECTION 2026-06 — THIS VERDICT IS SUPERSEDED / WRONG. The YM3812 IS
+driven: it plays 10 FM music tracks. This trace ran in attract / 80188-
+isolated boot mode, which is SILENT (attract mode plays no sound and no
+gameplay was reached), so it triggered zero FM writes -- that is absence of
+a trigger, not an unused chip. The FM driver is byte-verified in V1 3_01.bin:
+write primitive D000:0D99 (mov es:[0280h],ah ; mov es:[0281h],al = /PCS5
+0xA0280/0xA0281), music sequencer D000:0D37, song table CS:0DE5 (10 tracks),
+510 KeyOn events / 0 invalid OPL2 registers. See docs/ym3812_pinmame_
+precedents.md and docs/z80_io_ports.md.]
+
 Conclusion confirmed: in 30 s of running game code -- covering boot,
 DMD setup, attract-mode game state, and DMD refresh at ~145 frames/sec
 with 88,742 cumulative DMD register hits -- no write to any address

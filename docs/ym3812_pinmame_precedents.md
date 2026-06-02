@@ -2,6 +2,14 @@
 
 [← Back to main README](../README.md)
 
+> **RESOLVED (2026-06):** the open question this document circles — whether/how the
+> IO Moon YM3812 is driven — is now **answered**. The **80188 drives the YM3812
+> directly via /PCS5 (`0xA0280` index / `0xA0281` data)** for the in-game music;
+> the driver code was located and byte-verified in `V1 3_01.bin` (OPL2 write
+> primitive `D000:0D99`, music sequencer `D000:0D37`, song table `CS:0DE5`). The
+> "PIC does both jobs" and "BOM-only / never driven" hypotheses below are
+> **superseded** — see the Update section at the end. (IC23 is DMD-only.)
+
 Survey of every existing PinMAME driver that declares the Yamaha YM3812 FM synthesizer. The point is to identify a hookup pattern that might apply to the SLEIC IO Moon and to compare the **already-attempted-but-stalled** PinMAME drivers against IO Moon's situation. Source: `pinmame/src/wpc/{jvh,alvg,alvgs,mephisto,sleic}.c`.
 
 YM3812 datasheets: [`../datasheets/ym3812.pdf`](../datasheets/ym3812.pdf) (device datasheet) and [`../datasheets/ym3812_opl2_application_manual.pdf`](../datasheets/ym3812_opl2_application_manual.pdf) (OPL2 register-level programming manual); the companion DAC is [`../datasheets/ym3014b.pdf`](../datasheets/ym3014b.pdf).
@@ -122,18 +130,17 @@ For the immediate driver work, start by **leaving the YM3812 attached-but-unmapp
 
 ---
 
-## Update (board-photograph evidence — `research/board_inventory.md`)
+## Update — RESOLVED (2026-06): YM3812 driven by the 80188; 10 FM music tracks in ROM1
 
-The "BOM-only" hypothesis can now be **ruled out**:
+- IC60 is **confirmed populated** with a real `YAMAHA / YM3812 / JAPAN` 24-pin DIP, with the decoupling/support parts it needs to function. Not a placeholder.
+- Earlier PinMAME tracing showed zero FM writes **only because that trace ran in attract / isolated-boot mode, which is silent** — the music plays during *gameplay*. That was never evidence of a silent chip.
+- The 80188's `4000:1158+` byte queue is the **display/animation** queue; the sound drivers are a **separate 80188 code path** (below). The PIC at IC23 is **DMD-only** (all its pins are DMD signals on sheet 011-029-07) — the "one PIC, two jobs" idea is **wrong**.
 
-- IC60 is **confirmed populated** with a real `YAMAHA / YM3812 / JAPAN` 24-pin DIP, surrounded by decoupling cap CD60 and the support resistors / caps it would need to function. It is not a vacant placeholder.
-- Empirical PinMAME tracing of 30 seconds of running game code still shows **zero writes to any candidate YM3812 register address from either the 80188 or the Z80**.
-- An independent disassembly grep (see [`../research/80188_to_z80_mailbox.md`](../research/80188_to_z80_mailbox.md)) shows the 80188 pushes 80+ events into a circular byte queue at `4000:1158+`. The Z80 cannot consume the queue (no reads outside `0x0000-0x7FFF` ROM and `0xC000-0xC7FF` RAM), so something else does. That something else is the YM3812 driver.
+### What actually drives it (byte-verified in `V1 3_01.bin`; `D000` = file `0x50000`)
 
-The natural candidate for this role is a **microcontroller coprocessor** between the 80188 and the YM3812 — and a refined reading of the board photos identifies exactly one such device on the 16-bit board: **IC23, the `PIC 16C57-HS/P`**. This is the chip the service manual already documents as the DMD raster coprocessor.
+- **One FM write site** — `D000:0D99` (file `0x50D99`): `mov es:[0280h],ah` (YM3812 index port, `0xA0280`) → OPL2 settling-delay subroutine (`0x50DA9`) → `mov es:[0281h],al` (data port, `0xA0281`, file `0x50DA1`). A whole-ROM signature scan finds this as the **sole** FM write site; all register programming flows through it.
+- **Music sequencer** `D000:0D37` walks `(register, value)` opcode streams (`0xEE` note-duration, `0xEF` tempo, `0xDD` loop-with-target, `0xFF` end; default = FM register write), pointer in `[12EAh]`, ticked per frame from a timer ISR.
+- **Song table** at `CS:0DE5` (file `0x50DE5`) — **exactly 10 entries → 10 FM music tracks** (targets `0x50DF9, 0x50E32, 0x51662, 0x52106, 0x52769, 0x522A8, 0x525E9, 0x526A9, 0x529FA, 0x52C8E`). Decoding all ten yields **510 KeyOn events and ~3,600 FM register writes with zero invalid OPL2 registers**; track 1 contains a full OPL2 instrument setup using the exact channel→operator slot offsets (0,1,2,8,9,10,16,17,18) — unmistakably hand-written FM driver data. Track 0 is a short "all-notes-off" init stub.
+- **OKI cross-check** — the MSM6376 sample ROMs hold **28 phrases, 0.11–4.49 s each (~50 s total)**: short speech/SFX only, **no music-length phrase**. So music is FM, not sampled; the OKI handles speech + sound effects.
 
-The earlier draft of this document hypothesised two *additional* PICs at IC34 and "IC57". Both readings turned out to be wrong: IC34 is a smaller 74LS-series glue chip, and "IC57" doesn't exist on the board — the subagent had been reading IC7 (which holds a `PAL 20L10`, not a PIC). The clean architecture is therefore: **one PIC, two jobs**.
-
-The PIC 16C57 has **2 K × 12-bit program memory** (4× a PIC 16C54) and **20 I/O pins**. Driving the DMD wire protocol takes 6 signals (DE, RDATA, RCLK, COLLAT, DOTCLK, SDATA per [`dmd_wire_protocol.md`](dmd_wire_protocol.md)); driving a YM3812 takes about 11 signals (D0–D7, A0, /WR, /CS). Total: 17 pins — fits comfortably in the 20 the chip has. The program memory is also more than enough to host both routines plus a small command-queue reader for the 80188's `4000:1158+` mailbox.
-
-**Implication for the PinMAME driver**: the current "attached but unmapped" YM3812 stub remains the right interim state. It produces silent audio output, matching what the emulation can know without modelling the coprocessor. Once IC23 is dumped, a future driver pass would either (a) emulate the PIC 16C57 directly (PinMAME has no PIC 16C5x core today, so this would be net-new work), or (b) parse its instruction stream offline and re-implement its behaviour as a piece of C code that bridges the 80188's `4000:1158+` command queue to PinMAME's `YM3812_*_w` calls.
+**Implication for the PinMAME driver**: do **not** leave the YM3812 attached-but-unmapped. Map it at `0xA0280` (index, A0=0) / `0xA0281` (data, A0=1) inside the 80188's `A000h` peripheral window and route those writes to PinMAME's `YM3812_control_port_0_w` / `YM3812_write_port_0_w`; the emulated OPL2 will then play the 10 tracks. **Dumping IC23 is unnecessary for sound** (it is DMD-only); dumping **IC7** only refines the OKI control-latch bit map.
