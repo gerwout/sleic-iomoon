@@ -28,7 +28,7 @@ A common misconception is that a TL866II+ / T48 universal programmer can read ev
 ## IC23 — PIC 16C57-HS/P  (16-bit board, 011-029A)
 
 - **Datasheet**: [`../datasheets/pic16c5x.pdf`](../datasheets/pic16c5x.pdf) (Microchip PIC16C5X family).
-- **Role**: DMD raster coprocessor and (almost certainly) the YM3812 sound driver. The only microcontroller on the board apart from the 80188; the 80188 pushes 80+ commands into a shared-RAM queue at offset `4000:1158+` that nothing else has the bus access to consume.
+- **Role**: DMD raster coprocessor. The 80188 writes DMD frames and control words at segment `A000h`; the PIC turns these into the plasma-panel raster timing (`RDATA`, `RCLK`, `COLATCH`, `DE`, `VSYNC`, and the `VA3–VA12` video-RAM address). It does **not** drive the YM3812 — that chip is selected directly by the 80188's peripheral chip-select `/PCS5`, and the PIC has no electrical connection to it (every PIC I/O pin is a DMD signal). Confirmed by tracing sheets 011-029-01, -03 and -07. *(Earlier revisions of this doc listed the PIC as the probable YM3812 driver; that has been ruled out.)*
 - **Memory**: 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins.
 - **Mounting**: soldered.
 
@@ -223,6 +223,6 @@ The two PALs are the awkward case: there is no cheap modern programmer that read
 
 ## What this dump set unlocks
 
-- **IC23** — emulation of the DMD raster path and (almost certainly) the YM3812 sound path. The single largest open question in the current PinMAME work.
+- **IC23** — emulation of the DMD raster path, the single largest open question in the current PinMAME work. (The YM3812 sound path does **not** depend on this dump: the 80188 drives the YM3812 directly via `/PCS5`.)
 - **IC7** — the 80188-side chip-select decode map.
 - **IC8** — the Z80-side memory and I/O decode map.

@@ -32,7 +32,7 @@ The 16-bit / 80188 board (`011-029A`) is documented separately in [`board_011-02
 
 | IC | Part | Package | Datasheet | Function |
 |----|------|---------|-----------|----------|
-| IC1  | Goldstar Z8400A PS           | PDIP-40 | [Z80 user manual](../datasheets/z80_cpu_user_manual.pdf) | Z80A 8-bit CPU. Drives switch / lamp / solenoid I/O, the OKI MSM6376 sound playback (via ports 0x80 / 0x81 forwarded to the 16-bit board), and the shared-RAM mailbox with the 80188. |
+| IC1  | Goldstar Z8400A PS           | PDIP-40 | [Z80 user manual](../datasheets/z80_cpu_user_manual.pdf) | Z80A 8-bit CPU. Drives switch / lamp / solenoid I/O and runs the sound sequencing, but does **not** drive the sound chips directly — it forwards sound commands to the 80188 over the inter-board link, and the 80188 drives the OKI MSM6376 (via the IC50 / IC40 latches) and the YM3812 (via `/PCS5`). Also handles the shared-RAM mailbox with the 80188. |
 | IC2  | TI SN74LS244N                | PDIP-20 | [74ls244.pdf](../datasheets/74ls244.pdf) | Octal buffer / line driver, 3-state. Address / data bus buffer toward J3 (inter-board ribbon). |
 | IC3  | TI SN74LS244N                | PDIP-20 | [74ls244.pdf](../datasheets/74ls244.pdf) | Octal buffer / line driver, 3-state. |
 | IC4  | TI SN74LS245N                | PDIP-20 | [74ls245.pdf](../datasheets/74ls245.pdf) | Octal bus transceiver, 3-state. Data-bus buffer between the Z80 and the rest of the board. |
