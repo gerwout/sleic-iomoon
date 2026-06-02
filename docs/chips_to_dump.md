@@ -62,7 +62,7 @@ In practice, if the chip turns out to be locked, sending it to a recovery lab is
 
 - **Role**: combinational chip-select / bus glue on the 80188 main bus.
 
-  The 80188's internal chip-select unit (UMCS / LMCS / MMCS / PACS, programmed at boot via RELREG = `C03C`) covers the obvious large blocks — the program EPROMs at IC10 / IC11, the 32 K × 8 main work RAM at IC12, and a 64-byte peripheral block. The rest of the 80188 address space has to be decoded externally, which is what IC7 does. With 14 inputs, 10 active-low outputs, and a position on the address bus immediately next to the 80188, it is the only part on the board with the I/O budget to do the per-peripheral decode.
+  The 80188's internal chip-select unit (UMCS / LMCS / MMCS / PACS, programmed at boot via RELREG = `C03C`) covers the obvious large blocks — the program EPROMs at IC10 / IC11, the 32 K × 8 main work RAM at IC12, and a 64-byte peripheral block. The rest of the 80188 address space has to be decoded externally, which is what IC7 does. With 12 dedicated inputs, 10 active-low outputs, and a position on the address bus immediately next to the 80188, it is the only part on the board with the I/O budget to do the per-peripheral decode.
 
   The 80188 touches several memory-mapped peripherals that fall outside the internal CSU:
 
@@ -76,6 +76,17 @@ In practice, if the chip turns out to be locked, sending it to a recovery lab is
 - **Mounting**: soldered.
 
 - **Why dumping it matters**: with the fuse map archived, the full 80188-side memory map is documented and PinMAME can be made to honour real chip-select boundaries rather than the permissive `MRA_RAM` / `MWA_RAM` placeholders the current driver uses.
+
+### Verified device structure and feedback path (schematic-confirmed, sheets 011-029-01 / -05)
+
+Pin assignments read directly from the IC7 symbol on sheet 1 and the latch logic on sheet 5:
+
+- **12 dedicated inputs** (pins 1–11, 13): `/LCS`, `/UCS`, `/MCS0`, `/MCS1`, `/PCS4`, `/PCS6`, `DECH`, `DECL`, `EEE1` (pin 9), `EEE2` (pin 10), `A15`, `/MCS3` (pin 13).
+- **2 dedicated outputs** (pins 14, 23): `/WRVRAM` (14), `/PRCS` (23).
+- **8 I/O pins** (pins 15–22): `EEEREADY` (15), `/WR` (16), `/TEST` (17), `/EECE` (18), `/OOE` (19), `/OKCS` (20), `/RAM2` (21), `/RAM1` (22). On this board **all 8 I/O pins are wired as outputs**, so IC7 presents 12 inputs and 10 outputs in-circuit — but it is *not* a no-I/O-pin device.
+- The 20L10 is purely combinational: no clock pin, no registered outputs.
+
+**The board does contain an output→input feedback loop, and it is external to the die.** IC7's `/WR` (pin 16) is OR'd with `/PCS0` in IC47A (74LS32); that gate output clocks IC40 (74LS273), which latches data-bus bits `D0–D7` onto its outputs, two of which are `EEE1` (Q4) and `EEE2` (Q5). `EEE1`/`EEE2` then return to IC7 pins 9/10. So the 80188 writes a control byte to that port, the write is qualified by IC7's own `/WR`, and two of the latched bits feed back into IC7 as inputs. This is the loop the hardware analysis flagged for IC7, and the read is correct. Its consequences for dumping are discussed under Path B.
 
 ### Important — this is a bipolar PAL, not a CMOS PALCE
 
@@ -128,9 +139,9 @@ Two practical approaches, in preferred order:
 
 1. **[DuPAL](https://github.com/jhallen/dupal3) or [dupico](https://github.com/Murunius/dupico) (DuPAL V3, RP2040-based).** A brute-force test rig that walks every input combination, reads every output, and constructs the truth table. Cost: ~€30–80 to build. Output is a synthesised `.jed`. The dupico detects input / output / hi-Z per pin and is not limited to 8 outputs, which is what makes it tractable for the 10-output PAL20L10 (a fact that rules out, for example, the Retro Chip Tester Professional even as a fuse-state-independent reader).
 
-   *PAL20L10 is a good DuPAL candidate from the chip side*: it has 14 dedicated inputs and 10 dedicated outputs with no bidirectional I/O pins, so DuPAL can drive all 14 inputs independently and read all 10 outputs at each of the 2¹⁴ = 16 384 input combinations — fully tractable.
+   *PAL20L10 is a good DuPAL candidate from the chip side*: it has 12 dedicated inputs (pins 1–11, 13), 2 dedicated outputs (pins 14, 23) and 8 I/O pins (pins 15–22). On the IO Moon board all 8 I/O pins are wired as outputs, so the device presents 12 inputs and 10 outputs — dupico walks all 2¹² = 4 096 input combinations and reads all 10 outputs. As with the 16L8, dupico must first resolve the direction of each I/O pin (here they all resolve to *output*); this is **not** the dedicated-pin-only "trivial" case it was previously described as, but it is fully tractable.
 
-   **DuPAL fails when an output is wired back to an input on the PCB.** If the IO Moon 16-bit board routes one of IC7's outputs through other on-board logic and back to one of IC7's input pins, DuPAL cannot reproduce that path on the bench — DuPAL works with the chip removed and operated in isolation. The truth table DuPAL captures is the chip's intrinsic behaviour, which is the correct fuse map; but if you only have the chip and not also the on-PCB wiring, the system-level behaviour cannot be fully reconstructed from the DuPAL output alone.
+   **On-board feedback does not stop DuPAL from recovering the fuse map.** The IO Moon 16-bit board *does* route one of IC7's outputs back to its own inputs — `/WR` (pin 16) is OR'd with `/PCS0` in IC47A (74LS32) to clock the IC40 latch (74LS273), whose outputs `EEE1`/`EEE2` return to IC7 pins 9/10 (see *Verified device structure* above). This is **external** feedback, and it is broken the moment the chip is on the bench: dupico drives `EEE1`, `EEE2`, `/WR` and every other pin independently, so the loop has zero effect on the extracted truth table. The only consequences are (a) the bench exercises input combinations that never occur in-circuit — harmless, in fact extra coverage — and (b) the board's *dynamic* behaviour cannot be reconstructed from the chip dump alone, which is not needed to re-create the PAL or to document the decode map. What *would* defeat a combinational extraction is a **registered output** (the 20L10 has none — no clock pin) or **internal asynchronous feedback** forming a latch (a fuse-map property, which dupico detects and handles by reading each I/O pin as input and output). Neither is present, so DuPAL/dupico recovers IC7's truth table cleanly.
 
 2. **Logic-analyser capture during live operation.** If DuPAL is not applicable — either because of on-board feedback as above, or because the chip turns out to be partially registered after all — clip a multi-channel logic analyser onto every pin of the chip, run the machine through every state of normal operation, and reconstruct the truth table from the captured traces. Requires a 16-or-more-channel analyser (Saleae Pro 16, Kingst LA5016, Logic Pro 16 — €200–€500). Coverage of every input combination is not guaranteed and may require many hours of careful state-exercising.
 
@@ -153,14 +164,25 @@ Two practical approaches, in preferred order:
 
 - **Why dumping it matters**: with the fuse map archived, the Z80-side I/O and memory decode is documented exactly rather than inferred from firmware traces. The current PinMAME `z80_read_port` / `z80_write_port` handlers cover ports `0x80`–`0x87` based on disassembly evidence; an IC8 dump would either confirm that decode is complete or surface peripherals at addresses the firmware does not exercise in the trace window.
 
+### Verified pinout and feedback path (schematic-confirmed, sheet 011-030-01)
+
+Pin assignments read directly from the IC8 symbol:
+
+- **10 dedicated inputs** (pins 1–9, 11): `/M1`, `/MREQ`, `/IOREQ`, `/PWR`, `/PRD`, `A15`, `A14`, `A13`, `A12`, `A7`.
+- **8 outputs** (pins 12–19): `/ROM1` (12), `/ROM2` (13), `/RI` (14), `/CEI` (15), `/RAM` (16), `/CEO` (17), `/WR` (18), `/RD` (19). Pins 12 and 19 are the dedicated outputs; pins 13–18 are I/O pins, all wired as outputs here.
+- The 16L8 is purely combinational: no clock pin, no registered outputs.
+- Note the input strobes `/PWR`/`/PRD` (the raw Z80 write/read) are **distinct nets** from the outputs `/WR`/`/RD` (gated peripheral strobes IC8 generates) — despite the similar names there is no same-net output→input wire.
+
+**The one non-chip-select output is `/RI` (pin 14).** It drives a logic gate that produces `/INT`, and `/INT` goes to the Z80's interrupt input — it does **not** return to any IC8 pin. This is the loop the hardware analysis flagged for IC8, and the read is correct: it is a **system-level** loop that closes only through Z80 execution (interrupt → ISR → different bus cycles → different IC8 inputs), not an electrical feedback into the PAL. Its consequences for dumping are discussed under Path B.
+
 ### Important — bipolar PAL with bidirectional I/O pins
 
 Same bipolar-vs-CMOS caveat as IC7: the budget CMOS-only programmers (TL866II+ / T48, Batronix BX48, Wellon VP-598/998, Conitec Galep-3/4/5/5D, Elnec BeeProg2C/3, Hi-Lo ALL-100, etc.) cannot read this part. A vintage or professional programmer from the IC7 *confirmed capable* list is required.
 
-Unlike the PAL20L10 at IC7, the **PAL16L8 has 6 bidirectional I/O pins** (pins 13–18). Each I/O pin can be configured as an input or an output, and the state of each I/O pin feeds back into the AND array internally. This affects both paths:
+Like the PAL20L10 at IC7 (which has 8 I/O pins of its own), the **PAL16L8 has 6 bidirectional I/O pins** (pins 13–18). Each I/O pin can be configured as an input or an output, and the state of each I/O pin can feed back into the AND array internally. On the IO Moon Z80 board all 6 are wired as outputs (see *Verified pinout* above). This affects both paths:
 
-- The internal feedback is part of what the truth table has to capture, but is fully observable from outside the chip if every I/O pin is monitored as both an input *and* an output.
-- The on-board feedback risk that affects DuPAL on IC7 also applies here, and is more likely to occur on a chip that has so many bidirectional pins available to the designer.
+- Internal feedback (an I/O pin's output term routed back into the AND array) is part of what the truth table must capture, and dupico captures it by monitoring every I/O pin as both an input *and* an output. If that internal feedback ever formed an asynchronous latch the part would no longer be purely combinational — but a chip-select decoder is not expected to do that.
+- On-board (external) feedback — an output looped back to an input through other chips — does **not** block a DuPAL read, because the chip is read in isolation. See the IC7 Path B section, where exactly this kind of loop (IC7 `/WR` → IC40 → `EEE1`/`EEE2`) is shown to be harmless for fuse-map recovery. IC8's `/RI` → `/INT` path is even more removed: it never returns to an IC8 pin at all.
 
 ### Path A — security fuse intact (unlocked)
 
@@ -172,7 +194,7 @@ Same family of confirmed-capable programmers as for IC7 (see the IC7 Path A *Con
 
 ### Path B — security fuse blown (locked)
 
-- **DuPAL / dupico** if the on-board wiring does not route one I/O pin's output back to another I/O pin's input. The 16L8 case requires the tool to discover each I/O pin's direction in turn, which is harder than the 20L10 case but still tractable for a purely combinational design without external feedback. The dupico (RP2040-based DuPAL V3) is the current best-of-breed: it detects input / output / hi-Z per pin, is not limited to 8 outputs, and handles both the 8-output PAL16L8 and the 10-output PAL20L10.
+- **DuPAL / dupico** recovers IC8's truth table. The `/RI` → `/INT` path the analysis flagged is a system-level loop through the Z80 (it does not return to any IC8 pin — see *Verified pinout* above), so it has no effect on a bench read. dupico discovers each I/O pin's direction in turn (here all six resolve to *output*), detects input / output / hi-Z per pin, is not limited to 8 outputs, and handles both the 8-output PAL16L8 and the 10-output PAL20L10. As with IC7, the only things that would defeat a combinational extraction are a registered output (the 16L8 has none) or internal asynchronous latch feedback (a fuse-map property dupico detects) — neither of which a chip-select decoder is expected to use.
 - **Logic-analyser capture** if the design uses on-board I/O-pin feedback that DuPAL cannot reproduce. Same caveats as IC7 Path B option 2.
 
 ---
@@ -183,7 +205,7 @@ Same family of confirmed-capable programmers as for IC7 (see the IC7 Path A *Con
 |------|-----------------------|--------------|
 | TL866II+ / T48 + `minipro` | **PIC 16C57 only** if unlocked. Also useful for re-dumping the EPROMs / EEPROM if needed. **Cannot read the bipolar PALs at IC7 / IC8** — its device library is CMOS PALCE / GAL only. | ~$50 USD |
 | Confirmed-capable bipolar PAL programmer (BeeProg2 non-C / BeeProg+ / BeeProg / LabProg+ / B&K 864 / 866 / Dataman 48Pro2, Stag ZL30 series, Hi-Lo ALL-11, Xeltek SuperPro legacy / 6100 / 6100N, BPM Microsystems, Advin PILOT-MVP, or Data I/O 2900 / 3900 / 3980 / 29A / 29B / UniSite **with** LogicPak / PLD module) | PAL20L10 + PAL16L8 if either is unlocked. | €300–€1500 used, €1500+ new |
-| DuPAL / dupico (RP2040 DuPAL V3) | Truth-table reconstruction for **locked combinational PALs without on-board I/O feedback**. Works regardless of fuse state. Not limited to 8 outputs, so handles the 10-output PAL20L10. | ~€30–80 to build |
+| DuPAL / dupico (RP2040 DuPAL V3) | Truth-table reconstruction for **locked combinational PALs**. Works regardless of fuse state, and regardless of any on-board feedback (the chip is read in isolation). Not limited to 8 outputs, so handles the 10-output PAL20L10. | ~€30–80 to build |
 | 16+-channel logic analyser (Saleae Pro 16, Kingst LA5016, Logic Pro 16) | Truth-table capture from a live board when DuPAL is not applicable. | €200–€500 |
 | Specialised chip-recovery lab | Decap / electrical-glitch readout of a locked PIC 16C57. | $200–$2000+ per chip |
 | 28-pin, 24-pin and 20-pin DIP sockets | Install on the boards so future dumps are non-destructive. | <€1 each |
