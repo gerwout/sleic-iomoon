@@ -9,11 +9,11 @@ Authoritative source: the annotated Z80 disassembly header at `asm/z80_annotated
 | Port | Direction | Function |
 |------|-----------|----------|
 | `0x00` | IN | Direct switches input 0 (flipper buttons, misc) |
-| `0x01` | IN | Status register — bit 1 = MSM6376 / 80188 handshake ready |
+| `0x01` | IN | Status register — bit 1 = 80188 inter-board handshake ready (J1 BUSY/AD); **not** an OKI ready line |
 | `0x02` | IN | Switch matrix column data (8 bits, active-low; Z80 `CPL`s after reading) |
 | `0x03` | IN | Direct switches input 1 — bit 3 = START, bit 2 = TEST/COIN |
 | `0x04` | IN | Direct switches input 2 — bit 0 = TILT, special inputs |
-| `0x80` | OUT | Sound data bus → OKI MSM6376 phrase select / 80188 mailbox data (dual-purpose) |
+| `0x80` | OUT | Inter-board data byte to the 80188 (placed on J1 lines DIO0-7); carries a switch code or a forwarded sound command depending on the strobe; does **not** reach the OKI directly |
 | `0x81` | OUT | Control register, bit-mapped (see "Port 0x81 control bits" below) |
 | `0x82` | OUT | **Lamp matrix column strobe** (bits 0–6 = columns A–G) |
 | `0x83` | OUT | **Lamp matrix row data byte 1** (lower 8 lamps of the addressed column) |
@@ -35,12 +35,12 @@ The Z80 keeps a shadow of port 0x81 in RAM at `0xC001` (`ram_port81_shadow`) and
 
 | Bit | Mask | Set by | Cleared by | Function |
 |-----|------|--------|------------|----------|
-| 0 | `0x01` | `or 003h` in `send_sound_cmd` (0x0144) | `and 0FEh` later in `send_sound_cmd` | **OKI sound strobe** — pulses high to latch sound command into the MSM6376 |
-| 1 | `0x02` | `or 002h` / `or 003h` in `send_to_80188` (0x0116), `send_sound_cmd` | `and 0FDh` (5× across routines) | **80188 mailbox enable** — gates port 0x80 data onto the inter-board bus |
-| 2 | `0x04` | `or 004h` in `send_to_80188` | (cleared as part of `and 0FBh and 0FDh` sequence) | **80188 mailbox strobe** — pulses the latch on the receiving side |
+| 0 | `0x01` | `or 003h` in `send_sound_cmd` (0x0144) | `and 0FEh` later in `send_sound_cmd` | **Sound-channel select to the 80188** — set together with bit 1 while a sound command is on port `0x80`, so the 80188 routes the byte as a sound command rather than a switch code. Not an OKI latch (the Z80 has no connection to the MSM6376) |
+| 1 | `0x02` | `or 002h` / `or 003h` in `send_to_80188` (0x0116), `send_sound_cmd` | `and 0FDh` (5× across routines) | **80188 inter-board data-valid / enable** — gates the port `0x80` byte onto the J1 data lines (DIO0-7); set in both send routines |
+| 2 | `0x04` | `or 004h` in `send_to_80188` | (cleared as part of `and 0FBh and 0FDh` sequence) | **Switch-byte strobe to the 80188** — pulses the latch on the 80188 side for a switch code |
 | 3 | `0x08` | **never set** (no `or 008h` before any `out (081h),a`) | — | unused on the Z80 side |
 | 4 | `0x10` | `or 010h` in NMI/IRQ acknowledge | (implicit) | **NMI acknowledge** |
-| 5 | `0x20` | `or 020h` in `send_sound_cmd` (2×) | `and 0DFh` (2×) | **OKI command latch** — extends the sound strobe / selects OKI command vs sample channel |
+| 5 | `0x20` | `or 020h` in `send_sound_cmd` (2×) | `and 0DFh` (2×) | **Sound-command strobe to the 80188** — pulsed high → 3×`nop` → low in `send_sound_cmd`; mirrors bit 2 for the sound channel. Not an OKI strobe |
 | 6 | `0x40` | `or 040h` in `switch_debounce` (0x01B6) | `and 0BFh` (3× in scan-loop tear-down) | **Direct-switch read enable** — must be set before reading port `0x00` |
 | 7 | `0x80` | **never set** (no `or 080h` before any `out (081h),a`) | — | unused on the Z80 side |
 
@@ -50,19 +50,19 @@ Statistical evidence: I grep'd the entire Z80 ROM for the value loaded into A on
 
 ## YM3812 routing — open question
 
-The YM3812 FM synthesizer (IC60, on the 80188 board) is conspicuously absent from any code path we can find:
+The YM3812 FM synthesizer (IC60, on the 80188 board) is not reachable from any Z80 code path, and its drive from the 80188 has not been traced. What the schematic *does* settle is how it is selected:
 
-- **No Z80 access**: no port writes to anything beyond `0x80–0x87`; port `0x81` has no remaining unused bits that could select a YM3812 path; the apparent `out (027h),a`, `out (05Ah),a`, `in a,(05Eh)` instructions visible in the disassembly all sit inside data tables (envelope/wave-table-like byte patterns) and are not reachable as code.
-- **No 80188 port access**: the entire 80188 ROM contains only **two** `out dx, ax` instructions (`0xFFF06` and `0xD001E`), both during boot peripheral configuration. The YM3812 is not driven by I/O ports.
-- **No additional 80188 chip selects**: the boot I/O table at `cs:0041` (ROM offset `0xD0041`) writes **30 register pairs** to the 80188's Peripheral Control Block. Among them are the documented chip selects (`UMCS=0x3FFC`, `LMCS=0xA03C`, `PACS=0x41FC`, `MMCS=0xA0FC`) — but there is **no write to `0xFFAA` (MPCS)**, meaning the mid-range peripheral chip selects PCS0–PCS6 are left at their default (disabled). The 80188 therefore has exactly four chip-select windows, none of which are unaccounted for.
-- **`sound_play_command` is a red herring**: the auto-generated function name suggests this is where YM3812 writes happen, but the function writes to `ES=5040h offset 02B9h` — physical address `0x506B9`, which is **outside any of the four chip-select windows** (LMCS covers up to `0x4FFFF`; nothing covers `0x50000–0x9FFFF`). It also calls `display_set_buffer_14refs` and `display_clear_area_24refs`, strongly suggesting it is actually display-related, not sound, and that the auto-name is wrong.
+- **It is an 80188 peripheral, selected by /PCS5.** Sheet 011-029-07 wires the YM3812 `/CS` to **/PCS5**, a peripheral chip-select generated by the 80188 itself (with A0 = register/data select and `/WR`/`/RD`). The chip is therefore **not** on the Z80 side, and **not** memory-mapped in the MMCS mid-range (`A000h`) window — it lives in the 80188's PCS5 window.
+- **No Z80 access**: no Z80 port writes beyond `0x80–0x87`, and port `0x81` has no spare bits for a YM3812 path. The apparent `out (027h),a` / `out (05Ah),a` / `in a,(05Eh)` bytes in the disassembly all sit inside data tables (envelope/wave-table-like patterns), not reachable code.
+- **The "exactly four chip-select windows" argument does not hold.** It rested on two claims the 80C188 datasheet contradicts. First, it looked for MPCS at I/O `0xFFAA`; in the 80C188 Peripheral Control Block MPCS is at offset `0xA8` (I/O `0xFFA8`), and the relocation register is at offset `0xFE` (I/O `0xFFFE`). Second, the register labels in the disassembly appear shifted by one 2-byte slot: it labels `0xFFA0` "RELREG", but `0xFFA0` is UMCS — the reset stub at `0xFFF00` writes `0xC03C` there to open the ROM window, which is a UMCS action — and the boot never writes the true relocation register at `0xFFFE`. With the labels corrected, the write the disassembly calls "MMCS" at `0xFFA8` is in fact **MPCS**, so MPCS *is* configured and the mid-range peripheral chip-selects (PCS0–PCS6, hence /PCS5) are **not** necessarily disabled. The exact PCS base and whether MPCS maps the strobes into I/O or memory (the MS bit) have not been re-derived here.
+- **The "only two `out dx, ax`" argument does not hold either.** That count is of **word** writes only. An 8-bit device like the YM3812 is written with a **byte** OUT (`out dx, al`), and if MPCS maps the PCS lines into memory rather than I/O it is written with ordinary `mov` stores — neither of which is an `out dx, ax`. A low word-OUT count therefore says nothing about whether the YM3812 is driven. (The `sound_play_command` auto-name does look wrong — it writes `ES=5040h:02B9h` ≈ `0x506B9` and calls `display_set_buffer_14refs` / `display_clear_area_24refs`, so it appears display-related rather than a sound path — but that is a side observation, not part of the chip-select accounting.)
 
 Two remaining possibilities:
 
-1. **The YM3812 is memory-mapped inside the MMCS window (segment `A000h`)** at offsets the current reverse-engineering hasn't traced cleanly. The DMD registers live at offsets `0x0000`, `0x0080`, `0x0200`, `0x0300`; the YM3812's index/data register pair could be at e.g. `A000:0100`/`A000:0101` or similar. Confirming this requires tracing memory accesses while ES=A000h through a non-trivial portion of the 80188 game code (or running the ROM in a CPU simulator).
-2. **The YM3812 is physically populated on the IO Moon board but never actually used by the IO Moon software** — its presence on the principal-components list of `011-029A` could be inherited from earlier SLEIC machines (Bike Race / Sleic Pin-Ball) that *do* use it. The OKI MSM6376 alone is responsible for both speech and music in IO Moon.
+1. **The YM3812 is driven through its /PCS5 window** (in I/O or in memory, depending on the MPCS MS bit) at addresses not yet traced. Confirming this means re-deriving the PCS5 base and enable from the *correctly* mapped MPCS value, then locating the matching accesses in the 80188 game code — or dumping the PAL/IC7 decode logic directly.
+2. **The YM3812 is physically populated on the IO Moon board but never actually driven by the IO Moon software** — its presence on the principal-components list of `011-029A` could be inherited from earlier SLEIC machines (Bike Race / Sleic Pin-Ball) that *do* use it, with the OKI MSM6376 alone responsible for both speech and music in IO Moon.
 
-For PinMAME emulation purposes, the safe default is to *attach* a YM3812 to the IO Moon machine driver but not expect it to be driven; if (1) is true, the address eventually surfaces during emulation; if (2) is true, no driver code ever writes to it and the chip stays silent — which matches reality.
+For PinMAME emulation purposes, the safe default is to *attach* a YM3812 (now known to sit on /PCS5) to the IO Moon machine driver but not require it to be driven: if (1) is true the writes surface once the PCS5 window is mapped correctly; if (2) is true no code ever writes to it and the chip stays silent.
 
 ---
 
@@ -105,9 +105,9 @@ These are read from ports `0x03` and `0x04` without matrix scanning:
 | `0xC0E3` | Direct switch state (Port `0x03` snapshot) |
 | `0xC0E5`–`0xC0E6` | Scan routine state pointer |
 | `0xC0E7`–`0xC0F2` | Raw matrix data (before debounce) |
-| `0xC0FC` | Current switch code output (mailbox to 80188) |
+| `0xC0FC` | Current switch code, staged in Z80 RAM and forwarded to the 80188 over J1 |
 
-The byte at `0xC0FC` is the primary communication channel from the Z80 to the 80188. When a switch is activated, the Z80 writes the corresponding switch code to this address, where the 80188 reads it during its main loop polling cycle.
+The byte at `0xC0FC` holds the current switch code. It is Z80-local RAM, **not** shared memory: when a switch is activated the Z80 writes the code here, then `send_to_80188` transmits it over the J1 byte-port (port `0x80` data + a port `0x81` strobe). The 80188 receives the byte through its inbound latch (IC43 on the 16-bit board) and stores it as `last_switch_code`, which it polls during its main loop.
 
 ---
 

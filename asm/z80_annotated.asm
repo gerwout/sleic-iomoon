@@ -20,8 +20,8 @@
 ;   • Switch matrix scanning (6×8 matrix + 6 direct switches)
 ;   • Lamp matrix control (7 columns × 16 rows via ports 0x82-0x84)
 ;   • Solenoid driver control (2 banks: ports 0x85, 0x86)
-;   • Sound chip interface (OKI MSM6376 via ports 0x80-0x81)
-;   • Communication with 80188 via shared mailbox byte (C0FC)
+;   • Sound-command generation, forwarded to the 80188 over J1 (ports 0x80/0x81)
+;   • Communication with 80188 over connector J1 (8-bit handshaken byte-port)
 ;
 ; 80188 Main CPU Responsibilities:
 ;   • Game logic, state machine, scoring
@@ -34,13 +34,13 @@
 ; ═══════════════════════════════════════════════════════════════════
 ;
 ;  ┌────────────────┐                        ┌────────────────┐
-;  │   80188 Main   │    Shared Mailbox      │   Z80 Copro    │
+;  │   80188 Main   │   J1 8-bit byte-port   │   Z80 Copro    │
 ;  │   AMD 80C188   │◄──────────────────────►│   Z80A @ 8MHz  │
-;  ├────────────────┤    C0FC (switch code)   ├────────────────┤
+;  ├────────────────┤  DIO0-7 (8 data lines) ├────────────────┤
 ;  │ • Game Logic   │    Port 0x80 (data)     │ • Switch Scan  │
 ;  │ • DMD Display  │    Port 0x81 (control)  │ • Lamp Matrix  │
 ;  │ • State Machine│                         │ • Solenoids    │
-;  │ • Scoring      │    Bus: HOLD/HLDA       │ • Sound/MSM6376│
+;  │ • Scoring      │   J1 handshake (8b)    │ • Sound → 80188│
 ;  └────────────────┘                         └────────────────┘
 ;         │                                          │
 ;    1MB ROM (2×27C040)                    32KB ROM (27C256)
@@ -62,18 +62,20 @@
 ;
 ;  INPUT PORTS:
 ;  Port 0x00 (R)  Direct switches input 0 (flipper buttons, misc)
-;  Port 0x01 (R)  Status register (bit1 = MSM6376/80188 handshake ready)
+;  Port 0x01 (R)  Status register (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 ;  Port 0x02 (R)  Switch matrix column data (8 bits, active-low, inverted by CPL)
 ;  Port 0x03 (R)  Direct switches input 1 (bit3=START, bit2=TEST/COIN)
 ;  Port 0x04 (R)  Direct switches input 2 (bit0=TILT, special)
 ;
 ;  OUTPUT PORTS:
-;  Port 0x80 (W)  Sound data bus → MSM6376 phrase select / 80188 mailbox
-;  Port 0x81 (W)  Control register (bit-mapped):
-;                   bit 0 = Sound strobe
-;                   bit 1 = Data direction/mode
+;  Port 0x80 (W)  Inter-board data byte → 80188 over J1 (DIO0-7); switch code or fwd'd sound cmd
+;  Port 0x81 (W)  Control register (bit-mapped) — every strobe targets the 80188 over J1:
+;                   bit 0 = sound-channel select (set with bit1 when sending a sound cmd)
+;                   bit 1 = inter-board data-valid / enable (gates port 0x80 onto DIO0-7)
+;                   bit 2 = switch-byte strobe to 80188
 ;                   bit 4 = NMI acknowledge
-;                   Other bits: handshake control
+;                   bit 5 = sound-command strobe to 80188
+;                   bit 6 = direct-switch read enable (set before reading port 0x00)
 ;  Port 0x82 (W)  Lamp matrix column strobe (bit 0-6 = columns A-G)
 ;  Port 0x83 (W)  Lamp matrix row data byte 1 (lower 8 lamps)
 ;  Port 0x84 (W)  Lamp matrix row data byte 2 (upper 8 lamps)
@@ -107,7 +109,7 @@
 ;  C0F9       Scan debounce counter
 ;  C0FA       Current lamp column index
 ;  C0FB       Command completion flag (37 refs)
-;  C0FC       *** MAILBOX *** Switch code output to 80188 (86 refs!)
+;  C0FC       Switch code staged in Z80 RAM, forwarded to 80188 over J1 (86 refs!)
 ;  C117       Active solenoid mask
 ;  C119-C11E  Lamp column on/off state registers
 ;  C121       DIP switch (SW40) settings cache
@@ -116,17 +118,23 @@
 ; COMMUNICATION PROTOCOL (Z80 ↔ 80188)
 ; ═══════════════════════════════════════════════════════════════════
 ;
-;  The Z80 communicates switch events to the 80188 via a simple
-;  mailbox protocol using port 0x80 and the control register:
+;  The Z80 talks to the 80188 over connector J1 — an 8-bit handshaken
+;  byte-port (data lines DIO0-7 + BUSY/AD/IR handshakes), NOT shared RAM.
+;  The same port carries two kinds of byte, distinguished by the strobe:
 ;
+;  Switch events (send_to_80188, 0x0116):
 ;  1. Z80 detects switch closure/opening
-;  2. Z80 writes ASCII switch code to C0FC (e.g. 0x41='A' for START)
-;  3. Z80 calls send_to_80188 (0x0116):
-;     a. Wait for port 0x01 ready (handshake)
-;     b. Load A from C0FC
-;     c. Write A to port 0x80 (data bus)
-;     d. Pulse control bits on port 0x81 (strobe)
-;  4. 80188 reads the switch code and processes game logic
+;  2. Z80 writes the switch code to C0FC (e.g. 0x41='A' for START)
+;  3. send_to_80188:
+;     a. Wait for port 0x01 bit1 ready (J1 handshake)
+;     b. Set bit1 on port 0x81 (data-valid)
+;     c. Load A from C0FC, write A to port 0x80 (onto DIO0-7)
+;     d. Pulse bit2 on port 0x81 (switch strobe)
+;  4. The 80188 latches the byte (IC43 on the 16-bit board) and processes it
+;
+;  Sound commands (send_sound_cmd, 0x0144): same handshake and port 0x80,
+;  but port 0x81 sets bit0+bit1 and pulses bit5. The 80188 receives the byte
+;  and drives the OKI MSM6376 itself — the Z80 has no wires to the OKI.
 ;
 ;  Switch code encoding (C0FC values):
 ;    0x41 = 'A' = START button
@@ -260,9 +268,9 @@
 ;
 ;  Address  Calls+Jumps  Function
 ;  ───────  ──────────   ────────────────────────────
-;  0x0116   9+75=84      send_to_80188 (mailbox write)
+;  0x0116   9+75=84      send_to_80188 (J1 byte-port write)
 ;  0x01B6   25           switch_debounce (most called sub)
-;  0x0144   22           send_sound_cmd (MSM6376 output)
+;  0x0144   22           send_sound_cmd (forward sound cmd to 80188)
 ;  0x10E4   13           lamp_update_helper
 ;  0x2D3B   13           game_logic_lanes
 ;  0x2CC7   11           game_logic_bumpers
@@ -442,7 +450,7 @@ l0080h:
 	and 0feh		;0083	e6 fe		. .
 	or 010h			;0085	f6 10		. .
 	ld (0c001h),a		;0087	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;008a	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;008a	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	in a,(000h)		;008c	db 00		. .  ; << PORT_DIRECT_SW_0 - Direct switches input (flipper buttons, misc)
 	ld (hl),a		;008e	77		w
 	inc hl			;008f	23		#
@@ -451,7 +459,7 @@ l0080h:
 	and 0efh		;0095	e6 ef		. .
 	or 001h			;0097	f6 01		. .
 	ld (0c001h),a		;0099	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;009c	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;009c	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld hl,0c045h		;009e	21 45 c0	! E .
 	ld (hl),030h		;00a1	36 30		6 0
 	exx			;00a3	d9		.
@@ -560,12 +568,12 @@ sound_ctrl_init:
 	ld a,(0c001h)		;0100	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 002h			;0103	f6 02		. .
 	ld (0c001h),a		;0105	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0108	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0108	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ret			;010a	c9		.
 	ld a,(0c001h)		;010b	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	and 0fdh		;010e	e6 fd		. .
 	ld (0c001h),a		;0110	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0113	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0113	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ret			;0115	c9		.
 
 ; =============================================================================
@@ -574,40 +582,40 @@ sound_ctrl_init:
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; send_to_80188 (0x0116)
-; *** KEY *** Send mailbox byte (C0FC) to 80188 via port 0x80
+; *** KEY *** Send switch byte (C0FC) to the 80188 over J1 (port 0x80 + port 0x81 strobe)
 ; XREF: 84 references from 0x0415, 0x0D41, 0x0D49, 0x0E4B, 0x100E, 0x1021, 0x1034, 0x10E1 ... (+76 more)
 ; ─────────────────────────────────────────────────────────────────────────────
 send_to_80188:
-	in a,(001h)		;0116	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;0116	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 1,a			;0118	cb 4f		. O
 	jr z,send_to_80188		;011a	28 fa		( .
 	di			;011c	f3		.
 	ld a,(0c001h)		;011d	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 002h			;0120	f6 02		. .
-	out (081h),a		;0122	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0122	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld (0c001h),a		;0124	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	ld a,(0c0fch)		;0127	3a fc c0	: . .  ; [ram_switch_mailbox - *** MAILBOX BYTE *** Switch code → 80188 (86 refs!)]
-	out (080h),a		;012a	d3 80		. .  ; >> PORT_SOUND_DATA - Sound chip (MSM6376) data bus / 80188 mailbox data
+	out (080h),a		;012a	d3 80		. .  ; >> PORT_SOUND_DATA - inter-board data byte → 80188 over J1; 80188 drives the OKI, not the Z80
 l012ch:
 	ld a,(0c001h)		;012c	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 004h			;012f	f6 04		. .
-	out (081h),a		;0131	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0131	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld (0c001h),a		;0133	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	ld a,(0c001h)		;0136	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	and 0fbh		;0139	e6 fb		. .
 	and 0fdh		;013b	e6 fd		. .
 	ld (0c001h),a		;013d	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0140	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0140	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ei			;0142	fb		.
 	ret			;0143	c9		.
 
 ; ─────────────────────────────────────────────────────────────────────────────
 ; send_sound_cmd (0x0144)
-; Send sound command (C008) to MSM6376 chip via port 0x80
+; Forward sound command (C008) to the 80188 over J1; the 80188 drives the OKI MSM6376
 ; XREF: 22 references from 0x08BB, 0x08CE, 0x08E7, 0x08FA, 0x0913, 0x0926, 0x093F, 0x0952 ... (+14 more)
 ; ─────────────────────────────────────────────────────────────────────────────
 send_sound_cmd:
-	in a,(001h)		;0144	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;0144	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 1,a			;0146	cb 4f		. O
 	jr z,send_sound_cmd		;0148	28 fa		( .
 	di			;014a	f3		.
@@ -615,22 +623,22 @@ send_sound_cmd:
 	ld (hl),020h		;014e	36 20		6  
 	ld a,(0c001h)		;0150	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 003h			;0153	f6 03		. .
-	out (081h),a		;0155	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0155	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld (0c001h),a		;0157	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	ld a,(0c008h)		;015a	3a 08 c0	: . .  ; [ram_sound_cmd - Current sound command byte]
-	out (080h),a		;015d	d3 80		. .  ; >> PORT_SOUND_DATA - Sound chip (MSM6376) data bus / 80188 mailbox data
+	out (080h),a		;015d	d3 80		. .  ; >> PORT_SOUND_DATA - inter-board data byte → 80188 over J1; 80188 drives the OKI, not the Z80
 	ld a,(0c001h)		;015f	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 020h			;0162	f6 20		.  
-	out (081h),a		;0164	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0164	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	nop			;0166	00		.
 	nop			;0167	00		.
 	nop			;0168	00		.
 	and 0dfh		;0169	e6 df		. .
-	out (081h),a		;016b	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;016b	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld a,(0c001h)		;016d	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	and 0fdh		;0170	e6 fd		. .
 	ld (0c001h),a		;0172	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0175	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0175	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld hl,0c045h		;0177	21 45 c0	! E .
 	ld (hl),020h		;017a	36 20		6  
 	ei			;017c	fb		.
@@ -642,30 +650,30 @@ send_sound_cmd:
 ; XREF: 1 references from 0x044F
 ; ─────────────────────────────────────────────────────────────────────────────
 wait_status_ready:
-	in a,(001h)		;017e	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;017e	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 1,a			;0180	cb 4f		. O
 	jr z,wait_status_ready		;0182	28 fa		( .
 	ld hl,0c045h		;0184	21 45 c0	! E .
 	ld (hl),020h		;0187	36 20		6  
 	ld a,(0c001h)		;0189	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 003h			;018c	f6 03		. .
-	out (081h),a		;018e	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;018e	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 l0190h:
 	ld (0c001h),a		;0190	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	ld a,(0c008h)		;0193	3a 08 c0	: . .  ; [ram_sound_cmd - Current sound command byte]
-	out (080h),a		;0196	d3 80		. .  ; >> PORT_SOUND_DATA - Sound chip (MSM6376) data bus / 80188 mailbox data
+	out (080h),a		;0196	d3 80		. .  ; >> PORT_SOUND_DATA - inter-board data byte → 80188 over J1; 80188 drives the OKI, not the Z80
 	ld a,(0c001h)		;0198	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 020h			;019b	f6 20		.  
-	out (081h),a		;019d	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;019d	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	nop			;019f	00		.
 	nop			;01a0	00		.
 	nop			;01a1	00		.
 	and 0dfh		;01a2	e6 df		. .
-	out (081h),a		;01a4	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;01a4	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld a,(0c001h)		;01a6	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	and 0fdh		;01a9	e6 fd		. .
 	ld (0c001h),a		;01ab	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;01ae	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;01ae	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld hl,0c045h		;01b0	21 45 c0	! E .
 	ld (hl),020h		;01b3	36 20		6  
 	ret			;01b5	c9		.
@@ -676,19 +684,19 @@ l0190h:
 ; XREF: 25 references from 0x0E03, 0x0E5A, 0x0E6F, 0x0E84, 0x0E99, 0x0EAE, 0x0EC6, 0x0EDB ... (+17 more)
 ; ─────────────────────────────────────────────────────────────────────────────
 switch_debounce:
-	in a,(001h)		;01b6	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;01b6	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 1,a			;01b8	cb 4f		. O
 	jr z,switch_debounce		;01ba	28 fa		( .
 	di			;01bc	f3		.
 	ld a,(0c001h)		;01bd	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 002h			;01c0	f6 02		. .
 	and 0feh		;01c2	e6 fe		. .
-	out (081h),a		;01c4	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;01c4	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld (0c001h),a		;01c6	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	ld a,(0c001h)		;01c9	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	or 040h			;01cc	f6 40		. @
 	ld (0c001h),a		;01ce	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;01d1	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;01d1	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	nop			;01d3	00		.
 	nop			;01d4	00		.
 	nop			;01d5	00		.
@@ -697,11 +705,11 @@ switch_debounce:
 	ld a,(0c001h)		;01db	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	and 0bfh		;01de	e6 bf		. .
 	ld (0c001h),a		;01e0	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;01e3	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;01e3	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld a,(0c001h)		;01e5	3a 01 c0	: . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
 	and 0fdh		;01e8	e6 fd		. .
 	ld (0c001h),a		;01ea	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;01ed	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;01ed	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ei			;01ef	fb		.
 	ret			;01f0	c9		.
 	rst 38h			;01f1	ff		.
@@ -1282,10 +1290,10 @@ init_all_io:
 	out (084h),a		;043a	d3 84		. .  ; >> PORT_LAMP_ROW2 - Lamp matrix row data byte 2 (8 lamps)
 	ld a,000h		;043c	3e 00		> .
 	ld (0c000h),a		;043e	32 00 c0	2 . .  ; [ram_port80_shadow - Shadow register for PORT_SOUND_DATA]
-	out (080h),a		;0441	d3 80		. .  ; >> PORT_SOUND_DATA - Sound chip (MSM6376) data bus / 80188 mailbox data
+	out (080h),a		;0441	d3 80		. .  ; >> PORT_SOUND_DATA - inter-board data byte → 80188 over J1; 80188 drives the OKI, not the Z80
 	ld a,000h		;0443	3e 00		> .
 	ld (0c001h),a		;0445	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0448	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0448	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ld a,0ffh		;044a	3e ff		> .
 	ld (0c008h),a		;044c	32 08 c0	2 . .  ; [ram_sound_cmd - Current sound command byte]
 	call wait_status_ready		;044f	cd 7e 01	. ~ .  ; → wait_status_ready
@@ -2340,12 +2348,12 @@ sub_0c97h:
 	res 3,a			;0ca6	cb 9f		. .
 	res 0,a			;0ca8	cb 87		. .
 	ld (0c001h),a		;0caa	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0cad	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0cad	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ret			;0caf	c9		.
 l0cb0h:
 	set 3,a			;0cb0	cb df		. .
 	ld (0c001h),a		;0cb2	32 01 c0	2 . .  ; [ram_port81_shadow - Shadow register for PORT_CONTROL]
-	out (081h),a		;0cb5	d3 81		. .  ; >> PORT_CONTROL - Control register (bit4=NMI ack, bit0=sound strobe)
+	out (081h),a		;0cb5	d3 81		. .  ; >> PORT_CONTROL - control → 80188 (bit4=NMI ack; bit0=sound-chan sel; bit2=switch strobe; bit5=sound strobe)
 	ret			;0cb7	c9		.
 sub_0cb8h:
 	ld hl,(0c04ch)		;0cb8	2a 4c c0	* L .  ; [ram_sw_queue_wptr - Switch event queue write pointer]
@@ -2532,7 +2540,7 @@ l0deah:
 	nop			;0df5	00		.
 	nop			;0df6	00		.
 	nop			;0df7	00		.
-	in a,(001h)		;0df8	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;0df8	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 5,a			;0dfa	cb 6f		. o
 	jp z,l0e31h		;0dfc	ca 31 0e	. 1 .
 l0dffh:
@@ -2564,7 +2572,7 @@ l0e31h:
 	ld a,005h		;0e31	3e 05		> .
 	ld (0c05fh),a		;0e33	32 5f c0	2 _ .  ; [ram_debounce_timer - Debounce timer (97 refs - MOST REFERENCED)]
 l0e36h:
-	in a,(001h)		;0e36	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;0e36	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 5,a			;0e38	cb 6f		. o
 	jp nz,l0dffh		;0e3a	c2 ff 0d	. . .
 	ld a,(0c05fh)		;0e3d	3a 5f c0	: _ .  ; [ram_debounce_timer - Debounce timer (97 refs - MOST REFERENCED)]
@@ -2883,7 +2891,7 @@ lamp_update_helper:
 	ld (0c007h),a		;10f4	32 07 c0	2 . .  ; [ram_port87_shadow - Shadow register for PORT_MATRIX_ROW]
 	out (087h),a		;10f7	d3 87		. .  ; >> PORT_MATRIX_ROW - Switch matrix row strobe select
 l10f9h:
-	in a,(001h)		;10f9	db 01		. .  ; << PORT_STATUS - Status register (bit1=sound chip ready, handshake)
+	in a,(001h)		;10f9	db 01		. .  ; << PORT_STATUS - status (bit1 = 80188 inter-board handshake ready, via J1 BUSY/AD)
 	bit 5,a			;10fb	cb 6f		. o
 	jp z,l110eh		;10fd	ca 0e 11	. . .
 	ld a,(0c04eh)		;1100	3a 4e c0	: N .  ; [ram_timer_flag - Main timer flag (controls game timing)]

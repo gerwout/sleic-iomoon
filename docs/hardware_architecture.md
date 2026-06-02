@@ -86,11 +86,11 @@ The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 
 
 ### Main CPU Board — 80188 (16-bit) — SLEIC-PETACO 011-029A
 
-The 80188 board carries the main 16-bit CPU (`AMD N80C188`, 10 MHz), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster and almost certainly the YM3812 as well.
+The 80188 board carries the main 16-bit CPU (`AMD N80C188`, 10 MHz), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster.
 
 For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). Two programmable parts on this board are undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
-The YM3812 is driven via a shared-RAM command queue at `4000:1158+` consumed by the PIC at IC23. Background on this and the PinMAME precedents for handling undumped sound coprocessors is in [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
+The YM3812's chip-select is **/PCS5** (an 80188 peripheral chip-select; sheet 011-029-07), so if it is driven at all it is addressed by the 80188 directly — not by the PIC, and not through the `4000:1158` command queue. (That queue's consumer is itself an open question — see [`inter_cpu_communication.md`](inter_cpu_communication.md) — but it is neither the Z80 nor the DMD-only PIC.) Whether the IO Moon software actually writes the YM3812 is still unconfirmed; background and the PinMAME precedents for handling undumped sound coprocessors are in [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
 
 #### Clocking
 
