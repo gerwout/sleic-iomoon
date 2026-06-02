@@ -60,7 +60,7 @@ The IO Moon uses a **three-CPU architecture**:
 
 For the complete chip-by-chip inventory of each board, see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md) (16-bit board) and [`docs/board_011-030A_ics.md`](docs/board_011-030A_ics.md) (Z80 board).
 
-The **80188** runs game logic, the state machine, scoring, the inter-CPU mailbox, and the audio hardware: it drives both the **OKI MSM6376** voice synth (phrase number and start written through the IC50 and IC40 latches) and the **YM3812** FM synth (memory-mapped via peripheral chip-select `/PCS5`). The **Z80** scans the switch matrix and drives the lamp matrix and solenoids; its sound routines issue commands to the 80188 over the inter-board link rather than driving the sound chips directly. The **PIC 16C57-HS/P** at IC23 generates the DMD raster timing — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs; it does **not** drive the YM3812. These driver assignments were verified by tracing the 011-029 and 011-030 schematics; see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md) and [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md).
+The **80188** runs game logic, the state machine, scoring, the inter-CPU mailbox, and **both** sound chips: the **OKI MSM6376** voice synth carries **speech and sound effects** (phrase number and start written through the IC50 and IC40 latches), while the **YM3812** FM synth carries the **music** — 10 FM tracks, memory-mapped via peripheral chip-select `/PCS5`. The YM3812 driver was located and byte-verified in the 80188 ROM: a register-write primitive at `D000:0D99` and a sequencer at `D000:0D37` reading a song-index table, with all 10 tracks decoding to valid OPL2 registers (see [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md)). The **Z80** scans the switch matrix and drives the lamp matrix and solenoids; its sound routines issue commands to the 80188 over the inter-board link rather than driving the sound chips directly. The **PIC 16C57-HS/P** at IC23 generates the DMD raster timing — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs; it does **not** drive the YM3812. These driver assignments were verified by tracing the 011-029 and 011-030 schematics and the ROM disassembly; see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md), [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md), and [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md).
 
 The 80188 and Z80 communicate through shared RAM at segment `4000h` using a HOLD/HLDA bus arbitration scheme.
 
@@ -89,10 +89,12 @@ sleic-io-moon/
 ├── scripts/
 │   ├── dmd_viewer.py                  # DMD graphics viewer & exporter
 │   ├── extract-oki-msm6376.py         # OKI ADPCM sound sample extractor
+│   ├── iomoon_fm_extract.py           # YM3812 (OPL2) FM music extractor
 │   └── io_moon_press_start_patch.py   # Tournament "PRESS START" ROM patch
 ├── docs/
 │   ├── dmd_viewer.md                  # DMD Viewer documentation
 │   ├── extract_oki_msm6376.md         # OKI extractor documentation
+│   ├── iomoon_fm_extract.md           # YM3812 FM music extractor documentation
 │   ├── press_start_patch.md           # PRESS START patch documentation
 │   ├── hardware_architecture.md       # Hardware architecture overview
 │   ├── board_011-029A_ics.md          # 16-bit / 80188 board IC inventory
@@ -179,6 +181,10 @@ A Python tool for viewing, analyzing, and exporting DMD graphics from the IO Moo
 
 Extracts individual ADPCM audio samples from OKI MSM6376 sound ROM files. The MSM6376 stores audio in 4-bit IMA/OKI ADPCM format. This tool reads the chip's internal sample index, extracts each sample as raw PCM, and optionally converts them to WAV files using FFmpeg.
 
+### [YM3812 FM Music Extractor](docs/iomoon_fm_extract.md) — `scripts/iomoon_fm_extract.py`
+
+The music counterpart to the OKI extractor. Extracts the IO Moon **YM3812 (OPL2) FM music** (10 tracks) straight from the 80188 code ROM (`V1 3_01.bin`), driven by the in-ROM song-index table rather than hard-coded offsets, and exports each track as raw register logs, standard VGM, and WAV (rendered through the offline DOSBox OPL2 core via PyOPL). The YM3812 driver was located and byte-verified in ROM — write primitive at `D000:0D99`, sequencer at `D000:0D37` — and decoding all 10 tracks yields zero invalid OPL2 registers.
+
 ### [PRESS START Patch](docs/press_start_patch.md) — `scripts/io_moon_press_start_patch.py`
 
 A ROM patch for tournament use. After a game ends, the original IO Moon immediately transitions to attract mode, making it impossible to photograph or record final scores. This patch injects 80188 machine code into unused ROM space that displays "PRESS START" on the DMD and waits for the START button before returning to attract mode.
@@ -201,6 +207,7 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 |----------|-------------|
 | [Hardware Architecture](docs/hardware_architecture.md) | Dual-CPU design, CPU board components, memory map, power connectors |
 | [DMD Graphics System](docs/dmd_graphics.md) | Frame format (header, bitplanes, encoding), static screens, fonts, credits |
+| [YM3812 FM Music Extractor](docs/iomoon_fm_extract.md) | The 80188 music engine (song-index table, sequencer opcodes, write primitive) and how the extractor exports the 10 FM tracks |
 | [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) | All 50 switches, 64 lamps, and 18 solenoids with codes and descriptions |
 | [Z80 I/O Port Map](docs/z80_io_ports.md) | Port assignments, switch matrix scan routine, key Z80 RAM addresses |
 | [80188 Peripheral Configuration](docs/80188_config.md) | RELREG, chip selects (UMCS, LMCS, PACS, MMCS), wait states |
