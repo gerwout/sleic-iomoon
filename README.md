@@ -73,6 +73,7 @@ For a detailed breakdown of the hardware architecture, see:
 - [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
 - [Chips Worth Dumping](docs/chips_to_dump.md) — The undumped programmable parts (one PIC, two PALs) with dumping procedures
+- [Component Datasheets](datasheets/README.md) — Offline PDF datasheets for every IC on the boards, linked from the board IC inventories
 - [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — Complete I/O mapping from the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
@@ -105,6 +106,16 @@ sleic-io-moon/
 │   ├── 80188_config.md                # 80188 peripheral configuration
 │   ├── inter_cpu_communication.md     # Shared memory & bus arbitration
 │   └── game_software.md               # Game state machine & boot sequence
+├── datasheets/                        # Offline PDF datasheets for every board IC
+│   ├── README.md                      # Datasheet catalogue (part → file → source)
+│   ├── 80c188.pdf                     # Intel 80186/80188 CPU (IC1, 011-029A)
+│   ├── z80_cpu_user_manual.pdf        # Zilog Z80 CPU (IC1, 011-030A)
+│   ├── pic16c5x.pdf                   # Microchip PIC16C5X (IC23, 011-029A)
+│   ├── ym3812.pdf                     # Yamaha YM3812 OPL2 (IC60, 011-029A)
+│   ├── ym3014b.pdf                    # Yamaha YM3014B DAC (IC61, 011-029A)
+│   ├── msm6376_oki_voice_synthesis_databook_1994.pdf  # OKI MSM6376 (IC51)
+│   ├── pal20l10_pal16l8_mmi_pal_handbook_1983.pdf     # PALs (IC7/IC8)
+│   └── … (EPROM, SRAM, EEPROM, supervisor, op-amp, 74-series logic, …)
 ├── asm/
 │   ├── 80188_annotated.asm            # Fully annotated 80188 ROM disassembly
 │   └── z80_annotated.asm              # Fully annotated Z80 ROM disassembly

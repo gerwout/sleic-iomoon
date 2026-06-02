@@ -4,7 +4,7 @@
 
 ## Overview
 
-`extract-oki-msm6376.py` extracts individual ADPCM audio samples from ROM files used with the **OKI MSM6376** speech synthesizer chip. The MSM6376 stores audio in **4-bit IMA/OKI ADPCM** format, a lossy audio compression scheme common in mid-1990s arcade and gambling hardware.
+`extract-oki-msm6376.py` extracts individual ADPCM audio samples from ROM files used with the **OKI MSM6376** speech synthesizer chip (datasheet: [`../datasheets/msm6376_oki_voice_synthesis_databook_1994.pdf`](../datasheets/msm6376_oki_voice_synthesis_databook_1994.pdf) — the 1994 OKI Voice Synthesis ICs data book). The MSM6376 stores audio in **4-bit IMA/OKI ADPCM** format, a lossy audio compression scheme common in mid-1990s arcade and gambling hardware.
 
 This chip is used in:
 

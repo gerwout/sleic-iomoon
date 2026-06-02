@@ -2,6 +2,10 @@
 
 [← Back to main README](../README.md)
 
+> Offline datasheets for every IC named in this document are catalogued in
+> [`../datasheets/`](../datasheets/README.md) and linked per-chip from the board IC
+> inventories ([16-bit board](board_011-029A_ics.md), [Z80 board](board_011-030A_ics.md)).
+
 <p align="center">
   <a href="../images/overview_backbox_all_boards.jpg" target="_blank" rel="noopener">
     <img src="../images/overview_backbox_all_boards_thumb.jpg" alt="IO Moon backbox — all boards in situ" width="900">

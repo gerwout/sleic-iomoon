@@ -4,6 +4,8 @@
 
 Survey of every existing PinMAME driver that declares the Yamaha YM3812 FM synthesizer. The point is to identify a hookup pattern that might apply to the SLEIC IO Moon and to compare the **already-attempted-but-stalled** PinMAME drivers against IO Moon's situation. Source: `pinmame/src/wpc/{jvh,alvg,alvgs,mephisto,sleic}.c`.
 
+YM3812 datasheets: [`../datasheets/ym3812.pdf`](../datasheets/ym3812.pdf) (device datasheet) and [`../datasheets/ym3812_opl2_application_manual.pdf`](../datasheets/ym3812_opl2_application_manual.pdf) (OPL2 register-level programming manual); the companion DAC is [`../datasheets/ym3014b.pdf`](../datasheets/ym3014b.pdf).
+
 ## Drivers that map the YM3812 to addresses
 
 ### Alvin G. and Co. — `alvg_s1` sound board (`alvgs.c`)

@@ -61,7 +61,7 @@ designator not visible on this photo). Components visible:
 |-----------|-------------|
 | 2× large electrolytic capacitors | Bulk filter caps (likely 10000 µF or similar) |
 | Bridge / discrete rectifier diodes | 4× large axial diodes — discrete bridge rectifier |
-| 2× heatsink-mounted TO-220 regulators | Linear regs (likely LM7805 / LM317 — labels not visible from this angle) |
+| 2× heatsink-mounted TO-220 regulators | Linear regs (likely LM7805 / LM317 — labels not visible from this angle; candidate datasheets: [LM7805](../datasheets/candidate_lm7805.pdf), [LM317](../datasheets/candidate_lm317.pdf)) |
 | 2× cartridge fuses | In-line, output protection |
 | Bottom-edge daughter card | Small green PCB with one 8-pin IC visible — likely the +24 V / +44 V regulator or status / OK monitor |
 
@@ -148,7 +148,10 @@ Visible features:
 
 - Multiple TO-220 power transistors mounted to L-brackets (typical Darlington
   power switches — likely TIP122 / BD679 / 2N6044 family). Exact PN not
-  readable from this angle.
+  readable from this angle. Candidate-family datasheets (unconfirmed):
+  [TIP122](../datasheets/candidate_tip122.pdf),
+  [BD679](../datasheets/candidate_bd679.pdf),
+  [2N6040 (2N6044 family)](../datasheets/candidate_2n6040.pdf).
 - Series base/emitter resistors visible in a regular grid on the right side.
 - Two ribbon-cable headers at top (signals in from CPU board).
 - Solenoid / lamp blade-output connectors at the bottom edge.
@@ -339,7 +342,7 @@ dumping / firmware work.
 
 | Component | Description | Notes |
 |-----------|-------------|-------|
-| ~16 × TO-220 power transistors | Darlington power switches (likely TIP122 / BD679) | Mounted to L-bracket / chassis for heatsinking |
+| ~16 × TO-220 power transistors | Darlington power switches (likely TIP122 / BD679 / 2N6044 — candidate datasheets in [`../datasheets/`](../datasheets/README.md#candidate-parts--driver-board-011-027a-unconfirmed)) | Mounted to L-bracket / chassis for heatsinking |
 | Base resistor networks | Series resistors per channel | Standard |
 | 1 × PDIP-14 logic IC | Marking `MALAYSIA 9140K / 3910103-008 / 1474115DA` — likely 74LSxx | Single glue IC; no firmware on this board |
 | Blade output connectors | Solenoid / lamp loads | Bottom edge |
