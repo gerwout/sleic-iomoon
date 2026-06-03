@@ -451,3 +451,25 @@ an eject), **C7 "Bola Retenida"** and **C8 "Bola fuera"** (the two balls at rest
 0xA0` (C7 bit5 + C8 bit7). The Z80 then replies 0x5D and attract advances to the real screens
 ("ESTABLECIENDO VALORES FABRICA" / "PULSE START") instead of "FALTA 1 BOLA". Combined with `balls=2`,
 the 32-byte DMD stride, and `-dmd_only`, Bike Race now shows a clean single DMD running real attract.
+
+### 2026-06-03 (cont.) — NVRAM factory defaults (boots straight to attract)
+
+A fresh (0-filled) NVRAM made Bike Race show **"ESTABLECIENDO VALORES FABRICA" / "PULSE START"**
+(the factory-reset prompt) and wait, instead of going to attract. Traced it:
+- **config_validate (E05F7)** compares the config at seg 0x1040 (= phys 0x10400) against ROM-resident
+  factory defaults at E000:07BC.. in **eight sub-blocks**; any mismatch returns "invalid".  Block 1 is
+  the **"(C) SLEIC 1.994"** signature string; the rest are the default game/coin/score config.
+- **config_load_defaults (E06FB)** copies those same eight blocks ROM->NVRAM.
+
+The blocks (nvram_off @0x10400, rom_off @0xE0000, len): (0x000,0x7BC,15) (0x047,0x7CB,51)
+(0x0C9,0x7FE,32) (0x162,0x81E,53) (0x1EC,0x853,26) (0x23C,0x7FE,32) (0x2ED,0x81E,53) (0x351,0x853,26).
+
+**Fix:** `MACHINE_INIT(SLEIC)` seeds those eight blocks for Bike Race (a faithful copy of what
+config_load_defaults writes), so config_validate passes on the first check and the machine boots
+straight to attract — it shows "BOLAS OK" (ball check) and then cycles the real attract screens, no
+factory-reset prompt.  (The NVRAM is re-seeded each boot rather than persisted across runs; a proper
+NVRAM handler that maps the 0x10400 region as battery-backed and saves it is a follow-up.)
+
+**Bike Race status:** boots → renders DMD cleanly → real bidirectional J1 handshake → balls present →
+NVRAM valid → **boots straight to a clean, cycling attract** (run with `-dmd_only`).  Remaining for
+gameplay: coin/start + flipper switch wiring and sound (YM3812/OKI).
