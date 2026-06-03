@@ -18,11 +18,14 @@ Findings from making the Io Moon machine **run** in PinMAME (the `vpinball/pinma
 | 4 | 80188 interrupt model — IVT, vectors, **the NMI**, HOLD_LINE | **FIXED** — three real ISRs |
 | 5 | **LMCS ROM banking** (ROM2 frames ↔ ROM1 fonts) | **FIXED** — *the keystone*; broke the freeze |
 | 6 | DMD-VBLANK **NMI + J1 vsync** (`dmd_vblank_isr`, `[1147]`, 0x47) | **FIXED** — boot reaches the main loop |
-| 7 | DMD **frame-command handshake** via the PIC at PCS2 0xA0100 | **OPEN** — needs the undumped IC23 PIC |
+| 7 | DMD **frame-command handshake** via the PIC at PCS2 0xA0100 | **MODELED** — loopback; game animates + takes input |
+| 8 | Full attract→gameplay flow + audible YM3812/OKI music | **OPEN** — needs the exact (undumped) PIC frame timing |
 
-Items 1–6 are in the driver (kept local for review). The machine now **boots, runs fully
-interrupt-driven, and executes its main loop and game-logic dispatch** — none of which was possible
-before. The one remaining wall (item 7) is a hardware dependency on the undumped PIC.
+Items 1–7 are in the driver (kept local for review). The machine now **boots, runs fully
+interrupt-driven, executes its complete main loop, drives the DMD command protocol, animates an
+intro sequence, and responds to switch input** — none of which was possible before. The remaining
+gap (item 8) is faithfully reproducing the rest of the attract→gameplay chain, which increasingly
+depends on the exact undumped-PIC frame timing.
 
 ## 1. [FIXED] Release-build segfault — a genuine i86-core bug
 
@@ -103,26 +106,45 @@ each frame, the boot 0x47 reaches the queue, **`vsync_check` succeeds and the ma
 into `process_input_events` and `default_game_logic` — the deepest the firmware has ever run under
 emulation.
 
-## 7. [OPEN] DMD frame-command handshake — blocked on the undumped IC23 PIC
+## 7. [MODELED] DMD frame-command handshake — PIC loopback
 
-The main loop now reaches `process_input_events` (D5A45), which pushes command `0xF9` to the command
-queue and waits up to 400 ticks for `timer_tick_handler` (D5F03) to consume a **≥0xF0** byte from the
-display queue, else it traps at `d5a87: jmp $` (a deliberate halt). That ≥0xF0 acknowledgement is a
-**DMD frame-command byte supplied by the PIC over PCS2 0xA0100** as it rasterizes frames — alongside
-the `0x47` (sync), `0x32` (end-of-frame), and `0x45/0x46` (buffer-swap) markers `dmd_vblank_isr`
-decodes. The Z80 is *not* the source: it is alive and loops correctly but only sends on switch
-changes (verified — one boot strobe, PC cycling through its main loop). The frame markers come from
-the **IC23 PIC16C57 (DMD rasterizer), whose firmware is undumped**.
+The main loop reaches `process_input_events` (D5A45), `lamp_matrix_update`/`frame_counter_update`,
+and the intro display routines, all of which consume a **byte stream the PIC feeds the 80188 at PCS2
+0xA0100**. Tracing the consumers reveals the protocol:
 
-So the remaining blocker is a **hardware data dependency**: faithfully modelling the PIC's DMD
-frame-command stream at 0xA0100 requires the PIC dump. Until then the firmware reaches the start of
-its attract frame loop and waits for the PIC. The two outstanding dumps — **IC23 PIC16C57** and
-**IC7 PAL20L10** — gate, respectively, the DMD frame handshake (item 7) and confirmation of the
-ROM-bank truth table (item 5).
+* `vsync_check` (D5D1B) advances on **0x47** (vsync).
+* `timer_tick_handler` (D5F03) advances on a **≥0xF0** display-command ack.
+* `frame_counter_update` (D5D8D) advances on **0x45/0x46** (buffer swap → `dmd_buffer_swap`).
+* `lamp_set` (D5AEB) advances on a **switch code** (e.g. 0x40 = upper flipper).
+* `0x32` = end-of-frame (bumps the frame counter `[1144]`).
+
+And the *output* side: `dmd_queue_service` (D01E5, run by `frame_isr`) drains the display-command
+queue (4000:1158) to the DMD controller — writing each byte to **PCS1 0xA0080** and strobing **PCS4
+0xA0200**, gated on the controller-ready bit **PCS1 0xA0180.0**. (That ready bit returned 0 in the
+driver, so the queue never drained and `process_input_events` trapped at `d5a87: jmp $`.)
+
+The driver now models the PIC (IC23) as a **command-echo + frame-marker loopback**: 0xA0180.0 reports
+ready; bytes the 80188 writes to 0xA0080 are echoed back; and 0xA0100 delivers a repeating per-frame
+marker sequence (`0x47` → echoed commands → `0x46` → `0x32`), with fresh Z80 J1 bytes interleaved.
+With this, the firmware **runs its whole main loop, drives the DMD command protocol, plays an intro
+animation (timed `[1139]` frame delays cycling), and responds to input** — injecting switch code 0x40
+advances the intro to the next screen (verified: PC moves on, new display commands issue). **Switches
+register.**
+
+## 8. [OPEN] Full attract→gameplay flow + audible music
+
+What remains is reproducing the rest of the chain — intro → attract (`game_state_var` 0→1 at D2FDA) →
+started ball (state 2) → the YM3812 music sequencer (`D000:0D1B`) and OKI dispatch arming. The intro
+is a sequence of input/timed-gated screens; advancing it faithfully (and the buffer-swap / multi
+consumer ordering on the shared display queue) depends on the **exact PIC frame timing**, which is in
+the **undumped IC23 PIC16C57**. The 10 FM tracks decode cleanly offline (see `iomoon_fm_extract.md`);
+hearing them in-emulator needs gameplay. The two outstanding dumps — **IC23 PIC16C57** (frame timing)
+and **IC7 PAL20L10** (ROM-bank truth table) — gate the rest.
 
 ---
 
-*PinMAME branch kept local pending review. Items 1–6 are FIXED in the driver and take the machine
-from "segfaults / total freeze" to "boots, runs interrupt-driven, executes the main loop and game
-dispatch with a working DMD-vsync mechanism." Item 7 (the PIC DMD frame handshake) is the next —
-and is blocked on dumping the IC23 PIC.*
+*PinMAME branch kept local pending review. Items 1–7 take the machine from "segfaults / total freeze"
+to "boots, runs fully interrupt-driven, executes its complete main loop, drives the DMD command
+protocol, animates an intro, and responds to switch input." The PIC loopback (item 7) is a faithful
+first-order model; item 8 (the full attract→gameplay flow + audible music) needs the exact PIC frame
+timing from the IC23 dump.*
