@@ -359,3 +359,26 @@ on between ESPERANDO and the running attract (a specific Z80 event sequence, not
 
 **Direct payoff for Io Moon:** the **`>0xF0` ACK** finding (not the literal echo) applies to Io Moon's own
 `d5a87` `process_input_events` trap — the same firmware family, same event-check structure.
+
+### 2026-06-03 (cont.) — the attract-init is a multi-gate J1 handshake cascade
+
+RE of the main loop (E50E:0007) shows the boot-init is a *sequence* of event-gates over the shared
+J1 inbound queue (NMI-filled, 0x37=idle), gating entry to the game state machine (state byte
+seg 0x116:[0x99] = phys 0x11F9, set =2 at E5230):
+- **Gate A** (E9509): wait for **0x5F** (Z80 boot-ready) — ESPERANDO is shown until this passes.
+- **Gate B** (E957B): send cmd 0xD4 → wait for a byte **>0xF0** (200-tick timeout → E95BE trap).
+- **Gate C** (E95C2): send cmd 0xD5 → wait (no timeout) for ball-status **0x5B/5C/5D**.
+- **Gate D** (E9478): wait for Z80 event **0x36** (bkio07 sends it from 0x0E16, conditional on Z80 state).
+- …and more after.
+
+A **selective per-command loopback** (cmd 0xD4→0xF1, cmd 0xD5→0x5D, else fire-and-forget — a blanket
+ACK floods the queue and drowns gate A's 0x5F) clears gates B and C and **advances past ESPERANDO and
+the trap to a real attract text screen**, then stalls at gate D.
+
+**The honest architectural conclusion:** modelling each gate's reply as an 80188-side loopback is a
+shortcut that runs out after a gate or two, because the Z80-sourced gates (A, C, D, …) each need the
+*real* bkio07 firmware's conditional response. The faithful fix is to **wire the bidirectional J1**:
+the 80188 writes commands to 0xA0080 and the Z80 must READ them (via a Z80 IN port not yet identified —
+the bkio07 RE so far only mapped the Z80→80188 send path and the port-0x01 status) and answer through
+its normal send path. Only **gate B** is genuine glue logic (the I8039 returns nothing). This is the
+recommended next step, and it would resolve the whole cascade at once rather than gate-by-gate.
