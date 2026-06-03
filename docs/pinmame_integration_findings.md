@@ -382,3 +382,26 @@ the 80188 writes commands to 0xA0080 and the Z80 must READ them (via a Z80 IN po
 the bkio07 RE so far only mapped the Z80→80188 send path and the port-0x01 status) and answer through
 its normal send path. Only **gate B** is genuine glue logic (the I8039 returns nothing). This is the
 recommended next step, and it would resolve the whole cascade at once rather than gate-by-gate.
+
+### 2026-06-03 (cont.) — bidirectional J1 wired → Bike Race attract RUNS
+
+Cross-verified RE of bkio07 (two independent Z80 decoders) showed the Bike Race Z80 **does** read the
+80188's commands (unlike Io Moon): the 80188's **0xA0080 write asserts the Z80 NMI**; the NMI (0x0066)
+reads the command via **IN port 0x00**, and the dispatcher (0x10FF, jump table @0x2000) handles it:
+cmd **0xD4** → handler 0x2923 replies `IN(0x04)|0xF0` (always >0xF0 → gate B); cmd **0xD5** → handler
+0x0B1D replies ball-trough status **0x5B/5C/5D** (gate C). The reply returns through the Z80's normal
+send path (OUT 0x80 + port-0x81 bit-2 strobe → 0xA0100).
+
+**Driver:** replaced the per-command loopback with the real link — on a 0xA0080 write, latch the byte
+and pulse the Z80 NMI; the Z80 IN(0x00) returns it; the Z80 NMI is no longer fired by the 145 Hz
+periodic (it is now event-driven on the command, else the stale command re-enqueues every frame).
+
+**Result:** with the genuine bkio07 firmware answering, the 80188 clears gates A/B/C
+(`Z80->5F`; `188->cmd D4`→`Z80->FF`; `188->cmd D5`→`Z80->5B` "ball present") and the **DMD runs a
+cycling/animating attract sequence** (the pixel count cycles through ~6 distinct frames plus blanks)
+instead of stalling. This is the faithful fix — no faked replies.
+
+**Remaining (non-blocking polish):** (1) a DMD vertical-striping cosmetic artifact from the stand-in
+`SLEIC_irq_i8039` 0x60410 decoder (content correct/readable; faithful fix = real I8039 rasterization);
+(2) gate D (autonomous 0x36 on a flipper direct-switch) + coin/start to reach gameplay; (3) sound.
+The bidirectional-J1 model, the >0xF0 ACK, and the gate structure transfer directly to Io Moon's d5a87.
