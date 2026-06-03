@@ -100,8 +100,18 @@ headlessly (from the boot/gameplay RE):
 
 Then `dmd_anim_sequence_play` (d8066) → `dmd_anim_helper` (d815f, state=3) → `game_start_sequence`
 (d33a5) → `ball_serve` (d34f4); the game runs interrupt-driven and the YM3812 (`iomoon_periph_w`
-PCS5 `0xA0280`/`0xA0281`) + OKI fire. Implementing this switch/credit harness + verifying audible
-music is the immediate next pass.
+PCS5 `0xA0280`/`0xA0281`) + OKI fire.
+
+**Empirical result (this pass):** seeding the credit and pulsing START did **not** progress the game
+— it stays locked in **state 3** (attract animation) and never returns to state 1 to check the
+credit/START. The state machine isn't cycling, which points at the **Z80↔80188 J1 inter-CPU comms**:
+the 80188's attract/main loop consumes Z80 events (switch scans, the `0x47` display sync, queue
+bytes ≥0xF0 for `timer_tick_handler`) to advance, and the driver's mailbox approximation
+(`iomoon_z80_to_188_mailbox` poking `0x41496`) doesn't deliver the full J1 protocol the 80188 polls.
+**So the real next blocker is completing the Z80↔80188 J1 comms** (the byte-port handshake +
+switch-event/`switch_event_pending` `[4000:1147]` + the display/queue sync), after which the credit/
+START/trough recipe above should drive a started ball with audible music. This is the priority for
+the next pass.
 
 ---
 
