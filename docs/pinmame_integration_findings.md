@@ -405,3 +405,25 @@ instead of stalling. This is the faithful fix — no faked replies.
 `SLEIC_irq_i8039` 0x60410 decoder (content correct/readable; faithful fix = real I8039 rasterization);
 (2) gate D (autonomous 0x36 on a flipper direct-switch) + coin/start to reach gameplay; (3) sound.
 The bidirectional-J1 model, the >0xF0 ACK, and the gate structure transfer directly to Io Moon's d5a87.
+
+### 2026-06-03 (cont.) — DMD rendering fixed (striping + single-DMD view)
+
+The Bike Race DMD showed vertical striping with the text squished/mis-positioned, plus 3 small panels
+below it. Root causes:
+- **Striping:** the `SLEIC_irq_i8039` stand-in decoder read the 0x60410 frame buffer with a 16-byte row
+  stride, but the DMD VRAM is **32 bytes per row** (16 bytes = 128 px, MSB first, 1 = lit, followed by
+  16 unused bytes). Reading 16 made every real row alternate with a blank (the "striping") and showed
+  only the top half of the frame. Fixed to a 32-byte stride -> text renders full-height, correctly
+  positioned. (Verified against a buffer dump: content rows at 0x60590, 0x605B0, 0x605D0… = 32 apart.)
+- **The "3 panels"** are PinMAME's generic **simulator status grids** (solenoids / diagnostic LED / GI /
+  lamps, drawn in `core.c` ~line 1990 below the DMD) — not a driver issue. Run with **`-dmd_only`** for a
+  clean single DMD (confirmed: a perfect 128x32 DMD showing "FALTA 1 BOLA", nothing else).
+- **Ball count corrected to 2** (manual §3.9 multiball): `INITGAME(bikerace,…,2)`.
+
+**Still open — "FALTA 1 BOLA":** the 80188's passive ball-count reports a missing ball because the trough
+is empty in emulation. The Z80 cmd-0xD5 ball handler reads matrix column 4 (`swMatrix[5]`, bits 2/5/7,
+trough cluster C6/C7/C8 + C17 pendulum per the manual) but *defaults to "ball present"*, so the FALTA is
+the 80188's own count routine — which needs x86 tracing to find exactly which trough switches it counts
+and how many, so the driver can preset them. Forcing whole switch columns changes the display but isn't a
+clean fix. (Attract otherwise runs and cycles correctly; the message is the machine faithfully reporting
+an empty trough.)
