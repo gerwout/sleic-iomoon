@@ -4,117 +4,125 @@
 
 Findings from making the Io Moon machine **run** in PinMAME (the `vpinball/pinmame` fork, driver
 `src/wpc/sleic.c`, machine `SLEIC2`), from building + running headless (Xvfb, `-nosound`,
-`-frames_to_run`, valgrind, gdb, targeted instrumentation).
+`-frames_to_run`, valgrind, gdb, and targeted CPU-core instrumentation).
 
 > Status: **[FIXED]** verified fix in the driver/core · **[OPEN]** the remaining work.
 
 ## Summary
 
 | # | Item | Status |
-|---|---|---|
+|---|------|--------|
 | 1 | Release-build segfault (i86 `change_pc16` on a 20-bit CPU) | **FIXED** — the game runs |
 | 2 | Direct-switch polarity inverted | **FIXED** |
-| 3 | DMD read the wrong (empty) buffer → solid panel | **FIXED** — renders real 4-grey content |
-| 4 | 80188 interrupts never fired (wrong IVT + wrong vector + not latched) | **FIXED** — the boot now completes through the real ISRs |
-| 5 | Music (YM3812) / OKI audible | **OPEN** — needs reaching gameplay (attract is IF=0/silent) |
-| 6 | Reaching gameplay (credit / start / ball-trough switches) | **OPEN — the next step** |
+| 3 | DMD read the wrong (empty) buffer → solid panel | **FIXED** |
+| 4 | 80188 interrupt model — IVT, vectors, **the NMI**, HOLD_LINE | **FIXED** — three real ISRs |
+| 5 | **LMCS ROM banking** (ROM2 frames ↔ ROM1 fonts) | **FIXED** — *the keystone*; broke the freeze |
+| 6 | DMD-VBLANK **NMI + J1 vsync** (`dmd_vblank_isr`, `[1147]`, 0x47) | **FIXED** — boot reaches the main loop |
+| 7 | DMD **frame-command handshake** via the PIC at PCS2 0xA0100 | **OPEN** — needs the undumped IC23 PIC |
 
-Items 1–4 are in the driver (kept local for review). The machine now boots cleanly into its
-**interrupt-driven attract** with a working DMD. The remaining gap is purely **reaching a started
-ball**, where the game arms the music and the ISRs resume.
+Items 1–6 are in the driver (kept local for review). The machine now **boots, runs fully
+interrupt-driven, and executes its main loop and game-logic dispatch** — none of which was possible
+before. The one remaining wall (item 7) is a hardware dependency on the undumped PIC.
 
 ## 1. [FIXED] Release-build segfault — a genuine i86-core bug
 
-valgrind: `Invalid read at cpu_readop ← i186_execute`, "Access not within mapped region at
-0xD011C". The i86/i186/i188 core sets the opcode base via **`change_pc16`**, but I188 is a **20-bit**
-CPU (`cpuintrf.c: CPU0(I188,…,8,20,…)`); the 16-bit updater indexes the L1 table with `pc>>4` not
-`pc>>8`, so a PC ≥ 0x10000 (segment D000) corrupts `OP_ROM` and the release fast path dereferences
-it. **Fix:** `change_pc16`→`change_pc20` in `src/cpu/i86/i86.h:98` and `i86.c:166,192,589`.
-valgrind-clean; multi-thousand-frame runs, no segfault. (Affects any i86-family game; only Io Moon
-triggered it, via its multi-region map + high D000 code.)
+valgrind: invalid read in `cpu_readop ← i186_execute`. The i86/i186/i188 core set the opcode base
+with **`change_pc16`**, but I188 is a **20-bit** CPU; the 16-bit updater indexes the page table with
+`pc>>4` not `pc>>8`, so any PC ≥ 0x10000 (segment D000/F000) corrupts `OP_ROM` and the release fast
+path dereferences it. **Fix:** `change_pc16`→`change_pc20` in `src/cpu/i86/i86.h:98` and
+`i86.c` (3 sites). valgrind-clean; multi-thousand-frame runs, no segfault. (Affects any i86-family
+20-bit game; only Io Moon triggered it.)
 
 ## 2. [FIXED] Direct-switch polarity
 
-The Z80 reads direct switches **active-low** (idle `0xFF`); the driver returned ports 0x00/0x03/0x04
-non-inverted, so idle = every direct switch phantom-held. Fixed by inverting them.
+The Z80 reads direct switches **active-low** (idle `0xFF`). The driver returned ports 0x00/0x03/0x04
+non-inverted → idle = every direct switch phantom-held. Fixed by inverting them.
 
 ## 3. [FIXED] DMD read the wrong buffer
 
-Segment 7000h is only a clear/staging area (always all-zeros → solid lit panel). The 80188 draws
-into the buffer addressed by the **display pointer at `4000:1150`** (runtime `4000:1220`=`0x41220`).
-`iomoon_submit_dmd_frame` now reads that pointer (plane0=base, plane1=base+0x200) and renders real
-4-grey attract graphics.
+Segment 7000h is only a clear/staging area. The real frame is addressed by the **display pointer at
+`4000:1150`**. `iomoon_submit_dmd_frame` now reads that pointer (plane0=base, plane1=base+0x200).
 
-## 4. [FIXED] 80188 interrupts — IVT location + vector + HOLD_LINE
+## 4. [FIXED] 80188 interrupt model — IVT, vectors, the NMI, HOLD_LINE
 
-Three things had to be right for the 80188's two interrupts to fire (INT0 type 0x0C →
-`frame_isr` D000:0343 = YM3812 music + DMD; Timer0 type 0x08 → `sound_timer_isr` D000:024F = OKI):
+The IVT image lives in ROM1 (`V1 3_01.bin`) at offset 0 and is placed at physical 0 by a one-time
+`memcpy(region, region+0x80000, 0x400)`. Decoding it reveals **three** enabled interrupts:
 
-1. **Vector.** I188's default IRQ vector is `0xFF` (`cpuintrf.c:465`), so the old
-   `cpu_set_irq_line(0,PULSE_LINE)` vectored to type 0xFF — neither ISR. The driver now injects the
-   right types with `cpu_set_irq_line_and_vector(…, 0x0C / 0x08)`.
-2. **IVT location.** The 80188 reads vectors from physical 0, which the driver maps as ROM2 graphics
-   — *not* a valid IVT. The **valid IVT image is in ROM1 (`V1 3_01.bin`) at offset 0** (file `0x20`
-   = IVT[8] = `D000:024F`; file `0x30` = IVT[0x0C] = `D000:0343`). A one-time
-   `memcpy(region, region+0x80000, 0x400)` places it at physical 0. *(On the real board physical 0
-   is RAM holding this image — LMCS is RAM with the DMD graphics banked, not "ROM2 at physical 0";
-   a clean memory-map fix is the long-term form, but the memcpy is correct and sufficient.)*
-3. **HOLD_LINE, not PULSE_LINE.** MAME's i86 only takes an IRQ `if (I.IF)` and doesn't latch a
-   pulse; but its `STI` handler re-checks a *held* request (`if (I.IF && I.irq_state) _interrupt`).
-   So `HOLD_LINE` survives the brief IF=0 windows during boot.
+| IVT type | Phys | Vector | Handler | Role |
+|---|---|---|---|---|
+| **0x02 (NMI)** | 0x008 | D000:016D | `dmd_vblank_isr` | DMD VBLANK: reads PCS2 (J1) latch, fills display queue, sets `[1147]` |
+| 0x08 (Timer0) | 0x020 | D000:024F | `sound_timer_isr` | OKI sample streaming; decrements `[113D]` etc. |
+| 0x0C (INT0)   | 0x030 | D000:0343 | `frame_isr`       | YM3812 music sequencer + DMD command queue service |
 
-**Result (verified):** the boot's `process_input_events` busy-wait on `[4000:113D]` — which is
-decremented **only** by `sound_timer_isr` (d02fe) — now clears, so the **boot completes** and the
-80188 reaches its normal **interrupt-driven attract** (state 3, DMD rendering). The implemented
-generator (`iomoon_irq_gen`, `MDRV_CPU_PERIODIC_INT(…,244)`) emits Timer0 (~99 Hz) and INT0
-(~145 Hz) by accumulator. *(One-vector-per-tick under a single IRQ line slightly under-drives the
-faster source; a future refinement is two MAME timers or modelling the EOI/INSERV at 0xFF2C to
-clear+re-assert. Both ISRs already EOI to 0xFF2C — a no-op in this core.)*
+The NMI (type 2) is the **DMD frame interrupt** — it was the missing third source. Timer0/INT0 are
+maskable and were vectored correctly only after: (a) the right vectors via
+`cpu_set_irq_line_and_vector(…,0x08/0x0C)` (the I188 default vector is 0xFF), and (b) **HOLD_LINE**
+(MAME's i86 only takes an IRQ while `IF=1` and re-checks a *held* request on `STI`).
 
-## 5. [OPEN] Music / OKI audible — needs gameplay
+## 5. [FIXED] LMCS ROM banking — the keystone that broke the freeze
 
-In **attract** the game runs with interrupts effectively off after boot (the ISR EOI count freezes —
-~27 runs to clear the boot wait, then stops), and attract is **silent on real hardware** (no song is
-armed). So no YM3812/OKI output in attract is *correct*. The music sequencer (`D000:0D1B`, DS=4000h:
-enable `[12EE]`=`0x412EE`, duration `[12EC]`=`0x412EC`, song ptr `[12EA]`=`0x412EA`, tempo
-`[12EF]`=`0x412EF`; song table `CS:0DE5`) and the OKI dispatch only run when the game is in a
-**started ball** and re-enables/serves the interrupts. The 10 FM tracks decode cleanly offline
-(see `iomoon_fm_extract.md`); the in-emulator path to hearing them is item 6.
+**This was the root cause of the total freeze.** Symptom: after ~28 boot interrupts the 80188 fell
+into an **infinite loop inside an interrupt** (entries=28, returns=27) and ran the entire attract with
+`IF=0`, so no further interrupt ever fired — the machine looked alive (≈740 FPS) but was dead.
 
-## 6. [OPEN — next step] Reaching gameplay
+Root cause: the LMCS low-memory window (80188 segment `0000–3FFF`, physical 0x00000–0x3FFFF) is
+**hardware-banked** between two ROM sources:
 
-State machine `state_machine_dispatch` (D000:3002) on `game_state_var` (`413C:014F`=`0x4150F`):
-1→`attract_mode_handler` (starts a game when `credit_available` `413C:00D4`=**`0x41494`** ≠ 0),
-2→`game_active_handler`, 3→attract animation, 4→special. The recipe to drive a started ball
-headlessly (from the boot/gameplay RE):
+* **ROM2** (`V1 3_02.bin`) — DMD **animation frames** (1030-byte frames, headers `{0x20,0x10,0x200}`)
+* **ROM1's low half** (`V1 3_01.bin` file 0x00000–0x3FFFF) — DMD **fonts / static screens / credits**
 
-1. **Credit**: poke `0x41494` (413C:00D4) non-zero, *or* assert COIN (switch code `0x42`).
-2. **START**: assert switch code `0x41` (Port 0x03 bit 3 → `swMatrix[9]` bit 3; the SLEIC2
-   SWITCH_UPDATE already routes the START input there). `button_filter_accept_start` (d7b47) accepts
-   0x40/0x41/0x42.
-3. **Ball trough**: default-**close** the trough sensors **C6/C7/C8** ("Contacto salida bolas 1-3",
-   matrix switches) and leave the drain/outhole **C9** open, else `ball_serve` (d34f4) /
-   `ball_drain_handler` (d31d3) treats the ball as drained and bounces back to attract.
-4. The Z80 must keep delivering J1 events (the main loop's `vsync_check` d5d1b and
-   `timer_tick_handler` d5f03 consume them).
+ROM1 is 512 KB but UMCS only exposes its top 256 KB (code at 0xC0000–0xFFFFF), so the font half is
+reachable **only** through this banked window. The driver hard-wired ROM2 there, so every font/string
+descriptor read hit graphics garbage. Concretely a BIOS text routine reads a 6-byte `{rows,width,
+stride}` header via `les si,[cs:536F]` → `3000:036A`; under ROM2 that is `{0x0000, 0xE11F}` → a
+**3.78-billion-iteration** draw loop (an effective hang inside `frame_isr`). The *same* offset in
+ROM1 is `{0x0A, 0x04, 0x28}` = a valid 10×4 glyph. Verified live: `ROM1[0x1029A]={8,3,24}`,
+`ROM1[0x3036A]={10,4,40}`.
 
-Then `dmd_anim_sequence_play` (d8066) → `dmd_anim_helper` (d815f, state=3) → `game_start_sequence`
-(d33a5) → `ball_serve` (d34f4); the game runs interrupt-driven and the YM3812 (`iomoon_periph_w`
-PCS5 `0xA0280`/`0xA0281`) + OKI fire.
+The bank is selected by **IC40 (74LS273) latch bits EEE1/EEE2 = bits 4/5 of the PCS0 byte
+(0xA0000)**, decoded by the **IC7 PAL20L10**. The driver now models it: `iomoon_lmcs_r` returns
+ROM1-fonts when PCS0 bit 5 is set, else ROM2 (bit 4 selecting ROM2's 256 KB half). With the bank in
+place the deadlock is gone: interrupts flow continuously (thousands of taken/returned pairs), `IF=1`
+returns, and the 80188 reaches its main loop.
 
-**Empirical result (this pass):** seeding the credit and pulsing START did **not** progress the game
-— it stays locked in **state 3** (attract animation) and never returns to state 1 to check the
-credit/START. The state machine isn't cycling, which points at the **Z80↔80188 J1 inter-CPU comms**:
-the 80188's attract/main loop consumes Z80 events (switch scans, the `0x47` display sync, queue
-bytes ≥0xF0 for `timer_tick_handler`) to advance, and the driver's mailbox approximation
-(`iomoon_z80_to_188_mailbox` poking `0x41496`) doesn't deliver the full J1 protocol the 80188 polls.
-**So the real next blocker is completing the Z80↔80188 J1 comms** (the byte-port handshake +
-switch-event/`switch_event_pending` `[4000:1147]` + the display/queue sync), after which the credit/
-START/trough recipe above should drive a started ball with audible music. This is the priority for
-the next pass.
+> ⚠️ The exact bit→bank truth table lives in the **undumped IC7 PAL20L10**. The bit-5/bit-4 model
+> above is the empirically-verified approximation and should be confirmed against the PAL fuse map.
+
+## 6. [FIXED] DMD-VBLANK NMI + J1 vsync — boot reaches the main loop
+
+With banking fixed, the 80188 spun in `main_loop_wait_vsync` (D2F59), polling `vsync_check` (D5D1B),
+which returns "frame ready" only when **`[4000:1147]` ≠ 0** *and* the display-queue byte at
+`[4000:1150]` **== 0x47**. Both are produced by the **NMI** `dmd_vblank_isr` (D000:016D), which on
+the real board is raised once per DMD frame by the PIC: it reads the J1 inbound latch at **PCS2
+0xA0100**, appends the byte to the display queue at `4000:1220`, and sets `[1147]=0xFF`.
+
+The driver now (a) generates the NMI at the 244 Hz DMD frame rate in `iomoon_irq_gen`, and (b) models
+PCS2 0xA0100 as the J1 inbound latch (`iomoon_j1_inbound`, consume-on-read, default `0x32` =
+"no new data / end-of-frame"), strobed by the Z80's port-0x81 bit-2 write. Result: `[1147]` is set
+each frame, the boot 0x47 reaches the queue, **`vsync_check` succeeds and the main loop advances**
+into `process_input_events` and `default_game_logic` — the deepest the firmware has ever run under
+emulation.
+
+## 7. [OPEN] DMD frame-command handshake — blocked on the undumped IC23 PIC
+
+The main loop now reaches `process_input_events` (D5A45), which pushes command `0xF9` to the command
+queue and waits up to 400 ticks for `timer_tick_handler` (D5F03) to consume a **≥0xF0** byte from the
+display queue, else it traps at `d5a87: jmp $` (a deliberate halt). That ≥0xF0 acknowledgement is a
+**DMD frame-command byte supplied by the PIC over PCS2 0xA0100** as it rasterizes frames — alongside
+the `0x47` (sync), `0x32` (end-of-frame), and `0x45/0x46` (buffer-swap) markers `dmd_vblank_isr`
+decodes. The Z80 is *not* the source: it is alive and loops correctly but only sends on switch
+changes (verified — one boot strobe, PC cycling through its main loop). The frame markers come from
+the **IC23 PIC16C57 (DMD rasterizer), whose firmware is undumped**.
+
+So the remaining blocker is a **hardware data dependency**: faithfully modelling the PIC's DMD
+frame-command stream at 0xA0100 requires the PIC dump. Until then the firmware reaches the start of
+its attract frame loop and waits for the PIC. The two outstanding dumps — **IC23 PIC16C57** and
+**IC7 PAL20L10** — gate, respectively, the DMD frame handshake (item 7) and confirmation of the
+ROM-bank truth table (item 5).
 
 ---
 
-*PinMAME branch kept local pending review. The driver carries items 1–4 (FIXED); item 6 (the
-gameplay switch/credit harness) is the path to items 5 (audible music/OKI) and a fully playable
-machine.*
+*PinMAME branch kept local pending review. Items 1–6 are FIXED in the driver and take the machine
+from "segfaults / total freeze" to "boots, runs interrupt-driven, executes the main loop and game
+dispatch with a working DMD-vsync mechanism." Item 7 (the PIC DMD frame handshake) is the next —
+and is blocked on dumping the IC23 PIC.*
