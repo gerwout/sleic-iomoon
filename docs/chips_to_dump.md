@@ -64,14 +64,14 @@ In practice, if the chip turns out to be locked, sending it to a recovery lab is
 - **Datasheet**: [`../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf`](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf) (MMI PAL Handbook — PAL20L10 device structure / fuse map).
 - **Role**: combinational chip-select / bus glue on the 80188 main bus.
 
-  The 80188's internal chip-select unit (UMCS / LMCS / MMCS / PACS, programmed at boot via RELREG = `C03C`) covers the obvious large blocks — the program EPROMs at IC10 / IC11, the 32 K × 8 main work RAM at IC12, and a 64-byte peripheral block. The rest of the 80188 address space has to be decoded externally, which is what IC7 does. With 12 dedicated inputs, 10 active-low outputs, and a position on the address bus immediately next to the 80188, it is the only part on the board with the I/O budget to do the per-peripheral decode.
+  The 80188's internal chip-select unit (UMCS / LMCS / MMCS / PACS / MPCS, programmed at boot — UMCS = `C03C` opens the ROM window) covers the obvious large blocks — the program EPROMs at IC10 / IC11, the 32 K × 8 main work RAM at IC12, and a 64-byte peripheral block. The rest of the 80188 address space has to be decoded externally, which is what IC7 does. With 12 dedicated inputs, 10 active-low outputs, and a position on the address bus immediately next to the 80188, it is the only part on the board with the I/O budget to do the per-peripheral decode.
 
   The 80188 touches several memory-mapped peripherals that fall outside the internal CSU:
 
-  - The **DMD controller hardware registers at segment `A000h`**, where the 80188 hands frames to the PIC at IC23.
-  - The **shared-RAM mailbox window at segment `4000h`**, where the 80188 and the Z80 swap commands under HOLD / HLDA bus arbitration.
+  - The **peripheral chip-select block at segment `A000h`** (the 80188's `/PCS0`–`/PCS6` lines), which carries the DMD controller registers — where the 80188 hands frames to the PIC at IC23 — and the sound chip selects (YM3812 at `/PCS5`, OKI control latch / `/OKCS` strobe).
+  - The **J1 inbound byte-port latch** (`/PCS2`, `0xA0100`), where the 80188 reads bytes the Z80 sends over J1. (J1 is an 8-bit handshaken byte-port — there is no shared RAM and no HOLD / HLDA bus arbitration; segment `4000h` is 80188-private work RAM.)
   - The **scratchpad SRAM at IC33** (2 K × 8) and the **28C64A NVRAM at IC14**.
-  - The output latches **IC40 / IC50** that buffer command and data writes on their way to the YM3812 and the DMD bus.
+  - The output latches **IC40 / IC50** that buffer command and data writes on their way to the OKI MSM6376 and the DMD bus.
 
   IC7 generates the per-peripheral chip-selects for each of those, plus very likely the write-enable gating that protects the NVRAM from spurious writes during power transitions (in tandem with the MAX699 supervisor at IC6).
 
@@ -160,7 +160,7 @@ Two practical approaches, in preferred order:
 
   - The Z80 **memory chip-selects** for the program ROM at IC5 (`0x0000`–`0x7FFF`) and the work RAM at IC7 (`0xC000`–`0xC7FF`).
   - The **I/O port decode enables** for the OUT-strobes that drive the lamp / solenoid / matrix-scan latches (ports `0x80`–`0x87`) and the IN-strobes that gate the switch / DIP-switch / status buffers.
-  - The **shared-RAM mailbox window** gating on the Z80 side of the J3 inter-board ribbon, including the HOLD / HLDA response back to the 80188.
+  - The **J1 byte-port handshake** on the Z80 side of the J3 inter-board ribbon — the data-valid / busy strobes that move single bytes to and from the 80188 (no shared RAM, no HOLD / HLDA).
   - The **watchdog reset** path from the IC12 / IC13 counter chain into the IC15 ADM699 supervisor.
 
 - **Mounting**: soldered.

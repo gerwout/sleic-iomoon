@@ -28,9 +28,9 @@ The 80188 talks to the PIC 16C54HS rasterizer through a small set of memory-mapp
 | `DMD_MODE`   | `A000:0200` | `0x07` | Mode register; bit 3 = swap-buffer / frame strobe | `4000:1138` (`dmd_control_shadow`) |
 | `DMD_ENABLE` | `A000:0300` | `0x80` | Master enable | — |
 
-Each register is written as a single byte. The 80188 keeps a shadow of `DMD_MODE` in shared RAM (`4000:1138`) because the hardware register is write-only — every change to bit 3 (the frame strobe) is done by reading the shadow, OR-ing in `0x08`, writing the result, NOPping four times, AND-ing out `0x08`, and writing again. That is the per-frame "swap buffers" pulse the PIC waits on.
+Each register is written as a single byte. The 80188 keeps a shadow of `DMD_MODE` in its work RAM (`4000:1138`) because the hardware register is write-only — every change to bit 3 (the frame strobe) is done by reading the shadow, OR-ing in `0x08`, writing the result, NOPping four times, AND-ing out `0x08`, and writing again. That is the per-frame "swap buffers" pulse the PIC waits on.
 
-Frame buffer addresses live in shared RAM:
+Frame buffer addresses live in the 80188's work RAM (segment `4000h`):
 
 | Address | Function |
 |---------|----------|
@@ -46,7 +46,7 @@ Source references: `dmd_controller_init` (D00B9), `dmd_reset_pulse` (D00FA), `di
 
 ### Secondary frame buffer at segment `7000h`
 
-In addition to the shared-RAM buffer at `4000:1220`, the 80188 also writes a **1 KB bitmap buffer at `7000:0000`–`7000:03FF`**. Two routines in the F-segment system code zero out this entire region:
+In addition to the work-RAM buffer at `4000:1220`, the 80188 also writes a **1 KB bitmap buffer at `7000:0000`–`7000:03FF`**. Two routines in the F-segment system code zero out this entire region:
 
 - `0xF0113` — annotated as `dmd_pixel_set` in `asm/80188_annotated.asm` but actually a frame-buffer clear: `ES=7000h, DI=0, CX=0x400, AL=0; REP STOSB`.
 - `0xF0124` — annotated as `dmd_pixel_clear` with identical logic to `F0113`.

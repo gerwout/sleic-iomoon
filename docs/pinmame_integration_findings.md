@@ -100,7 +100,7 @@ which returns "frame ready" only when **`[4000:1147]` ≠ 0** *and* the display-
 the real board is raised once per DMD frame by the PIC: it reads the J1 inbound latch at **PCS2
 0xA0100**, appends the byte to the display queue at `4000:1220`, and sets `[1147]=0xFF`.
 
-The driver now (a) generates the NMI at the 244 Hz DMD frame rate in `iomoon_irq_gen`, and (b) models
+The driver now (a) generates the NMI at the measured ~145 Hz DMD frame rate in `iomoon_irq_gen`, and (b) models
 PCS2 0xA0100 as the J1 inbound latch (`iomoon_j1_inbound`, consume-on-read, default `0x32` =
 "no new data / end-of-frame"), strobed by the Z80's port-0x81 bit-2 write. Result: `[1147]` is set
 each frame, the boot 0x47 reaches the queue, **`vsync_check` succeeds and the main loop advances**

@@ -491,29 +491,36 @@ components around the chip appear normal and complete. There is no sign
 that this chip is a BOM-compatibility placeholder — it is fully populated
 and surrounded by the support circuitry it would need to function.
 
+> **2026-06 correction — this question is now resolved, and the speculation
+> below is debunked.** The "zero YM3812 writes" trace was simply a
+> **boot/attract-only** capture (a silent phase). The YM3812 **is** driven —
+> by the **80188 directly**, over `/PCS5` (`0xA0280` index / `0xA0281` data),
+> from a music sequencer at `D000:0D37`/`0D99` that plays 10 FM tracks during
+> gameplay (byte-verified in ROM1, and verified working in the PinMAME driver).
+> There is **no sound coprocessor**: "IC34/IC57" were misreads — IC34 is a
+> CD74HC151E multiplexer and "IC57" was a misread of the IC7 PAL20L10. The PIC
+> at IC23 is the **DMD rasterizer only**. The list below is kept for the record
+> but every bullet has been ruled out.
+
 This means the empirical PinMAME observation ("zero writes to any YM3812
-register address from either CPU") points to one of the following:
+register address from either CPU") was originally read as pointing to one of
+the following — **all now ruled out** (the real answer is the last bullet:
+the music path is in firmware that the boot-only trace never executed):
 
-- The YM3812 is reached via a *different* address than the docs assume. The
-  trace was for the wrong base address.
-- The YM3812 is reached via a port the project's PinMAME hookup does not
-  expose — possibly an indirect access through a glue PAL (IC20–IC24) or
-  through the undocumented PIC at IC34/IC57.
-- The YM3812 is driven only at game-start / reset (initialisation writes
-  only) and the trace window missed it.
-- The YM3812 is driven from an undumped firmware path — i.e. the bytes that
-  would write to it live in IC10/IC11 sound EPROM regions that the
-  driver has not actually executed.
+- ~~The YM3812 is reached via a *different* address than the docs assume.~~
+  (It is at the documented `/PCS5` base; the trace just never reached it.)
+- ~~The YM3812 is reached via a glue PAL or an undocumented PIC at IC34/IC57.~~
+  (No such part exists; IC34 is a 74HC151 mux, "IC57" was the IC7 PAL.)
+- ~~The YM3812 is driven only at game-start / reset.~~ (It is driven
+  continuously by the per-frame music sequencer during gameplay.)
+- The YM3812 is driven from a firmware path the boot trace never executed —
+  **this is the correct one**: the music sequencer in the 80188 ROM only runs
+  in gameplay, which the boot-only run never reached.
 
-The presence of two extra Microchip chips at IC34 and IC57 (suspected PICs)
-is suggestive — one of them could be a sound coprocessor that owns the
-YM3812 bus, in which case neither the 80188 nor the Z80 would ever issue a
-direct YM3812 write, exactly matching what the PinMAME trace shows.
-
-Recommendation: read out IC34 / IC57 / IC23 / IC8 (Z80 PAL) before
-concluding anything about how the YM3812 is wired. Empty traces from the
-two main CPUs are perfectly consistent with a coprocessor doing all the
-heavy lifting.
+Earlier drafts speculated about extra Microchip chips at IC34 and IC57 acting
+as a sound coprocessor. That is **wrong**: IC34 is a CD74HC151E multiplexer,
+"IC57" was a misread of the IC7 PAL20L10, and the 80188 itself issues the
+YM3812 writes — there is no coprocessor on the sound path.
 
 ---
 

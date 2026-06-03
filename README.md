@@ -60,13 +60,13 @@ The IO Moon uses a **three-CPU architecture**:
 
 For the complete chip-by-chip inventory of each board, see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md) (16-bit board) and [`docs/board_011-030A_ics.md`](docs/board_011-030A_ics.md) (Z80 board).
 
-The **80188** runs game logic, the state machine, scoring, the inter-CPU mailbox, and **both** sound chips: the **OKI MSM6376** voice synth carries **speech and sound effects** (phrase number and start written through the IC50 and IC40 latches), while the **YM3812** FM synth carries the **music** — 10 FM tracks, memory-mapped via peripheral chip-select `/PCS5`. The YM3812 driver was located and byte-verified in the 80188 ROM: a register-write primitive at `D000:0D99` and a sequencer at `D000:0D37` reading a song-index table, with all 10 tracks decoding to valid OPL2 registers (see [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md)). The **Z80** scans the switch matrix and drives the lamp matrix and solenoids; its sound routines issue commands to the 80188 over the inter-board link rather than driving the sound chips directly. The **PIC 16C57-HS/P** at IC23 generates the DMD raster timing — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs; it does **not** drive the YM3812. These driver assignments were verified by tracing the 011-029 and 011-030 schematics and the ROM disassembly; see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md), [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md), and [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md).
+The **80188** runs game logic, the state machine, scoring, the inter-CPU link, and **both** sound chips: the **OKI MSM6376** voice synth carries **speech and sound effects** (phrase number and start written through the IC50 and IC40 latches), while the **YM3812** FM synth carries the **music** — 10 FM tracks, memory-mapped via peripheral chip-select `/PCS5`. The YM3812 driver was located and byte-verified in the 80188 ROM: a register-write primitive at `D000:0D99` and a sequencer at `D000:0D37` reading a song-index table, with all 10 tracks decoding to valid OPL2 registers (see [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md)). The **Z80** scans the switch matrix and drives the lamp matrix and solenoids; its sound routines issue commands to the 80188 over the inter-board link rather than driving the sound chips directly. The **PIC 16C57-HS/P** at IC23 generates the DMD raster timing — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs; it does **not** drive the YM3812. These driver assignments were verified by tracing the 011-029 and 011-030 schematics and the ROM disassembly; see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md), [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md), and [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md).
 
-The 80188 and Z80 communicate through shared RAM at segment `4000h` using a HOLD/HLDA bus arbitration scheme.
+The 80188 and Z80 communicate over connector **J1 — an 8-bit handshaken byte-port**, one byte at a time under a request/acknowledge handshake. There is **no shared RAM and no HOLD/HLDA bus arbitration**: J1 has no address bus, so segment `4000h` is 80188-private work RAM that the Z80 cannot reach. The Z80 forwards switch codes and sound-command bytes to the 80188 over J1; the 80188 reads each inbound byte at its `/PCS2` latch (`0xA0100`).
 
 For a detailed breakdown of the hardware architecture, see:
 
-- [Hardware Architecture](docs/hardware_architecture.md) — CPU boards, memory map, bus arbitration
+- [Hardware Architecture](docs/hardware_architecture.md) — CPU boards, memory map, J1 inter-CPU link
 - [16-bit Board IC Inventory](docs/board_011-029A_ics.md) — Every populated chip on the 80188 board with part number and function
 - [Z80 Board IC Inventory](docs/board_011-030A_ics.md) — Every populated chip on the Z80 board with part number and function
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
@@ -77,7 +77,7 @@ For a detailed breakdown of the hardware architecture, see:
 - [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — Complete I/O mapping from the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
-- [Inter-CPU Communication](docs/inter_cpu_communication.md) — Shared memory protocol and mailbox system
+- [Inter-CPU Communication](docs/inter_cpu_communication.md) — J1 8-bit byte-port protocol between the 80188 and Z80
 
 ---
 
@@ -158,7 +158,7 @@ sleic-io-moon/
 │   └── sleic_io_moon_manual_es.pdf    # Original Spanish service manual
 └── research/                          # Investigative notes that informed the docs
     ├── board_inventory.md             # Original photo-by-photo IC inventory
-    ├── 80188_to_z80_mailbox.md        # Shared-RAM mailbox discovery
+    ├── 80188_to_z80_mailbox.md        # 80188→Z80 command-path investigation (J1 byte-port)
     ├── z80_irq_timing.md              # Z80 periodic-IRQ rate derivation
     ├── ym3812_oki_workarounds.md      # YM3812 hookup investigation
     ├── pinmame_boot_log/              # PinMAME first-boot tracing
@@ -210,8 +210,8 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [YM3812 FM Music Extractor](docs/iomoon_fm_extract.md) | The 80188 music engine (song-index table, sequencer opcodes, write primitive) and how the extractor exports the 10 FM tracks |
 | [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) | All 50 switches, 64 lamps, and 18 solenoids with codes and descriptions |
 | [Z80 I/O Port Map](docs/z80_io_ports.md) | Port assignments, switch matrix scan routine, key Z80 RAM addresses |
-| [80188 Peripheral Configuration](docs/80188_config.md) | RELREG, chip selects (UMCS, LMCS, PACS, MMCS), wait states |
-| [Inter-CPU Communication](docs/inter_cpu_communication.md) | Shared RAM at segment 4000h, HOLD/HLDA bus arbitration, mailbox protocol |
+| [80188 Peripheral Configuration](docs/80188_config.md) | Chip selects (UMCS, LMCS, PACS, MMCS, MPCS), wait states |
+| [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit handshaken byte-port between the 80188 and Z80 (no shared RAM) |
 | [Game Software Architecture](docs/game_software.md) | Boot sequence, main loop, state machine, text encoding, configuration system |
 
 ---
@@ -222,7 +222,7 @@ The `asm/` directory contains fully annotated disassembly listings for both CPUs
 
 - **`80188_annotated.asm`** — The complete 80188 main CPU ROM (~10,458 instructions across segments D000h, E000h, and F000h). Covers the game state machine, DMD display routines, configuration system, scoring, and the boot sequence.
 
-- **`z80_annotated.asm`** — The Z80 coprocessor ROM (27C256, 32 KB). Covers switch matrix scanning, lamp matrix control, solenoid drivers, OKI MSM6376 sound interface, and communication with the 80188 via the shared mailbox byte at `C0FC`.
+- **`z80_annotated.asm`** — The Z80 coprocessor ROM (27C256, 32 KB). Covers switch matrix scanning, lamp matrix control, solenoid drivers, the sound-command staging it forwards to the 80188, and communication with the 80188 over the **J1 byte-port** (Z80 port 0x80 data + port 0x81 strobes; the Z80 does not drive the sound chips directly).
 
 ---
 

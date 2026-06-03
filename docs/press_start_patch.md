@@ -96,7 +96,7 @@ The patch touches 4 locations in the ROM:
 
 The injected code at `C000:0010` performs the following steps:
 
-1. **Set up data segment** (`DS = 4000h`) to access shared RAM
+1. **Set up data segment** (`DS = 4000h`) to access the 80188's work RAM
 2. **Write "PRESS START" string** to `4000:1200` using the IO Moon's custom text encoding (where `0x0B` = 'A', `0x1B` = 'P', etc.)
 3. **Clear the match number** from all 4 DMD display buffers by zeroing a 5-byte × 22-row region at offset `0x0076` (row 7, byte 6)
 4. **Call the ROM's text display routine** (`F000:0701`) with parameters: font type 1, Y-position `0x0173`, string at `4000:1200`

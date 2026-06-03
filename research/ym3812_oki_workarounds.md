@@ -1,10 +1,23 @@
 # YM3812 / OKI workarounds in PinMAME drivers
 
+> **2026-06 correction — this survey's premise is obsolete.** It was written on
+> the assumption that the IO Moon YM3812 (and OKI) were driven by an *undumped*
+> coprocessor (the PIC 16C57 at IC23), so PinMAME would need a lancelot-style C
+> substitution. That is **wrong**: the **80188 drives both sound chips directly**,
+> and the 80188 ROM **is dumped**. The YM3812 is written over `/PCS5`
+> (`0xA0280`/`0xA0281`) by a music sequencer at `D000:0D37`/`0D99` (10 FM tracks),
+> and the OKI MSM6376 from `D000:0B70`/`0C57` (`0xA0300` latch, `/OKCS` strobe via
+> `0xA0000` bit 5). The PIC at IC23 is the **DMD rasterizer only** and drives no
+> sound chip; the Z80 forwards sound-command bytes to the 80188 over J1 but drives
+> no chip either. So there is **nothing undumped to substitute for** — the right
+> approach is to emulate the 80188's own writes, exactly as the working PinMAME
+> driver now does. The cross-driver survey below is still accurate about *those*
+> drivers, but the "Recommended pattern for Io Moon" sections are superseded.
+
 Survey of how PinMAME drivers cope when a sound chip is present on the real
 PCB but actually driven by an undumped microcontroller, PAL, or otherwise
-opaque firmware. The goal is to pick a precedent for the Sleic Io Moon
-driver, where the YM3812 (and DMD raster) are consumed by a PIC 16C57-HS at
-IC23 whose mask ROM has never been dumped.
+opaque firmware. (Originally intended to pick a precedent for the Sleic Io Moon
+driver — see the correction above for why that precedent is no longer needed.)
 
 ## Summary table
 
@@ -19,7 +32,7 @@ IC23 whose mask ROM has never been dumped.
 | `tabart.c` | YM2203, YM3526 / AY8910 | Z80 sound CPU | All ROMs dumped; chips mapped (tabart.c:102-117). | Standard. |
 | `spinb.c`, `inder.c` (MSM5205 boards) | MSM5205 | Z80/8085 sound CPUs | All ROMs dumped (some BAD_DUMP); ADPCM chip fed nibble-by-nibble from the sound CPU via callback (spinb.c:1130-1180, inder.c:702-770). | Standard. |
 | `alvgdmd.c` (Pistol Poker / Mystery Castle DMD) | n/a (DMD raster) | Intel 8031 micro | 8031 emulated, ROM dumped (alvgdmd.c:263). | Standard. |
-| `sleic.c` (current Io Moon stub, SLEIC2) | **YM3812**, OKIM6376, DAC | YM3812 -> PIC 16C57 (undumped); OKIM6376 -> Z80 port 0x80 directly | OKIM6376 reached via Z80 port handler (sleic.c:395 `if (iomoon_io.ctrl & 0x01) OKIM6376_data_0_w(0, data);`). **YM3812 currently silent.** | Same shape as Mephisto today: "declared but silent". |
+| `sleic.c` (Io Moon, SLEIC2) | **YM3812**, OKIM6376, DAC | **80188 drives both directly** (YM3812 over `/PCS5`; OKI over `0xA0300` + `/OKCS`). The PIC 16C57 is DMD-raster only; the Z80 forwards command bytes over J1 but drives no chip. | The early stub reached the OKI via a Z80 port handler (`sleic.c:395`) and left the YM3812 silent; the working driver now emulates the 80188's own writes to both chips. | _Superseded — the 80188 ROM is dumped, so no C substitution is needed (see correction at top)._ |
 
 The only driver in the tree that actually substitutes for an undumped sound
 coprocessor in C is **lancelot.c**. Every other driver either has a dumped
@@ -92,9 +105,9 @@ useful simplification:
 | --- | --- | --- |
 | Main CPU | Z80 | 80188 |
 | Undumped consumer | TMP91P640 | PIC 16C57-HS |
-| Command channel | Z80 OUT 0x34 | 80188 writes into a circular byte queue at shared-RAM `4000:1158+` |
-| Music chip | YMF262 (OPL3) | YM3812 (OPL2) |
-| ADPCM chip | OKIM6295 | OKIM6376 (already wired through the Z80, **not** through the PIC) |
+| Command channel | Z80 OUT 0x34 | _(N/A — see correction: the 80188 drives its own sound chips; the `4000:1158+` queue is the DMD/animation path, not sound)_ |
+| Music chip | YMF262 (OPL3) | YM3812 (OPL2) — driven directly by the 80188 over `/PCS5`, **not** by any PIC |
+| ADPCM chip | OKIM6295 | OKIM6376 — driven directly by the 80188 (`0xA0300` latch + `/OKCS`), **not** by the Z80 |
 | Auxiliary tone ROM | snd_u5.bin in REGION_USER2 | none known yet |
 
 The Mephisto pattern (declare YM3812, never drive it) is what `sleic.c`
@@ -143,19 +156,14 @@ already does. The Io Moon driver should follow lancelot.c instead:
 
 ### What the bridge does *not* need to do
 
-- It does not need to write the YM3812 from the Z80 or the 80188 directly:
-  the empirical trace confirms neither CPU ever issues YM3812 writes, so
-  there is nothing to intercept on the bus side.
-- It does not need a PIC 16C5x CPU core. Lancelot avoids the equivalent.
-- It does not need to interact with the OKIM6376, which is already
-  driven correctly from `iomoon_z80_write` at sleic.c:392-394.
-
-The implementation effort is therefore: (a) one new MWA write handler
-on the 80188 side of shared RAM covering the queue range, (b) a
-mame_timer + a small fifo, (c) a table of cmd -> register-sequence
-mappings populated incrementally as commands are reverse-engineered,
-(d) optional MACHINE_INIT operator pre-programming. None of these
-requires changes outside `sleic.c`.
+> **Superseded (2026-06).** This subsection assumed neither CPU writes the
+> YM3812 and that the OKI is driven from the Z80 — both now known to be false.
+> The 80188 drives **both** sound chips itself (YM3812 over `/PCS5`, OKI over
+> `0xA0300`/`/OKCS`), and its ROM is dumped, so the correct implementation is
+> simply to decode those peripheral writes in `sleic.c` and forward them to the
+> emulated `YM3812_*` / `OKIM6376_*` cores — **no PIC core, no C-side command
+> substitution, and no command-queue interception are needed.** That is what the
+> working driver now does.
 
 ---
 

@@ -1,19 +1,38 @@
-# 80188 -> Z80 Mailbox Investigation
+# 80188 command-queue investigation (4000:1158)
+
+> **2026-06 correction.** This note's original "Bottom line" — that the
+> `4000:1158+` queue is an *outbound* channel consumed by a *third coprocessor*
+> (an undumped PIC at "IC34" or "IC57") that reads it from shared RAM and drives
+> the YM3812 — is **withdrawn and wrong** on every count:
+> - The queue is **consumed by the 80188 itself**: `dmd_queue_service`
+>   (`D000:01E5`) drains the bytes to the DMD controller at `/PCS1` (`0xA0080`,
+>   strobe `/PCS4` `0xA0200`), gated on the ready bit at `0xA0180.0`. It is the
+>   **display/animation** queue. (The original search missed the consumer because
+>   it reads the head via `SI` set up elsewhere, not via a literal `[114ch]` load.)
+> - There is **no shared RAM** — segment `4000h` is 80188-private work RAM; the
+>   Z80 reaches the 80188 only over the **J1 byte-port** (one byte at a time).
+> - The supposed extra PICs were misreads: "IC34" is a 74LS glue chip and "IC57"
+>   is the PAL 20L10 (IC7). The only PIC is **IC23**, and it is the **DMD
+>   rasterizer**, not a sound chip driver.
+> - The YM3812 **is** driven — directly by the 80188 via `/PCS5`
+>   (`0xA0280`/`0xA0281`); it plays the in-game FM music. The "zero writes to
+>   YM3812" trace observation was an attract-mode artefact (music is silent in
+>   attract, plays in gameplay).
+>
+> The *evidence* about the queue's producer (`cmd_queue_push` @ `D000:0138`) and
+> pointer layout below remains accurate; only the consumer/ownership conclusions
+> were wrong. See [`../docs/inter_cpu_communication.md`](../docs/inter_cpu_communication.md)
+> for the corrected model.
 
 ## Bottom line
 
-The 80188 sends commands to its coprocessor through a **circular byte queue at
-`4000:1158+`** ( physical `0x41158`+ ), with a producer "write tail" at
-`4000:114E` ( phys `0x4114E` ) and a consumer "read head" at `4000:114C`
-( phys `0x4114C` ). The single most plausible mailbox address is therefore not a
-single byte but the **next-byte slot pointed to by `4000:114E`** when the
-producer pushes; the queue base is `4000:1158`.
-
-This is a **multi-byte command queue**, not a single-byte mailbox. The label
-"display command queue" that appears in the existing annotations is misleading
-on its semantics (see Caveats below): the 80188 itself never reads back the
-queue, only writes to it. That means the queue is consumed by something *not*
-the 80188 - i.e. it is an outgoing mailbox.
+The 80188 pushes commands into a **circular byte queue at `4000:1158+`**
+( physical `0x41158`+ ), with a producer "write tail" at `4000:114E`
+( phys `0x4114E` ) and a consumer "read head" at `4000:114C` ( phys `0x4114C` ).
+The producer is `cmd_queue_push` ( `0xD0138` ); the consumer is the 80188's own
+`dmd_queue_service` ( `0xD01E5` ), which forwards the bytes to the DMD controller.
+This is the **display/animation queue** — entirely internal to the 80188; the
+Z80 never touches it (J1 carries no address bus).
 
 The auto-generated function name `sound_play_command` at `0xD0978` is a red
 herring (see Caveats - it writes to `5040:02B9`, outside any shared region).
@@ -68,8 +87,12 @@ Searches of `asm/80188_annotated.asm` show:
   written back at lines 1325 and 1338. This is the producer-internal tail
   pointer.
 
-So whoever maintains `[114ch]` and consumes bytes from `1158+` is **not the
-80188**. That makes the queue an outbound channel.
+The original analysis read this as "the 80188 never consumes the queue, so it is
+an outbound channel." **That inference was wrong** — the consumer (`dmd_queue_service`
+at `0xD01E5`) does maintain `[114ch]`/read `1158+`, but it sets up its read
+pointer in `SI` rather than via a literal `[114ch]` load, so the constant-grep
+above did not catch it. The queue is consumed **inside the 80188**, feeding the
+DMD controller; it is not an outbound channel to any other chip.
 
 ### 3. The pushed values are opaque small bytes, not display text
 
@@ -120,37 +143,37 @@ The Z80 ROM does **not** consume this queue. Confirmed by:
   ( `ram_direct_sw_shadow` ), labelled "direct switches" in the
   disassembly header ( z80 line 95 ).
 
-Combined with the empirical PinMAME tracing in
-`research/pinmame_session_2/00_summary.txt` lines 114-130 ( "zero writes
-to YM3812 from either CPU" ), the conclusion is that the queue at
-`4000:1158+` is consumed by a **third coprocessor**, most likely the
-undumped PIC at IC34 or IC57 hypothesised in
-`docs/hardware_architecture.md:148` and `docs/ym3812_pinmame_precedents.md:130`.
-The PIC reads the queue from shared RAM and drives the YM3812 ( and
-possibly the OKI ) register bus.
+The original draft combined this with a PinMAME trace ("zero writes to YM3812")
+to conclude the queue was consumed by a **third coprocessor** (an undumped PIC at
+"IC34"/"IC57") that drives the YM3812. **All of that is now disproven** (see the
+correction banner at the top): there is no third PIC; the queue is the 80188's own
+**display/animation** path, drained by `dmd_queue_service` (`0xD01E5`) to the DMD
+controller; and the YM3812 *is* driven directly by the 80188 over `/PCS5` — the
+"zero writes" trace was attract-mode only (FM music plays in gameplay, not attract).
 
-This is consistent with - but corrects in detail - the
-`docs/inter_cpu_communication.md` claim that "Sound Commands ( 80188 -> Z80 )
-goes via the shared mailbox." The shared-RAM mailbox exists; the consumer
-is just not the Z80.
+So this queue is **not** a sound channel and **not** an inter-chip mailbox. The
+80188 → Z80 direction carries only the J1 byte-port (switch acks / sound-command
+forwarding lives on the *Z80 → 80188* side); the sound chips are driven by separate
+80188 code paths (OKI from `D000:0B70`, YM3812 from `D000:0D37`).
 
 ## Address summary
 
 | Field | 80188 view (segment:offset) | Physical | Owner | Notes |
 |-------|----------------------------|----------|-------|-------|
-| Queue base | `4000:1158` | `0x41158` | shared | Byte stream, null-terminated growing region |
+| Queue base | `4000:1158` | `0x41158` | 80188-private | Byte stream, null-terminated growing region (80188 work RAM, not shared) |
 | Queue write tail ( producer ) | `4000:114E` | `0x4114E` | 80188 writes & reads | "cmd_queue_read_ptr" label in current asm is misleading |
-| Queue read head ( consumer ) | `4000:114C` | `0x4114C` | 80188 init-writes, **never reads**; consumer reads & advances | "cmd_queue_write_ptr" label is misleading |
+| Queue read head ( consumer ) | `4000:114C` | `0x4114C` | 80188 (`dmd_queue_service` @ `0xD01E5`) reads & advances | "cmd_queue_write_ptr" label is misleading |
 | Producer function | `cs:0138` ( `cs=D000` ) | `0xD0138` | `cmd_queue_push` | 82 call sites |
 
 ## Caveats
 
-1. **No physical confirmation of the consumer**. The Z80 cannot read this
-   region ( no address maps to it on the Z80 bus ). The most likely
-   consumer is the undumped PIC microcontroller at IC34 or IC57. Until
-   that chip is dumped, the consumer-side protocol is inferred, not
-   verified. The "Bottom line" address is correct for what the **80188**
-   writes; what physically picks the bytes up is a separate question.
+1. **Consumer resolved.** This caveat originally read "the most likely
+   consumer is the undumped PIC at IC34 or IC57." That is **wrong** — there is no
+   such PIC (IC34 is 74LS glue, "IC57" is the IC7 PAL 20L10), and the queue is
+   consumed by the 80188 itself in `dmd_queue_service` (`0xD01E5`), which forwards
+   the bytes to the DMD controller. The Z80 indeed cannot read this region (no
+   address maps to it on the Z80 bus), but it was never meant to: the queue is
+   80188-internal display state.
 
 2. **Pointer label semantics are reversed in the existing annotations.**
    `[114ch]` is labelled `cmd_queue_write_ptr` and `[114eh]` is labelled

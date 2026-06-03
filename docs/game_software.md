@@ -13,8 +13,8 @@ CPU Reset
 0xFFFF0: JMP FAR FFFF:0000
     │
     ▼
-0xFFF00: MOV DX, FFA0h          ; RELREG address
-         MOV AX, C03Ch           ; Configure: ET=1 (Z80 bus sharing enabled)
+0xFFF00: MOV DX, FFA0h          ; UMCS register (upper-memory chip-select)
+         MOV AX, C03Ch           ; Open ROM window 0xC0000-0xFFFFF
          OUT DX, AX
          JMP FAR D000:0000       ; Jump to main initialization
     │
@@ -23,7 +23,7 @@ CPU Reset
          MOV AX, 4152h           ; Set up stack segment
          MOV SS, AX
          MOV SP, 0205h           ; Stack pointer
-         MOV AX, 4000h           ; Data segment = shared RAM
+         MOV AX, 4000h           ; Data segment = 80188-private work RAM (seg 4000h)
          MOV DS, AX
          MOV ES, AX
          │

@@ -126,7 +126,7 @@ State: identical to Cirsa. The chip is present in the mixer, never written, make
 5. **The IRQ callback needs to be wired**: `cpu_set_irq_line(SLEIC_MAIN_CPU, ...)` — uncomment, and verify the IRQ vector handler exists in the 80188 init table at `CS:0041` (it does — entries at `0xFF32`/`0xFF34` configure INT0/INT1 control words).
 6. **The clock value in the current stub is 4 MHz** — same as Alvin G; this is the standard YM3812 master clock in pinball. Likely correct without changing.
 
-For the immediate driver work, start by **leaving the YM3812 attached-but-unmapped (current state) and run the ROM in MAME's debugger with logging on segment A000h**. Any write to A000:XXXX that's *not* one of the four DMD register offsets is a candidate YM3812 register access. If no such write ever happens after running through attract mode + a full game, hypothesis (2) — the chip is BOM-only — wins.
+For the immediate driver work, start by **leaving the YM3812 attached-but-unmapped (current state) and run the ROM in MAME's debugger with logging on segment A000h**. Any write to A000:XXXX that's *not* one of the four DMD register offsets is a candidate YM3812 register access. If no such write ever happens after running through attract mode + a full game, hypothesis (2) — the chip is BOM-only — wins. *(Superseded: this was later resolved — the YM3812 base is `/PCS5` = `0xA0280`/`0xA0281` and the chip plays the in-game music, so it must be mapped; see the Update section below. "BOM-only" was an attract-only artefact.)*
 
 ---
 
