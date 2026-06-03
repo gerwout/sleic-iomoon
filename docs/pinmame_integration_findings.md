@@ -306,3 +306,56 @@ renders the manufacturer logo. Driver state is **local** (`SLEIC3` map + `sleic3
 and that attract is **Timer0-delay-driven** (not purely switch-token-gated). IO Moon's remaining
 `d5a87`/marker-stream gap can now be diagnosed by direct comparison against Bike Race's working
 flow rather than the undumped PIC.
+
+---
+
+## 2026-06-03 — Bike Race attract: Z80 I/O bring-up + the E95BE DMD-ACK watchdog (4-disassembler cross-verified)
+
+After the SLEIC3 80188 boot+DMD work, the attract stuck on **"ESPERANDO"** (waiting), then — once the
+Z80 was wired — on **"IMPOSIBLE SEGUIR / ERRONEA"** + a `jmp $` trap. Two layers were reverse-engineered;
+the second was cross-verified with **four independent disassemblers** (ndisasm, Capstone, objdump, radare2
+for the 80188; MAME's `8039dasm.c` + an independent Python MCS-48 decoder for the coprocessor), all agreeing
+byte-for-byte on the code regions.
+
+### Layer 1 — ESPERANDO = the Z80 I/O handshake
+The SLEIC3 Z80 used the generic base ports; **bkio07 hangs in its service loop at Z80 0x29AE unless input
+port 0x04 bit 7 reads 1**. Added `sleic3_z80_read/write` (port map from bkio07): IN 0x01 bit5 = J1 ready,
+IN 0x04 = 0xFF, OUT 0x80 = J1 data, OUT 0x81 bit-2 strobe latches into the 80188's 0xA0100, OUT 0x82 =
+switch-col strobe. The Z80 sends **0x5F "ready"** once at boot (Z80 0x012A). The **80188 NMI (E000:0272)**
+reads 0xA0100 and treats byte **0x37 as idle** (just bumps a counter); any other byte is pushed to an event
+queue (flag [phys 0x111], read ptr [0x11A], buffer at phys 0x1EA) that `process_input_events` drains. So
+Bike Race's idle J1 value is **0x37** (not Io Moon's 0x32). With that, the 0x5F clears ESPERANDO.
+
+### Layer 2 — the DMD-command ACK watchdog (and the I8039's true role)
+`process_input_events` (the wait at **E957B**, twin of Io Moon's `d5a87`): pushes a DMD command via
+`cmd_queue_push` (E000:023D), arms a Timer0 countdown [phys 0x109], then loops on the event-check
+**E50E:45DD (= linear 0xE96BD)**. On timeout it renders the error strings ("IMPOSIBLE SEGUIR" at
+F000:400E, an "…ERRONEA" subtitle at F000:4158) via `dmd_text_render` (F000:06C5) and hangs at
+**E95BE `jmp $`**.
+
+- **The accepted ACK is an inbound queue byte STRICTLY > 0xF0** (E96BD: `cmp byte [..],0xF0` / `jbe reject`;
+  then `and al,1` selects a status flag). This *corrects* the earlier handoff note of "≥0xF0" to **`>0xF0`
+  (≥0xF1)** — echoing the literal command (e.g. 0xD4) is **rejected**, which is exactly why the trap fired.
+- **DMD command path:** `dmd_tx` (E02E0), called once per **INT0**, reads the command queue, **polls
+  0xA0180 (PCS3) bit 0 = "controller ready"**, writes the byte to **0xA0080 (PCS1)**, then pulses the
+  0xA0200 (PCS4) strobe. (Structural twin of Io Moon's `dmd_queue_service`.)
+- **The I8039 (bkdsp01) is a verified pure one-way rasterizer.** Its whole program is 117 bytes (rest 0xFF);
+  it executes `DIS I` + `DIS TCNTI` as its first two instructions and **never** re-enables interrupts, has
+  **zero** `INS A,BUS` / `OUTL BUS,A` / `MOVX` (reads nothing from and writes nothing to the 80188), and only
+  samples its **T1** panel-sync pin while driving P1/P2 to the plasma panel. It loops `0x016→0x073→0x016`
+  forever. **It returns the 80188 absolutely nothing** — so the >0xF0 ACK the watchdog needs does NOT come
+  from the DMD coprocessor. (MAME's `8039dasm.c` has a cosmetic bug: opcodes 0x39/0x3A print as `outl p5/p2`
+  but are really `OUTL P1,A`/`OUTL P2,A`.)
+
+**Driver change:** model the controller ACK as a **>0xF0 loopback** — on a 0xA0080 command write, push
+0xFF to the inbound-ACK path (Bike Race only; Io Moon keeps the literal echo). This **clears the E95BE trap**
+(verified: the PC moves to the watchdog *success* path E95D6/E95DC instead of `jmp $`).
+
+### Still open
+Clearing the trap revealed the attract loops back to **ESPERANDO** rather than advancing to the real attract:
+the init handshake has further interacting steps (the >0xF0 ACK events tangle with the earlier ESPERANDO
+event-wait). The remaining work is to RE the full attract-init event *sequence* — what the outer loop waits
+on between ESPERANDO and the running attract (a specific Z80 event sequence, not just the DMD ACK).
+
+**Direct payoff for Io Moon:** the **`>0xF0` ACK** finding (not the literal echo) applies to Io Moon's own
+`d5a87` `process_input_events` trap — the same firmware family, same event-check structure.
