@@ -146,10 +146,25 @@ flipper). Two further facts were established here:
   `0x47/0x45/0x46/0x32` stream the 80188 consumes at 0xA0100 is the **PIC's**, confirming the loopback
   model in item 7 and that faithful frame timing needs the **undumped IC23 PIC16C57**.
 
-Advancing the intro/attract faithfully (and the buffer-swap / multi-consumer ordering on the shared
-display queue) therefore depends on that exact PIC frame timing. The 10 FM tracks decode cleanly
-offline (see `iomoon_fm_extract.md`); hearing them in-emulator needs gameplay. The two outstanding
-dumps — **IC23 PIC16C57** (frame timing) and **IC7 PAL20L10** (ROM-bank truth table) — gate the rest.
+Tracing further: the main loop's `default_game_logic` (D622C) **is** the attract — it calls
+`attract_mode_display_setup` (D08C9, the MOONLIGHT/SUNSHINE/STARWAY screens) and loops the attract
+display internally, so `game_state_var` legitimately stays 0 while attract runs (state 1 is set at
+D2FDA only after `default_game_logic` returns). The attract's per-screen routines, however, sit in
+**input-only sub-loops** under the loopback markers — e.g. the screen at D540F loops `lamp_set`
+(D5AEB) purely until switch code 0x40 (upper flipper), with **no timer auto-advance and no coin
+poll**. On real hardware the PIC's exact frame markers pace those screens (timed auto-advance) and let
+the coin/credit path run; under the approximate markers the attract parks in the flipper-wait and
+never polls the coin — so injecting COIN (0x42) / START (0x41) does **not** raise the credit, and the
+game can't enter a started ball (state 2) where the YM3812 music sequencer arms. Verified three ways
+that this is the **exact-PIC-timing** dependency, not a different bug: (a) the markers come from the
+PIC not the Z80; (b) the attract sub-loop is flipper-only by disassembly; (c) coin/start/flipper
+injection can't advance state.
+
+So reaching gameplay + audible YM3812/OKI music is gated on faithfully reproducing the PIC frame
+timing. The 10 FM tracks decode cleanly offline (see `iomoon_fm_extract.md`); hearing them in-emulator
+needs gameplay. The two outstanding dumps — **IC23 PIC16C57** (frame timing) and **IC7 PAL20L10**
+(ROM-bank truth table) — gate the rest. This is the limit of what is faithfully reachable in software
+without them.
 
 ---
 
