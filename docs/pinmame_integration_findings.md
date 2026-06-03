@@ -250,3 +250,59 @@ path uses the generic stub `SLEIC_80188_*mem` map (RAM/ROM/peripheral windows wr
 seg-`1000h` work RAM, `0xE0000` code, and A000 peripherals; `pic_w` swallows YM3812/OKI; no J1
 latch). Running its firmware needs the same memory-map + A000-peripheral + J1-latch treatment as
 SLEIC2 — at which point Bike Race (real, fully-dumped coprocessor) directly validates the IO Moon model.
+
+---
+
+## 2026-06-03 — Bike Race (SLEIC3) BOOTS, runs attract, renders DMD
+
+The Bike Race bring-up succeeded: the 80188 now **boots, runs its attract loop, and
+renders the DMD** (legible logo text) in PinMAME — further than IO Moon (which traps at
+`d5a87`). It is the live oracle: same 80188 firmware family with a *fully-dumped* I8039
+display coprocessor instead of the undumped PIC, so it validates the shared model.
+
+**Bike Race hardware model** — decoded from the `bkcpu04` boot at `E000:0000` and its
+29-entry chip-select table at `E000:0050`:
+
+| 80188 reg | value | meaning |
+|---|---|---|
+| MMCS `0xFFA6` | `0x01FF` | 512 KB mid-range block based at `0x00000`, split into four 128 KB MCS lines |
+| MPCS `0xFFA8` | `0xC0FC` | MS=1 (peripherals memory-mapped), EX=1, 512 KB block-size field |
+| PACS `0xFFA4` | `0xA03C` | peripheral block at `0xA0000` — **identical to IO Moon** (J1/YM3812/OKI handlers reused) |
+| T0CON/T0CMP | `0xE003`/`0x6276` | Timer0 — **byte-identical to IO Moon → 99.18 Hz** |
+| INT0CON `0xFF38` | `0x0000` | INT0 enabled (genuine external frame source) |
+
+The four MCS blocks:
+- **MCS0 `0x00000-0x1FFFF`** — work RAM (boot stack `SS:SP=012F:0203`; the boot copies its
+  own IVT image from `CS:00C4` into physical 0 before any `STI`, so **no driver IVT memcpy**,
+  unlike SLEIC2 where physical 0 is ROM).
+- **MCS1 `0x20000` / MCS2 `0x40000`** — the two 128 KB graphics ROMs. **Order matters:**
+  `bkcpu06` at `0x20000`, `bkcpu05` at `0x40000`. Segment `0x2000` is where the F000 DMD
+  composer's frame-descriptor pointer lands; with the ROMs swapped the descriptor read `0x7C00`
+  (garbage) → a ~4-billion-iteration runaway blit. Correct order yields a sane `{rows,cols,bp}`
+  descriptor (e.g. `{18,1,18}`).
+- **MCS3 `0x60000-0x7FFFF`** — DMD / video frame-buffer RAM. `F000:00EF/0117/013A` zero
+  `ES=0x6000` offset `0x410` (= `0x60410`, the panel staging buffer the I8039 rasterizes).
+
+**DMD composer** (`F000:01D9` reads the descriptor, `F000:0231` blits): reads `{rows,cols,bp}`
+from `ES:SI` in the graphics ROM, then copies 2 interleaved bitplanes into the work-RAM /
+`0x60000` buffer. IO Moon's annotated `dmd_frame_load` (`F000:0907`) is the same routine family.
+
+**Interrupts** (`sleic3_irq_gen`, no IVT memcpy): Timer0 vec `0x08` → `E000:0325` (decrements the
+delay/animation counters incl. `[phys 0x105]`, the counter the `E83C8` delay routine spins on);
+INT0 vec `0x0C` → `E000:0439`; NMI vec `0x02` → `E000:0272`.
+
+**The decisive bug** that blocked it: the existing `SLEIC_irq_i8039` DMD-decode loop used
+`jj < 16` → 256 px/row written into the 128-stride `rawDMD[128*32]` buffer, overrunning it and
+corrupting adjacent driver statics every I8039 IRQ. That zeroed `sleic3_irq_gen`'s interrupt-
+injection accumulators on every call, so Timer0 never fired and attract froze. Fixed to `jj < 8`
+(128 px/row). Only `SLEIC1`/`SLEIC3` run the I8039, so IO Moon (SLEIC2) was unaffected.
+
+**Verified running** (headless): `delay[105]` cycles `9→8→…→1→0` (Timer0 delays complete and
+restart), PC spread across `F08xx` (dmd_frame_load), `E95/E51/E83xx` (attract logic), and the DMD
+renders the manufacturer logo. Driver state is **local** (`SLEIC3` map + `sleic3_irq_gen` +
+`SLEIC_ROMSTART7` graphics-ROM order in `sleic.h`; `SLEIC_irq_i8039` overflow fix).
+
+**Implication for IO Moon:** the oracle confirms the shared memory-map/interrupt/peripheral model
+and that attract is **Timer0-delay-driven** (not purely switch-token-gated). IO Moon's remaining
+`d5a87`/marker-stream gap can now be diagnosed by direct comparison against Bike Race's working
+flow rather than the undumped PIC.
