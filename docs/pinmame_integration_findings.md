@@ -135,11 +135,21 @@ register.**
 
 What remains is reproducing the rest of the chain — intro → attract (`game_state_var` 0→1 at D2FDA) →
 started ball (state 2) → the YM3812 music sequencer (`D000:0D1B`) and OKI dispatch arming. The intro
-is a sequence of input/timed-gated screens; advancing it faithfully (and the buffer-swap / multi
-consumer ordering on the shared display queue) depends on the **exact PIC frame timing**, which is in
-the **undumped IC23 PIC16C57**. The 10 FM tracks decode cleanly offline (see `iomoon_fm_extract.md`);
-hearing them in-emulator needs gameplay. The two outstanding dumps — **IC23 PIC16C57** (frame timing)
-and **IC7 PAL20L10** (ROM-bank truth table) — gate the rest.
+is a sequence of input/timed-gated screens (e.g. `lamp_set` D5AEB waits on switch code 0x40 = upper
+flipper). Two further facts were established here:
+
+* **The Z80 also has a DMD-frame NMI** (handler at Z80 `0x0066`) that samples the direct switches
+  (flippers, port 0x00) and runs a frame state machine — it was never triggered. The driver now pulses
+  the Z80 NMI alongside the 80188 NMI, so the **flipper-input path is faithful**.
+* **The frame markers come from the PIC, not the Z80.** Even with its NMI firing, the Z80 still only
+  strobes J1 on a *switch change* (verified: one boot strobe over thousands of frames). So the periodic
+  `0x47/0x45/0x46/0x32` stream the 80188 consumes at 0xA0100 is the **PIC's**, confirming the loopback
+  model in item 7 and that faithful frame timing needs the **undumped IC23 PIC16C57**.
+
+Advancing the intro/attract faithfully (and the buffer-swap / multi-consumer ordering on the shared
+display queue) therefore depends on that exact PIC frame timing. The 10 FM tracks decode cleanly
+offline (see `iomoon_fm_extract.md`); hearing them in-emulator needs gameplay. The two outstanding
+dumps — **IC23 PIC16C57** (frame timing) and **IC7 PAL20L10** (ROM-bank truth table) — gate the rest.
 
 ---
 
