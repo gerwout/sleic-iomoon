@@ -427,3 +427,27 @@ the 80188's own count routine — which needs x86 tracing to find exactly which 
 and how many, so the driver can preset them. Forcing whole switch columns changes the display but isn't a
 clean fix. (Attract otherwise runs and cycles correctly; the message is the machine faithfully reporting
 an empty trough.)
+
+### 2026-06-03 (cont.) — "FALTA 1 BOLA" fixed (80188 ball-count traced)
+
+Traced the 80188 ball-status display routine at **E9640**: it reads the dequeued Z80 reply byte and
+maps **0x5D → "BOLAS OK"**, **0x5B → "FALTA 1 BOLA"**, **0x5C → "FALTAN 2 BOLAS"** (length-prefixed
+glyph strings at F000:3D7D / 3D61 / 3D6E). So the displayed message is driven entirely by the Z80's
+cmd-0xD5 reply — not an independent 80188 count (correcting the earlier guess).
+
+The Z80 cmd-0xD5 handler (bkio07 **0x0B1D → 0x0B31**) replies **0x5D ("BOLAS OK") when switch-matrix
+column-4 bit5 OR bit7 is closed**:
+```
+ld a,(0c0dbh)      ; col-4 debounced data (= ~swMatrix, so a CLOSED switch reads 0)
+or 0dfh / cp 0dfh / jp z, reply_5D    ; bit5 == 0 (closed) -> 0x5D
+or 07fh / cp 07fh / jp z, reply_5D    ; bit7 == 0 (closed) -> 0x5D
+or 0fbh / cp 0fbh / jp z, eject       ; bit2 == 0 (closed) -> eject, reply 0x5B
+... (else) reply 0x5B
+```
+Manual p.13 names the matrix ball contacts: **C6 "Salida Bolas"** (release = col4 bit2, would trigger
+an eject), **C7 "Bola Retenida"** and **C8 "Bola fuera"** (the two balls at rest = col4 bits 5 and 7).
+
+**Fix:** `MACHINE_INIT(SLEIC)` seats both balls for Bike Race at power-on — `coreGlobals.swMatrix[5] |=
+0xA0` (C7 bit5 + C8 bit7). The Z80 then replies 0x5D and attract advances to the real screens
+("ESTABLECIENDO VALORES FABRICA" / "PULSE START") instead of "FALTA 1 BOLA". Combined with `balls=2`,
+the 32-byte DMD stride, and `-dmd_only`, Bike Race now shows a clean single DMD running real attract.
