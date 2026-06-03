@@ -197,3 +197,56 @@ to "boots, runs fully interrupt-driven, executes its complete main loop, drives 
 protocol, animates an intro, and responds to switch input." The PIC loopback (item 7) is a faithful
 first-order model; item 8 (the full attract→gameplay flow + audible music) needs the exact PIC frame
 timing from the IC23 dump.*
+
+---
+
+## 2026-06-03 — Bike Race "Rosetta Stone" reframe (supersedes the PIC-loopback model)
+
+The fully-dumped **Bike Race** sibling (`/home/gerwout/Downloads/bikerace`, same 80188 firmware
+lineage, an Intel **8039** display coprocessor instead of the PIC) plus a fresh read of the board
+schematics **debunk the PIC marker-loopback** (items 7–9 above). Verified independently against the
+ROMs/disassembly (two read-only agents) — confidence HIGH except where noted:
+
+* **The 80188↔display-coprocessor link is UNIDIRECTIONAL.** The 8039 program (`bkdsp01.bin`, 0x74
+  bytes) has **no `MOVX`, no bus write, never enables interrupts** — a pure `JNT1`-gated, P1/P2
+  bit-banging free-runner (`JMP 016` forever). The PIC's 20 I/O pins are likewise all DMD signals.
+  So the coprocessor sends the 80188 **nothing** — the old `iomoon_pic_phase` FIFO feeding
+  `0x47/0x46/0x32` back at PCS2 `0xA0100` was **fictional**. **(driver R1: removed it; `0xA0100` is now
+  the plain Z80→J1 inbound latch, idle sentinel `0x32`.)**
+* **Same codebase, recompiled.** Bike Race 80188 = IO Moon 80188 source relocated (work RAM seg
+  `1000h` vs `4000h`; `dmd_reset_pulse` differs by only 4 operand bytes; Timer0/PACS/interrupt-config
+  tables byte-identical).
+* **Timer0 = 99.18 Hz** (T0CMPA=T0CMPB=`0x6276`, CLKOUT/4) — CONFIRMED. **frame_isr (D0343) is a
+  GENUINE external INT0** (INT0CON=`0x0000` enabled; it EOIs in-service **bit 4 = INT0** while
+  `sound_timer_isr` EOIs **bit 0 = Timer0**) — so it must stay a *separate* INT0 source at the frame
+  rate, **not** be folded into the Timer0 cadence (this refutes the handoff's R3).
+* **THE ORACLE — attract is switch-token-driven, not timer-driven.** `dmd_attract_cycle` (D7ABC)
+  advances only when `last_switch_code [413C:00D6]` becomes a flipper token (`0x3F`/`0x40`); there is
+  **no internal-timer fall-through** (the `[1139]`/`[113D]` counters are Timer0-decremented *deadlock*
+  watchdogs — Bike Race's twin of IO Moon's `d5a87: jmp $` is `bkcpu04:0x95be: jmp $`). In attract the
+  Z80 forwards only the idle sentinel (`0x32` IO / `0x37` BR); a flipper press sends `0x40`. So
+  reaching gameplay requires injecting the **switch tokens** through the J1-latch path.
+* **process_input_events needs a ≥0xF0 command-ACK** within 400 Timer0 ticks or it traps at `d5a87`.
+  The DMD controller acknowledges each command written to PCS1 `0xA0080`. **(driver: modeled as a
+  minimal echo — bytes written to `0xA0080` are returned on subsequent `0xA0100` reads; this clears
+  the d5a87 trap and the 80188 runs its main loop. The exact ACK source is residual-unknown #3,
+  pending schematic 011-029-05.)**
+
+**Driver state after this pass** (`SLEIC2`, local for review): fictional PIC FIFO removed → plain J1
+latch (idle `0x32`) + the `≥0xF0` command-ACK echo; INT0 kept as a separate frame-rate source; NMI
+~145 Hz, Timer0 99.18 Hz. With the ACK the 80188 clears `d5a87` and runs its main loop.
+
+**The remaining gap to gameplay** is an *ordered per-frame marker stream* in the shared display queue
+(`4000:1220`, read via the single pointer `[1150]` by `vsync_check`→`0x47`, `timer_tick_handler`→
+`≥0xF0`, `frame_counter_update`→`0x45/0x46`, `dmd_text_display`→switch token). The **vsync `0x47` and
+swap `0x45/0x46` sources are genuinely unresolved** — the Z80 sends `0x47` only at boot, so a
+**divider-derived frame strobe** is the leading hypothesis (handoff residual-unknown #1, needs
+schematic 011-029-01) — and because all consumers share the `[1150]` pointer, an injected switch
+token is consumed by `vsync_check` before `dmd_text_display` sees it unless the stream is correctly
+ordered. Resolving the marker source + the queue ordering is the path to attract→coin→state 2→music.
+
+**Bike Race bring-up:** all 7 ROM SHA1s match `sleicgames.c`; it loads and runs. But the `SLEIC3`
+path uses the generic stub `SLEIC_80188_*mem` map (RAM/ROM/peripheral windows wrong for Bike Race's
+seg-`1000h` work RAM, `0xE0000` code, and A000 peripherals; `pic_w` swallows YM3812/OKI; no J1
+latch). Running its firmware needs the same memory-map + A000-peripheral + J1-latch treatment as
+SLEIC2 — at which point Bike Race (real, fully-dumped coprocessor) directly validates the IO Moon model.
