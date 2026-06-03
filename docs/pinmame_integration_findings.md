@@ -473,3 +473,46 @@ NVRAM handler that maps the 0x10400 region as battery-backed and saves it is a f
 **Bike Race status:** boots → renders DMD cleanly → real bidirectional J1 handshake → balls present →
 NVRAM valid → **boots straight to a clean, cycling attract** (run with `-dmd_only`).  Remaining for
 gameplay: coin/start + flipper switch wiring and sound (YM3812/OKI).
+
+### 2026-06-03 (cont.) — Persistent NVRAM + complete factory seed: attract cycles indefinitely
+
+After the first NVRAM-defaults fix the attract showed the title then went blank. Two more
+layered problems, both NVRAM-completeness issues, now fixed. The attract now runs indefinitely
+(97k+ DMD frames, 3109 distinct screen changes; was a freeze after ~725) cycling "BOLAS OK",
+high scores, "CREDITOS", etc. on a clean single DMD (`-dmd_only`).
+
+**1. Persistent (battery-backed) NVRAM.** The 28C64A is 8 KB at seg 0x1040 = phys
+**0x10400-0x123FF**. `SLEIC3_80188_writemem` maps that window with `MWA_RAM,&generic_nvram,
+&generic_nvram_size`; a custom `NVRAM_HANDLER(SLEIC3)` saves/loads it (`~/.xpinmame/nvram/
+bikerace.nv`) and seeds factory defaults only on a fresh boot. The previous per-reset seed in
+`MACHINE_INIT` was removed (it defeated persistence).
+
+**2. Divide-by-zero crash (the "blank after the title").** Attract screen handler **EE525**
+executes `idiv bx` with bx = NVRAM[0x23B]. A 0 divisor raises INT 0, whose vector (IVT[0]) is
+`FFF0:F000`, which on the 20-bit 80188 wraps to phys **0x0EF00** = zeroed RAM, so the CPU ran
+off into RAM (looping at 0x105). **[0x23B] is not in `config_load_defaults`' 8 blocks** — it is
+*derived* by **E9BC9**, which writes the inputs 0x230/0x233/0x236/0x239 = 2/1/1/1 then the
+derived 0x232/0x235/0x238/0x23B = input×1/4/8/20 and the consts 0x231/0x234/0x237/0x23A =
+1/3/7/0x12. So **[0x23B] = [0x239]×20 = 20**. (Diagnosed with a temporary i86-core trap that
+fired when the 80188 PC left the 0xE0000-0xFFFFF code window; removed afterwards.)
+
+**3. Runaway DMD blit (the next freeze).** With #2 fixed, the attract reached a scroll/high-
+score screen whose state was uninitialised: the text renderer's character count was garbage and
+it eventually drew a `{rows=0,cols=0}` glyph; the x86 `loop` with cx=0 wraps to 65536, so a
+0×0 blit becomes a ~4-billion-iteration runaway. Root cause: the partial seed (8 config blocks)
+was missing the **default high-score table (0x083-0x0C8), the credit/replay config block
+(0x03C-0x045), and the triplicated default-replay words (0x105/0x278)** that the real factory
+reset writes.
+
+**Authoritative seed via captured factory reset.** Rather than hand-replicate every audit-init
+routine (0569/0584/054A/08DC/0959/E9BC9 + the high-score seeder, which use immediate operands,
+not a ROM block), the firmware's *own* factory reset was driven once: boot with a blank NVRAM
+(config_validate fails -> "ESTABLECIENDO VALORES FABRICA"), inject the START (0x36) event the
+factory screen waits on (E9478), let the reset run, and capture the resulting `bikerace.nv`.
+The driver seed (the 9 ROM blocks incl. {0x27E,0x86D,111} + literal 0x230-0x23B + a 47-byte
+captured audit/high-score table) now matches that firmware-produced NVRAM **byte-for-byte**
+(0 of 8192 differing). The injection/blank hooks were temporary and removed.
+
+**Bike Race status:** boots -> clean DMD -> real bidirectional J1 handshake -> balls present ->
+NVRAM valid & complete -> **boots straight to a clean, indefinitely-cycling attract**. Remaining
+for gameplay: coin/start wiring and sound (YM3812/OKI).
