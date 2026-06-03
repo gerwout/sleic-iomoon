@@ -19,13 +19,14 @@ Findings from making the Io Moon machine **run** in PinMAME (the `vpinball/pinma
 | 5 | **LMCS ROM banking** (ROM2 frames ↔ ROM1 fonts) | **FIXED** — *the keystone*; broke the freeze |
 | 6 | DMD-VBLANK **NMI + J1 vsync** (`dmd_vblank_isr`, `[1147]`, 0x47) | **FIXED** — boot reaches the main loop |
 | 7 | DMD **frame-command handshake** via the PIC at PCS2 0xA0100 | **MODELED** — loopback; game animates + takes input |
-| 8 | Full attract→gameplay flow + audible YM3812/OKI music | **OPEN** — needs the exact (undumped) PIC frame timing |
+| 8 | **YM3812 FM music pipeline** (sequencer → chip) | **VERIFIED WORKING** — arms + plays in-driver |
+| 9 | Game *auto-reaching* gameplay so music/OKI arm by themselves | **OPEN** — needs the exact (undumped) PIC frame timing |
 
-Items 1–7 are in the driver (kept local for review). The machine now **boots, runs fully
-interrupt-driven, executes its complete main loop, drives the DMD command protocol, animates an
-intro sequence, and responds to switch input** — none of which was possible before. The remaining
-gap (item 8) is faithfully reproducing the rest of the attract→gameplay chain, which increasingly
-depends on the exact undumped-PIC frame timing.
+Items 1–8 are in the driver (kept local for review). The machine now **boots, runs fully
+interrupt-driven, executes its complete main loop, drives the DMD command protocol, animates its
+attract, responds to switch input, and — when a song is armed — plays the YM3812 FM music** — none of
+which was possible before. The single remaining gap (item 9) is the game **auto-reaching** gameplay so
+the sound arms by itself, which depends on the exact undumped-PIC frame timing.
 
 ## 1. [FIXED] Release-build segfault — a genuine i86-core bug
 
@@ -160,11 +161,34 @@ that this is the **exact-PIC-timing** dependency, not a different bug: (a) the m
 PIC not the Z80; (b) the attract sub-loop is flipper-only by disassembly; (c) coin/start/flipper
 injection can't advance state.
 
-So reaching gameplay + audible YM3812/OKI music is gated on faithfully reproducing the PIC frame
-timing. The 10 FM tracks decode cleanly offline (see `iomoon_fm_extract.md`); hearing them in-emulator
-needs gameplay. The two outstanding dumps — **IC23 PIC16C57** (frame timing) and **IC7 PAL20L10**
-(ROM-bank truth table) — gate the rest. This is the limit of what is faithfully reachable in software
-without them.
+## 8a. [VERIFIED] The YM3812 FM music pipeline works in the driver
+
+Rather than wait for the game to reach gameplay, the music path was exercised directly by replicating
+`game_mode_set` (D0DB4): pick a song index, read its pointer from the table at `CS:0DE5` (physical
+0xD0DE5 — 10 entries `0DF9,0E32,1662,2106,2769,22A8,25E9,26A9,29FA,2C8E`), and set the sequencer vars
+in seg 4000h: `[12EA]`=song ptr, `[12EC]`=0, `[12EE]`=0xFF (enable). The result is unambiguous: the
+music sequencer (D0D1B, ticked by `frame_isr`) **walks the song byte-stream** (`[12EA]` advances
+`0E32→0EB2→0EC8→0EE6…`) and **writes the YM3812** (PCS5 `0xA0280`/`0xA0281`) — the YM3812 write count
+climbed from 0 into the thousands across songs, and short vs long tracks matched the offline-rendered
+WAVs. **So the entire FM pipeline — sequencer → write primitive (D0D99) → YM3812 — is functional;
+audible FM music plays the moment a song is armed.** (The 10 tracks also render to recognisable music
+offline — see `iomoon_fm_extract.md` and the rendered WAVs.) The OKI path
+(`iomoon_oki_trigger`→`OKIM6376`) is likewise in place and its samples are recognisable.
+
+## 9. [OPEN] Auto-reaching gameplay so the music/OKI arm themselves
+
+So the sound chips work; what's missing is the game **arming** them by itself, which happens once it
+enters a started ball (state 2) via `game_mode_set`. That requires the attract→coin→start chain, and
+the attract's per-screen routines park in input-only sub-loops under the approximate loopback markers
+(D540F loops `lamp_set` until upper-flipper 0x40, no timer auto-advance, no coin poll). On real
+hardware the PIC's exact frame markers pace those screens and let the coin/credit path run; under the
+approximation the attract never polls the coin, so injecting COIN/START does not raise the credit.
+Verified three ways this is the **exact-PIC-timing** dependency: (a) the markers come from the PIC not
+the Z80; (b) the attract sub-loop is flipper-only by disassembly; (c) coin/start/flipper injection
+can't advance state. The two outstanding dumps — **IC23 PIC16C57** (frame timing) and **IC7 PAL20L10**
+(ROM-bank truth table) — gate the auto-flow. This is the limit faithfully reachable without them; the
+driver scaffolding (banking, NMI, command loopback, J1, and a proven sound pipeline) is all in place
+for the PIC's real frame sequence to drop into.
 
 ---
 
