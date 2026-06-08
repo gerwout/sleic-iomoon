@@ -84,10 +84,35 @@ select/enter, START = back/confirm, TEST = exit**. The 80188 enters the menu whe
 "VALORES FABRICA / PULSE START" → press START.** Default settings seen in the manual:
 NUM. BOLAS = 3, ORBITAS = 10 (extra ball), free game at 6 000 000 / 8 000 000.
 
-## NVRAM analysis (the current blocker)
+## ✅ NVRAM BREAKTHROUGH — the machine now reaches gameplay
 
-- The SLEIC2 driver currently maps **no persisted NVRAM** (it inherits
-  `generic_0fill` with nothing bound), so a factory reset does **not** persist.
+**The IO Moon 28C64A NVRAM is at 80188 segment `5040h` = physical `0x50400-0x523FF`.**
+The driver mapped that address as read-only ROM2 graphics, so `config_validate`
+(the real one — `display_flush_2refs` @ D05C0/D05CB) could never match the factory
+signature and the machine sat on "VALORES FABRICA" forever. `config_validate`
+byte-compares 8 blocks at seg `5040h` against ROM-resident defaults; `config_load_defaults`
+(D06ED) writes them. The blocks `(nvram_off, ROM_off in D000 seg, len)`:
+`(0x000,0x7A9,0x0F) (0x047,0x7B8,0x33) (0x0DA,0x7EB,0x20) (0x130,0x80B,0x35)
+(0x180,0x840,0x1A) (0x1D0,0x7EB,0x20) (0x27D,0x80B,0x35) (0x2E1,0x840,0x1A)` —
+the `(C) SLEIC 1.994` signature + operator strings (ROM file `0x507A9`), the **same
+strings as the Bike Race NVRAM image**.
+
+**Fix:** map `0x50400-0x523FF` as battery-backed RAM and seed it on fresh boot by
+replicating `config_load_defaults` (copy those 8 ROM blocks). Then `config_validate`
+passes and the state machine cycles **attract (1) ↔ game-active (2)** — a game runs.
+
+**Still to do for a polished game:** the seed has only the 8 *text* blocks
+`config_load_defaults` writes — not the **game settings** (coins-per-credit, NUM.BOLAS=3,
+free-game points) that the full BORRADO-DE-TODO reset writes, so credits are
+free-play-ish; the **gameplay DMD** renders to a different page than attract (blank in
+game); the **intro/attract auto-advance** is PIC-timed (waits on upper-flipper 0x40);
+**sound** (YM3812/OKI) is unverified in-game; **lamps/coils** go via the un-traced
+80188→Z80 reverse path (IC8 PAL).
+
+## (Historical) NVRAM analysis — what the blocker looked like before it was found
+
+- The SLEIC2 driver originally mapped **no persisted NVRAM** (it inherited
+  `generic_0fill` with nothing bound), so a factory reset did **not** persist.
 - The runtime config the game reads lives in seg-4000h work RAM (`coin_handler` D4CF4
   reads coin/credit config at `413C:0016 / 0028 / 0031`; `credit_available` at
   `413C:00D4` = `0x41494`). This region is **interleaved with volatile state** (display
