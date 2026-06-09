@@ -11,8 +11,8 @@ Authoritative source: the annotated Z80 disassembly header at `asm/z80_annotated
 | `0x00` | IN | Direct switches input 0 (flipper buttons, misc) |
 | `0x01` | IN | Status register — bit 1 = 80188 inter-board handshake ready (J1 BUSY/AD); **not** an OKI ready line |
 | `0x02` | IN | Switch matrix column data (8 bits, active-low; Z80 `CPL`s after reading) |
-| `0x03` | IN | Direct switches input 1 — bit 3 = START, bit 2 = TEST/COIN |
-| `0x04` | IN | Direct switches input 2 — bit 0 = TILT, special inputs |
+| `0x03` | IN | Direct (cabinet) switches, active-low. bit0 = TILT/Péndulo (C17, code 0x32); bit1 = TEST (C4, code 0x33); bit2 = RIGHT flipper (C5, code 0x34); bit3 = LEFT flipper (C1, code 0x35); bit4 = START (C2, code 0x36); bit6 = unused (code 0x38). **The earlier "bit3=START, bit2=TEST/COIN" was wrong** — verified against live TEST-DE-CONTACTOS anchors (0x32→C17, 0x34→C5). Dispatched by `sub_0dcb` @ `0x0DCB` (latch `0xC0DF`); flipper bits 2/3 handled by `sub_0e76`/`sub_0e30`. Coin is a separate acceptor path (codes 0x37/0x39 = C3 Monedero), **not** a port-0x03 bit. See `bikerace_switch_map.md`. |
+| `0x04` | IN | Direct switches input 2 / power-on service combo. bit0 gates the matrix scan (`sub_0d2f`); boot reads bit7 = reboot, bit6 = clear-stats+test, bit5 = `sub_2b30`. |
 | `0x80` | OUT | Inter-board data byte to the 80188 (placed on J1 lines DIO0-7); carries a switch code or a forwarded sound command depending on the strobe; does **not** reach the OKI directly |
 | `0x81` | OUT | Control register, bit-mapped (see "Port 0x81 control bits" below) |
 | `0x82` | OUT | **Lamp matrix column strobe** (bits 0–6 = columns A–G) |
