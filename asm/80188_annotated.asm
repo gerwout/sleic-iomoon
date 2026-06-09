@@ -1,3 +1,27 @@
+;  ============================================================================
+;  LABEL CORRECTIONS (2026-06-09, verified by behaviour) -- the auto-disassembler
+;  mislabeled several routines as NVRAM/config/switch code; they were misleading
+;  the IO Moon coin/credit/NVRAM reverse-engineering and have been renamed:
+;    config_load_defaults  (D0C57) -> oki_play_sample      OKI MSM6376 trigger: reads
+;                                       OKI duration table CS:0C1F, writes OKI latch A000:0300
+;    config_load_eeprom    (D0C84) -> oki_play_sample_alt  OKI trigger variant
+;    config_save_eeprom    (D0CB8) -> oki_sample_finish    clears OKI latch / resets sample state
+;    config_validate       (D0CE2) -> dmd_ctrl1_strobe     writes dmd_display_mode[1134]+DMD_CTRL1
+;                                       A000:0000 (NOT NVRAM validation)
+;    config_apply          (D0CFC) -> dmd_ctrl1_clear_bit5 clears DMD_CTRL1 bit5
+;    switch_read_shared_ram(D5608) -> delay_ticks          busy-wait: [1139]=arg*2, Timer0 ISR
+;                                       (D02E8) decrements to 0 (a DELAY, not a switch read)
+;    process_input_events  (D5A45) -> dmd_cmd_send_wait    queues DMD cmd 0xF9, waits ACK (trap D5A87)
+;  Also NOTE (names left as-is but semantics clarified):
+;    frame_counter_update (D5D8D) / vsync_check (D5D1B) DEQUEUE the J1/NMI event ring
+;      (filled at D018C from PCS2 0xA0100; flag [1147], rd-ptr [1150]); frame_counter_update
+;      acts on PIC DMD frame markers 0x45/0x46 (dmd_buffer_swap+text), AL=1 only on 0x45.
+;  REAL coin/credit/NVRAM config: credits_management (D4C1A) persists coin/credit config to
+;    NVRAM seg 5040h @ 0x0258 and 0x025C-0275 (from work-RAM 413C:0000-000C / 413C:00C6-00D2);
+;    defaults set at DA0DA (413C:00C6=07, 00C7-00CD=0A). last_switch_code = 413C:00D6 (0x41496).
+;  The C000 segment (0xC0000-0xCFFFF = ROM1 file 0x40000) is ENTIRELY 0xFF (empty) -- the whole
+;    80188 program is in D000/E000/F000 (this file); there is no hidden/undisassembled code.
+;  ============================================================================
 ; =============================================================================
 ; IO Moon Pinball - Fully Annotated 80188 CPU ROM Disassembly
 ; =============================================================================
@@ -1508,7 +1532,7 @@ d0284:  9a 09 0d 00 d0                             call       dmd_display_enable
 ;  XREF: d027d
 d0289:  c6 06 02 13 00        loc_d0289:           mov        byte [1302h], 00h ; OKI channel A: clear trigger
 d028e:  a0 f9 12                                   mov        al, [12f9h]   ; AL = sample number [12F9h]
-d0291:  9a 57 0c 00 d0                             call       config_load_defaults ; play sample (config_load_defaults dispatch table)
+d0291:  9a 57 0c 00 d0                             call       oki_play_sample ; play sample (oki_play_sample dispatch table)
 d0296:  eb 16                                      jmp short  loc_d02ae
 d0298:  90                                         nop
 
@@ -1526,7 +1550,7 @@ d02b5:  80 3e 02 13 00                             cmp        byte [1302h], 00h 
 d02ba:  74 25                                      je         loc_d02e1
 d02bc:  c6 06 02 13 00                             mov        byte [1302h], 00h
 d02c1:  a0 f9 12                                   mov        al, [12f9h]   ; AL = sample number [12F9h]
-d02c4:  9a 84 0c 00 d0                             call       config_load_eeprom ; play sample (config_load_eeprom dispatch table)
+d02c4:  9a 84 0c 00 d0                             call       oki_play_sample_alt ; play sample (oki_play_sample_alt dispatch table)
 d02c9:  eb 16                                      jmp short  loc_d02e1
 d02cb:  90                                         nop
 
@@ -2426,20 +2450,20 @@ d0bb0:  80 3e fd 12 00                             cmp        byte [12fdh], 00h
 d0bb5:  74 0d                                      jz         loc_d0bc4
 d0bb7:  80 3e 00 13 00                             cmp        byte [1300h], 00h
 d0bbc:  74 0f                                      jz         loc_d0bcd
-d0bbe:  e8 f7 00                                   call       config_save_eeprom
+d0bbe:  e8 f7 00                                   call       oki_sample_finish
 d0bc1:  eb 13                                      jmp short  loc_d0bd6
 
 ;  XREF: d0bb5, d0be7
 d0bc4:  58                    loc_d0bc4:           pop        ax
 d0bc5:  0e                                         push       cs
-d0bc6:  e8 8e 00                                   call       config_load_defaults
+d0bc6:  e8 8e 00                                   call       oki_play_sample
 d0bc9:  90                                         nop
 d0bca:  eb 25                                      jmp short  loc_d0bf1
 
 ;  XREF: d0bbc, d0bee
 d0bcd:  58                    loc_d0bcd:           pop        ax
 d0bce:  0e                                         push       cs
-d0bcf:  e8 b2 00                                   call       config_load_eeprom
+d0bcf:  e8 b2 00                                   call       oki_play_sample_alt
 d0bd2:  90                                         nop
 d0bd3:  eb 1c                                      jmp short  loc_d0bf1
 
@@ -2484,10 +2508,10 @@ d0c17:  eb 80                                      jmp short  loc_d0b99
 ;  XREF: d0bc6
 
 ; -----------------------------------------------------------------------------
-; config_load_defaults (0xD0C57)
+; oki_play_sample (0xD0C57)
 ; Load default configuration/factory settings
 ; -----------------------------------------------------------------------------
-d0c57:  50                    config_load_defaults:           push       ax
+d0c57:  50                    oki_play_sample:           push       ax
 d0c58:  b8 00 a0                                   mov        ax, a000h
 d0c5b:  8e c0                                      mov        es, ax
 d0c5d:  58                                         pop        ax
@@ -2502,17 +2526,17 @@ d0c70:  2d 02 00                                   sub        ax, 0002h
 d0c73:  03 f0                                      add        si, ax
 d0c75:  2e 8b 04                                   mov        ax, cs:[si]
 d0c78:  a3 fd 12                                   mov        [12fdh], ax
-d0c7b:  e8 64 00                                   call       config_validate
+d0c7b:  e8 64 00                                   call       dmd_ctrl1_strobe
 d0c7e:  80 0e 04 13 f0                             or         byte [1304h], f0h
 d0c83:  cb                                         retf
 
 ;  XREF: d0bcf
 
 ; -----------------------------------------------------------------------------
-; config_load_eeprom (0xD0C84)
+; oki_play_sample_alt (0xD0C84)
 ; Load configuration from EEPROM
 ; -----------------------------------------------------------------------------
-d0c84:  50                    config_load_eeprom:           push       ax
+d0c84:  50                    oki_play_sample_alt:           push       ax
 d0c85:  b8 00 a0                                   mov        ax, a000h
 d0c88:  8e c0                                      mov        es, ax
 d0c8a:  58                                         pop        ax
@@ -2526,7 +2550,7 @@ d0c9b:  2d 02 00                                   sub        ax, 0002h
 d0c9e:  03 f0                                      add        si, ax
 d0ca0:  2e 8b 04                                   mov        ax, cs:[si]
 d0ca3:  a3 00 13                                   mov        [1300h], ax
-d0ca6:  e8 39 00                                   call       config_validate
+d0ca6:  e8 39 00                                   call       dmd_ctrl1_strobe
 d0ca9:  a0 ff 12                                   mov        al, [12ffh]
 d0cac:  0c 80                                      or         al, 80h
 d0cae:  26 a2 00 03                                mov        es:[0300h], al
@@ -2536,13 +2560,13 @@ d0cb7:  cb                                         retf
 ;  XREF: d0bbe
 
 ; -----------------------------------------------------------------------------
-; config_save_eeprom (0xD0CB8)
+; oki_sample_finish (0xD0CB8)
 ; Save configuration to EEPROM
 ; -----------------------------------------------------------------------------
-d0cb8:  b8 00 a0              config_save_eeprom:           mov        ax, a000h
+d0cb8:  b8 00 a0              oki_sample_finish:           mov        ax, a000h
 d0cbb:  8e c0                                      mov        es, ax
 d0cbd:  26 c6 06 00 03 00                          mov        byte es:[0300h], 00h ; DMD_ENABLE - DMD enable register (0x80 = enabled)
-d0cc3:  e8 36 00                                   call       config_apply
+d0cc3:  e8 36 00                                   call       dmd_ctrl1_clear_bit5
 d0cc6:  c6 06 fc 12 00                             mov        byte [12fch], 00h
 d0ccb:  c6 06 ff 12 00                             mov        byte [12ffh], 00h
 d0cd0:  c7 06 fd 12 01 00                          mov        word [12fdh], 0001h
@@ -2553,10 +2577,10 @@ d0ce1:  c3                                         ret
 ;  XREF: d0c7b, d0ca6
 
 ; -----------------------------------------------------------------------------
-; config_validate (0xD0CE2)
+; dmd_ctrl1_strobe (0xD0CE2)
 ; Validate configuration data integrity (2 refs)
 ; -----------------------------------------------------------------------------
-d0ce2:  a0 34 11              config_validate:           mov        al, [1134h] ; dmd_display_mode - Current DMD display mode (init: 0x28)
+d0ce2:  a0 34 11              dmd_ctrl1_strobe:           mov        al, [1134h] ; dmd_display_mode - Current DMD display mode (init: 0x28)
 d0ce5:  24 df                                      and        al, dfh
 d0ce7:  a2 34 11                                   mov        [1134h], al   ; dmd_display_mode - Current DMD display mode (init: 0x28)
 d0cea:  26 a2 00 00                                mov        es:[0000h], al
@@ -2570,10 +2594,10 @@ d0cfb:  c3                                         ret
 ;  XREF: d0cc3
 
 ; -----------------------------------------------------------------------------
-; config_apply (0xD0CFC)
+; dmd_ctrl1_clear_bit5 (0xD0CFC)
 ; Apply loaded configuration to game variables
 ; -----------------------------------------------------------------------------
-d0cfc:  a0 34 11              config_apply:           mov        al, [1134h] ; dmd_display_mode - Current DMD display mode (init: 0x28)
+d0cfc:  a0 34 11              dmd_ctrl1_clear_bit5:           mov        al, [1134h] ; dmd_display_mode - Current DMD display mode (init: 0x28)
 d0cff:  24 df                                      and        al, dfh
 d0d01:  a2 34 11                                   mov        [1134h], al   ; dmd_display_mode - Current DMD display mode (init: 0x28)
 d0d04:  26 a2 00 00                                mov        es:[0000h], al
@@ -2771,7 +2795,7 @@ d2f60:  74 f7                                      jz         main_loop_wait_vsy
 d2f62:  b8 3c 41                                   mov        ax, 413ch
 d2f65:  8e c0                                      mov        es, ax
 d2f67:  26 c6 06 d9 00 00                          mov        byte es:[00d9h], 00h ; game_flag_2 - General game flag 2 (checked in main loop)
-d2f6d:  9a 25 2b f2 d2                             call       process_input_events
+d2f6d:  9a 25 2b f2 d2                             call       dmd_cmd_send_wait
 d2f72:  9a 0c 33 f2 d2                             call       default_game_logic
 d2f77:  b8 3c 41                                   mov        ax, 413ch
 d2f7a:  8e c0                                      mov        es, ax
@@ -3585,7 +3609,7 @@ d3735:  8e c0                                      mov        es, ax
 d3737:  26 c6 06 d8 00 01                          mov        byte es:[00d8h], 01h
 d373d:  9a 93 3a 2a d7                             call       game_timer_utility
 d3742:  6a 14                                      push       14h
-d3744:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3744:  9a e8 26 f2 d2                             call       delay_ticks
 d3749:  59                                         pop        cx
 d374a:  9a 06 50 2a d7                             call       dmd_planet_display
 
@@ -4181,7 +4205,7 @@ d3d37:  6a 09                 loc_d3d37:           push       09h
 d3d39:  9a 70 0b 00 d0                             call       timer_delay
 d3d3e:  59                                         pop        cx
 d3d3f:  6a 14                                      push       14h
-d3d41:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3d41:  9a e8 26 f2 d2                             call       delay_ticks
 d3d46:  59                                         pop        cx
 d3d47:  9a d1 11 f2 d2                             call       score_add
 
@@ -4208,7 +4232,7 @@ d3d75:  6a 09                 loc_d3d75:           push       09h
 d3d77:  9a 70 0b 00 d0                             call       timer_delay
 d3d7c:  59                                         pop        cx
 d3d7d:  6a 14                                      push       14h
-d3d7f:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3d7f:  9a e8 26 f2 d2                             call       delay_ticks
 d3d84:  59                                         pop        cx
 d3d85:  b8 3c 41                                   mov        ax, 413ch
 d3d88:  8e c0                                      mov        es, ax
@@ -4239,7 +4263,7 @@ d3dc8:  6a 09                                      push       09h
 d3dca:  9a 70 0b 00 d0                             call       timer_delay
 d3dcf:  59                                         pop        cx
 d3dd0:  6a 1e                                      push       1eh
-d3dd2:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3dd2:  9a e8 26 f2 d2                             call       delay_ticks
 d3dd7:  59                                         pop        cx
 d3dd8:  9a cb 0c 00 f0                             call       dmd_resource_load
 d3ddd:  eb 0c                                      jmp short  loc_d3deb
@@ -4271,7 +4295,7 @@ d3e14:  6a 09                 loc_d3e14:           push       09h
 d3e16:  9a 70 0b 00 d0                             call       timer_delay
 d3e1b:  59                                         pop        cx
 d3e1c:  6a 14                                      push       14h
-d3e1e:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3e1e:  9a e8 26 f2 d2                             call       delay_ticks
 d3e23:  59                                         pop        cx
 d3e24:  b8 3c 41                                   mov        ax, 413ch
 d3e27:  8e c0                                      mov        es, ax
@@ -4302,7 +4326,7 @@ d3e67:  6a 09                                      push       09h
 d3e69:  9a 70 0b 00 d0                             call       timer_delay
 d3e6e:  59                                         pop        cx
 d3e6f:  6a 1e                                      push       1eh
-d3e71:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3e71:  9a e8 26 f2 d2                             call       delay_ticks
 d3e76:  59                                         pop        cx
 d3e77:  9a cb 0c 00 f0                             call       dmd_resource_load
 d3e7c:  eb 0c                                      jmp short  loc_d3e8a
@@ -4355,7 +4379,7 @@ d3f05:  6a 09                                      push       09h
 d3f07:  9a 70 0b 00 d0                             call       timer_delay
 d3f0c:  59                                         pop        cx
 d3f0d:  6a 14                                      push       14h
-d3f0f:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3f0f:  9a e8 26 f2 d2                             call       delay_ticks
 d3f14:  59                                         pop        cx
 d3f15:  9a c4 00 00 f0                             call       dmd_buffer_swap
 d3f1a:  9a f1 00 00 f0                             call       dmd_buffer_clear
@@ -4374,7 +4398,7 @@ d3f38:  6a 09                 loc_d3f38:           push       09h
 d3f3a:  9a 70 0b 00 d0                             call       timer_delay
 d3f3f:  59                                         pop        cx
 d3f40:  6a 1e                                      push       1eh
-d3f42:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3f42:  9a e8 26 f2 d2                             call       delay_ticks
 d3f47:  59                                         pop        cx
 d3f48:  b8 3c 41                                   mov        ax, 413ch
 d3f4b:  8e c0                                      mov        es, ax
@@ -4393,7 +4417,7 @@ d3f76:  6a 09                                      push       09h
 d3f78:  9a 70 0b 00 d0                             call       timer_delay
 d3f7d:  59                                         pop        cx
 d3f7e:  6a 1e                                      push       1eh
-d3f80:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3f80:  9a e8 26 f2 d2                             call       delay_ticks
 d3f85:  59                                         pop        cx
 d3f86:  9a cb 0c 00 f0                             call       dmd_resource_load
 
@@ -4427,7 +4451,7 @@ d3fce:  6a 09                 loc_d3fce:           push       09h
 d3fd0:  9a 70 0b 00 d0                             call       timer_delay
 d3fd5:  59                                         pop        cx
 d3fd6:  6a 14                                      push       14h
-d3fd8:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d3fd8:  9a e8 26 f2 d2                             call       delay_ticks
 d3fdd:  59                                         pop        cx
 d3fde:  b8 3c 41                                   mov        ax, 413ch
 d3fe1:  8e c0                                      mov        es, ax
@@ -4446,7 +4470,7 @@ d400c:  6a 09                                      push       09h
 d400e:  9a 70 0b 00 d0                             call       timer_delay
 d4013:  59                                         pop        cx
 d4014:  6a 1e                                      push       1eh
-d4016:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d4016:  9a e8 26 f2 d2                             call       delay_ticks
 d401b:  59                                         pop        cx
 d401c:  9a cb 0c 00 f0                             call       dmd_resource_load
 
@@ -4466,7 +4490,7 @@ d403a:  6a 09                 loc_d403a:           push       09h
 d403c:  9a 70 0b 00 d0                             call       timer_delay
 d4041:  59                                         pop        cx
 d4042:  6a 14                                      push       14h
-d4044:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d4044:  9a e8 26 f2 d2                             call       delay_ticks
 d4049:  59                                         pop        cx
 d404a:  b8 3c 41                                   mov        ax, 413ch
 d404d:  8e c0                                      mov        es, ax
@@ -4515,7 +4539,7 @@ d40da:  6a 09                                      push       09h
 d40dc:  9a 70 0b 00 d0                             call       timer_delay
 d40e1:  59                                         pop        cx
 d40e2:  6a 1e                                      push       1eh
-d40e4:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d40e4:  9a e8 26 f2 d2                             call       delay_ticks
 d40e9:  59                                         pop        cx
 d40ea:  9a cb 0c 00 f0                             call       dmd_resource_load
 d40ef:  1f                                         pop        ds
@@ -4579,7 +4603,7 @@ d44bc:  9a 01 37 00 f0        loc_d44bc:           call       service_board_test
 
 ;  XREF: d44ba
 d44c1:  6a 64                 loc_d44c1:           push       64h
-d44c3:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d44c3:  9a e8 26 f2 d2                             call       delay_ticks
 d44c8:  59                                         pop        cx
 d44c9:  b8 3c 41                                   mov        ax, 413ch
 d44cc:  8e c0                                      mov        es, ax
@@ -4773,7 +4797,7 @@ d46d3:  68 e1 00                                   push       00e1h
 d46d6:  9a 07 09 00 f0                             call       dmd_frame_load
 d46db:  83 c4 06                                   add        word sp, 06h
 d46de:  6a 3c                                      push       3ch
-d46e0:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d46e0:  9a e8 26 f2 d2                             call       delay_ticks
 d46e5:  59                                         pop        cx
 d46e6:  9a cb 0c 00 f0                             call       dmd_resource_load
 d46eb:  b8 3c 41                                   mov        ax, 413ch
@@ -5489,7 +5513,7 @@ d51da:  59                                         pop        cx
 d51db:  9a 3d 12 00 f0                             call       interrupt_handler_serial
 d51e0:  9a f2 37 2a d7                             call       game_init_display
 d51e5:  6a 0a                                      push       0ah
-d51e7:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d51e7:  9a e8 26 f2 d2                             call       delay_ticks
 d51ec:  59                                         pop        cx
 d51ed:  1f                                         pop        ds
 d51ee:  cb                                         retf
@@ -5797,7 +5821,7 @@ d5598:  6a 01                                      push       01h
 d559a:  9a 01 07 00 f0                             call       dmd_text_render
 d559f:  83 c4 08                                   add        word sp, 08h
 d55a2:  68 c8 00                                   push       00c8h
-d55a5:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d55a5:  9a e8 26 f2 d2                             call       delay_ticks
 d55aa:  59                                         pop        cx
 d55ab:  1f                                         pop        ds
 d55ac:  cb                                         retf
@@ -5840,10 +5864,10 @@ d5607:  cb                                         retf
 ;  XREF: d3744, d3d41, d3d7f, d3dd2, d3e1e (+32 more)
 
 ; -----------------------------------------------------------------------------
-; switch_read_shared_ram (0xD5608)
+; delay_ticks (0xD5608)
 ; Read switch state from Z80 shared RAM (37 refs) - most used I/O function
 ; -----------------------------------------------------------------------------
-d5608:  55                    switch_read_shared_ram:           push       bp
+d5608:  55                    delay_ticks:           push       bp
 d5609:  8b ec                                      mov        bp, sp
 d560b:  1e                                         push       ds
 d560c:  b8 30 41                                   mov        ax, 4130h
@@ -6302,10 +6326,10 @@ d5a44:  cb                                         retf
 ;  XREF: d2f6d
 
 ; -----------------------------------------------------------------------------
-; process_input_events (0xD5A45)
+; dmd_cmd_send_wait (0xD5A45)
 ; Process all pending input events from Z80 (called from main loop)
 ; -----------------------------------------------------------------------------
-d5a45:  1e                    process_input_events:           push       ds
+d5a45:  1e                    dmd_cmd_send_wait:           push       ds
 d5a46:  b8 30 41                                   mov        ax, 4130h
 d5a49:  8e d8                                      mov        ds, ax
 d5a4b:  68 f9 00                                   push       00f9h
@@ -6695,7 +6719,7 @@ d5e29:  9a 01 07 00 f0                             call       dmd_text_render
 d5e2e:  83 c4 08                                   add        word sp, 08h
 d5e31:  6a 32                                      push       32h
 d5e33:  0e                                         push       cs
-d5e34:  e8 d1 f7                                   call       switch_read_shared_ram
+d5e34:  e8 d1 f7                                   call       delay_ticks
 d5e37:  59                                         pop        cx
 d5e38:  eb 3c                                      jmp short  loc_d5e76
 
@@ -6715,7 +6739,7 @@ d5e63:  9a 01 07 00 f0                             call       dmd_text_render
 d5e68:  83 c4 08                                   add        word sp, 08h
 d5e6b:  6a 32                                      push       32h
 d5e6d:  0e                                         push       cs
-d5e6e:  e8 97 f7                                   call       switch_read_shared_ram
+d5e6e:  e8 97 f7                                   call       delay_ticks
 d5e71:  59                                         pop        cx
 d5e72:  b0 01                                      mov        al, 01h
 d5e74:  eb 02                                      jmp short  loc_d5e78
@@ -8586,7 +8610,7 @@ d7aff:  59                                         pop        cx
 
 ;  XREF: d7af6
 d7b00:  6a 28                 loc_d7b00:           push       28h
-d7b02:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+d7b02:  9a e8 26 f2 d2                             call       delay_ticks
 d7b07:  59                                         pop        cx
 d7b08:  0e                                         push       cs
 d7b09:  e8 e6 f7                                   call       dmd_anim_frame_advance
@@ -9222,7 +9246,7 @@ da19d:  1e                    game_end_score_check:           push       ds
 da19e:  b8 34 41                                   mov        ax, 4134h
 da1a1:  8e d8                                      mov        ds, ax
 da1a3:  6a 0a                                      push       0ah
-da1a5:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da1a5:  9a e8 26 f2 d2                             call       delay_ticks
 da1aa:  59                                         pop        cx
 da1ab:  68 c6 00                                   push       00c6h
 da1ae:  9a 38 01 00 d0                             call       cmd_queue_push
@@ -9529,7 +9553,7 @@ da5ea:  9a de 0f 00 f0                             call       ram_test
 
 ;  XREF: da5e8
 da5ef:  6a 05                 loc_da5ef:           push       05h
-da5f1:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da5f1:  9a e8 26 f2 d2                             call       delay_ticks
 da5f6:  59                                         pop        cx
 da5f7:  b8 3c 41                                   mov        ax, 413ch
 da5fa:  8e c0                                      mov        es, ax
@@ -9583,7 +9607,7 @@ da679:  9a de 0f 00 f0                             call       ram_test
 
 ;  XREF: da677
 da67e:  6a 05                 loc_da67e:           push       05h
-da680:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da680:  9a e8 26 f2 d2                             call       delay_ticks
 da685:  59                                         pop        cx
 da686:  b8 3c 41                                   mov        ax, 413ch
 da689:  8e c0                                      mov        es, ax
@@ -9654,7 +9678,7 @@ da716:  9a de 0f 00 f0                             call       ram_test
 
 ;  XREF: da714
 da71b:  6a 05                 loc_da71b:           push       05h
-da71d:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da71d:  9a e8 26 f2 d2                             call       delay_ticks
 da722:  59                                         pop        cx
 da723:  b8 3c 41                                   mov        ax, 413ch
 da726:  8e c0                                      mov        es, ax
@@ -9696,7 +9720,7 @@ da780:  9a de 0f 00 f0                             call       ram_test
 
 ;  XREF: da77e
 da785:  6a 05                 loc_da785:           push       05h
-da787:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da787:  9a e8 26 f2 d2                             call       delay_ticks
 da78c:  59                                         pop        cx
 da78d:  b8 3c 41                                   mov        ax, 413ch
 da790:  8e c0                                      mov        es, ax
@@ -9761,7 +9785,7 @@ da810:  9a 3d 12 00 f0                             call       interrupt_handler_
 
 ;  XREF: da80e
 da815:  6a 0a                 loc_da815:           push       0ah
-da817:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da817:  9a e8 26 f2 d2                             call       delay_ticks
 da81c:  59                                         pop        cx
 da81d:  b8 00 40                                   mov        ax, 4000h
 da820:  8e c0                                      mov        es, ax
@@ -9896,7 +9920,7 @@ da9b8:  9a 07 30 00 f0        loc_da9b8:           call       service_menu_dispa
 
 ;  XREF: da9b6
 da9bd:  6a 14                 loc_da9bd:           push       14h
-da9bf:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+da9bf:  9a e8 26 f2 d2                             call       delay_ticks
 da9c4:  59                                         pop        cx
 da9c5:  9a 93 3a 2a d7                             call       game_timer_utility
 da9ca:  b8 3c 41                                   mov        ax, 413ch
@@ -9922,7 +9946,7 @@ da9fb:  9a 07 30 00 f0        loc_da9fb:           call       service_menu_dispa
 
 ;  XREF: da9f9
 daa00:  6a 14                 loc_daa00:           push       14h
-daa02:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+daa02:  9a e8 26 f2 d2                             call       delay_ticks
 daa07:  59                                         pop        cx
 daa08:  b8 3c 41                                   mov        ax, 413ch
 daa0b:  8e c0                                      mov        es, ax
@@ -9965,7 +9989,7 @@ daa4b:  9a cd 35 00 f0        loc_daa4b:           call       service_sound_menu
 
 ;  XREF: daa49
 daa50:  6a 14                 loc_daa50:           push       14h
-daa52:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+daa52:  9a e8 26 f2 d2                             call       delay_ticks
 daa57:  59                                         pop        cx
 daa58:  9a 93 3a 2a d7                             call       game_timer_utility
 daa5d:  eb 31                                      jmp short  loc_daa90
@@ -9984,7 +10008,7 @@ daa78:  9a cd 35 00 f0        loc_daa78:           call       service_sound_menu
 
 ;  XREF: daa76
 daa7d:  6a 14                 loc_daa7d:           push       14h
-daa7f:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+daa7f:  9a e8 26 f2 d2                             call       delay_ticks
 daa84:  59                                         pop        cx
 daa85:  b8 3c 41                                   mov        ax, 413ch
 daa88:  8e c0                                      mov        es, ax
@@ -10787,7 +10811,7 @@ dc2a6:  1e                    dmd_planet_display:           push       ds
 dc2a7:  b8 34 41                                   mov        ax, 4134h
 dc2aa:  8e d8                                      mov        ds, ax
 dc2ac:  6a 0a                                      push       0ah
-dc2ae:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+dc2ae:  9a e8 26 f2 d2                             call       delay_ticks
 dc2b3:  59                                         pop        cx
 dc2b4:  6a 3d                                      push       3dh
 dc2b6:  0e                                         push       cs
@@ -11120,7 +11144,7 @@ dc50f:  b8 3c 41                                   mov        ax, 413ch
 dc512:  8e c0                                      mov        es, ax
 dc514:  26 c6 06 f9 00 03                          mov        byte es:[00f9h], 03h
 dc51a:  6a 0a                                      push       0ah
-dc51c:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+dc51c:  9a e8 26 f2 d2                             call       delay_ticks
 dc521:  59                                         pop        cx
 
 ;  XREF: dc4fc
@@ -11180,7 +11204,7 @@ dc582:  b8 3c 41                                   mov        ax, 413ch
 dc585:  8e c0                                      mov        es, ax
 dc587:  26 c6 06 f9 00 03                          mov        byte es:[00f9h], 03h
 dc58d:  6a 0a                                      push       0ah
-dc58f:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+dc58f:  9a e8 26 f2 d2                             call       delay_ticks
 dc594:  59                                         pop        cx
 
 ;  XREF: dc56f
@@ -11212,7 +11236,7 @@ dc72a:  fe 06 26 00                                inc        byte [0026h]
 dc72e:  fe 0e 30 00                                dec        byte [0030h]
 dc732:  c6 06 22 00 01                             mov        byte [0022h], 01h
 dc737:  6a 14                                      push       14h
-dc739:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+dc739:  9a e8 26 f2 d2                             call       delay_ticks
 dc73e:  59                                         pop        cx
 dc73f:  6a 44                                      push       44h
 dc741:  0e                                         push       cs
@@ -11242,7 +11266,7 @@ dc768:  c6 06 24 00 01                             mov        byte [0024h], 01h
 dc76d:  0e                                         push       cs
 dc76e:  e8 58 fd                                   call       dmd_scoop_display
 dc771:  6a 14                                      push       14h
-dc773:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+dc773:  9a e8 26 f2 d2                             call       delay_ticks
 dc778:  59                                         pop        cx
 dc779:  68 f3 00                                   push       00f3h
 dc77c:  9a 38 01 00 d0                             call       cmd_queue_push
@@ -11311,7 +11335,7 @@ dc808:  e8 e7 aa                                   call       dmd_anim_frame_adv
 dc80b:  0e                                         push       cs
 dc80c:  e8 2d fd                                   call       dmd_monolith_display
 dc80f:  6a 14                                      push       14h
-dc811:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+dc811:  9a e8 26 f2 d2                             call       delay_ticks
 dc816:  59                                         pop        cx
 dc817:  68 f3 00                                   push       00f3h
 dc81a:  9a 38 01 00 d0                             call       cmd_queue_push
@@ -12957,7 +12981,7 @@ e0e13:  6a 21                                      push       21h
 e0e15:  9a 01 07 00 f0                             call       dmd_text_render
 e0e1a:  83 c4 08                                   add        word sp, 08h
 e0e1d:  68 c8 00                                   push       00c8h
-e0e20:  9a e8 26 f2 d2                             call       switch_read_shared_ram
+e0e20:  9a e8 26 f2 d2                             call       delay_ticks
 e0e25:  59                                         pop        cx
 e0e26:  1f                                         pop        ds
 e0e27:  5d                                         pop        bp
