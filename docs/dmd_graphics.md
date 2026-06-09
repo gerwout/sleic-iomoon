@@ -161,6 +161,11 @@ Header (6 bytes) → English bitmap (512 bytes) → Spanish bitmap (512 bytes)
 
 Each bitmap uses **1 bitplane** only (on/off, no brightness levels). Static screens are **not** bit-inverted (unlike animated frames).
 
+Which of the two paired bitmaps is shown is selected by the language byte
+`[4000:1001]`: **`== 5` ⇒ Spanish (second bitmap), any other value ⇒ English (first
+bitmap)** — the default is `0x04` (English). This polarity is DMD-verified; see
+[`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
+
 ### Content Examples
 
 The identified static screens include game messages in both Spanish and English, such as score labels, mode indicators (MOONLIGHT, SUNSHINE, STARWAY), bonus displays, and system messages (TILT, credits).

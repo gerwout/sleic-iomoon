@@ -4,6 +4,8 @@
 
 All tables below are derived from the original SLEIC IO Moon service manual (Spanish, 1996) and verified against the Z80 ROM disassembly.
 
+> For the switch **codes that drive the service/test menu** (flippers `0x3E`/`0x3F`/`0x40`, START `0x41`, COIN `0x42`, MONEDERO `0x37`, TEST `0x33`) and the menu navigation path, see [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md). Note the menu navigator acts on the **RIGHT-flipper code `0x3F`** and ignores `0x3E`.
+
 ---
 
 ## Switches (50 total)
@@ -17,7 +19,7 @@ These switches are read directly via dedicated I/O ports, bypassing the switch m
 | C1 | Pulsador flipper izquierdo | Left Flipper Button | Port `0x03` | `0x3E` |
 | C2 | Pulsador Start | START Button | Port `0x03` bit 3 | `0x41` |
 | C3 | Entrada Monedas | Coin Input | Port `0x03` bit 2 | `0x42` |
-| C4 | Pulsador de Test | TEST/Service Button | Port `0x03`/`0x04` | TBD |
+| C4 | Pulsador de Test | TEST/Service Button | Port `0x03`/`0x04` | `0x33` |
 | C5 | Pulsador flipper derecho | Right Flipper Button | Port `0x03` | `0x3F` |
 | C20 | Contacto de falta | Tilt Switch | Port `0x04` | TBD |
 

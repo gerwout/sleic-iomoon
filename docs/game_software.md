@@ -104,6 +104,12 @@ The IO Moon supports operator-configurable settings stored in EEPROM. The config
 
 Configuration data includes pricing, game settings (balls per game, tilt sensitivity), language selection, and high score thresholds.
 
+The **display language** is a single binary byte: `[4000:1001] == 5` renders Spanish,
+any other value (firmware default `0x04`) renders English. It is seeded once per
+main-loop cycle from NVRAM `5040:01BF` at `D2F2E → D2F3B`, **not** from the country
+DIP (that path is dead code in V1.3). See
+[`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
+
 ---
 
 ## Display Command Queue
@@ -130,7 +136,14 @@ The `display_cmd_queue` function at `0xD0138` is referenced 80 times throughout 
 
 ## Test Menu
 
-The test menu is accessed by pressing the TEST button during attract mode:
+The test menu is accessed by pressing the TEST button (switch code `0x33`) during
+attract mode. Menu state is `game_state_var [413C:014F] == 3`. The live navigator
+acts on the **RIGHT-flipper code `0x3F`** (advance/select) and `0x40` (upper flipper,
+alt-advance); it ignores the left-flipper code `0x3E`. The switch-event → menu path,
+the per-page draw functions, and the switch codes are documented in
+[`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
+
+The menu structure:
 
 ```
 - TECNICO -

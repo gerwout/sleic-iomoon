@@ -76,9 +76,14 @@ The 80188 reads dispatched switch codes from **`last_switch_code` = 413C:00D6 = 
 
 ## Service menu (from the Spanish manual, sec. 5)
 
-Enter with **TEST**. Navigation: **LEFT flipper = move cursor, RIGHT flipper =
-select/enter, START = back/confirm, TEST = exit**. The 80188 enters the menu when
-`game_status_byte` `[4000:1001] == 5` (checked at `da9a9`).
+Enter with **TEST**. Navigation in the manual reads "LEFT flipper = move cursor,
+RIGHT flipper = select/enter, START = back/confirm, TEST = exit", **but the live menu
+navigator only acts on the RIGHT-flipper code `0x3F` (advance/select) and `0x40`
+(upper flipper, alt-advance) — it ignores the LEFT-flipper code `0x3E`.** Menu state
+is held in `game_state_var [413C:014F] == 3`, **not** in `[4000:1001]`. The `da9a9`
+`cmp [1001],5` site is a *language* branch (Spanish vs. English text variant), not a
+menu-enter test. See [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md)
+for the verified language polarity and the full switch-event → menu path.
 
 **Factory reset (BORRADO DE TODO, 5.15.10): `ESTADISTICAS → BORRADO → TODO` →
 "VALORES FABRICA / PULSE START" → press START.** Default settings seen in the manual:

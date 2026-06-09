@@ -78,6 +78,7 @@ For a detailed breakdown of the hardware architecture, see:
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
 - [Inter-CPU Communication](docs/inter_cpu_communication.md) — J1 8-bit byte-port protocol between the 80188 and Z80
+- [Language Model & Service-Menu Navigation](docs/iomoon_language_and_service_menu.md) — `[1001]` language polarity (DMD-verified), the dead country-DIP path, switch codes, and the menu navigation flow
 
 ---
 
@@ -107,7 +108,8 @@ sleic-io-moon/
 │   ├── z80_io_ports.md                # Z80 I/O port map & scan routine
 │   ├── 80188_config.md                # 80188 peripheral configuration
 │   ├── inter_cpu_communication.md     # Shared memory & bus arbitration
-│   └── game_software.md               # Game state machine & boot sequence
+│   ├── game_software.md               # Game state machine & boot sequence
+│   └── iomoon_language_and_service_menu.md  # Language polarity + service-menu navigation
 ├── datasheets/                        # Offline PDF datasheets for every board IC
 │   ├── README.md                      # Datasheet catalogue (part → file → source)
 │   ├── 80c188.pdf                     # Intel 80186/80188 CPU (IC1, 011-029A)

@@ -47,7 +47,7 @@ Earlier revisions described an 80188 **HOLD/HLDA** bus-arbitration scheme in whi
 
 | Address | Function | Notes |
 |---------|----------|-------|
-| `4000:1001` | Game status byte | 80188-internal |
+| `4000:1001` | **Language byte** (`== 5` ⇒ Spanish, else English; default `0x04`); seeded once/cycle from NVRAM `5040:01BF` at `D2F3B` | 80188-internal |
 | `4000:1134` | Display mode | 80188-internal (drives the DMD) |
 | `4000:1135` | Display flags | 80188-internal |
 | `4000:1138` | Display control register shadow | 80188-internal |

@@ -21,6 +21,21 @@
 ;    defaults set at DA0DA (413C:00C6=07, 00C7-00CD=0A). last_switch_code = 413C:00D6 (0x41496).
 ;  The C000 segment (0xC0000-0xCFFFF = ROM1 file 0x40000) is ENTIRELY 0xFF (empty) -- the whole
 ;    80188 program is in D000/E000/F000 (this file); there is no hidden/undisassembled code.
+;  ---------------------------------------------------------------------------
+;  LANGUAGE / SERVICE-MENU CORRECTIONS (2026-06-09, PinMAME + DMD verified;
+;    see docs/iomoon_language_and_service_menu.md):
+;    [4000:1001] is the LANGUAGE byte: ==5 renders SPANISH, any other value (default
+;      0x04) renders ENGLISH (DMD-verified -- earlier "==5 = English" label was SWAPPED).
+;      It is the ONLY write at D2F3B, read once/main-loop-cycle from NVRAM 5040:01BF at
+;      D2F2E (the read accessor is D000:04BF, tail at D04CC; NOT a per-frame reload).
+;    DA9A9 cmp [1001],5 is a LANGUAGE branch (Span/Eng text variant), NOT a menu-enter test.
+;    DA22D = high-score INITIALS-ENTRY handler (walks alphabet idx [0005]), NOT a menu dispatcher.
+;    The country-DIP -> language path is DEAD CODE in V1.3: Z80 reads DIP at port 04
+;      (z80 0x2D9D in a,(04)), 80188 masks it (D5CAC and 0Eh) and jmp [cs:bx+2DE1] (D5CC2)
+;      into the country block (D5CC7 sets [4000:0020]=1..7) -- but CS:2DE1 was rewired to
+;      game-event handlers, so D5CAC/D5CC7 are unreachable (byte-identical in both V1.3 dumps).
+;    Menu state = game_state_var [413C:014F]==3 (NOT [1001]). Menu navigator (D7ABC, D7AD5
+;      cmp 0x3F) acts on the RIGHT-flipper code 0x3F (+0x40 upper); it IGNORES 0x3E (left).
 ;  ============================================================================
 ; =============================================================================
 ; IO Moon Pinball - Fully Annotated 80188 CPU ROM Disassembly

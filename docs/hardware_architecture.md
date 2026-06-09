@@ -171,7 +171,13 @@ From service manual section 7.2.2.3:
 | SW7 | Service: lamp test | Normal operation |
 | SW8 | Service: board self-test | Normal operation |
 
-Country code (SW2–SW4 combination) with default coin values:
+Country code (SW2–SW4 combination) with default coin values. The table below is the
+DIP's **designed intent**; note however that in the dumped V1.3 ROMs the country
+code's effect on the **display language is dead code** — the Z80 reads the DIP at
+port `0x04` and the 80188 has a full country-dispatch routine (`D5CAC`/`D5CC7`), but
+the dispatch table it jumps through was rewired to game-event handlers, so the
+language is in practice driven only by NVRAM `5040:01BF` → `[4000:1001]`. See
+[`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md) §B.
 
 | Country | SW2 | SW3 | SW4 | Default coin values |
 |---------|-----|-----|-----|---------------------|

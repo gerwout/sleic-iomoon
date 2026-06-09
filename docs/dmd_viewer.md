@@ -227,6 +227,10 @@ Static screens are stored in pairs (English + Spanish) with the same 6-byte head
 Header (6 bytes) → Bitmap 1 / English (512 bytes) → Bitmap 2 / Spanish (512 bytes)
 ```
 
+At runtime the firmware picks the language by the byte `[4000:1001]`: `== 5` selects
+the Spanish bitmap, any other value (default `0x04`) selects English. This polarity is
+DMD-verified — see [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
+
 Static screens use 1 bitplane only (on/off, no brightness levels) and are **not** bit-inverted.
 
 ### Detection Algorithms
