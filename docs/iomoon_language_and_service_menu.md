@@ -241,9 +241,9 @@ The path from a button to the menu navigator is **edge-driven, one byte per pres
 3. **Menu navigator — `dmd_attract_cycle` (`D7ABC`).** At **`D7AD5`**:
 
    ```asm
-   D7AD5  cmp ax, 3Fh           ; RIGHT flipper -> advance/select
+   D7AD5  cmp ax, 3Fh           ; RIGHT flipper -> game_mode_transition (enter/exit TOGGLE)
    D7AD8  jz  D7AE6             ; -> game_mode_transition DD253 (DD25:0003)
-   D7ADA  cmp ax, 40h           ; UPPER flipper -> alt-advance
+   D7ADA  cmp ax, 40h           ; UPPER flipper -> page STEP (via [413C:00D7] counter)
    D7ADD  jnz D7B11
    D7ADF  call D72A:0DC6
    ```
@@ -252,11 +252,29 @@ The path from a button to the menu navigator is **edge-driven, one byte per pres
    `attract_display_update` (`D3251`) at `d32a4` and in
    `attract_animation_cycle` (`D32FB`) at `d334e`.
 
-> **The live menu-navigation code is `0x3F` (the RIGHT-flipper code).** The menu
-> **ignores `0x3E` (the LEFT flipper).** This corrects earlier notes that said
-> "LEFT flipper = move cursor, RIGHT flipper = select"; on these ROMs `0x3E` is not
-> consulted by the menu navigator — `0x3F` advances/selects and `0x40` (upper
-> flipper) is the alternate-advance.
+> **IO Moon's V1.3 service menu has NO Bike-Race-style scroll/select code pair**
+> (corrected by live-driver testing — the earlier "`0x3F` = advance/select" was
+> wrong). The 80188 **never** compares `last_switch_code` against `0x34/0x35/0x36`
+> (Bike Race's scroll/select/back family); those codes exist on the wire only as
+> matrix Row-5 playfield switches. The menu's only live inputs are:
+> - **`0x33`** (TEST/End) — **ENTER** the menu (the Z80's TEST switch emits `0x32` in
+>   attract / `0x33` only in game, gated on `c068` @ Z80 `0x0D35`),
+> - **`0x3F`** (RIGHT flipper) — **enter/exit TOGGLE** (`game_mode_transition` DD253),
+> - **`0x40`** (UPPER flipper) — **page STEP** (increments `[413C:00D7]`; at `==1` sets
+>   state 3, then walks pages),
+> - **`0x3E`** (LEFT flipper) — **ignored** by the menu.
+>
+> So on real hardware you *enter* with TEST, *step pages* with the upper flipper, and
+> *exit* with the right flipper — there is no per-item cursor. Bike Race (`0x35`=scroll,
+> `0x34`=select, verified at `ED1B8`/`ED1F0`) is genuinely different here.
+>
+> **Driver note:** the emulated Z80's *direct-switch* event path (port 0x03 → debounced
+> `C0E3` → emit) does **not** regenerate codes in PinMAME (a forced port-0x03 bit
+> produces no J1 byte), so the cabinet buttons must be injected as J1 codes; only the
+> *matrix-scanned* switches (coin acceptor `0x37`, playfield) reach the 80188 through the
+> Z80. The faithful Z80 codes are LEFT=`0x3E`, RIGHT=`0x3F`, UPPER=`0x40`, START=`0x41`,
+> TEST/Coin=`0x42`, on port 0x03 bits 0/1/4/3/2 respectively (`asm/z80_annotated.asm`
+> lines 162-167 + flipper dispatch `0x1242`/`0x1252`).
 
 ### Menu page draw functions
 
@@ -356,7 +374,7 @@ All addresses spot-checked with `ndisasm` against `roms/1.3 IPDB latest/`.
 | `D016D` / `D018C` | `0x5016D` / `0x5018C` | NMI `dmd_vblank_isr`, reads `A000:0100` | verified |
 | `D74FF` / `D750A` | `0x574FF` / `0x5750A` | freshness gate (`[1147]==0`) | verified |
 | `D75CD` | `0x575CD` | ring → `last_switch_code` consumer | verified |
-| `D7AD5` | `0x57AD5` | `cmp 0x3F` menu advance/select | verified |
+| `D7AD5` | `0x57AD5` | `cmp 0x3F` menu enter/exit toggle | verified |
 | `DA22D` | `0x5A22D` | initials-entry handler (not menu) | verified |
 | `D7C2B` | `0x57C2B` | `switch_dispatch_table_lookup` | verified |
 | `D72A:0AEC` | `0x57D8C` | 12-code ball-launch table | verified |
