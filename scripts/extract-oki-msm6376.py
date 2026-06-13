@@ -83,8 +83,9 @@ def main():
             f.write(sample)
         f.close()
         print("Converting to " + wav_file)
-        command = "ffmpeg -y -f u8 -c adpcm_ima_oki -ar " + str(args.khz) + "k -ac 1 -i " + file_name + " " + wav_file
-        print(command)
+        command = ["ffmpeg", "-y", "-f", "u8", "-c", "adpcm_ima_oki",
+                   "-ar", str(args.khz) + "k", "-ac", "1", "-i", file_name, wav_file]
+        print(" ".join(command))
         try:
             process = subprocess.Popen(command, stdout=subprocess.PIPE)
             process.wait()
