@@ -133,3 +133,42 @@ Open items to confirm while wiring:
   port-0x04 bit 7 = 1 and an 0x5F "ready" byte — confirm sleicpin's equivalents);
 - the reverse path (80188 -> Z80 NMI) for sound-command delivery, if needed;
 - the sleicpin code->name table offset (for human-readable contact names).
+
+## IMPLEMENTATION + VERIFICATION (2026-06-15)
+
+Wired in `pinmame/src/wpc/sleic.c` (commit on `pin-ball`): `sleic1_z80_read/write`,
+`SLEIC1_Z80_readport/writeport`, `sleic_periph_r` at `0xA0100` on the SLEIC1 80188
+read map, `sleic1_pf_keys` + `SWITCH_UPDATE(SLEIC1)`, and `MDRV_CPU_MODIFY("icpu")`
++ `MDRV_SWITCH_UPDATE(SLEIC1)` in `MACHINE_DRIVER_START(SLEIC1)`. SLEIC2/SLEIC3
+untouched; Bike Race attract reverified.
+
+**Confirmed against sp04 (not assumed):**
+- matrix scan = port `0x82` one-hot strobe + port `0x02` read (8 común × 4 retorno);
+- switch send `sub_082a`: `out 0x80; (0x81|0x04); 0x81` → bit-2 strobe;
+- boot gate `0x1744`: spin until port-`0x04` bit 7 = 1; ready status = port-`0x01` bit 5;
+- Z80 NMI handler (`0x0074`) sets port-`0x81` bit 4 (ack) and reads port `0x00`.
+
+**Headless verification (env-gated `SLEIC_TRACE_SW` + `SLEIC_INJECT_*`):** injecting
+a matrix position makes the Z80 emit a code over J1 → 80188 NMI. **Distinct
+positions → distinct codes** (so delivery is position-specific, working):
+
+| injected (común·ret) | contact (figura 24) | code emitted |
+|---|---|---|
+| 2·0 | C14 Bumper Der | `0x0A` |
+| 0·0 | C1 Pasillo 1 | `0x15` |
+| 0·3 | C6 Pasillo 6 | `0x1A` |
+| 4·3 | C30 Veleta | `0x22` |
+| 7·3 | C5 Pasillo 5 | `0x19` |
+
+The code value is an internal Z80 artifact (not a simple `0x0A+común*4+ret`); the
+figura-24 (común,ret)→contact wiring is what the driver replicates, so contacts map
+correctly by construction. **Cabinet buttons emit LOW codes** (swMatrix[9]: bit0→`0x01`,
+bit1→`0x02`, bit4→`0x05`, bit5→`0x06`; bits 2/3 = flippers emit no queued code —
+real-time), dispatched by the `0x00-0x09` entries of the `E000:0310` jump table —
+**not** the `0x32+` range Bike Race uses.
+
+**Status:** switch *delivery* works end-to-end (matrix + cabinet). The firmware does
+not yet *visibly* react in attract (no menu/credit change observed) — a deeper
+game-state/menu matter, not an input-wiring problem. Still to refine: the exact
+cabinet bit→contact order, and entering the CONTACTOS/service menu to validate each
+contact by name.
