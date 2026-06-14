@@ -148,6 +148,51 @@ The DMD stays blank because the firmware spins here — `[0x4DF]` is decremented
 a 80188 timer interrupt that the `sleicpin` **stub** driver does not deliver
 correctly (`SLEIC_irq_i80188` is a placeholder 120 Hz pulse on IRQ0 with no real
 timer/IVT model). Reaching attract therefore requires completing the SLEIC1
-80188 IRQ/timer model (a larger, separate effort, analogous to the IO Moon IRQ
-work) — **not** an NVRAM problem. The embed-factory-image fallback is **not
-needed** for the EEPROM goal.
+80188 IRQ/timer model — **not** an NVRAM problem. The embed-factory-image
+fallback is **not needed** for the EEPROM goal.
+
+## SECOND BLOCKER ANALYSIS & FIX (2026-06-14) — Timer0 interrupt
+
+**Root cause (confirmed via disassembly).** The reset code programs the 80C188
+peripheral control block from a table at `F000:FEAC` (17 `out dx,ax` pairs):
+
+| Reg | I/O | Value | Meaning |
+|---|---|---|---|
+| T0CON  | `0xFF56` | `0xE003` | Timer0 **enabled + interrupt-enabled**, continuous, CPU/4 |
+| T0CMPA | `0xFF52` | `0x4000` | compare 16384 -> 2 MHz/16384 = **~122 Hz** |
+| T0CMPB | `0xFF54` | `0x4000` | (alternate, same period) |
+| TCUCON | `0xFF32` | `0x0003` | timer interrupt **unmasked** (prio 3) |
+| I0-3 / DMA0-1 | `0xFF34-3E` | `0x000F` | all **masked** |
+
+So the firmware relies **solely on the internal Timer0 interrupt**. The reset code
+then copies an IVT from `F000:FEF0` to physical 0 (255 bytes). Decoded vectors:
+- type 2 (NMI)    -> `F000:DF20`
+- type 8 (Timer0) -> `F000:DF7F`  (all others -> `F000:FFF0` default trap)
+
+The **Timer0 ISR `F000:DF7F`** sets `DS=0` and decrements the delay counters:
+```
+mov ax,[0x4DF]; and ax,ax; jz; dec ax; mov [0x4DF],ax   ; <- the loop's counter
+; also [0x4E3] (reload 4), [0x4E1], [0x16E] (reload 9)
+mov dx,0xFF2C; in ax,dx; and ax,0xFE; out dx,ax          ; interrupt ack
+iret
+```
+The post-boot delay loops (`mov [0x4DF],N; spin until 0`, at E000:0050, 0x0A3E,
+0x0C22, …) therefore advance only when the Timer0 ISR runs.
+
+**Emulator gap.** The PinMAME i188 core does not emulate the 80186 internal
+timers (`i86time.c` = CPU cycle timing only). The base `SLEIC_irq_i80188`
+pulsed IRQ0 with **no vector** (`cpu_set_irq_line(...,0,PULSE_LINE)`), so the core
+could not deliver vector type 8 -> the timer ISR never ran -> every delay loop
+hung -> blank DMD. The working Bike Race path injects the vector explicitly
+(`cpu_set_irq_line_and_vector(...,HOLD_LINE,0x08)`).
+
+**Fix (shipped).** SLEIC1-specific `sleic1_irq_gen` injects Timer0 vector `0x08`
+at 122 Hz, wired via `MDRV_CPU_PERIODIC_INT` in `MACHINE_DRIVER_START(SLEIC1)`
+(SLEIC2/iomoon untouched). **Result: sleicpin now runs its full attract**
+(logo + animation) — verified headless (`SLEIC_DMD_DUMP`): 0 -> 2841 non-blank
+frames, first content at frame ~615 once the delay loops expire. Bike Race
+attract reverified (no regression).
+
+**Still open (not pursued here):** switch input / service menu likely need the
+J1-byte-arrival **NMI** (vector 2 -> `F000:DF20`) strobe-driven from the Z80 side
+(as SLEIC3 does), plus the peripheral/sound wiring — the next layer beyond attract.
