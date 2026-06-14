@@ -88,10 +88,20 @@ Mirror the SLEIC3 model (`port 0x82` one-hot -> `swStrobe`; `port 0x02` returns
 | `swMatrix[8]` | 7 | — | C26 † | C22 | C5 |
 | `swMatrix[9]` | direct (port 0x03) | C31..C36 (bit assignment TBD from sp04) | | | |
 
-Direct/cabinet (C31–C36) are read on **port 0x03**; the exact bit→contact order
-must be confirmed from the `sp04` port-0x03 read (Bike Race used: bit per button).
-From the manual figure 2: C34=Monedero, C35=Falta(tilt), C36=Test, C31/C32=flippers,
-C33=Start.
+Direct/cabinet (C31–C36) are read on **port 0x03** → `swMatrix[9]`. **Confirmed**
+bit→code→contact (sp04 dispatcher `sub_0978`/`sub_09fe..0a70` + sp03 handlers):
+
+| port-0x03 bit | code | contact | evidence |
+|---|---|---|---|
+| 0 | 0x01 | C35 Péndulo de Falta (tilt) | handler acts only in-game (`[0x103]≠0`), warning counter |
+| 1 | 0x02 | C36 Pulsador de Test | enters service menu (`F000:567F` sets `[0x4d1]`) |
+| 2 | 0x03 | C32 Flipper Derecho | fires coil 03 (Flipper Der Fuerza) |
+| 3 | 0x04 | C31 Flipper Izquierdo | fires coil 01 (Flipper Izq Fuerza) |
+| 4 | 0x05 | C33 Pulsador Start | game-start handler (start key '1') |
+| 5 | 0x06 | C34 Monedero (coin) | coin handler (coin key '5') |
+
+Flippers (bits 2/3) fire their coils in real time; codes 0x03/0x04 are sent to the
+80188 only in menu mode (for navigation).
 
 ## Comparison with Bike Race
 - Bike Race matrix is documented (`docs/bikerace_switch_map.md`) as a 5-column model;
