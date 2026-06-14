@@ -121,3 +121,33 @@ from a complete config (the original hybrid approach).
   bug fix) rather than crafting a minimal signature seed.
 - Tasks 7-8 (runtime capture + embed) become a **fallback**, exercised only if
   Task 9 verification shows the self-healed config is functionally incomplete.
+
+## VERIFICATION RESULT (2026-06-14)
+
+**EEPROM gate: FIXED and verified headless.**
+- Fix shipped in `pinmame/src/wpc/sleic.c`: SLEIC1 gets its own 80188 map with
+  NVRAM (seg 0x1000) mapped read==write to a single 8 KB buffer
+  (`0x10000-0x11FFF`), persisted by `NVRAM_HANDLER(SLEIC1)`, wired via
+  `MDRV_CPU_REPLACE` (SLEIC2/iomoon keep the base map). No embedded image.
+- Baseline (broken driver): the error renders on the DMD (captured via the new
+  `SLEIC_DMD_DUMP` hook) — "ATENCION / MEMORIA EEPROM / EN MAL ESTADO /
+  IMPOSIBLE SEGUIR", steady (1456/1468 frames non-blank).
+- Fixed driver, true fresh boot (`.nv` wiped): the firmware **self-heals** —
+  `~/.xpinmame/nvram/sleicpin.nv` offset `0x100` = `(C) SLEIC 1.993` (written by
+  the firmware's own factory-init `F000:818D`); the error **never appears**
+  (0/8386 frames over ~33 s). Boot is past the gate.
+
+**Next blocker (separate from EEPROM): post-gate timer-delay loop.**
+After the gate the boot runs a delay loop:
+```
+E000:0050  mov word [ds:0x4DF],0x12C   ; counter = 300
+E000:0057  cmp word [ds:0x4DF],0x0
+E000:005D  jnz  0x57                    ; spin until a timer ISR decrements to 0
+```
+The DMD stays blank because the firmware spins here — `[0x4DF]` is decremented by
+a 80188 timer interrupt that the `sleicpin` **stub** driver does not deliver
+correctly (`SLEIC_irq_i80188` is a placeholder 120 Hz pulse on IRQ0 with no real
+timer/IVT model). Reaching attract therefore requires completing the SLEIC1
+80188 IRQ/timer model (a larger, separate effort, analogous to the IO Moon IRQ
+work) — **not** an NVRAM problem. The embed-factory-image fallback is **not
+needed** for the EEPROM goal.
