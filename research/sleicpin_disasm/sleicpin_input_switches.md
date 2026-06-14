@@ -172,3 +172,35 @@ not yet *visibly* react in attract (no menu/credit change observed) — a deeper
 game-state/menu matter, not an input-wiring problem. Still to refine: the exact
 cabinet bit→contact order, and entering the CONTACTOS/service menu to validate each
 contact by name.
+
+## REVERSE PATH (80188 -> Z80) + bug fixes (2026-06-15)
+
+Real-hardware testing surfaced three issues — **all one root cause**: the SLEIC1
+peripheral *write* map dropped **PCS1 (`0xA0080`)**, the command byte the 80188
+sends to the Z80.
+
+**Cabinet bit -> code (verified, sp04 `0x0978-0x099d` + handlers `0x09fe-0x0a70`):**
+port-0x03 bit0->code `0x01`, bit1->`0x02`, **bit2->`0x03`**, **bit3->`0x04`**,
+bit4->`0x05`, bit5->`0x06`. Bits 2,3 are the **flippers**, and they send their nav
+codes **only when the menu-mode flag `[0xC051] != 0`** (`sub_0a18`/`sub_0a3a`:
+`ld a,(0c051h); and a; jp nz, send-code`); otherwise they fire the flipper coil
+directly (gameplay). That is why an attract-mode injection of the flipper bits emits
+no code.
+
+**`[0xC051]` is set by the reverse path.** The Z80 NMI handler (`0x0066`) reads the
+80188 command via `IN 0x00`, buffers it (`0xC056`, ptrs `0xC052`/`0xC054`); the main
+loop's command processor (`sub_0ba0`) dispatches each byte to handlers that set
+`[0xC051]=0xFF/0x00` (menu enter/exit, `0x158c`/`0x1591`/`0x1598`) and populate the
+lamp row data (`0xC0E9-0xC0ED`) + solenoids. So the dropped PCS1 broke **both**:
+- **lamps** — no lamp data from the 80188 -> dark matrix (lamp refresh `0x1bbd`,
+  5 cols on port 0x83 strobe 0x01-0x10, row byte on port 0x84, from `0xC0E9-0xED`);
+- **flipper menu nav** — `[0xC051]` never set -> flippers fire coils instead of
+  scrolling/selecting.
+
+**Fix:** `sleic1_periph_w` wires PCS1 -> `sleic_188_cmd` + Z80 NMI (mirrors Bike
+Race's `sleic_periph_w` PCS1 case) but deliberately leaves PCS0/PCS4/PCS6 alone
+(the I8039 renders the DMD from `0x60410`; calling `sleic_submit_dmd_frame` would
+corrupt it). **Verified:** non-zero lamp commits 0 -> 3739 (animated), attract still
+renders. Confirmed the 80188 does write PCS1 (data `0x55/0x70/0x00`). Flipper menu
+nav uses the same now-working path; verify interactively (headless menu entry is
+gated on game state `[0x103]`).
