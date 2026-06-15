@@ -48,6 +48,29 @@ through PCS0 does not interfere with the DMD (which the I8039 renders from `0x60
   alternation correct.
 - OKI: **11** phrase triggers (`0x16/0x19/0x2f/0x31/0x3f`).
 
-Open: YM3812 clock left at the shared 4 MHz (`SLEIC_ym3812_intf`); confirm the
-sleicpin crystal and tune if the pitch/tempo is off. OKI voice/channel from PCS0 bit3
-not yet distinguished (uses the shared `sleic_oki_trigger`).
+## YM3812 clock crystal (XTAL3)
+
+**Sleic Pin-Ball has a DEDICATED sound-section crystal `XTAL3`** on the 16-bit CPU
+board — confirmed from the service manual FIGURA 22 (p.63): a crystal oscillator
+(`XTAL3` + load caps `C24`/`C25` + feedback `R21`) sitting among IC41 (YM3812),
+IC42 (EEPOT), IC46 (OKI), IC43 (YM3014 DAC).  This differs from **IO Moon**, whose
+YM3812 φM is derived from the main 74LS393 divider (no dedicated sound crystal).
+The board also has XTAL1 (top, main CPU) and XTAL2 (middle).  The manual is
+"no schematics" and the layout shows crystal *positions* but **not** frequency
+values, so XTAL3's exact frequency is not documented.
+
+**Confirming the driver's 4 MHz:** the driver uses YM3812 = 4 MHz and OKI = 2 MHz.
+The OKI being exactly half constrains XTAL3:
+- XTAL3 = **8 MHz** → YM3812 = 8/2 = **4 MHz**, OKI = 8/4 = 2 MHz (both clean) ✓
+- XTAL3 = **4 MHz** → YM3812 = **4 MHz** (direct), OKI = 4/2 = 2 MHz (both clean) ✓
+- XTAL3 = 3.579545 MHz (the usual OPL2 colorburst) → YM3812 = 3.58 MHz, but OKI = 2 MHz
+  would not divide cleanly ✗ (unlikely).
+
+Both plausible XTAL3 values give **YM3812 = 4 MHz**, which is also the OPL2 φM ceiling
+and the IO Moon value — so **the current 4 MHz is most likely correct** (no change).
+The in-game FM register stream verified earlier is a correct OPL2 pattern at this clock.
+**To be 100% sure, read the XTAL3 marking on the physical 16-bit board** (it will say
+e.g. `8.000` or `4.000`); only a 3.579545 MHz part would change the value.
+
+Open: OKI voice/channel from PCS0 bit3 not yet distinguished (uses the shared
+`sleic_oki_trigger`, voice 2).
