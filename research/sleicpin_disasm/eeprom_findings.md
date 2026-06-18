@@ -85,6 +85,27 @@ firmware jumps through. A search of the full sp03 disassembly for indirect
 "address to jump to" in this title's EEPROM path. (The Bike Race recollection may
 refer to a different mechanism or be imprecise; it does not apply here.)
 
+## Why Sleic Pin-Ball needs NO embedded NVRAM image, but Bike Race DOES (2026-06-18)
+
+This is the answer to "was embedding a factory image for Bike Race a wrong call?"
+— **No.** The two firmwares repair a blank NVRAM differently:
+
+- **Sleic Pin-Ball (this title):** the boot **auto-repairs silently**. `E000:0029`
+  unconditionally calls `F000:818D`, which writes the **complete** factory image
+  (clears `0x000-0xFFF`, writes every config block), re-validates, and continues —
+  **no operator interaction**. A blank NVRAM becomes a complete valid one before the
+  game even reaches attract, so no embedded C array is needed.
+- **Bike Race (`SLEIC3`):** the boot does **not** silently self-heal. Its reset
+  routine (`E97DB`, reached at `E520C`) shows `ESTABLECIENDO VALORES DE FABRICA /
+  PULSE START` and **blocks until the operator presses START** (event `0x36`) before
+  it writes the coin/credit + high-score + audit tables. Seeding only the validate
+  blocks makes validate pass, which **skips** that full seed → zeroed coin table →
+  the 80188 derails on the first coin (the 2026-06-07 regression). So Bike Race needs
+  the complete embedded image (or a fragile auto-START injection that yields the
+  identical result).
+
+Full Bike Race analysis with addresses: `../bikerace_disasm/bikerace_nvram.md`.
+
 ## Emulator root cause (current `sleic.c`)
 
 ```
