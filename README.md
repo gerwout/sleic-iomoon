@@ -87,11 +87,15 @@ For a detailed breakdown of the hardware architecture, see:
 ```
 sleic-io-moon/
 ├── README.md                          # This file
+├── LICENSE                            # MIT (scripts) + educational/preservation terms (docs/disasm)
+├── .gitignore                         # Ignores Python caches, output/, video/, OS & editor files
 ├── scripts/
 │   ├── dmd_viewer.py                  # DMD graphics viewer & exporter
+│   ├── dmd_logic_decode.py            # Reconstruct DMD frames + timing from a Saleae logic capture
 │   ├── extract-oki-msm6376.py         # OKI ADPCM sound sample extractor
 │   ├── iomoon_fm_extract.py           # YM3812 (OPL2) FM music extractor
-│   └── io_moon_press_start_patch.py   # Tournament "PRESS START" ROM patch
+│   ├── io_moon_press_start_patch.py   # Tournament "PRESS START" ROM patch
+│   └── sal_export.py                  # Re-export a Saleae .sal capture to parseable v0 binary
 ├── docs/
 │   ├── dmd_viewer.md                  # DMD Viewer documentation
 │   ├── extract_oki_msm6376.md         # OKI extractor documentation
@@ -107,23 +111,66 @@ sleic-io-moon/
 │   ├── switch_lamp_solenoid.md        # Switch, lamp, and solenoid tables
 │   ├── z80_io_ports.md                # Z80 I/O port map & scan routine
 │   ├── 80188_config.md                # 80188 peripheral configuration
-│   ├── inter_cpu_communication.md     # Shared memory & bus arbitration
+│   ├── inter_cpu_communication.md     # J1 byte-port inter-CPU link
 │   ├── game_software.md               # Game state machine & boot sequence
-│   └── iomoon_language_and_service_menu.md  # Language polarity + service-menu navigation
+│   ├── iomoon_language_and_service_menu.md   # Language polarity + service-menu navigation
+│   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
+│   ├── iomoon_pinmame_driver_extracted.md    # IO Moon PinMAME driver facts (extracted notes)
+│   ├── iomoon_pinmame_progress_2026-06-08.md # PinMAME integration progress snapshot
+│   └── pinmame_integration_findings.md       # PinMAME integration findings write-up
 ├── datasheets/                        # Offline PDF datasheets for every board IC
 │   ├── README.md                      # Datasheet catalogue (part → file → source)
 │   ├── 80c188.pdf                     # Intel 80186/80188 CPU (IC1, 011-029A)
 │   ├── z80_cpu_user_manual.pdf        # Zilog Z80 CPU (IC1, 011-030A)
 │   ├── pic16c5x.pdf                   # Microchip PIC16C5X (IC23, 011-029A)
 │   ├── ym3812.pdf                     # Yamaha YM3812 OPL2 (IC60, 011-029A)
+│   ├── ym3812_opl2_application_manual.pdf     # Yamaha YM3812 OPL2 application manual
 │   ├── ym3014b.pdf                    # Yamaha YM3014B DAC (IC61, 011-029A)
 │   ├── msm6376_oki_voice_synthesis_databook_1994.pdf  # OKI MSM6376 (IC51)
 │   ├── pal20l10_pal16l8_mmi_pal_handbook_1983.pdf     # PALs (IC7/IC8)
-│   └── … (EPROM, SRAM, EEPROM, supervisor, op-amp, 74-series logic, …)
+│   ├── 27c040.pdf                     # 27C040 EPROM (game/sound ROMs)
+│   ├── 27c256.pdf                     # 27C256 EPROM (Z80 ROM)
+│   ├── 28c64a.pdf                     # 28C64A EEPROM (NVRAM, IC14)
+│   ├── 62256_generic_as6c62256.pdf    # 62256 32K×8 SRAM (main work RAM)
+│   ├── gm76c28.pdf                    # GM76C28 2K×8 SRAM (Z80 / DMD scratchpad)
+│   ├── x9c503.pdf                     # Xicor X9C503 digital potentiometer (IC63)
+│   ├── max699.pdf                     # Maxim MAX699 supervisor (IC6, 011-029A)
+│   ├── adm699.pdf                     # Analog Devices ADM699 supervisor (IC15, 011-030A)
+│   ├── uln2803a.pdf                   # ULN2803 driver array (lamp/solenoid drive)
+│   ├── lm324.pdf                      # LM324 quad op-amp
+│   ├── lm339.pdf                      # LM339 quad comparator
+│   ├── cd4040b.pdf                    # CD4040B ripple counter
+│   ├── 7406.pdf                       # 7406 hex inverter buffer/driver
+│   ├── 74hc133.pdf                    # 74HC133 13-input NAND
+│   ├── 74hc151.pdf                    # 74HC151 8-input multiplexer
+│   ├── 74ls00.pdf                     # 74LS00 quad 2-input NAND
+│   ├── 74ls04.pdf                     # 74LS04 hex inverter
+│   ├── 74ls06.pdf                     # 74LS06 hex inverter buffer/driver
+│   ├── 74ls07.pdf                     # 74LS07 hex buffer/driver
+│   ├── 74ls138.pdf                    # 74LS138 3-to-8 decoder
+│   ├── 74ls139a.pdf                   # 74LS139A dual 2-to-4 decoder
+│   ├── 74ls157.pdf                    # 74LS157 quad 2-to-1 multiplexer
+│   ├── 74ls244.pdf                    # 74LS244 octal buffer
+│   ├── 74ls245.pdf                    # 74LS245 octal bus transceiver
+│   ├── 74ls273.pdf                    # 74LS273 octal D flip-flop
+│   ├── 74ls27.pdf                     # 74LS27 triple 3-input NOR
+│   ├── 74ls32.pdf                     # 74LS32 quad 2-input OR
+│   ├── 74ls373.pdf                    # 74LS373 octal transparent latch
+│   ├── 74ls374.pdf                    # 74LS374 octal D flip-flop
+│   ├── 74ls393.pdf                    # 74LS393 dual 4-bit counter (Z80 IRQ divider)
+│   ├── 74ls74a.pdf                    # 74LS74A dual D flip-flop
+│   ├── candidate_2n6040.pdf           # Candidate part: 2N6040 Darlington transistor
+│   ├── candidate_bd679.pdf            # Candidate part: BD679 Darlington transistor
+│   ├── candidate_lm317.pdf            # Candidate part: LM317 adjustable regulator
+│   ├── candidate_lm7805.pdf           # Candidate part: LM7805 5 V regulator
+│   └── candidate_tip122.pdf           # Candidate part: TIP122 Darlington transistor
 ├── asm/
 │   ├── 80188_annotated.asm            # Fully annotated 80188 ROM disassembly
-│   └── z80_annotated.asm              # Fully annotated Z80 ROM disassembly
+│   ├── z80_annotated.asm              # Fully annotated Z80 ROM disassembly
+│   ├── sleicpin_80188_ndisasm.asm     # Sleic Pin-Ball (SLEIC1) 80188 raw disassembly
+│   └── sleicpin_z80dasm.asm           # Sleic Pin-Ball (SLEIC1) Z80 raw disassembly
 ├── roms/
+│   ├── README.md                      # MD5 checksum index for every ROM image
 │   ├── 1.3 Early version/             # Early ROM set
 │   │   ├── README.md
 │   │   ├── V1 3_01.bin                # Display ROM 1 (80188)
@@ -164,7 +211,31 @@ sleic-io-moon/
     ├── z80_irq_timing.md              # Z80 periodic-IRQ rate derivation
     ├── ym3812_oki_workarounds.md      # YM3812 hookup investigation
     ├── pinmame_boot_log/              # PinMAME first-boot tracing
-    └── pinmame_session_2/             # PinMAME follow-up tracing
+    │   ├── 00_summary.txt
+    │   ├── 01_pcb_init.txt
+    │   ├── 02_dmd_register_writes.txt
+    │   ├── 03_irq_ticks.txt
+    │   ├── 04_init.txt
+    │   └── README.md
+    ├── pinmame_session_2/             # PinMAME follow-up tracing
+    │   ├── 00_summary.txt
+    │   ├── 01_pcs_reached.txt
+    │   ├── 02_a000_pattern.txt
+    │   └── 03_boot_pcb_init.txt
+    ├── bikerace_disasm/               # Bike Race (SLEIC3) disassembly & notes
+    │   ├── bikerace_nvram.md
+    │   ├── bkcpu04_80188_ndisasm.asm
+    │   └── bkio07_z80dasm.asm
+    └── sleicpin_disasm/               # Sleic Pin-Ball (SLEIC1) disassembly & notes
+        ├── eeprom_findings.md
+        ├── sleicpin_coil_map.md
+        ├── sleicpin_input_switches.md
+        ├── sleicpin_sound.md
+        ├── sleicpin_switch_map.md
+        ├── sp01_i8039_strings.txt
+        ├── sp02_data_strings.txt
+        ├── sp03_80188_ndisasm.asm
+        └── sp04_z80dasm.asm
 ```
 
 ---
