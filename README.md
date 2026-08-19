@@ -18,6 +18,7 @@ This repository documents the results of an extensive reverse engineering effort
 - [Technical Documentation](#technical-documentation)
 - [Annotated Assembly Listings](#annotated-assembly-listings)
 - [ROM Files](#rom-files)
+- [Related SLEIC Machines](#related-sleic-machines)
 - [Manuals](#manuals)
 - [Related Work](#related-work)
 - [License](#license)
@@ -115,6 +116,7 @@ sleic-io-moon/
 │   ├── game_software.md               # Game state machine & boot sequence
 │   ├── iomoon_language_and_service_menu.md   # Language polarity + service-menu navigation
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
+│   ├── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
 │   ├── iomoon_pinmame_driver_extracted.md    # IO Moon PinMAME driver facts (extracted notes)
 │   ├── iomoon_pinmame_progress_2026-06-08.md # PinMAME integration progress snapshot
 │   └── pinmame_integration_findings.md       # PinMAME integration findings write-up
@@ -168,6 +170,7 @@ sleic-io-moon/
 │   ├── 80188_annotated.asm            # Fully annotated 80188 ROM disassembly
 │   ├── z80_annotated.asm              # Fully annotated Z80 ROM disassembly
 │   ├── sleicpin_80188_ndisasm.asm     # Sleic Pin-Ball (SLEIC1) 80188 raw disassembly
+│   ├── sleicpin_80188_hlil.txt        # Sleic Pin-Ball (SLEIC1) 80188 HLIL export (201 functions)
 │   └── sleicpin_z80dasm.asm           # Sleic Pin-Ball (SLEIC1) Z80 raw disassembly
 ├── roms/
 │   ├── README.md                      # MD5 checksum index for every ROM image
@@ -178,16 +181,36 @@ sleic-io-moon/
 │   │   ├── V1 3_03.bin                # Sound ROM 1 (OKI)
 │   │   ├── V1 3_04.bin                # Sound ROM 2 (OKI)
 │   │   └── V1 3_05.bin                # Z80 CPU ROM
-│   └── 1.3 IPDB latest/               # Latest ROM set from IPDB
+│   ├── 1.3 IPDB latest/               # Latest ROM set from IPDB
+│   │   ├── README.md
+│   │   ├── V1 3_01.bin                # Display ROM 1 (80188)
+│   │   ├── V1 3_02.bin                # Display ROM 2 (DMD graphics)
+│   │   ├── V1 3_03.bin                # Sound ROM 1 (OKI)
+│   │   ├── V1 3_04.bin                # Sound ROM 2 (OKI)
+│   │   ├── V1 3_05.bin                # Z80 CPU ROM
+│   │   └── Start-Tournament-Patch/    # Tournament patch for this ROM set
+│   │       ├── README.md
+│   │       └── V1 3_01.bin            # Patched Display ROM 1
+│   └── related-machines/              # ROM images of other SLEIC machines
 │       ├── README.md
-│       ├── V1 3_01.bin                # Display ROM 1 (80188)
-│       ├── V1 3_02.bin                # Display ROM 2 (DMD graphics)
-│       ├── V1 3_03.bin                # Sound ROM 1 (OKI)
-│       ├── V1 3_04.bin                # Sound ROM 2 (OKI)
-│       ├── V1 3_05.bin                # Z80 CPU ROM
-│       └── Start-Tournament-Patch/    # Tournament patch for this ROM set
+│       ├── sleic-pin-ball/            # Sleic Pin-Ball (SLEIC1, 1994) — complete, 4 ROMs
+│       │   ├── README.md
+│       │   ├── sp01-1_1.rom           # I8039 display coprocessor
+│       │   ├── sp02-1_1.rom           # OKI sample ROM
+│       │   ├── sp03-1_1.rom           # 80188 game + sound code
+│       │   └── sp04-1_1.rom           # Z80 I/O CPU ROM
+│       ├── bike-race/                 # Bike Race (SLEIC3, 1992) — complete, 7 ROMs
+│       │   ├── README.md
+│       │   ├── bkdsp01.bin            # I8039 display coprocessor
+│       │   ├── bksnd02.bin            # OKI sample ROM 1
+│       │   ├── bksnd03.bin            # OKI sample ROM 2
+│       │   ├── bkcpu04.bin            # 80188 game + sound code
+│       │   ├── bkcpu05.bin            # 80188 graphics ROM (MCS2 0x40000)
+│       │   ├── bkcpu06.bin            # 80188 graphics ROM (MCS1 0x20000)
+│       │   └── bkio07.bin             # Z80 I/O CPU ROM
+│       └── dona-elvira-2/             # Doña Elvira 2 (1996) — partial, Z80 ROM only
 │           ├── README.md
-│           └── V1 3_01.bin            # Patched Display ROM 1
+│           └── ST27C256-z80.bin       # Z80 I/O CPU ROM
 ├── images/                            # Screenshots and board photographs
 │   ├── dmd_single_frame.png
 │   ├── dmd_static_screen.png
@@ -204,7 +227,9 @@ sleic-io-moon/
 │   # Each board JPG also has a smaller *_thumb.jpg companion used for inline previews.
 ├── manuals/
 │   ├── README.md
-│   └── sleic_io_moon_manual_es.pdf    # Original Spanish service manual
+│   ├── sleic_io_moon_manual_es.pdf    # Original Spanish service manual (159 pp)
+│   ├── SLEIC_1992_Bike_Race_…pdf      # Bike Race service manual (125 pp, parts list + schematics)
+│   └── SLEIC_1994_Sleic_Pin_Ball_…pdf # Sleic Pin-Ball service manual (93 pp, no schematics)
 └── research/                          # Investigative notes that informed the docs
     ├── board_inventory.md             # Original photo-by-photo IC inventory
     ├── 80188_to_z80_mailbox.md        # 80188→Z80 command-path investigation (J1 byte-port)
@@ -286,6 +311,7 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [80188 Peripheral Configuration](docs/80188_config.md) | Chip selects (UMCS, LMCS, PACS, MMCS, MPCS), wait states |
 | [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit handshaken byte-port between the 80188 and Z80 (no shared RAM) |
 | [Game Software Architecture](docs/game_software.md) | Boot sequence, main loop, state machine, text encoding, configuration system |
+| [The SLEIC Board Family](docs/sleic_board_family.md) | How IO Moon, Sleic Pin-Ball, Bike Race and Doña Elvira 2 relate: shared architecture, Z80 firmware lineage, where they diverge |
 
 ---
 
@@ -301,7 +327,7 @@ The `asm/` directory contains fully annotated disassembly listings for both CPUs
 
 ## ROM Files
 
-The `roms/` directory has placeholders for two known ROM sets. The IO Moon uses 5 ROM chips:
+The `roms/` directory holds the two known IO Moon ROM sets (plus the ROM images of three [related SLEIC machines](#related-sleic-machines)). The IO Moon uses 5 ROM chips:
 
 | Filename      | Chip   | Size | CPU | Content                                           |
 |---------------|--------|------|-----|---------------------------------------------------|
@@ -323,12 +349,43 @@ copy /b "V1 3_02.bin" + "V1 3_01.bin" io_moon_combined.bin
 
 > **Note:** ROM2 goes first (lower addresses 0x00000–0x7FFFF), then ROM1 (upper addresses 0x80000–0xFFFFF).
 
+Full MD5 index for every ROM image in the repository: [`roms/README.md`](roms/README.md).
+
+---
+
+## Related SLEIC Machines
+
+IO Moon shares its two-CPU architecture with SLEIC's other pinball machines, and
+several IO Moon findings — the DMD wire protocol above all — were only pinned down
+by cross-checking against them. Their ROM images are archived under
+[`roms/related-machines/`](roms/related-machines/):
+
+| Machine | Year | PinMAME family | Dump status |
+|---------|------|----------------|-------------|
+| [Sleic Pin-Ball](roms/related-machines/sleic-pin-ball/) | 1994 | `SLEIC1` | complete (4 ROMs) |
+| [Bike Race](roms/related-machines/bike-race/) | 1992 | `SLEIC3` | complete (7 ROMs) |
+| [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | **partial — Z80 I/O ROM only** |
+
+Bike Race matters most: it runs the same 80188 firmware family as IO Moon but with
+a **fully dumped I8039** display coprocessor where IO Moon has an undumped,
+read-protected PIC16C5x — so it serves as the live oracle for the shared hardware
+model.
+
+The Doña Elvira 2 Z80 ROM is a rare partial dump of a machine with no publicly
+available ROM images that we know of. It self-identifies as `SLEIC-PETACO DONA
+ELVIRA 2 / (C) SLEIC 1996`, and code-window analysis places its I/O firmware
+firmly in the IO Moon / Bike Race Z80 lineage rather than the older Sleic Pin-Ball
+one.
+
+See [The SLEIC Board Family](docs/sleic_board_family.md) for the full comparison.
+
 ---
 
 ## Manuals
 
-- [Original Spanish Service Manual](manuals/sleic_io_moon_manual_es.pdf) — 114 pages + 30 schematic pages
-
+- [IO Moon — Original Spanish Service Manual](manuals/sleic_io_moon_manual_es.pdf) — 159 pages, ~30 of them schematics
+- [Bike Race — 1992 Spanish Service Manual](manuals/SLEIC_1992_Bike_Race_Spanish_Service_Manual_with_parts_list_and_paginated_schematics.pdf) — 125 pages, with parts list and paginated schematics
+- [Sleic Pin-Ball — 1994 Spanish Service Manual](manuals/SLEIC_1994_Sleic_Pin_Ball_Service_Manual_no_schematics.pdf) — 93 pages, no schematics
 
 ---
 
