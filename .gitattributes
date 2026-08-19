@@ -1,0 +1,16 @@
+# ROM / firmware images and other binary assets must never be EOL-converted.
+#
+# Git guesses "text vs binary" by looking for NUL bytes, and some ROM images
+# have none — bkdsp01.bin is 117 bytes of I8039 code followed by 0xFF padding,
+# so Git classified it as text. With core.autocrlf=true a checkout would then
+# rewrite its single 0x0A byte as 0x0D 0x0A and hand you a corrupted dump.
+# Mark every image type explicitly instead of relying on the heuristic.
+
+*.bin   binary
+*.bin2  binary
+*.rom   binary
+*.pdf   binary
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.sal   binary
