@@ -79,31 +79,87 @@ FFF07:  EA 00 00 00 D0      JMP FAR D000:0000     -> flat D0000 (file 0x50000)
 ```
 
 At `D0000` the real init runs: `CLI`, `SS=4152 / SP=0205` (stack top flat
-`0x41725`), `DS=ES=4000`, then a 15-iteration `LODSW`/`OUT DX,AX` loop over a
-table at `CS:0041`, five far calls and a final `JMP FAR D2F2:0002`.
+`0x41725`), `DS=ES=4000`, then
 
-The chip-select/peripheral table at `CS:0041` (file `0x50041`), read out
-directly:
+```
+D0012:  BE 41 00            MOV SI, 00041         ; table at CS:0041
+D0015:  B9 1E 00            MOV CX, 0001E         ; 30 iterations
+D0018:  2E AD               LODSW                 ; <- loop top
+D001A:  8B D0               MOV DX, AX            ;    port
+D001C:  2E AD               LODSW                 ;    value
+D001E:  EF                  OUT DX, AX
+D001F:  E2 F7               LOOP 0D0018
+```
 
-| I/O | value | 80188 register | effect |
-|---|---|---|---|
-| `FFA2` | `3FFC` | LMCS | low memory `00000-3FFFF` |
-| `FFA6` | `41FC` | MMCS | mid-range base `40000` |
-| `FFA4` | `A03C` | PACS | peripheral chip-select base `A0000` |
-| `FFA8` | `A0FC` | MPCS | peripherals memory-mapped, 7 PCS lines, 4x64K mid-range blocks |
-| `FF56` | `E003` | T0 mode | timer 0 enabled, interrupt on, alternating A/B, continuous |
-| `FF52`/`FF54` | `6276` | T0 max count A/B | 25206 counts; at CLKOUT/4 = 2.5 MHz that is ~99.2 Hz |
-| `FF50` | `0000` | T0 count | cleared |
-| `FF5E`/`FF66` | `0000` | T1/T2 mode | timers 1 and 2 disabled |
-| `FF32` | `0001` | timer int control | unmasked, priority 1 |
-| `FF34`/`FF36` | `000F` | DMA0/DMA1 control | **masked** |
-| `FF38` | `0000` | INT0 control | unmasked, priority 0, edge triggered |
-| `FF3A` | `000F` | INT1 control | **masked** |
+`CX = 0x1E` = **30** iterations, each consuming a 4-byte (port, value) pair,
+so the table is 120 bytes spanning `CS:0041..CS:00B9` -- ending exactly on
+`D000:00B9`, which is the first routine the boot code far-calls. That
+coincidence is the check that the extent is right.
 
-`UMCS = C03C` is written by the reset stub before this table runs. So the
-only enabled maskable sources are **timer 0** and **INT0**; DMA0/1 and INT1
-are masked, which matches the vector table having exactly three live
-entries.
+Then five far calls (`D000:00B9`, `D000:011C`, `D000:00FA`, `F000:0000`,
+`D000:0B2B`), `STI`, and `JMP FAR D2F2:0002`.
+
+All 30 entries of the table at `CS:0041` (file `0x50041`), read out directly,
+in the order the loop writes them:
+
+| # | I/O | value | 80188 register | effect |
+|---|---|---|---|---|
+| 0 | `FFA2` | `3FFC` | LMCS | low memory `00000-3FFFF` |
+| 1 | `FFA6` | `41FC` | MMCS | mid-range memory base `40000` |
+| 2 | `FFA4` | `A03C` | PACS | peripheral chip-select base `A0000` |
+| 3 | `FFA8` | `A0FC` | MPCS | peripherals memory-mapped, 7 PCS lines, 4x64K mid-range blocks |
+| 4 | `FF56` | `E003` | T0 mode/control | timer 0 enabled, interrupt on, alternating max counts, continuous |
+| 5 | `FF52` | `6276` | T0 max count A | 25206 counts |
+| 6 | `FF54` | `6276` | T0 max count B | same, so a uniform ~99.2 Hz at CLKOUT/4 = 2.5 MHz |
+| 7 | `FF50` | `0000` | T0 count | cleared |
+| 8 | `FF5E` | `0000` | T1 mode/control | timer 1 **disabled** |
+| 9 | `FF66` | `0000` | T2 mode/control | timer 2 **disabled** |
+| 10 | `FF32` | `0001` | timer int control | **unmasked**, priority 1 |
+| 11 | `FF34` | `000F` | DMA0 int control | masked (MSK=1), priority 7 |
+| 12 | `FF36` | `000F` | DMA1 int control | masked |
+| 13 | `FF38` | `0000` | INT0 control | **unmasked**, priority 0, edge triggered |
+| 14 | `FF3A` | `000F` | INT1 control | masked |
+| 15 | `FF3C` | `000F` | INT2 control | masked |
+| 16 | `FF3E` | `000F` | INT3 control | masked |
+| 17 | `FF2A` | `0001` | PRIMSK | service priority levels 0-1 only |
+| 18 | `FFCA` | `FFA0` | DMA0 control word | written first, with **ST (bit 1) = 0**: channel programmed but not started |
+| 19 | `FFDA` | `FFA0` | DMA1 control word | same |
+| 20 | `FFC8` | `0001` | DMA0 transfer count | 1 |
+| 21 | `FFD8` | `0001` | DMA1 transfer count | 1 |
+| 22 | `FFC6` | `000F` | DMA0 dest pointer, high | destination = `F:FFF2` |
+| 23 | `FFD6` | `000F` | DMA1 dest pointer, high | |
+| 24 | `FFC4` | `FFF2` | DMA0 dest pointer, low | = flat `FFFF2` |
+| 25 | `FFD4` | `FFF2` | DMA1 dest pointer, low | |
+| 26 | `FFC2` | `000F` | DMA0 source pointer, high | source = `F:FFF0` |
+| 27 | `FFD2` | `000F` | DMA1 source pointer, high | |
+| 28 | `FFC0` | `FFF0` | DMA0 source pointer, low | = flat `FFFF0` |
+| 29 | `FFD0` | `FFF0` | DMA1 source pointer, low | |
+
+`UMCS = C03C` is written by the reset stub before this table runs.
+
+Reading the whole table rather than its first half does not change the
+conclusion, and makes it stronger: of the eight maskable sources, **only
+timer 0 (priority 1) and INT0 (priority 0) are unmasked** -- DMA0, DMA1 and
+INT1/INT2/INT3 all have MSK set -- and `PRIMSK = 1` additionally restricts
+service to priority levels 0 and 1, which is exactly the pair that is
+enabled. That matches the vector table having exactly three live entries
+(NMI, which is not maskable, plus timer and INT0).
+
+Both DMA channels are **configured but parked**. The control word `FFA0`
+has ST (bit 1, start/stop) clear *and* CHG (bit 2) clear, so the write
+cannot start the channel even accidentally; it is written *before* the
+pointers and count, the correct "program while stopped" order. The
+source/destination they are pointed at (`FFFF0` -> `FFFF2`, one byte) lies
+inside the reset vector itself and is not a meaningful transfer -- it reads
+as putting the registers in a harmless known state rather than preparing
+real DMA.
+
+Nothing ever restarts them, and this is checkable rather than assumed: the
+**only** 80188 peripheral-control-block registers written anywhere in the
+decoded code, outside this boot table, are `FF2C` (INSERV -- the two EOI
+writes at the end of the timer and INT0 handlers) and `FFA0` (UMCS, in the
+reset stub). No code reprograms a chip select, a timer, the interrupt
+controller or a DMA channel after boot.
 
 ## Step 1b -- the interrupt vector table
 
@@ -167,10 +223,15 @@ address they produce is validated by decoding it:
 * `tools/scanptr.py prologue` -- a last-resort byte-signature match for
   `CLI / PUSH DS / MOV AX,4000 / MOV DS,AX` in still-undecoded space, which
   picks up members of the segment-`F000` animation-routine family that
-  nothing else reaches. This is the weakest channel and is deliberately
-  isolated in its own scanner: it asserts nothing about control flow, so
-  each of its hits was read before being accepted, and the baseline can be
-  rebuilt without it.
+  nothing else reaches. This is the weakest channel -- it asserts nothing
+  about control flow -- so it is deliberately isolated in its own scanner.
+  Its footprint: **150** sites match the signature inside the UMCS window,
+  **58** of them were still undecoded when the scanner ran and became
+  entries in `entries.txt` (tagged `# prologue`), and **0 of the 83 regions
+  depend on it exclusively** -- every region containing a prologue-derived
+  entry also contains an entry reached by a control-flow channel. So even
+  if the signature were unsound, no region would be lost, and the baseline
+  can be rebuilt without the scanner.
 
 `tools/rebuild.sh` iterates all of them to a joint fixed point.
 
@@ -346,6 +407,15 @@ the driver work depends on them.
   copies back and compares them -- the classic EEPROM integrity pattern.
   The board's 28C64A is the obvious candidate but nothing in the code names
   it.
+* **Animation/graphics data is addressed inside the LMCS window.** A
+  620-byte far-pointer table at `F5183-F53EF` (155 entries) is read by the
+  animation routines with `LES SI, CS:52xx/53xx` -- e.g. `F0750`, `F138F`,
+  `F2ECB`, `F4954`. Of its 155 pointers, **146 address segments `0000`,
+  `1000`, `2000` and `3000`** -- flat `00000-3FFFF`, i.e. the LMCS window --
+  and the remaining 9 address segment `4000` work RAM. So the bulk of the
+  image data the animation code streams does not live in the UMCS code ROM
+  at all; it is fetched through LMCS, which is the same window the IVT is
+  read from. Directly relevant to how the graphics ROM has to be banked.
 * **A copyright block sits at `D000:07A9`**: "(C) SLEIC 1.994 / (C)
   CREACIONES E INVESTIGACIONES ELECTRONICAS, S.L. / (C) LUIS GOSALBEZ
   CARRASCO 1.994 / AV.VALDELAPARRA, 3. POLIGONO I..." -- 288 bytes of ASCII
@@ -363,8 +433,11 @@ write primitive at `D000:0D99` writing `A0280` then `A0281`; song select at
 `D000:0DB4`; the chip-select values `UMCS=C03C`, `LMCS=3FFC`, `PACS=A03C`,
 `MMCS=41FC`, `MPCS=A0FC`; the OKI `/OKCS` strobe being bit 5 of `A0000`; the
 DMD staging buffer being `7000:0000-03FF`; the `A0180` bit-0 ready flag and
-`A0080` command latch; and that the 80188 -- not the Z80 -- drives both
-sound chips.
+`A0080` command latch; that the 80188 -- not the Z80 -- drives both sound
+chips; and that the **two DMA channels are configured but parked** -- now
+shown from the boot table's own DMA entries (control word written first
+with ST and CHG clear) together with the fact that no code outside that
+table writes any DMA register.
 
 **Contradicted or refined:**
 

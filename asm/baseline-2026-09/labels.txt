@@ -12,7 +12,7 @@
 # -- reset / boot ---------------------------------------------------------
 FFFF0  reset_vector                # 80188 power-on CS:IP = FFFF:0000
 FFF00  boot_umcs_init              # OUT FFA0,C03C (UMCS) then far JMP D000:0000
-D0000  boot_init                   # SS/SP, DS/ES=4000, 15-entry chip-select OUT table at CS:0041, 5 far calls, far JMP D2F2:0002
+D0000  boot_init                   # SS/SP, DS/ES=4000, 30-entry (CX=1E) OUT table at CS:0041..00B9 (chip selects, timers, interrupt controller, both DMA channels), 5 far calls, far JMP D2F2:0002
 D00B9  boot_pcs_and_queue_init     # seeds PCS6/PCS0/PCS1/PCS4 and the 4000:1158 queue
 D011C  boot_queue2_init            # seeds the 4000:1220 inbound log and its far pointers [1150]/[1152], [1154]/[1156]
 D00FA  pcs4_bit3_strobe            # sets then clears bit 3 of the PCS4 A0200 shadow [1138]

@@ -40,7 +40,7 @@ D2F22  D2F2  main_entry                  # target of boot_init's final far JMP
 D3002  D2F2  main_loop                   # tail of main_entry: reads 413C:014F, dispatches, every branch JMPs back here
 D0D37  D000  fm_sequencer_step           # body of fm_player_tick's stream walker (EE/EF/FF/DD control bytes)
 
-# --- round r1: 38 targets reached by CALL/JMP from already-decoded code
+# --- round r1: 39 targets reached by CALL/JMP from already-decoded code
 D0138  D000  sub_D0138  # CALL from D2F99
 D01E5  D000  sub_D01E5  # CALL from D0392
 D0331  D000  sub_D0331  # CALL from D031B
@@ -50,6 +50,7 @@ D0C57  D000  sub_D0C57  # CALL from D0291
 D0C84  D000  sub_D0C84  # CALL from D02C4
 D0D09  D000  sub_D0D09  # CALL from D0284
 D0D1B  D000  sub_D0D1B  # CALL from D038D
+D0D99  D000  sub_D0D99  # CALL from D0D6C
 D0DB4  D000  sub_D0DB4  # CALL from D2FFC
 D303C  D2F2  sub_D303C  # CALL from D301E
 D307F  D2F2  sub_D307F  # CALL from D3025
@@ -305,7 +306,7 @@ D08C9  D000  sub_D08C9  # CALL from D6256
 D08FF  D000  sub_D08FF  # CALL from D663B
 D0B70  D000  sub_D0B70  # CALL from F2C2E
 D0CE2  D000  sub_D0CE2  # CALL from D0CA6 (+1 more)
-D0D99  D000  sub_D0D99  # CALL from D0D6C
+D0DA9  D000  sub_D0DA9  # CALL from D0DA5 (+1 more)
 D3251  D2F2  sub_D3251  # CALL from D3058
 D32FB  D2F2  sub_D32FB  # CALL from D30C3
 D368C  D2F2  sub_D368C  # CALL from D31D3
@@ -391,14 +392,13 @@ DD3B0  DD25  sub_DD3B0  # jump-table entry, 1 table(s), first DD308
 DD3BF  DD25  sub_DD3BF  # jump-table entry, 1 table(s), first DD308
 DD3CE  DD25  sub_DD3CE  # jump-table entry, 1 table(s), first DD308
 
-# --- round r3: 108 targets reached by CALL/JMP from already-decoded code
+# --- round r3: 107 targets reached by CALL/JMP from already-decoded code
 D03C0  D000  sub_D03C0  # CALL from D08DB
 D0957  D000  sub_D0957  # CALL from D08CA
 D0978  D000  sub_D0978  # CALL from D08CF
 D0B16  D000  sub_D0B16  # CALL from D0921 (+1 more)
 D0B22  D000  sub_D0B22  # CALL from D0937
 D0CB8  D000  sub_D0CB8  # CALL from D0BBE
-D0DA9  D000  sub_D0DA9  # CALL from D0DA5 (+1 more)
 D33A5  D2F2  sub_D33A5  # CALL from DC7F0
 D34F4  D2F2  sub_D34F4  # CALL from D3975 (+1 more)
 D3CDB  D2F2  sub_D3CDB  # CALL from D3926

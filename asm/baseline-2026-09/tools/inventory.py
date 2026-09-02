@@ -15,16 +15,55 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import grow                                              # noqa: E402
 
 
-def classify(lo, hi, rom):
+# Gaps that carry a note beyond what the byte statistics can say.  Keyed by
+# start address; the note is appended to the classification.
+ANNOTATED = {
+    0xF5183: "far-pointer table (155 entries) read by `LES SI,CS:52xx/53xx` "
+             "in decoded code; 146 of the 155 point into segments "
+             "0000/1000/2000/3000, i.e. inside the LMCS window, and 9 into "
+             "segment 4000 (work RAM)",
+}
+
+FILL_BYTES = (0x00, 0xFF)
+MIN_FILL_RUN = 256          # below this a trailing run is not worth splitting
+
+
+def split_gap(lo, hi, rom):
+    """Split one gap into [(start, end, kind)] runs.
+
+    A single dominant-byte test is not enough: a gap can be 99% zero and
+    still open with live data.  (F5183..FFF00 is 98.98% zero, yet its first
+    620 bytes are a far-pointer table that decoded code reads.)  So trailing
+    uniform fill is measured exactly and split off, and whatever precedes it
+    is reported as data on its own terms.
+    """
     blob = rom[lo - grow.ROM1_BASE:hi - grow.ROM1_BASE]
+    if not blob:
+        return []
+    fill = blob[-1]
+    run = 0
+    if fill in FILL_BYTES:
+        while run < len(blob) and blob[len(blob) - 1 - run] == fill:
+            run += 1
+    if run == len(blob):
+        return [(lo, hi, "unprogrammed (0x%02X fill, verified uniform)" % fill)]
+    if run < MIN_FILL_RUN:
+        return [(lo, hi, describe(blob, lo))]
+    split = hi - run
+    return [(lo, split, describe(blob[:len(blob) - run], lo)),
+            (split, hi, "unprogrammed (0x%02X fill, verified uniform)" % fill)]
+
+
+def describe(blob, lo):
     c = Counter(blob)
     top, n = c.most_common(1)[0]
     pct = 100 * n // max(1, len(blob))
-    if top == 0xFF and pct > 95:
-        return "unprogrammed (0xFF fill)"
-    if top == 0x00 and pct > 95:
-        return "unprogrammed (0x00 fill)"
-    return "data (most common byte %02X = %d%%)" % (top, pct)
+    nz = sum(1 for v in blob if v)
+    note = "data (%d bytes, %d non-zero, most common byte %02X = %d%%)" % (
+        len(blob), nz, top, pct)
+    if lo in ANNOTATED:
+        note += " -- " + ANNOTATED[lo]
+    return note
 
 
 def main():
@@ -56,16 +95,18 @@ def main():
     print("|---|---|---|")
     prev = grow.CODE_LO
     other = 0
+
+    def emit(lo, hi):
+        for a, b, kind in split_gap(lo, hi, rom):
+            print("| `%05X..%05X` | %d | %s |" % (a, b, b - a, kind))
+
     for s, e, g in regions:
         if s > prev:
-            print("| `%05X..%05X` | %d | %s |"
-                  % (prev, s, s - prev, classify(prev, s, rom)))
+            emit(prev, s)
             other += s - prev
         prev = max(prev, e)
     if prev < grow.CODE_HI:
-        print("| `%05X..%05X` | %d | %s |"
-              % (prev, grow.CODE_HI, grow.CODE_HI - prev,
-                 classify(prev, grow.CODE_HI, rom)))
+        emit(prev, grow.CODE_HI)
         other += grow.CODE_HI - prev
     print("\nCode %d bytes, other %d bytes, window %d bytes."
           % (code, other, grow.CODE_HI - grow.CODE_LO))
