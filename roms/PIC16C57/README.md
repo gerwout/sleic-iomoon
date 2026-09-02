@@ -54,6 +54,14 @@ Note the scrambling also means the real code can **never** be reconstructed
 from a protected read alone: 256 candidate words map to every read-back
 nibble.
 
+## Related material
+
+- Annotated disassembly: [`../../asm/pic16c57_annotated.asm`](../../asm/pic16c57_annotated.asm)
+  (cross-verified with gpdasm, MAME unidasm, and a project decoder — all three
+  agree on every word)
+- How the protection works and how the lab likely cracked it:
+  [`../../research/pic16c57_protection_analysis.md`](../../research/pic16c57_protection_analysis.md)
+
 ## Checksum
 
 ```
