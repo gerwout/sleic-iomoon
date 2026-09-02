@@ -1,0 +1,25 @@
+diff --git a/src/decodez80.c b/src/decodez80.c
+index 58aa586..9512b38 100644
+--- a/src/decodez80.c
++++ b/src/decodez80.c
+@@ -355,8 +355,18 @@ OPERAND_FUNC(mem16)
+ OPERAND_FUNC(mem8)
+ {
+     UBYTE ioport = next( f, addr );
+-    
+-    operand( "(%s)", xref_genwordaddr( NULL, FORMAT_NUM_8BIT, ioport ) );
++
++    /* The Z80's I/O ports live in their own 8-bit address space, entirely
++       separate from the 16-bit memory space the label table describes, so
++       a label that happens to sit at the same *numeric* address must not
++       be substituted for a port number here.  Upstream ran the port
++       through xref_genwordaddr() and so printed e.g. "IN A, (reset)" for
++       DB 00 whenever any label existed at memory address 0x0000, which is
++       both wrong and destroys the port number the listing is being read
++       for.  The X_IO cross-reference is still registered (it is what
++       makes "-x" list the call sites of each port), only the *printed*
++       operand changes. */
++    operand( "(" FORMAT_NUM_8BIT ")", ioport );
+     xref_addxref( xtype, g_insn_addr, ioport );
+ }
+ 

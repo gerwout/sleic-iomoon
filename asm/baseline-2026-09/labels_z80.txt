@@ -1,0 +1,71 @@
+# Hand-given provisional names for the Z80 baseline, applied on top of the
+# generated sub_XXXX ones by tools/growz80.py.
+#
+# Format: <hex address>  <label>  # the evidence in the decoded code
+#
+# Every name here describes *observed peripheral or RAM traffic*, not a
+# guessed purpose. Where a name implies a role (lamp, solenoid, switch) the
+# comment says which instructions justify it. Treat them as hypotheses.
+# Nothing here was taken from asm/z80_annotated.asm or docs/z80_io_ports.md.
+
+0100  port81_bit1_set        # LD A,(C001) / OR #$02 / OUT ($81) -- sets shadow bit 1
+010B  port81_bit1_clear      # LD A,(C001) / AND #$FD / OUT ($81) -- clears the same bit
+
+0116  host_send_c0fc         # spins on IN($01) bit 1, OUT($80)<-(C0FC), pulses port-81 bit 2
+0144  host_send_c008_a       # spins on IN($01) bit 1, OUT($80)<-(C008), pulses port-81 bit 5
+017E  host_send_c008_b       # same as 0144 but leaves interrupts alone (no DI/EI)
+01B6  host_read_byte         # sets port-81 bit 6, IN($00) -> (C060), clears bit 6
+
+0400  boot                   # target of the reset stub's JP; DI / IM 1 / LD SP,#$C7FF
+041B  boot_port_init         # writes all eight output ports 80-87 and their C000-C007 shadows
+045A  boot_ram_init          # clears C009+ and C061+, seeds the C0E5/C117 state pointers
+
+0A42  irq_handler            # the IM 1 vector's target; PUSH AF/BC/DE/HL ... EI / RETI
+0C97  port81_bit3_toggle     # counts C045 down, then flips port-81 bit 3 (and bit 0 with it)
+
+0D4C  main_loop              # the boot path's final JP; calls the scan/dispatch chain, loops to itself
+0D76  input_port03_bit3      # IN($03) / BIT 3 -> conditional call
+0DBF  direct_input_scan      # 16-way scan: port-87 low nibble = index, IN($01) bit 5 = the datum
+
+16D5  host_cmd_dispatch      # takes a byte from the (C072) ring the NMI fills, JP (HL) via the 2000 table
+
+27B3  port87_bit5_clear      # C007 AND #$DF -> OUT ($87)
+27C0  port87_bit5_set        # C007 OR  #$20 -> OUT ($87)
+
+2E3F  selftest_wait_reset    # IN($04) / BIT 7 spin, then JP boot -- nothing reaches it
+2E54  input_port03_read      # IN($03), CPL -> (C0F7), OR (C0F8) -> (C0E3)
+2E62  input_port03_read_tick # same, then JP (HL) through the (C0E5) switch-column state pointer
+
+2E73  sw_strobe_col0         # OUT($82)<-01, next state = sw_read_col0
+2E83  sw_strobe_col1         # OUT($82)<-02, next state = sw_read_col1
+2E93  sw_strobe_col2         # OUT($82)<-04, next state = sw_read_col2
+2EA3  sw_strobe_col3         # OUT($82)<-08, next state = sw_read_col3
+2EB3  sw_strobe_col4         # OUT($82)<-10, next state = sw_read_col4
+2EC3  sw_strobe_col5         # OUT($82)<-20, next state = sw_read_col5
+
+2ED3  sw_read_col0           # settling delay, IN($02), CPL -> (C0E7), change mask -> (C0DB); strobes column 1
+2F01  sw_read_col1           # same shape: row byte -> (C0E9), mask -> (C0DC), strobes column 2
+2F2F  sw_read_col2           # row byte -> (C0EB), mask -> (C0DD), strobes column 3
+2F5D  sw_read_col3           # row byte -> (C0ED), mask -> (C0DE), strobes column 4
+2F8B  sw_read_col4           # row byte -> (C0EF), mask -> (C0DF), strobes column 5
+2FB9  sw_read_col5           # row byte -> (C0F1), mask -> (C0E0), strobes column 0 (the chain wraps)
+
+2FE7  sw_col0_changed        # called from sw_read_col0 when the row byte is not FF; walks (C0DB) bit by bit
+3028  sw_col1_changed        # same, on (C0DC)
+3069  sw_col2_changed        # same, on (C0DD)
+30AA  sw_col3_changed        # same, on (C0DE)
+30EB  sw_col4_changed        # same, on (C0DF)
+312C  sw_col5_changed        # same, on (C0E0)
+
+3446  lamp_scan_tick         # JP (HL) through the (C117) lamp-column state pointer
+3457  lamp_col0_out          # OUT($84)<-(C10F) data, OUT($83)<-01 column; next state = lamp_col1_out
+3467  lamp_col1_out          # OUT($84)<-(C110), OUT($83)<-02
+3477  lamp_col2_out          # OUT($84)<-(C111), OUT($83)<-04
+3487  lamp_col3_out          # OUT($84)<-(C112), OUT($83)<-08
+3497  lamp_col4_out          # OUT($84)<-(C113), OUT($83)<-10
+34A7  lamp_col5_out          # OUT($84)<-(C114), OUT($83)<-20
+34B7  lamp_col6_out          # OUT($84)<-(C115), OUT($83)<-40
+34C7  lamp_col7_out          # OUT($84)<-(C116), OUT($83)<-80; next state = lamp_col0_out
+
+37A9  anim24_dispatch        # C125 wraps 0..17h, JP (HL) via the 24-entry table at 37E2
+3812  anim78_dispatch        # C11C wraps 0..4Dh, JP (HL) via the 78-entry table at 3830

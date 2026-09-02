@@ -1,29 +1,34 @@
 #!/usr/bin/env python3
-"""xverify.py -- three-way cross-verification of an x86 baseline disassembly.
+"""xverify.py -- cross-verification of a dasmxx baseline disassembly.
 
-Compares a dasmxx (`dasmx86`) listing against two independent decoders --
-capstone and ndisasm -- over every *code* region named in the dasmxx command
-file that produced the listing. Neither capstone nor ndisasm ever sees the
-listing; both re-decode the same region of the same ROM image from scratch,
-so agreement of all three is real triangulation, not one tool checking its
-own homework.
+Compares a dasmxx listing against independent decoders over every *code*
+region named in the dasmxx command file that produced the listing. No
+second-opinion decoder ever sees the listing; each re-decodes the same
+region of the same ROM image from scratch, so agreement is real
+triangulation, not one tool checking its own homework.
+
+Two architectures are supported, each with its own decoder set:
+
+    --arch x86   dasmx86  vs  capstone (16-bit mode)  vs  ndisasm -b16
+    --arch z80   dasmz80  vs  unidasm -arch z80
 
 Comparison key per instruction: (address, instruction length, canonical
-mnemonic). Operand text is deliberately NOT compared -- the three tools
-format operands too differently (register names, `word ptr` vs nothing,
-`{label}` annotations, immediate radix) for that to be a meaningful check.
+mnemonic). Operand text is deliberately NOT compared -- the tools format
+operands too differently (register names, `word ptr` vs nothing, `{label}`
+annotations, immediate radix) for that to be a meaningful check.
 Canonicalisation strips a leading segment-override/rep/lock prefix token (if
 the decoder folded it into the mnemonic text) and applies a small, justified
-ALIAS table for same-opcode spelling differences (jz/je, lcall/call, ...);
-see reports/xverify_80188.md for the per-entry justification.
+per-architecture ALIAS table for same-opcode spelling differences (jz/je,
+lcall/call, ...); see reports/xverify_80188.md and reports/xverify_z80.md
+for the per-entry justification.
 
 Unlike this baseline's earlier capstone-only crosscheck.py (now folded into
 this tool), a dasmxx instruction with no counterpart at the same address in
-capstone's or ndisasm's decode of the same bytes is not silently skipped --
-it is counted and reported as a desync, and any nonzero skip count fails
-the run. Likewise an address where capstone or ndisasm decoded an
-instruction that dasmxx did not (i.e. the other decoder drew a boundary
-dasmxx didn't) is counted as an "extra" and also fails the run.
+another decoder's decode of the same bytes is not silently skipped -- it is
+counted and reported as a desync, and any nonzero skip count fails the run.
+Likewise an address where another decoder decoded an instruction that dasmxx
+did not (i.e. it drew a boundary dasmxx didn't) is counted as an "extra" and
+also fails the run.
 
 Usage:
     python3 xverify.py --arch x86 \\
@@ -32,9 +37,15 @@ Usage:
         --bin     "roms/1.3 IPDB latest/V1 3_01.bin" \\
         --base    0x80000
 
-Exit status 0 means every code region agrees across all three decoders,
-with zero skips and zero extras. Exit status 1 means at least one region
-disagreed or desynchronised; the offending addresses are printed by name.
+    python3 xverify.py --arch z80 \\
+        --regions asm/baseline-2026-09/iomoon_z80.cmd \\
+        --lst     asm/baseline-2026-09/iomoon_z80.lst \\
+        --bin     "roms/1.3 IPDB latest/V1 3_05.bin" \\
+        --base    0x0
+
+Exit status 0 means every code region agrees across every decoder, with zero
+skips and zero extras. Exit status 1 means at least one region disagreed or
+desynchronised; the offending addresses are printed by name.
 """
 import argparse
 import re
@@ -42,12 +53,13 @@ import subprocess
 import sys
 from collections import Counter
 
+import os
+import tempfile
+
 try:
     from capstone import Cs, CS_ARCH_X86, CS_MODE_16
-except ImportError:
-    print("xverify.py: the 'capstone' python module is required "
-          "(pip install capstone)", file=sys.stderr)
-    sys.exit(2)
+except ImportError:                                     # pragma: no cover
+    Cs = None                                           # only --arch x86 needs it
 
 # ---------------------------------------------------------------------------
 # Mnemonic canonicalisation
@@ -60,8 +72,15 @@ except ImportError:
 # the prefix/mnemonic boundary. dasmxx never does this (its own mnemonic
 # field is already bare -- see reports/xverify_80188.md), so stripping is a
 # no-op there; applying it uniformly keeps the logic single-path.
-PREFIX_TOKENS = {"lock", "rep", "repe", "repz", "repne", "repnz",
-                  "cs", "ds", "es", "ss", "fs", "gs"}
+# These are x86 prefixes; the Z80 has no instruction prefix that any decoder
+# folds into the mnemonic text, so main() swaps in an empty set for --arch z80
+# rather than leaving x86 tokens in play against Z80 mnemonics.
+PREFIX_TOKENS_X86 = {"lock", "rep", "repe", "repz", "repne", "repnz",
+                     "cs", "ds", "es", "ss", "fs", "gs"}
+PREFIX_TOKENS_Z80 = set()
+
+# Set by main() before any comparison runs.
+PREFIX_TOKENS = PREFIX_TOKENS_X86
 
 # variant spelling (lower-case) -> canonical spelling (dasmxx's own, lower-
 # cased). Every entry exists because a real instance was observed to differ
@@ -69,7 +88,7 @@ PREFIX_TOKENS = {"lock", "rep", "repe", "repz", "repne", "repnz",
 # opcode-level justification of each one. This is deliberately NOT a
 # generic x86-mnemonic-alias table -- an alias that isn't needed to explain
 # an observed difference does not belong here.
-ALIAS = {
+ALIAS_X86 = {
     "lcall": "call",   # capstone's name for far CALL (9A, or FF /3 through memory); dasmxx and ndisasm both say call
     "ljmp":  "jmp",    # capstone's name for far JMP (EA, or FF /5 through memory); dasmxx and ndisasm both say jmp
     "ret":   "retn",   # capstone's and ndisasm's name for near RET (C2/C3); dasmxx says retn
@@ -88,9 +107,21 @@ ALIAS = {
 }
 
 
+# The Z80 equivalent -- deliberately empty. Over the 4743 instructions of the
+# Z80 baseline, dasmz80 and unidasm spell every mnemonic identically, so no
+# alias is *needed* to explain an observed difference, and by the same rule
+# that governs ALIAS_X86 above none is added. Leaving the table here (rather
+# than special-casing its absence) keeps canon() single-path and gives a
+# future disagreement somewhere obvious to be recorded.
+ALIAS_Z80 = {}
+
+# Set by main() before any comparison runs.
+ALIAS = ALIAS_X86
+
+
 def canon(text):
     """First non-prefix token of an instruction's mnemonic(+operand) text,
-    lower-cased and passed through ALIAS."""
+    lower-cased and passed through the active architecture's ALIAS."""
     tokens = text.split()
     i = 0
     while i < len(tokens) and tokens[i].lower() in PREFIX_TOKENS:
@@ -175,7 +206,17 @@ def parse_cmd_regions(cmd_path):
 # not dasm86's usual single-space-separated instruction byte list) BEFORE
 # ever trying the instruction regex, instead of trying to tell the two
 # apart after the fact.
-LST_DB_LINE_RE = re.compile(r"^\s{4}[0-9A-F]+:\s{4}DB\s")
+#
+# The discriminator is dasmxx's own fixed-width pseudo-op field: every data
+# row is printed with `printf("DB      ")` -- literally DB followed by six
+# spaces (dasmxx.c lines 917/986/1214/1282) -- whereas an instruction whose
+# first raw byte happens to be 0xDB prints it in the byte list, so exactly
+# one space follows. Matching `DB` + whitespace alone is NOT enough, and on
+# the Z80 that is not a theoretical worry: `DB nn` is `IN A,(nn)`, so a
+# whitespace-only test silently dropped all 36 `IN A,(port)` instructions in
+# the Z80 listing (they then surfaced as unidasm "extras", which is how this
+# was caught).
+LST_DB_LINE_RE = re.compile(r"^\s{4}[0-9A-F]+:\s{4}DB {6}")
 LST_LINE_RE = re.compile(
     r"^\s{4}([0-9A-F]+):\s{4}((?:[0-9A-F]{2} )+)\s*(\S+)\s*(.*?)\s*$")
 
@@ -249,6 +290,82 @@ def ndisasm_decode(blob, addr, ndisasm_bin="ndisasm"):
     return out
 
 
+def ndisasm_decode_region(rom, base, start, end, gaps, ndisasm_bin):
+    """Decode [start, end) with ndisasm, skipping over each known-gap
+    address (exactly 2 bytes each -- see is_ndisasm_known_gap) by decoding
+    the bytes around it as separate ndisasm invocations, each freshly
+    originated at an address dasmxx (cross-checked by capstone) already
+    established is a real instruction boundary. Feeding the gap bytes to
+    ndisasm at all desyncs its cursor for a few bytes afterward, which would
+    otherwise misreport every following instruction in the region as a
+    disagreement instead of just the one address ndisasm actually can't
+    decode.
+    """
+    nd = {}
+    cursor = start
+    for gap in gaps:
+        if gap > cursor:
+            nd.update(ndisasm_decode(rom[cursor - base:gap - base], cursor,
+                                      ndisasm_bin))
+        cursor = gap + 2  # both known-gap encodings are exactly 2 bytes
+    if cursor < end:
+        nd.update(ndisasm_decode(rom[cursor - base:end - base], cursor,
+                                  ndisasm_bin))
+    return nd
+
+
+# ---------------------------------------------------------------------------
+# unidasm decode (the --arch z80 second opinion)
+# ---------------------------------------------------------------------------
+
+# unidasm prints "0400: f3        di" / "0403: 31 ff c7  ld   sp,$C7FF":
+# lower-case address, colon, the raw bytes space-separated, then the
+# instruction text.
+UNIDASM_LINE_RE = re.compile(
+    r"^([0-9a-f]+): ((?:[0-9a-f]{2} )*[0-9a-f]{2})\s+(.*?)\s*$")
+
+
+def unidasm_decode(blob, addr, end, unidasm_bin="unidasm", arch="z80"):
+    """Run unidasm over one region's raw bytes.
+
+    unidasm reads a file rather than stdin, so the region's bytes are written
+    to a temporary file; `-basepc` then makes its printed addresses line up
+    with the listing's directly. It decodes whole instructions, so the last
+    one can reach past `-count` bytes -- anything at or beyond `end` is
+    dropped, exactly as the dasmxx side drops an instruction that straddles
+    the region boundary.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as fh:
+        fh.write(blob)
+        name = fh.name
+    try:
+        res = subprocess.run(
+            [unidasm_bin, name, "-arch", arch,
+             "-basepc", "0x%X" % addr, "-count", "%d" % len(blob)],
+            capture_output=True)
+        if res.returncode != 0:
+            raise RuntimeError("unidasm failed (exit %d) at region %05X: %s"
+                                % (res.returncode, addr,
+                                   res.stderr[-500:].decode("latin1")))
+        out = {}
+        for lineno, raw in enumerate(
+                res.stdout.decode("latin1").splitlines(), 1):
+            if not raw.strip():
+                continue
+            m = UNIDASM_LINE_RE.match(raw)
+            if not m:
+                raise RuntimeError(
+                    "unidasm: unparsed output line at region %05X:%d: %r"
+                    % (addr, lineno, raw))
+            a = int(m.group(1), 16)
+            if a >= end:
+                continue
+            out[a] = (len(m.group(2).split()), canon(m.group(3)))
+        return out
+    finally:
+        os.unlink(name)
+
+
 # ---------------------------------------------------------------------------
 # A confirmed ndisasm 3.01 decoder gap
 # ---------------------------------------------------------------------------
@@ -285,65 +402,51 @@ def is_ndisasm_known_gap(byts):
 # dropped that self-check from tools/rebuild.sh's pipeline.
 ONLY186_FIRST = {0x60, 0x61, 0x62, 0x68, 0x69, 0x6A, 0x6B,
                  0x6C, 0x6D, 0x6E, 0x6F, 0xC0, 0xC1, 0xC8, 0xC9}
-
-
 # ---------------------------------------------------------------------------
-# Three-way comparison
+# Comparison
 # ---------------------------------------------------------------------------
+
+class Decoder:
+    """One second-opinion decoder.
+
+    `decode(rom, base, start, end, gaps)` returns {addr: (length, canonical
+    mnemonic)} for the code region [start, end).  `known_gap(byts)`, when
+    present, marks an instruction this decoder is known to be unable to
+    decode; those addresses are excluded from its comparison and counted
+    separately instead of being reported as disagreements.
+    """
+
+    def __init__(self, name, decode, known_gap=None):
+        self.name = name
+        self.decode = decode
+        self.known_gap = known_gap
+
 
 class Stats:
-    def __init__(self):
+    def __init__(self, names):
+        self.names = names
         self.compared = 0
-        self.skip_capstone = []   # dasmxx addr with no capstone counterpart
-        self.skip_ndisasm = []    # dasmxx addr with no ndisasm counterpart
-        self.extra_capstone = []  # capstone addr inside a region, absent from dasmxx
-        self.extra_ndisasm = []   # ndisasm addr inside a region, absent from dasmxx
-        self.mismatch_capstone = []  # (addr, kind) dasmxx vs capstone disagree
-        self.mismatch_ndisasm = []   # (addr, kind) dasmxx vs ndisasm disagree
-        self.ndisasm_known_gap = []  # addr excluded from the ndisasm comparison; see is_ndisasm_known_gap
-        self.pairs_capstone = Counter()
-        self.pairs_ndisasm = Counter()
+        self.skip = {n: [] for n in names}       # dasmxx addr the decoder did not produce
+        self.extra = {n: [] for n in names}      # decoder addr absent from dasmxx
+        self.mismatch = {n: [] for n in names}   # (addr, kind) the two disagree on
+        self.pairs = {n: Counter() for n in names}
+        self.known_gap = {n: [] for n in names}  # excluded; see Decoder.known_gap
         self.only186 = Counter()  # (first byte hex, dasmxx mnemonic) -> occurrences
 
     def failed(self):
-        return bool(self.skip_capstone or self.skip_ndisasm
-                    or self.extra_capstone or self.extra_ndisasm
-                    or self.mismatch_capstone or self.mismatch_ndisasm)
+        return any(self.skip[n] or self.extra[n] or self.mismatch[n]
+                   for n in self.names)
 
 
-def ndisasm_decode_region(rom, base, start, end, gaps, ndisasm_bin):
-    """Decode [start, end) with ndisasm, skipping over each known-gap
-    address (exactly 2 bytes each -- see is_ndisasm_known_gap) by decoding
-    the bytes around it as separate ndisasm invocations, each freshly
-    originated at an address dasmxx (cross-checked by capstone) already
-    established is a real instruction boundary. Feeding the gap bytes to
-    ndisasm at all desyncs its cursor for a few bytes afterward, which would
-    otherwise misreport every following instruction in the region as a
-    disagreement instead of just the one address ndisasm actually can't
-    decode.
-    """
-    nd = {}
-    cursor = start
-    for gap in gaps:
-        if gap > cursor:
-            nd.update(ndisasm_decode(rom[cursor - base:gap - base], cursor,
-                                      ndisasm_bin))
-        cursor = gap + 2  # both known-gap encodings are exactly 2 bytes
-    if cursor < end:
-        nd.update(ndisasm_decode(rom[cursor - base:end - base], cursor,
-                                  ndisasm_bin))
-    return nd
-
-
-def verify_region(rom, base, start, end, dasm_insns, ndisasm_bin, stats):
-    blob = rom[start - base:end - base]
-    cap = capstone_decode(blob, start)
-
-    gaps = sorted(
-        addr for addr, (byts, mnem, ops) in dasm_insns.items()
-        if start <= addr < end and is_ndisasm_known_gap(byts))
-    gapset = set(gaps)
-    nd = ndisasm_decode_region(rom, base, start, end, gaps, ndisasm_bin)
+def verify_region(rom, base, start, end, dasm_insns, decoders, stats,
+                  count186):
+    decoded, gapsets = {}, {}
+    for d in decoders:
+        gaps = sorted(
+            addr for addr, (byts, mnem, ops) in dasm_insns.items()
+            if start <= addr < end and d.known_gap and d.known_gap(byts))
+        gapsets[d.name] = set(gaps)
+        decoded[d.name] = d.decode(rom, base, start, end, gaps)
 
     region_dasm_addrs = set()
     for addr, (byts, mnem, ops) in sorted(dasm_insns.items()):
@@ -355,56 +458,81 @@ def verify_region(rom, base, start, end, dasm_insns, ndisasm_bin, stats):
         stats.compared += 1
         d_len, d_mn = len(byts), canon(mnem + " " + ops)
 
-        if byts and int(byts[0], 16) in ONLY186_FIRST:
+        if count186 and byts and int(byts[0], 16) in ONLY186_FIRST:
             stats.only186[(byts[0], mnem)] += 1
 
-        c = cap.get(addr)
-        if c is None:
-            stats.skip_capstone.append(addr)
-        else:
-            c_len, c_mn = c
-            if c_len != d_len or c_mn != d_mn:
-                stats.mismatch_capstone.append((addr, "len" if c_len != d_len else "mnem"))
-                stats.pairs_capstone[(d_mn, c_mn)] += 1
+        for d in decoders:
+            if addr in gapsets[d.name]:
+                stats.known_gap[d.name].append(addr)
+                continue
+            got = decoded[d.name].get(addr)
+            if got is None:
+                stats.skip[d.name].append(addr)
+                continue
+            g_len, g_mn = got
+            if g_len != d_len or g_mn != d_mn:
+                stats.mismatch[d.name].append(
+                    (addr, "len" if g_len != d_len else "mnem"))
+                stats.pairs[d.name][(d_mn, g_mn)] += 1
 
-        if addr in gapset:
-            stats.ndisasm_known_gap.append(addr)
-            continue
+    for d in decoders:
+        for addr in decoded[d.name]:
+            if start <= addr < end and addr not in region_dasm_addrs:
+                stats.extra[d.name].append(addr)
 
-        n = nd.get(addr)
-        if n is None:
-            stats.skip_ndisasm.append(addr)
-        else:
-            n_len, n_mn = n
-            if n_len != d_len or n_mn != d_mn:
-                stats.mismatch_ndisasm.append((addr, "len" if n_len != d_len else "mnem"))
-                stats.pairs_ndisasm[(d_mn, n_mn)] += 1
 
-    for addr in cap:
-        if start <= addr < end and addr not in region_dasm_addrs:
-            stats.extra_capstone.append(addr)
-    for addr in nd:
-        if start <= addr < end and addr not in region_dasm_addrs:
-            stats.extra_ndisasm.append(addr)
+def build_decoders(arch, args):
+    """The second-opinion decoders for one architecture."""
+    if arch == "x86":
+        if Cs is None:
+            print("xverify.py: --arch x86 needs the 'capstone' python module "
+                  "(pip install capstone)", file=sys.stderr)
+            sys.exit(2)
+        return [
+            Decoder("capstone",
+                    lambda rom, base, start, end, gaps:
+                        capstone_decode(rom[start - base:end - base], start)),
+            Decoder("ndisasm",
+                    lambda rom, base, start, end, gaps:
+                        ndisasm_decode_region(rom, base, start, end, gaps,
+                                              args.ndisasm),
+                    known_gap=is_ndisasm_known_gap),
+        ]
+    return [
+        Decoder("unidasm",
+                lambda rom, base, start, end, gaps:
+                    unidasm_decode(rom[start - base:end - base], start, end,
+                                   args.unidasm)),
+    ]
 
 
 def main():
+    global ALIAS, PREFIX_TOKENS
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--arch", required=True, choices=["x86"],
-                     help="only x86 (dasmx86/capstone-x86/ndisasm) is implemented")
+    ap.add_argument("--arch", required=True, choices=["x86", "z80"],
+                     help="x86: dasmx86 vs capstone vs ndisasm.  "
+                          "z80: dasmz80 vs unidasm -arch z80")
     ap.add_argument("--regions", required=True, metavar="CMDFILE",
                      help="dasmxx command file (region source of truth)")
     ap.add_argument("--lst", required=True, metavar="LSTFILE",
-                     help="dasmx86 listing produced from CMDFILE")
+                     help="dasmxx listing produced from CMDFILE")
     ap.add_argument("--bin", required=True, metavar="ROM",
                      help="raw ROM image the listing was disassembled from")
     ap.add_argument("--base", required=True,
                      help="flat address of file offset 0, e.g. 0x80000")
     ap.add_argument("--ndisasm", default="ndisasm",
-                     help="ndisasm binary to invoke (default: ndisasm on PATH)")
+                     help="ndisasm binary to invoke (--arch x86 only)")
+    ap.add_argument("--unidasm", default="unidasm",
+                     help="unidasm binary to invoke (--arch z80 only)")
     ap.add_argument("--max-examples", type=int, default=25,
                      help="max disagreement/skip/extra examples to print per category")
     args = ap.parse_args()
+
+    dasm = "dasmx86" if args.arch == "x86" else "dasmz80"
+    ALIAS = ALIAS_X86 if args.arch == "x86" else ALIAS_Z80
+    PREFIX_TOKENS = (PREFIX_TOKENS_X86 if args.arch == "x86"
+                     else PREFIX_TOKENS_Z80)
+    afmt = "%05X" if args.arch == "x86" else "%04X"
 
     base = int(args.base, 0)
     regions = parse_cmd_regions(args.regions)
@@ -412,43 +540,46 @@ def main():
     with open(args.bin, "rb") as fh:
         rom = fh.read()
 
-    stats = Stats()
+    decoders = build_decoders(args.arch, args)
+    stats = Stats([d.name for d in decoders])
     for start, end, _label in regions:
-        verify_region(rom, base, start, end, dasm_insns, args.ndisasm, stats)
+        verify_region(rom, base, start, end, dasm_insns, decoders, stats,
+                      count186=(args.arch == "x86"))
 
     code_bytes = sum(e - s for s, e, _ in regions)
     print("regions: %d   code bytes: %d" % (len(regions), code_bytes))
     print("instructions compared: %d" % stats.compared)
     print()
-    print("dasmx86 addr missing from capstone decode (skip_capstone): %d"
-          % len(stats.skip_capstone))
-    print("dasmx86 addr missing from ndisasm  decode (skip_ndisasm) : %d"
-          % len(stats.skip_ndisasm))
-    print("capstone addr with no dasmx86 counterpart (extra_capstone): %d"
-          % len(stats.extra_capstone))
-    print("ndisasm  addr with no dasmx86 counterpart (extra_ndisasm) : %d"
-          % len(stats.extra_ndisasm))
-    print("dasmx86 vs capstone disagreements (length or mnemonic): %d"
-          % len(stats.mismatch_capstone))
-    print("dasmx86 vs ndisasm  disagreements (length or mnemonic): %d"
-          % len(stats.mismatch_ndisasm))
-    print("excluded from the ndisasm comparison -- confirmed ndisasm 3.01 "
-          "decoder gap, see is_ndisasm_known_gap: %d"
-          % len(stats.ndisasm_known_gap))
+    for d in decoders:
+        print("%s addr missing from %s decode (skip_%s): %d"
+              % (dasm, d.name, d.name, len(stats.skip[d.name])))
+    for d in decoders:
+        print("%s addr with no %s counterpart (extra_%s): %d"
+              % (d.name, dasm, d.name, len(stats.extra[d.name])))
+    for d in decoders:
+        print("%s vs %s disagreements (length or mnemonic): %d"
+              % (dasm, d.name, len(stats.mismatch[d.name])))
+    for d in decoders:
+        if d.known_gap:
+            print("excluded from the %s comparison -- confirmed %s decoder "
+                  "gap, see is_%s_known_gap: %d"
+                  % (d.name, d.name, d.name, len(stats.known_gap[d.name])))
 
     def show(title, addrs):
         if not addrs:
             return
         print("\n%s (%d, first %d):" % (title, len(addrs), args.max_examples))
         for addr in addrs[:args.max_examples]:
-            print("  %05X" % addr)
+            print("  " + afmt % addr)
 
-    show("skip_capstone", stats.skip_capstone)
-    show("skip_ndisasm", stats.skip_ndisasm)
-    show("extra_capstone", stats.extra_capstone)
-    show("extra_ndisasm", stats.extra_ndisasm)
-    show("ndisasm_known_gap (FF /2 or /4, register operand -- see docstring)",
-         stats.ndisasm_known_gap)
+    for d in decoders:
+        show("skip_" + d.name, stats.skip[d.name])
+    for d in decoders:
+        show("extra_" + d.name, stats.extra[d.name])
+    for d in decoders:
+        if d.known_gap:
+            show("%s_known_gap (FF /2 or /4, register operand -- see "
+                 "docstring)" % d.name, stats.known_gap[d.name])
 
     def show_mismatch(title, mismatches):
         if not mismatches:
@@ -456,29 +587,30 @@ def main():
         print("\n%s (%d, first %d):" % (title, len(mismatches), args.max_examples))
         for addr, kind in mismatches[:args.max_examples]:
             byts, mnem, ops = dasm_insns[addr]
-            print("  %05X  %-4s  dasmx86=%-8s %-20s  bytes=%s"
-                  % (addr, kind, mnem, ops, " ".join(byts)))
+            print(("  " + afmt + "  %-4s  %s=%-8s %-20s  bytes=%s")
+                  % (addr, kind, dasm, mnem, ops, " ".join(byts)))
 
-    show_mismatch("dasmx86 vs capstone disagreements", stats.mismatch_capstone)
-    show_mismatch("dasmx86 vs ndisasm disagreements", stats.mismatch_ndisasm)
+    for d in decoders:
+        show_mismatch("%s vs %s disagreements" % (dasm, d.name),
+                      stats.mismatch[d.name])
 
-    if stats.pairs_capstone:
-        print("\ndasmx86/capstone mnemonic pairs seen in disagreements:",
-              sorted(stats.pairs_capstone.items(), key=lambda kv: -kv[1]))
-    if stats.pairs_ndisasm:
-        print("dasmx86/ndisasm mnemonic pairs seen in disagreements:",
-              sorted(stats.pairs_ndisasm.items(), key=lambda kv: -kv[1]))
+    for d in decoders:
+        if stats.pairs[d.name]:
+            print("\n%s/%s mnemonic pairs seen in disagreements:" % (dasm, d.name),
+                  sorted(stats.pairs[d.name].items(), key=lambda kv: -kv[1]))
 
-    print("\n80186-only encodings inside decoded code:")
-    for (op, mnem), n in sorted(stats.only186.items()):
-        print("  %-4s %-8s %d" % (op, mnem, n))
+    if args.arch == "x86":
+        print("\n80186-only encodings inside decoded code:")
+        for (op, mnem), n in sorted(stats.only186.items()):
+            print("  %-4s %-8s %d" % (op, mnem, n))
 
     if stats.failed():
         print("\nFAIL: cross-verification found disagreements or desyncs "
               "(see addresses above)")
         return 1
-    print("\nOK: dasmx86, capstone and ndisasm agree on every instruction "
-          "in every region; zero skips, zero extras")
+    print("\nOK: %s and %s agree on every instruction in every region; "
+          "zero skips, zero extras"
+          % (dasm, " and ".join(d.name for d in decoders)))
     return 0
 
 
