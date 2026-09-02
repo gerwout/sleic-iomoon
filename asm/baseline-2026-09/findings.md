@@ -1064,6 +1064,18 @@ Adjacent fact, same mechanism: the **language prompt** at boot is
 or `0x46` (option B, offsets `0x06/0x08/0x0A`). The Z80's `0xED` handler
 `2BEB` reads **port `0x04` bit 5** to choose.
 
+**But that prompt is one *use* of `0x45`, not its definition — do not
+special-case the code.** `0x45` also reaches the ordinary switch-code shadow
+`413C:00D6` and is dispatched there like any other event, at five sites:
+`D7B2E`, `DC063`, `DC08E`, `DC0B5`, `DC0EE` (each `MOV AL, ES:B[000D6] / CBW
+/ CMP AX, 00045`; `DC05E` tests `0x40` on the same byte immediately before).
+So a driver must deliver `0x45` through the normal J1 path (F5, F6) and let
+the firmware decide what it means in the current state — routing it only to
+`sub_D5D8D`, or reserving it as a "prompt reply", breaks every one of those
+five dispatch sites. The same holds for `0x46` and `0x47`: they are event
+codes the Z80 sends, and the prompt and the boot handshake are two of the
+states that happen to be listening for them.
+
 **Confidence:** confirmed.
 
 **Disposition:** hypothesis **answered**. The brief left "what opens the
@@ -1079,25 +1091,34 @@ F4.
 
 ## What changed
 
-**Rejected (2):** F4 (the marker byte stream), and within F13 the `0xA0200`
-bit-3 frame strobe and the bit inversion.
+**Counting basis.** Three facts — F2, F13 and F14 — have **split
+dispositions**, because the prior claim was right about one thing and wrong
+about another. They are counted **per hypothesis half** and dual-listed
+below, so a split fact appears under both of its halves. 14 facts therefore
+produce **17 disposition entries**.
 
-**Corrected (6):** F2 (PCS0 *bits 0-2* bank ROM2 pages 0-6 into segment
-`6000`; the bits-4/5-over-segment-0000 form of the hypothesis is rejected),
-F3 (NMI is the byte handler, not the DMD handler),
-F7 (ports `0x82`/`0x83`/`0x84` roles swapped relative to the old driver;
-16 driver bits not 18 solenoids), F10 (NVRAM is the segment-`5040` window),
-F12 (`4000:1158` is the Z80 command queue), F13 (strobe/inversion above).
+| disposition | entries | n |
+|---|---|---|
+| **confirmed** | F1; F5 (`0x41496` was right); F6; F8; F9; **F13's** `7000:0000`/`0200` two-plane layout and plane-0-as-MSB weighting | 6 |
+| **corrected** | F3 (NMI is the inbound-byte handler, not the DMD handler); F7 (ports `0x82`/`0x83`/`0x84` roles swapped relative to the old driver; 16 driver bits, not 18 solenoids); F10 (NVRAM is the segment-`5040` window); F12 (`4000:1158` is the Z80 command queue); **F2's** banking half — PCS0 *bits 0-2* page ROM2 into segment `6000`, so the intuition "PCS0 banks a graphics ROM" was right | 5 |
+| **rejected** | F4 (the marker byte stream); **F2's** *bits 4/5 over segment `0000`* form — segment `0000` is not banked at all, bits 3/4 gate the NVRAM window and bit 5 is `/OKCS`; **F13's** `0xA0200` bit-3 frame strobe and the bit inversion; **F14's** earlier project guesses (`0x3F` = select, Bike-Race-style scroll/select, `0x33` opens the menu, menu paced by PIC markers) | 4 |
+| **no prior hypothesis to adjudicate** | F11 (credit/coin entry points); **F14's** own open question, answered: code `0x3F` opens the menu | 2 |
 
-**Confirmed (6):** F1, F5 (`0x41496` was right), F6, F8, F9, F14.
+Cross-check: 6 + 5 + 4 + 2 = 17 entries over 14 facts, with F2, F13 and F14
+each contributing two. Every per-fact *Disposition* line above agrees with
+the row it appears in.
 
-**Open, and stated as open:** the INT0 source and rate (F3 — everything
-time-based hangs off it; a recommended-not-confirmed starting value is
-given); the *bit order* of the PCS0 bits-0-2 page selector (F2 — the window
-and the seven pages are confirmed, the A16-A18 wiring is inferred); whether
-the Z80's two outbound strobes reach one 80188 latch (F6); the OKI latch
-bit-to-pin mapping (F9); the credit-balance NVRAM cell (F11); the physical
-identity of each switch code (F5); the OKI duration-table extent (F9).
+**Open, and stated as open — 6 facts carry gaps, 7 clauses (F9 has two):**
+
+| # | fact | gap |
+|---|---|---|
+| 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given |
+| 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred |
+| 3 | F5 | the physical switch behind each code (the codes and matrix positions are exact) |
+| 4 | F6 | whether the Z80's two outbound strobes reach one 80188 latch |
+| 5 | F9 | the OKI latch bit-to-pin mapping |
+| 6 | F9 | the OKI duration-table extent past sample ~28 |
+| 7 | F11 | the credit-*balance* NVRAM cell (audits and adjustments are identified) |
 
 ---
 
