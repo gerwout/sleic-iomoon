@@ -105,9 +105,12 @@ The IO Moon supports operator-configurable settings stored in EEPROM. The config
 Configuration data includes pricing, game settings (balls per game, tilt sensitivity), language selection, and high score thresholds.
 
 The **display language** is a single binary byte: `[4000:1001] == 5` renders Spanish,
-any other value (firmware default `0x04`) renders English. It is seeded once per
-main-loop cycle from NVRAM `5040:01BF` at `D2F2E → D2F3B`, **not** from the country
-DIP (that path is dead code in V1.3). See
+any other value renders English. It is read from NVRAM `5040:01BF` at `D2F2E → D2F3B`,
+but that is not where it originates: boot_init re-derives the country from the SW40 DIP
+on every boot (`sub_D5A8B` → Z80 command `0xF9` → `D5CA3`-`D5CC2`) and at `D664D`
+**overwrites** NVRAM `0x1BF` and `[4000:1001]` when the DIP disagrees. So the country
+DIP does drive the language — the earlier "dead code" reading was a segment-resolution
+error, corrected 2026-09-03. See
 [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
 
 ---

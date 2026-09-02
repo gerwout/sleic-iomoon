@@ -110,72 +110,83 @@ via the NVRAM byte-**write** accessor `D000:04A9` (e.g. callers at `D6619`/`D666
 
 ---
 
-## B. The country DIP → language path is DEAD CODE in V1.3
+## B. The country DIP → language path is LIVE (corrected 2026-09-03)
+
+> **This section previously concluded the country→language path was dead code. That was
+> wrong, and the error was a segment resolution.** The indexed jump at `D5CC2` is
+> `JMP CS:W[BX + 2DE1h]`, and the routine it sits in is in segment **`D2F2`**, not
+> `D000` — every far call in it targets `0D2F2:xxxxx`. The table is therefore at
+> `D2F20 + 0x2DE1` = **`D5D01`**, not at file `0x52DE1`. Read at `D5D01` it is exactly
+> the country block, and `sub_D5A8B` has two callers, so nothing about the path is
+> unreachable. The driver **does** emulate the real DIP → country → NVRAM → language
+> chain, and must: it is what the firmware runs on every boot.
 
 The hardware has a country DIP (SW40 SW2–SW4; see
-[`hardware_architecture.md`](hardware_architecture.md)) that, by the manual's intent,
-sets per-country coin values **and** the language. The code to do the language part
-exists but is **unreachable** in both V1.3 dumps.
+[`hardware_architecture.md`](hardware_architecture.md)) that sets per-country coin
+values **and** the language, exactly as the manual's intent says.
 
-### What the code would do (if it ran)
+### The path, end to end
 
-1. **Z80 reads the country DIP at port `0x04`** and forwards the byte over J1.
-   At Z80 `V1 3_05.bin` file offset **`0x2D9D`**:
+1. **The 80188 asks for it.** `sub_D5A8B` `D5A8B` pushes Z80 command `0xF9` and waits
+   (`sub_D5C3E`, timeout `0x190` ticks). It is called from `D6601` and `D6641`, both
+   inside the boot NVRAM block.
+
+2. **The Z80 reads the DIP and answers.** Command `0xF9` → handler `2D9D` (the Z80's
+   256-entry table at `$2000`, entry `0xF9`):
 
    ```asm
-   in   a, (04h)        ; DB 04   — read country DIP (SW40 SW2-4)
-   or   0F0h            ; F6 F0   — force top nibble high
-   ...
+   2D9D  DB 04        in   a,(04h)     ; port 0x04 — SW40
+   2D9F  F6 F0        or   a,0F0h      ; tag it as the DIP report
+   2DA1  32 FC C0     ld   ($C0FC),a
+   2DA4  C3 16 01     jp   host_send_c0fc
    ```
 
-   (Verified: the byte pattern `DB 04 F6 F0` occurs at exactly file offset `0x2D9D`.)
-
-2. **The 80188 masks and dispatches it.** At `D5CAC` (file `0x55CAC`):
+3. **The 80188 masks and dispatches it.** In `sub_D5C3E`, after the byte is dequeued:
 
    ```asm
+   D5CA3  cmp  byte [0006h], 0F0h   ; a byte >= 0xF0 is the DIP report
+   D5CA8  jnb  D5CAC
    D5CAC  mov  al, [0006h]
-   D5CAF  and  al, 0Eh           ; 24 0E  — keep country bits
-   D5CB1  mov  [0006h], al
-   D5CB4  mov  ah, 0
+   D5CAF  and  al, 0Eh              ; keep SW2-SW4
    D5CB6  sub  ax, 2
-   D5CB9  mov  bx, ax
-   D5CBB  cmp  bx, 0Ch
-   D5CBE  ja   D5CF8
-   D5CC0  shl  bx, 1
-   D5CC2  jmp  word [cs:bx+2DE1h]   ; 2E FF A7 E1 2D — indexed dispatch
+   D5CBB  cmp  bx, 0Ch / ja D5CF8   ; a nibble of 0 goes to country 0
+   D5CC2  jmp  word [cs:bx+2DE1h]   ; CS = D2F2 -> the table at D5D01
    ```
 
-3. **The country jump-table block at `D5CC7`** (file `0x55CC7`) would set
-   `[4000:0020] = 1..7`, one value per country (verified — `mov byte [0020h], 1`,
-   `…,2`, `…,3`, `…,4`, `…,5`, `…,6`, …), which is the value that later propagates to
-   the language byte via NVRAM `01BF`.
+   The table at `D5D01` is 13 words: `2DA7 2DD8 2DAE 2DD8 2DB5 2DD8 2DBC 2DD8 2DC3
+   2DD8 2DCA 2DD8 2DD1`. With `CS = D2F2` those resolve to `D5CC7`, `D5CF8`, `D5CCE`,
+   `D5CF8`, `D5CD5`, … — the **country setters themselves**, on the even indices, with
+   `D5CF8` (country 0) filling the odd ones. So `country = (port04 >> 1) & 7`, written
+   to `[4130:0020]`.
 
-### Why it never runs
+4. **It is then used twice.** `sub_D69CC` `D69CC` applies that country's coin preset
+   (one of eight, `D6D36`, `D6DDF` … `D7204`) and `sub_D6BAE` saves it to NVRAM
+   `0x1C4`-`0x1CF`. And at `D664D` boot_init compares the DIP-derived country with the
+   stored NVRAM `0x1BF`; **if they differ the DIP wins** — NVRAM `0x1BF` and
+   `[4000:1001]` are rewritten and the preset re-applied.
 
-The indexed jump at `D5CC2` reads its targets from the dispatch table at **`CS:2DE1`**
-(file `0x52DE1`). That table has been **rewired to game-event handler offsets** — its
-word entries point at routines like `D000:EE25`, `D000:A404`, etc., **not** at the
-country block `D5CC7`. There is no caller or pointer anywhere that reaches `D5CAC` /
-`D5CC7`, so the entire country→language path is **dead code**.
+5. **Language falls out of the same byte.** `[4000:1001] == 5` selects the Spanish
+   string and menu-record tables at `D3277` (attract variant), `D8048` (pricing
+   routine) and `DD406` (menu record table `0x00D08` instead of `0x00100`); every
+   other value gets the English ones.
 
-### Dump-diff confirmation
+### What the old analysis got right, and where it went wrong
 
-Both dumps — *1.3 IPDB latest* and *1.3 Early version* — are **byte-identical** at:
-
-- the dispatch table (file `0x52DE1`),
-- the country block (file `0x55CC2`), and
-- the `D5CAC` mask region (file `0x55CAC`).
-
-(The two ROM1 images differ elsewhere, but the dead-code language path is identical
-in both.)
+The Z80 half (`DB 04 F6 F0` at `0x2D9D`) and the mask arithmetic at `D5CAC` were read
+correctly. The dispatch table was resolved with `CS = D000` → file `0x52DE1`, which is
+unrelated data and does indeed contain what look like game-event offsets; that produced
+the "rewired" reading, and from there the "no caller reaches `D5CAC`/`D5CC7`" claim.
+Both fall away once the segment is right. The dump-diff note stands but proves nothing
+either way — both dumps are byte-identical there because the code is simply the same.
 
 ### Conclusion
 
-> **In V1.3 the country DIP has no effect on the display language.** Language is
-> purely `[4000:1001]`, seeded once from NVRAM `5040:01BF` (§A). A faithful
-> port-level country DIP does nothing on these ROMs. The PinMAME driver therefore
-> bridges its language DIP **directly to `[1001]`** rather than emulating the
-> DIP→country→NVRAM→language chain.
+> **In V1.3 the country DIP sets both the coin values and the display language.** A
+> faithful port-level country DIP is exactly what these ROMs want, and the PinMAME
+> driver implements it: port-0x04 bits 1-3 come from PinMAME DIP bank 0
+> (`iomoon_port04()` in `src/wpc/sleic.c`, DIP block `SLEIC2_COMPORTS` in `sleic.h`).
+> Bridging a "language DIP" straight to `[1001]` would be wrong — it would be
+> overwritten from the real DIP on the next boot.
 
 ---
 
@@ -368,9 +379,9 @@ All addresses spot-checked with `ndisasm` against `roms/1.3 IPDB latest/`.
 | `DA9A9` | `0x5A9A9` | a `cmp [1001],5` language branch (not menu-enter) | verified |
 | `D5CAC` | `0x55CAC` | `and 0Eh` country mask | verified |
 | `D5CC2` | `0x55CC2` | `jmp [cs:bx+2DE1]` indexed dispatch | verified |
-| `CS:2DE1` | `0x52DE1` | dispatch table — rewired to game handlers | verified |
-| `D5CC7` | `0x55CC7` | country block `[0020]=1..7` (unreachable) | verified |
-| Z80 `0x2D9D` | `0x2D9D` (Z80 ROM) | `in a,(04); or 0F0h` country DIP read | verified |
+| `CS:2DE1` (CS = `D2F2`) | flat `D5D01` = `0x55D01` | country dispatch table — the seven country setters on the even indices, `D5CF8` (country 0) on the odd ones | verified 2026-09-03 (the old row resolved CS as `D000` and read unrelated data at `0x52DE1`) |
+| `D5CC7` | `0x55CC7` | country block `[4130:0020]=1..7`, reached from the table above | verified 2026-09-03 |
+| Z80 `0x2D9D` | `0x2D9D` (Z80 ROM) | `in a,(04); or 0F0h` country DIP read — the handler for 80188 command `0xF9`, requested by `sub_D5A8B` | verified |
 | `D016D` / `D018C` | `0x5016D` / `0x5018C` | NMI `dmd_vblank_isr`, reads `A000:0100` | verified |
 | `D74FF` / `D750A` | `0x574FF` / `0x5750A` | freshness gate (`[1147]==0`) | verified |
 | `D75CD` | `0x575CD` | ring → `last_switch_code` consumer | verified |

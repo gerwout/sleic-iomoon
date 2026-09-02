@@ -447,8 +447,8 @@ Code map, read out of the Z80 ROM:
 |---|---|---|
 | switch matrix, 6 columns x 8 rows = **48 inputs** | `0x0A-0x31` (columns 0-4, 40 routines at `316D` step 8) and `0x34-0x3B` (column 5, 8 routines at `32AD` step 8) | per-bit routines dispatched by `sw_col0_changed` `2FE7` .. `sw_col5_changed` `312C` |
 | port `0x03` bits 0 / 1 / 4 | `0x3E` / `0x3F` / `0x40` | `sub_125B` / `sub_1278` / `sub_1285`, dispatched by `sub_1242` |
-| port `0x03` further handlers | `0x41`, `0x42` | `12D0`, `1340` |
-| port `0x03` bit 5, auto-repeating | `0x32` (normal) / `0x33` (test mode) | `0D3C` / `0D44`, gated on the `C046` debounce counter and the `C068` test flag |
+| port `0x03` bits 3 / 2, the **flipper buttons** | `0x41`, `0x42` | `sub_1292` `12D0` / `sub_12D8` `1340` — but only in TEST mode: both are gated on `C068`/`C069` and in play they call `sub_05C7` / `sub_05ED`, which fire the port-`0x85` coil pairs and send nothing |
+| port `0x03` bit 5, the **coin mechanism** (F11), ONE code per press | `0x32` (normal) / `0x33` (test mode) | `0D3C` / `0D44`, debounced by the `C046` counter and selected by the `C068` test flag |
 | direct-input scan, 16-way on port `0x87` low nibble + port `0x01` bit 5, plus the `C060` follow-up bits | `0x50-0x79` (42-byte table at `1218`) | `direct_input_scan` `0DBF` |
 | command-table re-sends of matrix codes | `0x38`, `0x39`, `0x3A` (`2A90`, `2AA0`, `2AA8`), `0x3B` (`2AEB`), **`0x3C` (`2AF3`), `0x3D` (`2AFB`)** | the switch-test handlers reached by 80188 commands `0xE9`/`0xEA` |
 | Z80 status/liveness replies | `0x43`, `0x44`, `0x45`, `0x46`, `0x47`, `0x48`, `0x49`, `0x4A`, `0x7A`, and `0xF0`+nibble | scattered command-table handlers |
@@ -475,6 +475,25 @@ sw_col0_changed 2FE7:
 A programmatic sweep of the whole Z80 listing for the byte pattern
 `3E nn / 32 FC C0` finds **73 sites** and no others; the 48 matrix routines
 and 5 port-`0x03` routines above are 53 of them.
+
+**Correction (2026-09-03): `0x32` does not auto-repeat while the input is held.**
+The earlier row said "auto-repeating", which a driver would model as a pulse
+train from one press. `sub_0D15` `0D15` does debounce port-`0x03` bit 5 for
+`0x32` ticks of `C046` and then send one `0x32`, but on the way out it calls
+`sub_33FA` `33FA`, which ORs the bit into **both** `C0F8` and `C0E3`:
+
+```
+sub_33FA:  HL=C0F8 / OR (HL) / LD (HL),A     ; the mask
+           HL=C0E3 / OR (HL) / LD (HL),A     ; the debounced shadow
+input_port03_read 2E54:  A = IN($03) / (C0F7) = ~A / A |= (C0F8) / (C0E3) = A
+sub_3335 3371:           A = (C0F7) / (C0F8) &= A     ; mask cleared on RELEASE
+```
+
+so a still-held button reads as released and no second code follows; the mask
+clears only when the contact physically opens. **One press, one code** —
+measured directly in emulation on 2026-09-03: the coin input held for 400
+frames produced exactly one `0x32` on J1. What one pulse is *worth* is the F11
+pricing table's business, not the Z80's.
 
 The 80188 side, `sub_D7453` — the general dequeue-and-shadow routine:
 ```
@@ -516,8 +535,11 @@ command `0xED` (F4), `0x45` is tested against this shadow at `D7B2E`,
 normal J1 path like any other code and must not treat it as reserved.
 
 **Confidence:** confirmed. The *physical* switch behind each code is not
-established — that needs the wiring diagram or the service manual's switch
-list; the codes and their matrix positions are exact.
+established for the 48 matrix positions — that needs the wiring diagram or the
+service manual's switch list; the codes and their matrix positions are exact.
+The six **cabinet** codes were identified on 2026-09-03 from what consumes
+them (F11, F14): `0x32` the coin mechanism, `0x3E` tilt, `0x3F` test /
+service-menu, `0x40` START, `0x41`/`0x42` the flipper buttons.
 
 **Disposition:** hypothesis **confirmed**. `0x41496` is right, and is now
 pinned to its symbolic form `413C:00D6` with the routine that writes it. Note
@@ -963,16 +985,40 @@ compares it with the stored value and on a difference rewrites NVRAM `0x1BF`
 and re-runs `sub_D69CC`, which applies that country's coin preset (one of
 eight, `D6D36`, `D6DDF` … `D7204`) and saves it to `0x1C4`-`0x1CF`. The
 service manual's SW40 table (section 7.2.2.3) has SW2-SW4 as the country code
-with per-country coin values, and two independent checks anchor its row order
-to the number: country 0 loads exactly the manual's UK column (30p/1, 50p/2,
-£1/5 = divisors 3/5/10, credits 1/2/5), and the manual's Spain row is
-SW2 OFF / SW3 ON / SW4 OFF = value 5 — the one value the ROM special-cases,
-and the only manual row with a fourth coin (500 pts), matching country 5's
-extra `00B0`/`00AC` pair. Country 5 also selects the Spanish string and
+with per-country coin values, and country 5 also selects the Spanish string and
 menu-record tables (`D3277`, `D8048`, `DD406`), so this single DIP sets the
-coinage **and** the language. Two per-country credit values differ from the
-manual by one (Spain's 200 pts: manual 8, ROM 7; Portugal's 200: manual 7,
-ROM 6) — the ROM is what runs.
+coinage **and** the language.
+
+**Which switch is the low bit** is settled by the presets, and *not* by the two
+obvious anchors. Country 0 = the manual's UK row and country 5 = its Spain row
+are both **invariant** under swapping SW2 and SW4 (`000` and `101` are
+palindromes), and so is Germany (`010`); none of the three discriminates. The
+rows that do are Italy, Netherlands, France and Belgium. Reading every preset
+out of the emulator one country at a time, with **SW2 as the low bit and
+ON = 0**:
+
+| value | divisors (pulses) | credits | manual row | verdict |
+|---|---|---|---|---|
+| 0 | 3 / 5 / 10 | 1 / 2 / 5 | United Kingdom | exact |
+| 1 | 2 / 5 / 10 | 1 / 3 / 7 | France | **does not match** (manual 3/5/10, 1/2/5) |
+| 2 | 1 / 2 / 5 | 1 / 3 / 8 | Germany | exact |
+| 3 | 1 / 2 / 4 | 1 / 3 / 7 | Italy | exact |
+| 4 | 2 / 5 / 10 | 1 / 3 / 7 | Netherlands | exact |
+| 5 | 2 / 4 / 8 / 20 | 1 / 3 / 7 / 18 | Spain | coins exact, 3rd credit 7 vs 8 |
+| 6 | 2 / 4 / 10 | 1 / 3 / 8 | Belgium | **does not match** (manual 2/5/10, 1/3/7) |
+| 7 | 1 / 2 / 4 | 1 / 3 / 6 | Portugal | coins exact, 3rd credit 6 vs 7 |
+
+Six of the eight rows match. Swap SW2 and SW4 and three of the four
+discriminating rows break — value 3 would have to be Belgium (manual 2/5/10
+against the ROM's 1/2/4), value 4 France (3/5/10 against 2/5/10) and value 6
+Italy (1/2/4 against 2/4/10) — buying only Netherlands at value 1. That is the
+evidence for the bit order; the UK and Spain anchors are consistent with it but
+cannot establish it.
+
+So the ROM and the manual disagree in **four** places, not two: values 1 and 6
+carry coin values that are not the manual's at all (value 1 is a byte-for-byte
+duplicate of value 4's Netherlands preset), and values 5 and 7 differ by one
+credit on their largest coin. The ROM is what runs.
 
 **Confidence:** confirmed for the listed entry points and their arithmetic,
 for the credit-balance cell and the whole coin path, and for the country
@@ -1292,7 +1338,7 @@ the row it appears in.
 |---|---|---|
 | 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given, but see the 2026-09-02 emulation result in F3: 290 Hz and 145 Hz are both unservable against the handler's measured cost, the driver ships 72.5 Hz as a serviceability constant matching no candidate, and the per-plane *source* hypothesis is weakened by the same measurement |
 | 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred |
-| 3 | F5 | the physical switch behind each code (the codes and matrix positions are exact). *Partly narrowed 2026-09-03:* the cabinet codes are now identified from what consumes them — `0x32` coin mech, `0x3E` tilt, `0x3F` test, `0x40` START, `0x41`/`0x42` the flipper buttons (they fire the port-0x85 coil pairs at `sub_05C7`/`sub_05ED`). The 48 matrix positions are still open. |
+| 3 | F5 | the physical switch behind each code. *Narrowed 2026-09-03 to the 48 MATRIX positions only:* all six cabinet codes are now identified from what consumes them — `0x32` coin mech, `0x3E` tilt, `0x3F` test, `0x40` START, `0x41`/`0x42` the flipper buttons. Note `0x41`/`0x42` are emitted **only in test mode** (gated on `C068`/`C069`); in play those two bits fire the port-`0x85` coil pairs at `sub_05C7`/`sub_05ED` and send nothing. |
 | 4 | F6 | whether the Z80's two outbound strobes reach one 80188 latch |
 | 5 | F9 | the OKI latch bit-to-pin mapping |
 | 6 | F9 | the OKI duration-table extent past sample ~28 |
