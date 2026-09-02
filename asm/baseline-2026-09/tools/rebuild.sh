@@ -13,8 +13,8 @@
 #                     dispatch variables [4000:10F6]/[10F8], and a routine
 #                     prologue signature for what neither reaches
 #
-# then writes iomoon_80188.cmd / iomoon_80188.lst and cross-checks the
-# result against capstone.
+# then writes iomoon_80188.cmd / iomoon_80188.lst and cross-verifies the
+# result against capstone and ndisasm (xverify.py).
 set -e
 B=asm/baseline-2026-09
 T=$B/tools
@@ -58,4 +58,8 @@ done
 
 echo "converged after $pass passes"
 python3 $T/grow.py emit
-python3 $T/crosscheck.py
+python3 $T/xverify.py --arch x86 \
+    --regions $B/iomoon_80188.cmd \
+    --lst $B/iomoon_80188.lst \
+    --bin "roms/1.3 IPDB latest/V1 3_01.bin" \
+    --base 0x80000

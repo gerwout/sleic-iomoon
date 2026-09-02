@@ -22,7 +22,9 @@ below is justified by the instruction stream decoded in this directory.
 | `reports/regions.md` | region inventory + classification of everything not decoded as code |
 | `reports/jumptables.md` | every recovered `JMP CS:W[BX+disp]` table, with its entries |
 | `reports/186scan.md` | Task 3's 80186-opcode pre-scan |
+| `reports/xverify_80188.md` | dasmx86 vs capstone vs ndisasm cross-verification: alias table, disagreement resolutions, final stats |
 | `tools/` | the scripts that drive dasmx86 and generate the above |
+| `tools/xverify.py` | the three-way (dasmx86/capstone/ndisasm) cross-verifier behind `reports/xverify_80188.md` |
 | `tools/dasmxx-x86-fixes.patch` | the dasmxx changes this baseline depends on |
 
 ## Address arithmetic
@@ -316,21 +318,37 @@ until the exit status was checked.
 
 ## Verification
 
-`tools/crosscheck.py` re-disassembles every decoded region with capstone
-(16-bit mode) and compares instruction boundaries first, then mnemonics:
+`tools/xverify.py` re-disassembles every decoded region with **two**
+independent decoders -- capstone (16-bit mode) and `ndisasm -b16` -- and
+compares each against the committed dasmx86 listing on (address, length,
+canonical mnemonic), with every skip/extra/disagreement counted and named
+rather than silently dropped:
 
 ```
-regions: 83   code bytes: 88177 (33.6% of the 262144-byte UMCS window)
+python3 asm/baseline-2026-09/tools/xverify.py --arch x86 \
+    --regions asm/baseline-2026-09/iomoon_80188.cmd \
+    --lst asm/baseline-2026-09/iomoon_80188.lst \
+    --bin "roms/1.3 IPDB latest/V1 3_01.bin" \
+    --base 0x80000
+```
+
+```
+regions: 83   code bytes: 88177
 instructions compared: 29810
-length disagreements : 0
-mnemonic differences : 0
+dasmx86 addr missing from capstone/ndisasm decode: 0 / 0
+capstone/ndisasm addr with no dasmx86 counterpart: 0 / 0
+dasmx86 vs capstone/ndisasm disagreements: 0 / 0
+excluded from the ndisasm comparison (confirmed ndisasm 3.01 decoder gap): 19
 ```
 
-Zero length disagreements is the load-bearing number: it means dasmx86 and
-capstone agree on every instruction boundary across the whole region set,
-so neither has desynchronised anywhere. (The only spelling differences found
-were capstone printing `98`/`99` with their 32-bit names `cwde`/`cdq`, and
-the usual `retf`/`lcall`/`ja` aliases; these are listed in the script.)
+Zero skips and zero disagreements is the load-bearing result: it means all
+three decoders agree on every instruction boundary and mnemonic across the
+whole region set, so none of them has desynchronised anywhere. The 19
+exclusions are a confirmed ndisasm 3.01 defect (it cannot decode the
+register-operand form of `FF /2`/`FF /4`, i.e. `call`/`jmp` through a
+register), not a baseline question -- dasmx86 and capstone agree on all 19.
+Full alias table, the ndisasm-gap investigation and final stats are in
+`reports/xverify_80188.md`.
 
 Further checks:
 
