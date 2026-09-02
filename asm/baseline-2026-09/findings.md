@@ -286,8 +286,50 @@ Everything the 80188 paces off INT0 — DMD refresh, FM tempo, and the
 outbound-queue drain rate — scales with this choice, so the driver must hold
 it in **one named constant** and label it as unmeasured.
 
+**Emulation result, added 2026-09-02 by the PinMAME interrupt task — read
+this before re-deriving 290 Hz.** Both PIC rates were tried in the driver and
+**neither is servable**, because of what the handler at `D000:0343` costs.
+Its composite branch `sub_F08A5` alone is two 512-iteration byte loops of 7–9
+instructions each — about **65 000 clocks, 6.5 ms at 10 MHz** — and its blit
+branch `sub_F08EB` is a 512-iteration loop plus the animation dispatch;
+measured over a headless boot the handler averages **7.5 ms** (timer 0's, for
+comparison, is 28 µs). A 290 Hz period is 3.45 ms and a 145 Hz period 6.9 ms,
+so neither contains it. The failure is not graceful: INT0 outranks timer 0 on
+the controller (F1: priority 0 against 1), so a permanently-pending INT0
+**starves the timer outright** — at 290 Hz timer 0 measures **0 interrupts
+per second** and the firmware never leaves its frame-delay loop at `D5611`.
+Measured sweep (PinMAME, headless, 400–800 frames):
+
+| INT0 setting | INT0 served | timer 0 served | in-ISR | firmware |
+|---|---|---|---|---|
+| 290 Hz (this fact's recommendation) | 124.8/s | **0.0/s** | 93.8% | stuck in the `D5611` delay loop |
+| 145 Hz | 116.7/s | 34.0/s | 87.5% | reaches the `D2F59` J1 wait, timers 3× slow |
+| 100 Hz | 99.9/s | 65.8/s | 75.0% | reaches `D2F59`, timers 1.5× slow |
+| **72.5 Hz (shipped)** | **72.5/s** | **92.1/s** | 54.4% | reaches `D2F59`, timers ~7% slow |
+| 60 Hz | 59.9/s | 93.5/s | 45.0% | reaches `D2F59` |
+
+The driver therefore ships `IOMOON_INT0_HZ = 72.5`, which is a
+**serviceability constant matching no candidate in the table above** — it is
+not a hardware derivation, and in particular it is *not* "145 Hz ÷ 2 planes":
+a per-plane pulse multiplies the frame rate, which is why the per-plane
+candidate is 290 Hz. It is simply the highest rate at which both handlers
+stay served.
+
+**What this does to the source hypothesis.** If the handler costs anything
+like 7 ms on silicon too — the instruction count says it should, since a real
+80186 needs the same clocks and the 80188's 8-bit bus needs more — then no
+~290 Hz line can be driving it, so the measurement **weakens the per-plane
+source hypothesis itself**, not merely its rate. It does not refute it: an
+emulator's cycle model is not a scope, and the argument runs through the
+handler's cost rather than through the PIC. **F3's gap stays open**; this is
+an emulation-side result, not a hardware confirmation. Sweep logs:
+`scratchpad/regression/task9-*.log` and `t9-sweep*.log` of that session,
+reproducible with the driver's `SLEIC_PROBE_INT0HZ` / `SLEIC_PROBE_IRQ`.
+
 **Confidence:** confirmed for the vectors, handlers and their bodies;
-**inferred/unresolved** for the INT0 source and rate.
+**inferred/unresolved** for the INT0 source and rate — with the emulation
+result above narrowing the plausible rate to well under ~130 Hz for as long
+as the handler-cost argument holds.
 
 **Disposition:** hypothesis **corrected**. "NMI type 2 = DMD frame handler"
 is wrong — vector 02 is the *inbound byte* handler and touches no pixel data;
@@ -1112,7 +1154,7 @@ the row it appears in.
 
 | # | fact | gap |
 |---|---|---|
-| 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given |
+| 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given, but see the 2026-09-02 emulation result in F3: 290 Hz and 145 Hz are both unservable against the handler's measured cost, the driver ships 72.5 Hz as a serviceability constant matching no candidate, and the per-plane *source* hypothesis is weakened by the same measurement |
 | 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred |
 | 3 | F5 | the physical switch behind each code (the codes and matrix positions are exact) |
 | 4 | F6 | whether the Z80's two outbound strobes reach one 80188 latch |
