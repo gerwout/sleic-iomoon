@@ -909,21 +909,86 @@ sub_D8154 D8154:
     D81AE: 68 AB 00 / CALL qout_push                     ; Z80 command 0xAB
 ```
 
-**A credit *counter* distinct from these audits was not isolated.** The
-adjustment at NVRAM `0x3C` (range 1..9) and the audit dwords at
-`0x118`/`0x11C` are identified by their arithmetic; which NVRAM cell holds
-the *current credit balance* would need the coin-switch code traced through
-the `413C:00D6` dispatch, which is inside the 24 KiB segment-`DD25` module
-this baseline decodes but does not yet name. Stated as a gap rather than
-guessed.
+### The credit balance and the coin path (added 2026-09-03, Task 16)
 
-**Confidence:** confirmed for the listed entry points and their arithmetic;
-the credit-balance cell is **not established**.
+**The credit balance is the F10 triplicated NVRAM byte `0x83`/`0x116`/`0x20C`,
+with a sub-credit remainder in `0x84`/`0x117`/`0x20D`, and `413C:00D4` is a
+volatile CACHE of their sum.** The gap this fact recorded is closed. It was
+not found through the `413C:00D6` dispatch, because the coin does not go
+through it: the coin code is `0x32`, and `0x32` is the one code the NMI does
+not queue.
+
+```
+isr_type02_nmi D016D:
+    D018C: 26 A0 00 01        MOV AL, ES:B[00100]   ; the PCS2 inbound latch
+    D0190: 3C 32              CMP AL, 032
+    D0192: 75 07              JNE 0D019B            ; anything else -> the FIFO
+    D0194: FE 06 44 11        INC 01144             ; 0x32 -> the coin PULSE counter
+```
+
+The chain from there, every step confirmed:
+
+| step | where |
+|---|---|
+| pulse counter `4000:1144`, incremented by the NMI, tested first by every dequeue routine (`D7471`, `D751D`, `D7C50`, `D7DDD`, `D7F77`) | `D0194` |
+| `[1144]` folded into the pulse accumulator `413C:00D5`, then `[1144]` cleared, then the per-country pricing routine called — `sub_DCD9E` if the country byte `4000:1001` is 5, else `sub_DD03D` | `sub_D800A` `D800A` |
+| pricing: divide the accumulated pulses by each coin value in turn (`413C:00AF`, then `00AE`, then `00AD` — and `00B0` on the country-5 path), multiply by that coin's credit value (`00AB`, `00AA`, `00A9`; `00AC` on the country-5 path), keep the remainder in `00D5` | `sub_DD03D` `DD03D` / `sub_DCD9E` `DCD9E` |
+| bank it: add to the sub-credit byte `0x84`, play OKI sound `0x0A`, and when `0x84` reaches the threshold add it into the credit byte `0x83`, zero `0x84` and refresh `00D4` | `sub_DD1C1` `DD1C1` / `sub_DCFAB` `DCFAB` |
+| the pricing table itself, loaded at boot from NVRAM `0x1C4`-`0x1CF` into `413C:00A5`-`00B0` | `sub_D6A36` `D6A36`, saved back by `sub_D6BAE` `D6BAE` |
+
+`00D4` is only ever a cache, and the firmware keeps it as **`0x83 + 0x84` mod
+256**: on boot `sub_D66AB` consolidates `0x83 += 0x84`, zeroes `0x84` and sets
+`00D4 = 0x83` (`D66CE`); the credit refresh `sub_DCD29` recomputes
+`00D4 = 0x83 + 0x84` and splits it into the display digits `00D2`/`00D3`; and
+`sub_D8066`'s start path decrements `0x83` alone (`D80D6`) and then re-adds
+`0x84` (`D80EB`). Decrementing a zero `0x83` to `0xFF` is therefore correct
+and not an underflow — with `0x84 = 3` the pair still reads 2. A driver must
+persist **all six bytes**: the F10 majority compare zeroes all three copies on
+mismatch, so persisting one of a triple loses the balance at the next boot.
+
+Other credit writers, all reaching the same triple: `sub_D4FDC` `D4FDC`
+(award n credits, also bumps audit dword `0x12C`), the replay-score check
+`sub_D34F4` `D34F4` (`D3658 INC 00D4` then `nvstore_write_triple_83`), the
+match award reached from `sub_D4CF4` `D4CF4`, `sub_D81B9` `D81B9` (`D821C`),
+and the fault handlers `sub_DA7EB`/`sub_DA879` which add the player count back.
+The 99 cap is `sub_DCD29`'s `DCD34: CMP ES:000D4, 063`.
+
+**The country byte drives all of it, and it is a DIP switch.** `4000:1001` is
+read from NVRAM `0x1BF` at `D2F3B`, but `boot_init` re-derives it from the
+hardware on every boot and lets the hardware win: `sub_D5A8B` `D5A8B` pushes
+Z80 command `0xF9`, the Z80's handler `2D9D` answers `IN A,($04) | 0xF0`, and
+`D5CA3`-`D5CC2` turns bits 1-3 of that byte into a country number 0..7
+(`AND 0x0E / SUB 2`, seven-way table at `D5D01`) in `[4130:0020]`; `D664D`
+compares it with the stored value and on a difference rewrites NVRAM `0x1BF`
+and re-runs `sub_D69CC`, which applies that country's coin preset (one of
+eight, `D6D36`, `D6DDF` … `D7204`) and saves it to `0x1C4`-`0x1CF`. The
+service manual's SW40 table (section 7.2.2.3) has SW2-SW4 as the country code
+with per-country coin values, and two independent checks anchor its row order
+to the number: country 0 loads exactly the manual's UK column (30p/1, 50p/2,
+£1/5 = divisors 3/5/10, credits 1/2/5), and the manual's Spain row is
+SW2 OFF / SW3 ON / SW4 OFF = value 5 — the one value the ROM special-cases,
+and the only manual row with a fourth coin (500 pts), matching country 5's
+extra `00B0`/`00AC` pair. Country 5 also selects the Spanish string and
+menu-record tables (`D3277`, `D8048`, `DD406`), so this single DIP sets the
+coinage **and** the language. Two per-country credit values differ from the
+manual by one (Spain's 200 pts: manual 8, ROM 7; Portugal's 200: manual 7,
+ROM 6) — the ROM is what runs.
+
+**Confidence:** confirmed for the listed entry points and their arithmetic,
+for the credit-balance cell and the whole coin path, and for the country
+switch. Verified in emulation on 2026-09-03: eight coin presses award 12
+credits under country 7, the balance survives a power cycle through the
+NVRAM triple, START takes one and moves the mode 2 → 3, and no unprompted
+credit appears in a 6000-frame idle soak.
 
 **Disposition:** no prior hypothesis existed to adjudicate. For the
 credit-runaway regression, `sub_D8154` (games played) and `sub_DE736`
 (adjustments) are the observable hooks; a runaway will show as unbounded
-growth of NVRAM `0x118`/`0x11C`.
+growth of NVRAM `0x118`/`0x11C`. **For a driver, the one thing that must be
+right is that the coin button produces code `0x32` and not `0x3E`:** `0x3E`
+is the tilt contact (`sub_D9EBB`, warning counter `[4134:0033]` reloaded from
+NVRAM `0x42` at every ball start, `DBE17`/`DBF7F`), and a driver that puts the
+coin there never awards a credit at all.
 
 ---
 
@@ -1150,17 +1215,18 @@ Cross-check: 6 + 5 + 4 + 2 = 17 entries over 14 facts, with F2, F13 and F14
 each contributing two. Every per-fact *Disposition* line above agrees with
 the row it appears in.
 
-**Open, and stated as open — 6 facts carry gaps, 7 clauses (F9 has two):**
+**Open, and stated as open — 5 facts carry gaps, 6 clauses (F9 has two).**
+**F11's clause was CLOSED on 2026-09-03 (Task 16) and is struck below.**
 
 | # | fact | gap |
 |---|---|---|
 | 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given, but see the 2026-09-02 emulation result in F3: 290 Hz and 145 Hz are both unservable against the handler's measured cost, the driver ships 72.5 Hz as a serviceability constant matching no candidate, and the per-plane *source* hypothesis is weakened by the same measurement |
 | 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred |
-| 3 | F5 | the physical switch behind each code (the codes and matrix positions are exact) |
+| 3 | F5 | the physical switch behind each code (the codes and matrix positions are exact). *Partly narrowed 2026-09-03:* the cabinet codes are now identified from what consumes them — `0x32` coin mech, `0x3E` tilt, `0x3F` test, `0x40` START, `0x41`/`0x42` the flipper buttons (they fire the port-0x85 coil pairs at `sub_05C7`/`sub_05ED`). The 48 matrix positions are still open. |
 | 4 | F6 | whether the Z80's two outbound strobes reach one 80188 latch |
 | 5 | F9 | the OKI latch bit-to-pin mapping |
 | 6 | F9 | the OKI duration-table extent past sample ~28 |
-| 7 | F11 | the credit-*balance* NVRAM cell (audits and adjustments are identified) |
+| ~~7~~ | ~~F11~~ | ~~the credit-*balance* NVRAM cell~~ — **closed 2026-09-03**: it is the F10 triple `0x83`/`0x116`/`0x20C` with the sub-credit remainder in `0x84`/`0x117`/`0x20D`, cached in `413C:00D4`; the coin path is code `0x32` -> `4000:1144` -> `sub_D800A` -> the per-country pricing routine. See the section added to F11. |
 
 ---
 
