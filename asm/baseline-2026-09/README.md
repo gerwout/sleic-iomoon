@@ -23,6 +23,7 @@ below is justified by the instruction stream decoded in this directory.
 | `reports/jumptables.md` | every recovered `JMP CS:W[BX+disp]` table, with its entries |
 | `reports/186scan.md` | Task 3's 80186-opcode pre-scan |
 | `tools/` | the scripts that drive dasmx86 and generate the above |
+| `tools/dasmxx-x86-fixes.patch` | the dasmxx changes this baseline depends on |
 
 ## Address arithmetic
 
@@ -204,10 +205,20 @@ cd sleic-iomoon
 
 ## dasmx86 patches this baseline depends on
 
-`~/iomoon/tools/dasmxx` is a separate checkout outside this repository; the
-patches live there uncommitted (as in Tasks 2 and 3). Task 3 added the
-80186 opcode extensions. This task found and fixed four more defects, each
-verified against capstone and against dasmxx's own x86 test suite:
+`~/iomoon/tools/dasmxx` is a separate checkout outside this repository, so
+the changes are not committed there. They are captured here as
+**`tools/dasmxx-x86-fixes.patch`**, which applies cleanly to upstream commit
+`23af0f649268c17644fa1ab9ae0594e93b67721e`:
+
+```bash
+git -C ~/iomoon/tools/dasmxx apply \
+    asm/baseline-2026-09/tools/dasmxx-x86-fixes.patch
+cd ~/iomoon/tools/dasmxx/src && make dasmx86
+```
+
+Task 3 added the 80186 opcode extensions. This task found and fixed five
+more defects, each verified against capstone and against dasmxx's own x86
+test suite:
 
 1. **Near branch targets escaped the segment.** `disp8`/`disp16` computed
    `pc + disp` in a flat address space, so any backwards branch produced a
