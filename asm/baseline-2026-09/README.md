@@ -368,7 +368,9 @@ Further checks:
 
 Task 3 could confirm only some of the 186-only encodings and left the rest
 for "when there is a region map". There now is one; inside the 29810
-decoded instructions:
+decoded instructions -- and `xverify.py` recounts this table on every run
+(not just once), so a future rebuild that changes which 80186-only
+encodings occur is caught automatically instead of silently going stale:
 
 | encoding | count |
 |---|---|

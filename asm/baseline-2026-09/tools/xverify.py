@@ -156,9 +156,26 @@ def parse_cmd_regions(cmd_path):
 # dasmxx listing parsing
 # ---------------------------------------------------------------------------
 
-# Matches a dasmx86 listing instruction line, e.g.:
-#     D0000:    FA                         CLI
-#     D0022:    9A B9 00 00 D0             CALL     0D000:000B9 {boot_pcs_and_queue_init}
+# dasmx86 prints two different line shapes at this indentation:
+#
+#   an instruction row:   D0022:    9A B9 00 00 D0             CALL     0D000:000B9 {boot_pcs_and_queue_init}
+#   a data byte-dump row: C0000:    DB      FF, FF, FF, ...      ................
+#
+# They are NOT safely distinguishable by running one shared regex and then
+# checking "is the mnemonic field == DB": `D` and `B` are themselves valid
+# hex digits, so LST_LINE_RE's byte-list group `(?:[0-9A-F]{2} )+` happily
+# eats "DB " as if it were one raw instruction byte, leaving group(3) to
+# land on the pseudo-op's first *value* (e.g. "FF,") instead of on the
+# literal string "DB" -- so `mnem == "DB"` never fires. This was a real,
+# confirmed bug (see reports/xverify_80188.md): harmless only because every
+# DB row in this baseline sits inside a 'b'-opened span that
+# parse_cmd_regions() already excludes from the regions list, so the
+# mis-parsed entries just never get looked up. Fixed by recognising the
+# byte-dump row's own distinct, unambiguous shape (comma-separated values,
+# not dasm86's usual single-space-separated instruction byte list) BEFORE
+# ever trying the instruction regex, instead of trying to tell the two
+# apart after the fact.
+LST_DB_LINE_RE = re.compile(r"^\s{4}[0-9A-F]+:\s{4}DB\s")
 LST_LINE_RE = re.compile(
     r"^\s{4}([0-9A-F]+):\s{4}((?:[0-9A-F]{2} )+)\s*(\S+)\s*(.*?)\s*$")
 
@@ -169,12 +186,15 @@ def parse_lst(lst_path):
     with open(lst_path) as fh:
         for lineno, raw in enumerate(fh, 1):
             line = raw.rstrip("\n")
+            if LST_DB_LINE_RE.match(line):
+                continue  # byte-dump / data line, not an instruction
             m = LST_LINE_RE.match(line)
             if not m:
                 continue
             mnem = m.group(3)
             if mnem == "DB":
-                continue  # byte-dump / data line, not an instruction
+                continue  # defense in depth; LST_DB_LINE_RE above should
+                          # already have caught every real DB row
             addr = int(m.group(1), 16)
             byts = m.group(2).split()
             ops = m.group(4)
@@ -255,6 +275,18 @@ def is_ndisasm_known_gap(byts):
     return (modrm & 0xC0) == 0xC0 and ((modrm >> 3) & 7) in (2, 4)
 
 
+# First opcode byte of every 80186-only encoding (absent on the plain
+# 8086/8088 the 8086-era x86 instruction set otherwise targets). Ported
+# verbatim from this baseline's earlier crosscheck.py, which counted these
+# per full rebuild so a future baseline drift (a region gaining/losing an
+# 80186-only instruction) would be caught automatically rather than only
+# once, by hand, in reports/186scan.md (Task 3's one-time snapshot). Folding
+# crosscheck.py into xverify.py without carrying this over would have quietly
+# dropped that self-check from tools/rebuild.sh's pipeline.
+ONLY186_FIRST = {0x60, 0x61, 0x62, 0x68, 0x69, 0x6A, 0x6B,
+                 0x6C, 0x6D, 0x6E, 0x6F, 0xC0, 0xC1, 0xC8, 0xC9}
+
+
 # ---------------------------------------------------------------------------
 # Three-way comparison
 # ---------------------------------------------------------------------------
@@ -271,6 +303,7 @@ class Stats:
         self.ndisasm_known_gap = []  # addr excluded from the ndisasm comparison; see is_ndisasm_known_gap
         self.pairs_capstone = Counter()
         self.pairs_ndisasm = Counter()
+        self.only186 = Counter()  # (first byte hex, dasmxx mnemonic) -> occurrences
 
     def failed(self):
         return bool(self.skip_capstone or self.skip_ndisasm
@@ -321,6 +354,9 @@ def verify_region(rom, base, start, end, dasm_insns, ndisasm_bin, stats):
         region_dasm_addrs.add(addr)
         stats.compared += 1
         d_len, d_mn = len(byts), canon(mnem + " " + ops)
+
+        if byts and int(byts[0], 16) in ONLY186_FIRST:
+            stats.only186[(byts[0], mnem)] += 1
 
         c = cap.get(addr)
         if c is None:
@@ -432,6 +468,10 @@ def main():
     if stats.pairs_ndisasm:
         print("dasmx86/ndisasm mnemonic pairs seen in disagreements:",
               sorted(stats.pairs_ndisasm.items(), key=lambda kv: -kv[1]))
+
+    print("\n80186-only encodings inside decoded code:")
+    for (op, mnem), n in sorted(stats.only186.items()):
+        print("  %-4s %-8s %d" % (op, mnem, n))
 
     if stats.failed():
         print("\nFAIL: cross-verification found disagreements or desyncs "
