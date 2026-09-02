@@ -94,20 +94,29 @@ masking, the PRIMSK value, or the DMA parking.
 
 ---
 
-## F2 — What is in the LMCS window (the "banking" question)
+## F2 — What is in the LMCS window, and the graphics bank
 
-**Statement.** **There is no bank switching, and none is needed.** The
-80188's whole address space is served by the single 512 KiB ROM1
-(`V1 3_01.bin`):
+**Statement.** Two separate things, and the old hypothesis conflated them.
+
+1. **The LMCS window is not banked.** LMCS (`0x00000-0x3FFFF`) is ROM1's own
+   low half, holding the IVT and the animation data the `F5183` far-pointer
+   table addresses. Nothing selects it; it is always present.
+2. **There *is* a banked graphics window, elsewhere: segment `6000`
+   (`0x60000-0x6FFFF`), selected by PCS0 bits 0-2, holding pages 0-6 of
+   `V1 3_02.bin`.** So ROM2 *is* in the 80188's address space, one 64 KiB
+   page at a time.
 
 ```
-LMCS  0x00000-0x3FFFF  <-  V1 3_01.bin file 0x00000-0x3FFFF   (IVT + graphics/animation data)
-UMCS  0xC0000-0xFFFFF  <-  V1 3_01.bin file 0x40000-0x7FFFF   (code)
+LMCS        0x00000-0x3FFFF  <-  V1 3_01.bin file 0x00000-0x3FFFF   (IVT + animation data, unbanked)
+seg 6000    0x60000-0x6FFFF  <-  V1 3_02.bin file (page<<16) .. +0xFFFF, page = PCS0 bits 0-2, 0..6
+UMCS        0xC0000-0xFFFFF  <-  V1 3_01.bin file 0x40000-0x7FFFF   (code)
 ```
 
-`V1 3_02.bin` is **not** in the 80188's address space at all.
+Segment `6000` is **read-only in practice**: no instruction writes it, and
+`06000` is never loaded as an immediate segment value — it is only ever
+reached through the far pointers below.
 
-**Evidence.**
+**Evidence — part 1, the LMCS window.**
 
 1. The CPU must fetch interrupt vectors from physical `0`, which lies inside
    the LMCS window. `V1 3_01.bin` file offset `0x0000-0x00FF` is a coherent
@@ -118,45 +127,108 @@ UMCS  0xC0000-0xFFFFF  <-  V1 3_01.bin file 0x40000-0x7FFFF   (code)
    file 0x0020:  4F 02 00 D0   -> D000:024F   (vector 08, timer 0)
    file 0x0030:  43 03 00 D0   -> D000:0343   (vector 0C, INT0)
    ```
-   `V1 3_02.bin` offset `0x0000` is `20 00 10 00 00 02 7F 7F FF FF FF F7 ...`
-   — bitmap-shaped data that decodes as nonsense vectors (`0010:0020`,
-   `7F7F:0200`, `F7FF:FFFF`, ...). Only ROM1 can be at physical 0.
-2. **No code writes segment 0 anywhere in the ROM**, and there is no IVT copy
-   loop: `REP MOVSW` and `REP MOVSB` occur **zero** times in the whole image,
-   and every `MOV AX,0 / MOV ES,AX` site (36 of them, from `DE5D2` on) is
+   `V1 3_02.bin` offset `0x0000` is `20 00 10 00 00 02 7F 7F ...`, which is a
+   frame header (see part 2), not an IVT. Only ROM1 can be at physical 0.
+2. **No code writes segment 0 anywhere**, and there is no IVT copy loop:
+   `MOVSW`/`MOVSB` occur **zero times in the decoded listing**, and a
+   whole-image byte scan of `V1 3_01.bin` for `F3 A5` (`REP MOVSW`) and
+   `F3 A4` (`REP MOVSB`) also returns zero — both re-verified this round.
+   Every `MOV AX,0 / MOV ES,AX` site (36 of them, from `DE5D2` on) is
    followed by a *read* (`MOV AL, ES:B[2C9B]`-shaped).
-3. Graphics/animation data is addressed inside that same window. The
-   620-byte far-pointer table at `F5183-F53EF` (155 entries) is read by the
-   animation family with `LES SI, CS:52xx/53xx` (`F0750`, `F138F`, `F2ECB`,
-   `F4954`, `F0963: 2E C4 36 BB 52  LES SI, CS:052BB`). Its segment histogram
-   is `0000`x12, `1000`x43, `2000`x47, `3000`x44, `4000`x9 — **146 of 155
-   pointers address flat `0x00000-0x3FFFF`**, exactly the LMCS window; the
-   other 9 are work RAM.
+3. The 620-byte far-pointer table at `F5183-F53EF` (155 entries) is read by
+   the animation family with `LES SI, CS:52xx/53xx` (`F0750`, `F138F`,
+   `F2ECB`, `F4954`, `F0963: 2E C4 36 BB 52  LES SI, CS:052BB`). Its segment
+   histogram is `0000`x12, `1000`x43, `2000`x47, `3000`x44, `4000`x9 —
+   **146 of 155 pointers address flat `0x00000-0x3FFFF`**, exactly the LMCS
+   window; the other 9 are work RAM.
 4. Spot check of one such pointer. `CS:52BB` (file `0x752BB`) holds
-   `54 91 00 20` = `2000:9154` = flat `0x29154`. At file offset `0x29154`:
-   ```
-   V1 3_01.bin  00 F0 F8 0C 06 06 06 06 06 06 06 06 06 06 0C F8 F0 00
-                00 F0 F8 0C 06 06 06 06 06 06 06 06 06 06 0C F8 F0 00
-   V1 3_02.bin  00 00 07 80 00 00 1F FE 9C 00 00 00 00 00 00 00 00 00
-   ```
-   ROM1 shows a clean closed glyph outline, repeated once — i.e. the same
-   shape in both bitplanes. ROM2 shows unrelated sparse bytes.
-5. **The firmware never writes a bank-select bit.** The complete list of
-   `PCS0 = 0xA0000` writes in the ROM is `D00CC` (boot, value `0x28`),
-   `D0596`/`D05B7` (the segment-5040 window, bits 3/4), `D0CEA`, `D0CF7`,
-   `D0D04`, `D0D16` (the OKI strobe, bit 5) and `F00BA` (bit 5, same shadow).
-   PCS0 bits 0, 1, 2, 6 and 7 are **never** written after boot and stay at
-   their `0x28` boot value.
+   `54 91 00 20` = `2000:9154` = flat `0x29154`. At file offset `0x29154`,
+   `V1 3_01.bin` reads
+   `00 F0 F8 0C 06 06 06 06 06 06 06 06 06 06 0C F8 F0 00` twice over — a
+   closed glyph outline, the same shape in both bitplanes.
 
-**Confidence:** confirmed for "ROM1 low half is what LMCS presents, and the
-80188 never banks". Where `V1 3_02.bin` physically lives (DMD board? read by
-the raster logic rather than by the 80188?) is **not established** by either
-ROM.
+**Evidence — part 2, the segment-6000 bank.**
 
-**Disposition:** hypothesis **rejected**. "PCS0 bits 4/5 select ROM2 frames
-vs ROM1 fonts in segment 0000h" is wrong twice over: bits 3/4 gate the
-segment-5040 non-volatile store (F10) and bit 5 is the OKI `/OKCS` strobe
-(F9); and segment 0000h is not shared between two ROMs at all.
+5. **PCS0 bits 0-2 are a 3-bit output register with its own accessor.**
+   ```
+   sub_F00A0 F00A0:
+       F00A0: 55 / 8B EC              PUSH BP / MOV BP,SP
+       F00A4: B8 00 40 / 8E D8        DS = 4000
+       F00A9: B8 00 A0 / 8E C0        ES = A000
+       F00AE: 8A 46 06                MOV AL, B[BP + 006]     ; the caller's argument
+       F00B1: 80 26 34 11 F8          AND 01134, 0F8          ; clear bits 0-2 of the PCS0 shadow
+       F00B6: 0A 06 34 11             OR  AL, 01134
+       F00BA: 26 A2 00 00             MOV ES:B[00000], AL     ; PCS0 <- shadow with new bits 0-2
+       F00BE: A2 34 11                MOV B[01134], AL
+   ```
+6. **17 call sites, all immediates in 0..6, each immediately followed by a
+   far pointer into segment `6000` and `anim_stream_open`.** `F1548`,
+   `F1597`, `F1708`, `F1757`, `F17A6`, `F183D`, `F191C`, `F196B`, `F1D1A`,
+   `F1D69`, `F2B00`, `F2B4F`, `F2BE6`, `F4410`, `F479F`, `F4BD8`, `F4F6A`.
+   The idiom is uniform:
+   ```
+   F1754: 6A 00 / 0E / E8 46 E9       PUSH 000 / PUSH CS / CALL sub_F00A0   ; select page 0
+   F175B: 2E C4 36 0D 13              LES SI, CS:0130D
+   F1760: BF 00 00 / E8 E2 EB         DI = 0 / CALL anim_stream_open
+
+   F1919: 6A 01 ... CALL sub_F00A0 ; LES SI, CS:01311                        ; page 1
+   F1705: 6A 02 ... CALL sub_F00A0 ; LES SI, CS:01319                        ; page 2
+   F183A: 6A 03 ... CALL sub_F00A0 ; LES SI, CS:0131D                        ; page 3
+   ```
+7. **Those pointers all resolve to segment `6000`.** Read out of the ROM at
+   `CS:130D..1335` (file `0x7130D`):
+   `6000:0000`, `6000:0000`, `6000:6496`, `6000:0000`, `6000:0000`,
+   `6000:88CC`, `6000:B108`, `6000:0000`, `6000:0000`, `6000:0000`,
+   `6000:7CBA`.
+8. **Four different selectors open a stream at the same address
+   `6000:0000`** — `F1754` (0), `F1919` (1), `F1705` (2), `F183A` (3). That
+   is only coherent if the selector pages the window; otherwise all four
+   routines would display identical graphics.
+9. **The pages carry the header `anim_stream_open` reads.**
+   ```
+   anim_stream_open F0348:  [1102] <- ES:W[SI]     ; rows
+                            [1104] <- ES:W[SI+2]   ; bytes per row
+                            [1106] <- ES:W[SI+4]   ; plane stride
+                            [10FE] <- SI, [1100] <- ES
+   sub_F036D:               ES = [1100], BP = [1106], DI = 0600, BX = 0200,
+                            CX = 0x20 rows x 0x10 bytes;
+                            ES:B[SI] -> [0600+], ES:B[BP+SI] -> [0800+]
+   ```
+   Every 64 KiB page of `V1 3_02.bin` at offsets `0x00000, 0x10000, ...,
+   0x60000` begins with the **identical** three words
+   `20 00 / 10 00 / 00 02` = rows `0x20` (32), bytes/row `0x10` (16), plane
+   stride `0x200` (512) — exactly the 128x32 two-plane geometry `sub_F036D`
+   consumes, and exactly the F13 buffer layout. Page 7 (`0x70000`) is
+   entirely blank (0 non-zero bytes), which matches the selector range 0-6
+   observed at the call sites. Non-zero byte counts per page: 42433, 7976,
+   22485, 31833, 16255, 16558, 12027, **0**.
+
+**The complete PCS0 (`0xA0000`) bit map**, since three facts share this one
+register. Every write in the ROM is accounted for; the shadow is
+`[4000:1134]` and boot leaves it at `0x28`:
+
+| bits | role | written by | fact |
+|---|---|---|---|
+| 0-2 | segment-6000 graphics page select, 0..6 | `sub_F00A0` `F00BA`, from a caller argument (17 sites) | F2 |
+| 3, 4 | complementary segment-5040 NVRAM window gate (open = bit4, closed = bit3) | `pcs0_window_open` `D0596`, `pcs0_window_close` `D05B7` | F10 |
+| 5 | OKI `/OKCS` strobe, idle high, pulsed low-high | `okcs_strobe` `D0CEA`/`D0CF7`, `pcs0_bit5_clear` `D0D04`, `pcs0_bit5_set_far` `D0D16` | F9 |
+| 6, 7 | **never written**; stay 0 from the boot value `0x28` | — | — |
+
+**Confidence:** confirmed. The page->file mapping (`page << 16`) is the
+natural reading of a 3-bit selector over a 512 KiB part and is corroborated
+by all seven populated pages carrying the header and page 7 being blank, but
+the *bit order* of the selector (whether bit 0 is A16) is **inferred** — it
+would take IC7 or a scope to prove the wiring is not reversed. A driver
+should implement it as a table of seven base offsets so a swap is a one-line
+change.
+
+**Disposition:** hypothesis **partly rejected, partly corrected**.
+*Rejected:* "PCS0 bits **4/5** select ROM2 frames vs ROM1 fonts **in segment
+0000h**" — bits 3/4 gate the segment-5040 non-volatile store (F10), bit 5 is
+the OKI `/OKCS` strobe (F9), and segment `0000` is not banked at all.
+*Corrected:* the underlying intuition that PCS0 banks a graphics ROM was
+right — it is **bits 0-2**, over **segment 6000**, not bits 4/5 over segment
+0000.
 
 ---
 
@@ -200,11 +272,19 @@ with the rate each implies:
 |---|---|---|
 | PIC per-plane pulse RA0 | ~290 Hz | the ISR does DMD work; ~145 Hz wire frame x 2 planes |
 | PIC per-frame pulse RC3 | ~145 Hz | same, one interrupt per frame |
-| Z80 port-`0x81` bit 3 square wave | ~61 Hz edges | bit 3 sits in the J1 control register with five other J1 handshake bits and the Z80 never reads it back, so it is almost certainly a line *to* the 80188, and INT0 is the 80188's only enabled external interrupt |
+| Z80 port-`0x81` bit 3 toggle | **not fixed-rate** | bit 3 sits in the J1 control register with five other J1 handshake bits and the Z80 never reads it back, so it is plausibly a line *to* the 80188. But it is **not a free-running square wave**: `port81_bit3_toggle` `0C97` flips it when the `C045` counter expires, and `C045` is *reloaded by J1 traffic* — to `#$30` by the NMI (`009E: 21 45 C0 / 36 30`) and to `#$20` by `host_send_c008_a` (`014B: 21 45 C0 / 36 20`) — so the interval stretches whenever bytes move. With INT0 configured edge-triggered (`FF38 = 0000`) only one polarity latches, so a set/clear pair yields one interrupt: at a nominal 977 Hz Z80 IRQ that is ~30 Hz *at best*, and irregular. Weakest of the three. |
+
+**Recommended starting value — not confirmed: the PIC per-plane pulse,
+~290 Hz.** Two arguments. (a) The ISR's two branches are blit and composite
+(F13); at one interrupt per *plane* they line up as blit at plane-0 start and
+composite at plane-1 start — a clean double-buffer per wire frame, giving one
+full DMD update per ~145 Hz frame. (b) It is the only candidate whose implied
+outbound byte rate (INT0/8 = ~36 bytes/s) can carry 64 lamps and 13 drivers
+at a playable rate; ~145 Hz gives 18/s and the bit-3 candidate gives under 4/s.
 
 Everything the 80188 paces off INT0 — DMD refresh, FM tempo, and the
-outbound-queue drain rate — scales with this choice, so the driver must make
-it a single named constant.
+outbound-queue drain rate — scales with this choice, so the driver must hold
+it in **one named constant** and label it as unmeasured.
 
 **Confidence:** confirmed for the vectors, handlers and their bodies;
 **inferred/unresolved** for the INT0 source and rate.
@@ -252,8 +332,17 @@ they are **Z80 replies to 80188 commands**, sent through the ordinary
    D5DF6: 3D 45 00        CMP AX, 00045     ; sub_D5D8D
    D5DFB: 3D 46 00        CMP AX, 00046     ;   "
    ```
-   There is **no `CMP ..., 047` / `045` / `046` anywhere else** in the 80188
-   listing (grep over the whole `.lst`: zero further hits).
+   **Five further compares against `0x45` exist** and were missed by the
+   first pass — `D7B2E`, `DC063`, `DC08E`, `DC0B5`, `DC0EE`, all
+   `3D 45 00  CMP AX, 00045` — but every one of them loads the *switch-code
+   shadow* `413C:00D6` first (e.g. `DC058: MOV AL, ES:B[000D6] / CBW /
+   CMP AX,00040 / JE / CMP AX,00045`), i.e. they treat `0x45` as an ordinary
+   event code arriving through the F5 path, which is the opposite of a frame
+   marker. There is **no** further compare against `0x46` or `0x47` anywhere.
+   *Method note:* the first pass grepped the `CMP AL, imm8` encoding and so
+   could not see the `CMP AX, imm16` form. Both greps in this document have
+   been re-run **by operand** (`CMP <any reg-or-memory operand>, 0*4[567]`),
+   which is the form that cannot miss an encoding.
 3. The Z80 ROM sends all three, from named sites, over the `C0FC` channel:
    ```
    0410: 3E 47 / 32 FC C0 / CD 16 01   ; boot: send 0x47
@@ -319,6 +408,7 @@ Code map, read out of the Z80 ROM:
 | port `0x03` further handlers | `0x41`, `0x42` | `12D0`, `1340` |
 | port `0x03` bit 5, auto-repeating | `0x32` (normal) / `0x33` (test mode) | `0D3C` / `0D44`, gated on the `C046` debounce counter and the `C068` test flag |
 | direct-input scan, 16-way on port `0x87` low nibble + port `0x01` bit 5, plus the `C060` follow-up bits | `0x50-0x79` (42-byte table at `1218`) | `direct_input_scan` `0DBF` |
+| command-table re-sends of matrix codes | `0x38`, `0x39`, `0x3A` (`2A90`, `2AA0`, `2AA8`), `0x3B` (`2AEB`), **`0x3C` (`2AF3`), `0x3D` (`2AFB`)** | the switch-test handlers reached by 80188 commands `0xE9`/`0xEA` |
 | Z80 status/liveness replies | `0x43`, `0x44`, `0x45`, `0x46`, `0x47`, `0x48`, `0x49`, `0x4A`, `0x7A`, and `0xF0`+nibble | scattered command-table handlers |
 
 The matrix map is exactly regular: **column c, bit b -> code `0x0A + 8c + b`
@@ -361,8 +451,27 @@ D7ADA: 3D 40 00           CMP AX, 00040
 D7ADD: 75 32              JNE 0D7B11
 D7ADF: 9A C6 0D 2A D7     CALL sub_D8066
 ```
-`413C:00D6` is read at 21 sites and written at 5 (`D73F3`, `D7419`, `D7443`,
-`D74A9`, `D75DF`).
+`413C:00D6` is loaded at 21 sites (`MOV reg, ES:B[000D6]`), compared in
+place at 12 more (`CMP ES:000D6, imm`), and **written at 10**:
+
+| site | write |
+|---|---|
+| `D73F3`, `D7419`, `D7443` | `MOV ES:000D6, DL` — the direct-input range handlers |
+| `D74A9`, `D75DF` | `MOV ES:B[000D6], AL` — the general FIFO dequeue (`sub_D7453`) |
+| `DAF0C`, `DB1B4`, `DB298`, `DB2BA` | `MOV ES:000D6, 032` — **game code self-injects code `0x32`** |
+| `DBCAC` | `MOV ES:000D6, 000` — clears the shadow |
+
+The four immediate stores of `0x32` matter for a driver: the shadow can hold
+a switch code that **never came over J1**, so a test that asserts
+"shadow value implies an inbound byte" is wrong. *Method note:* the first
+pass matched `MOV ES:...,(AL|DL)` — a register-source pattern — and so
+missed every immediate store. Re-run by operand
+(`MOV ES:(B\[)?000D6\]?, <anything>`).
+
+**`0x45` is also an ordinary event code.** Besides being the reply to
+command `0xED` (F4), `0x45` is tested against this shadow at `D7B2E`,
+`DC063`, `DC08E`, `DC0B5` and `DC0EE`. A driver must deliver it through the
+normal J1 path like any other code and must not treat it as reserved.
 
 **Confidence:** confirmed. The *physical* switch behind each code is not
 established — that needs the wiring diagram or the service manual's switch
@@ -446,7 +555,7 @@ inspected).**
 
 | bit | meaning |
 |---|---|
-| 0 | set together with bit 1 on the `C008` sends, cleared on the polled read; role not proven |
+| 0 | set with bit 1 on the `C008` sends (`0153: F6 03  OR A,#$03`); cleared on the polled read (`01C2: E6 FE`), by the NMI while it raises bit 4 (`0080: E6 FE / F6 10`), and by `port81_bit3_toggle` on its bit-3-clear path (`0CA8: CB 87  RES 0,A`). Role not proven |
 | 1 | data-valid, set before the port-`0x80` write and cleared after |
 | 2 | strobe for the `C0FC` event-code channel |
 | 3 | periodic square wave — `port81_bit3_toggle` `0C97` flips it (`RES 3,A` `CB 9F` at `0CA6`, `SET 3,A` `CB DF` at `0CB0`) every 16 ticks of the `C045` counter, each time immediately before `OUT ($81),A`. See the F3 INT0 discussion. |
@@ -970,10 +1079,12 @@ F4.
 
 ## What changed
 
-**Rejected (3):** F2 (PCS0 LMCS banking), F4 (the marker byte stream),
-and within F13 the `0xA0200` bit-3 frame strobe and the bit inversion.
+**Rejected (2):** F4 (the marker byte stream), and within F13 the `0xA0200`
+bit-3 frame strobe and the bit inversion.
 
-**Corrected (5):** F3 (NMI is the byte handler, not the DMD handler),
+**Corrected (6):** F2 (PCS0 *bits 0-2* bank ROM2 pages 0-6 into segment
+`6000`; the bits-4/5-over-segment-0000 form of the hypothesis is rejected),
+F3 (NMI is the byte handler, not the DMD handler),
 F7 (ports `0x82`/`0x83`/`0x84` roles swapped relative to the old driver;
 16 driver bits not 18 solenoids), F10 (NVRAM is the segment-`5040` window),
 F12 (`4000:1158` is the Z80 command queue), F13 (strobe/inversion above).
@@ -981,7 +1092,9 @@ F12 (`4000:1158` is the Z80 command queue), F13 (strobe/inversion above).
 **Confirmed (6):** F1, F5 (`0x41496` was right), F6, F8, F9, F14.
 
 **Open, and stated as open:** the INT0 source and rate (F3 — everything
-time-based hangs off it); where `V1 3_02.bin` physically lives (F2); whether
+time-based hangs off it; a recommended-not-confirmed starting value is
+given); the *bit order* of the PCS0 bits-0-2 page selector (F2 — the window
+and the seven pages are confirmed, the A16-A18 wiring is inferred); whether
 the Z80's two outbound strobes reach one 80188 latch (F6); the OKI latch
 bit-to-pin mapping (F9); the credit-balance NVRAM cell (F11); the physical
 identity of each switch code (F5); the OKI duration-table extent (F9).
@@ -996,7 +1109,7 @@ handlers and `MACHINE_DRIVER_START(SLEIC2)`.
 | fact | old branch | |
 |---|---|---|
 | **F1** chip selects | **diverges** — no chip-select emulation at all; `SLEIC2_80188_readmem` hard-codes a map that contradicts the boot table (see F2 row). Timer 0 is not modelled; `MDRV_CPU_PERIODIC_INT(SLEIC_irq_i80188, 120)` is a single unexplained 120 Hz IRQ standing in for both timer0 (99.2 Hz) and INT0. |
-| **F2** LMCS window | **diverges** — maps ROM2 at `0x00000-0x7FFFF` ("ROM2 graphics (LMCS)") and ROM1 at `0x80000-0xFFFFF`. Should be ROM1 low half at `0x00000-0x3FFFF` and ROM1 high half at `0xC0000-0xFFFFF`; ROM2 is not in the 80188's space. The IVT only works today by accident of the `0x80000` overlap. |
+| **F2** LMCS + graphics bank | **diverges** — maps ROM2 flat at `0x00000-0x7FFFF` and ROM1 at `0x80000-0xFFFFF`. Should be ROM1 low half at `0x00000-0x3FFFF`, ROM1 high half at `0xC0000-0xFFFFF`, and a **banked** ROM2 page at `0x60000-0x6FFFF` selected by PCS0 bits 0-2. **Regression risk for Task 8:** `{0x00000,0x6ffff, MRA_ROM}` over a flat ROM2 image accidentally pins segment `6000` to ROM2 **page 6**, statically — so some graphics render today *because of* the wrong map. Replacing it with the correct banked window will change what page 6's callers show and will make the other six pages appear for the first time; do not read "different pixels than before" as a regression without checking the selector. |
 | **F3** interrupts | **diverges** — no IVT-backed NMI/timer0/INT0 model; one periodic IRQ on line 0 at 120 Hz. The alternating INT0 half-frames are not modelled, so DMD composite/blit and the FM tick never run in the right ratio. |
 | **F4** markers | **diverges, and this is the big one** — the branch's `iomoon_dmd_r` returns 0 for the whole `0xA0000-0xA0FFF` window; the local (unpushed) work described in `CLAUDE.md` added a fake `0x47`/`0x45`/`0x46` marker machine on `0xA0100`. Both are wrong: `0xA0100` must return the pending Z80->80188 byte and nothing else. |
 | **F5** switch codes | **partly agrees** — `IOMOON_SHARED_OFF_SWCODE 0x1496` is the right address, correctly annotated `413C:00D6`. But `iomoon_swcode_r`/`iomoon_z80_to_188_mailbox` *write* it directly from the Z80 port handler, bypassing the NMI, the FIFO and `sub_D7453`. The 48+5 code map is absent; `SWITCH_UPDATE(SLEIC2)` invents a `swMatrix[9]`/`[10]` layout with no basis in the ROM. |
@@ -1007,7 +1120,7 @@ handlers and `MACHINE_DRIVER_START(SLEIC2)`.
 | **F10** NVRAM | **diverges** — `generic_nvram` is mapped at `0x10100-0x10900` in `SLEIC_80188_writemem`, an address IO Moon never touches, and `SLEIC2_80188_writemem` maps no NVRAM at all (its own comment admits "The 28C64A NVRAM location ... is not yet known"). It is segment `5040` behind the PCS0 bit-3/4 gate. |
 | **F11** credits | **diverges** — with no NVRAM window there is nowhere for the audits to persist; the credit-runaway symptom recorded in `CLAUDE.md` is consistent with counters living in volatile RAM that the fake mailbox re-triggers. |
 | **F12** sound commands | **diverges** — the branch has no outbound `4000:1158` -> PCS1 -> Z80 path, so no lamp, driver or mode command ever reaches the Z80, and `sub_D0B70`/`fm_song_select` are never exercised because the firmware does not get that far. |
-| **F13** DMD | **partly agrees** — `iomoon_submit_dmd_frame` reads `0x70000-0x701FF` / `0x70200-0x703FF` as plane 0 / plane 1 with plane 0 as MSB, which is right. Three problems: it is triggered by `offset == 0x200 && (data & 0x08)`, a strobe that fires once at boot (F13), so frames are submitted once; it applies `^ 0xFF` to both planes, which the firmware does not justify; and `0x70000` is backed by `MWA_RAM` inside a region the same map also declares `MRA_ROM`. |
+| **F13** DMD | **partly agrees** — `iomoon_submit_dmd_frame` reads `0x70000-0x701FF` / `0x70200-0x703FF` as plane 0 / plane 1 with plane 0 as MSB, which is right. Three problems: it is triggered by `offset == 0x200 && (data & 0x08)`, a strobe that fires once at boot (F13), so frames are submitted once; it applies `^ 0xFF` to both planes, which the firmware does not justify; and `{0x70000,0x703ff, MRA_RAM}` is carved between the two `MRA_ROM` regions `{0x00000,0x6ffff}` and `{0x70400,0x7ffff}`, so the staging buffer is a RAM island inside declared ROM. |
 | **F14** service menu | **diverges** — no menu path can work, because it depends on F5 (code `0x3F` arriving through the real dispatcher) and on F6 (the `0xED` -> `0x45`/`0x46` request/response). The branch has neither. The "menu flickers and collapses" symptom in `CLAUDE.md` is explained by F4: the fake marker machine was injecting bytes the poll routines dequeued and discarded. |
 
 **Nothing in the old `iomoon_*` code should be carried forward except three
