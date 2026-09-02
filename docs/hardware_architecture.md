@@ -171,14 +171,12 @@ From service manual section 7.2.2.3:
 | SW7 | Service: lamp test | Normal operation |
 | SW8 | Service: board self-test | Normal operation |
 
-Country code (SW2–SW4 combination) with default coin values, and it is **live in the
-V1.3 ROMs**: the Z80 reports port `0x04` on command `0xF9` (`2D9D`), the 80188 turns
-bits 1-3 into a country 0..7 (`D5CAC`-`D5CC2`, table at `D5D01`), applies that country's
-coin preset (`sub_D69CC`) and, at `D664D`, overwrites NVRAM `5040:01BF` → `[4000:1001]`
-whenever the DIP disagrees with the stored value — so the DIP sets the coin values
-**and** the display language (country 5 = Spanish). An earlier revision of this file
-called the language half dead code; that was a segment-resolution error (`CS:2DE1` was
-resolved with `CS = D000` instead of `D2F2`) and is corrected as of 2026-09-03. See
+Country code (SW2–SW4 combination) with default coin values. The Z80 reports port `0x04`
+on command `0xF9` (`2D9D`), the 80188 turns bits 1-3 into a country 0..7 (`D5CAC`-`D5CC2`,
+dispatch table at `D5D01` with `CS = D2F2`), applies that country's coin preset
+(`sub_D69CC`) and, at `D664D`, overwrites NVRAM `5040:01BF` → `[4000:1001]` whenever the
+DIP disagrees with the stored value. The DIP therefore sets the coin values **and** the
+display language (country 5 = Spanish). See
 [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md) §B.
 
 The row order below is the country number 0..7 with **SW2 as the low bit and ON = 0**,

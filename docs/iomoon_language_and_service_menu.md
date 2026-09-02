@@ -110,20 +110,20 @@ via the NVRAM byte-**write** accessor `D000:04A9` (e.g. callers at `D6619`/`D666
 
 ---
 
-## B. The country DIP → language path is LIVE (corrected 2026-09-03)
-
-> **This section previously concluded the country→language path was dead code. That was
-> wrong, and the error was a segment resolution.** The indexed jump at `D5CC2` is
-> `JMP CS:W[BX + 2DE1h]`, and the routine it sits in is in segment **`D2F2`**, not
-> `D000` — every far call in it targets `0D2F2:xxxxx`. The table is therefore at
-> `D2F20 + 0x2DE1` = **`D5D01`**, not at file `0x52DE1`. Read at `D5D01` it is exactly
-> the country block, and `sub_D5A8B` has two callers, so nothing about the path is
-> unreachable. The driver **does** emulate the real DIP → country → NVRAM → language
-> chain, and must: it is what the firmware runs on every boot.
+## B. The country DIP sets the coin values and the language
 
 The hardware has a country DIP (SW40 SW2–SW4; see
-[`hardware_architecture.md`](hardware_architecture.md)) that sets per-country coin
-values **and** the language, exactly as the manual's intent says.
+[`hardware_architecture.md`](hardware_architecture.md)). The firmware reads it on every
+boot and acts on it twice: it selects the per-country coin-value preset, and it selects
+the display language. A driver must emulate the DIP → country → NVRAM → language chain
+rather than writing the language byte directly, because the chain re-derives that byte
+from the DIP at each power-on.
+
+**Segment note for anyone re-reading the dispatch:** the indexed jump at `D5CC2` is
+`JMP CS:W[BX + 2DE1h]` and the routine it sits in runs with **`CS = D2F2`** — every far
+call in it targets `0D2F2:xxxxx`. Its table is therefore at `D2F20 + 0x2DE1` = **`D5D01`**
+(file `0x55D01`). Resolving that displacement against `D000` lands on `0x52DE1`, which is
+unrelated data.
 
 ### The path, end to end
 
@@ -169,15 +169,6 @@ values **and** the language, exactly as the manual's intent says.
    string and menu-record tables at `D3277` (attract variant), `D8048` (pricing
    routine) and `DD406` (menu record table `0x00D08` instead of `0x00100`); every
    other value gets the English ones.
-
-### What the old analysis got right, and where it went wrong
-
-The Z80 half (`DB 04 F6 F0` at `0x2D9D`) and the mask arithmetic at `D5CAC` were read
-correctly. The dispatch table was resolved with `CS = D000` → file `0x52DE1`, which is
-unrelated data and does indeed contain what look like game-event offsets; that produced
-the "rewired" reading, and from there the "no caller reaches `D5CAC`/`D5CC7`" claim.
-Both fall away once the segment is right. The dump-diff note stands but proves nothing
-either way — both dumps are byte-identical there because the code is simply the same.
 
 ### Conclusion
 
@@ -379,8 +370,8 @@ All addresses spot-checked with `ndisasm` against `roms/1.3 IPDB latest/`.
 | `DA9A9` | `0x5A9A9` | a `cmp [1001],5` language branch (not menu-enter) | verified |
 | `D5CAC` | `0x55CAC` | `and 0Eh` country mask | verified |
 | `D5CC2` | `0x55CC2` | `jmp [cs:bx+2DE1]` indexed dispatch | verified |
-| `CS:2DE1` (CS = `D2F2`) | flat `D5D01` = `0x55D01` | country dispatch table — the seven country setters on the even indices, `D5CF8` (country 0) on the odd ones | verified 2026-09-03 (the old row resolved CS as `D000` and read unrelated data at `0x52DE1`) |
-| `D5CC7` | `0x55CC7` | country block `[4130:0020]=1..7`, reached from the table above | verified 2026-09-03 |
+| `CS:2DE1` with `CS = D2F2` | flat `D5D01` = `0x55D01` | country dispatch table — the seven country setters on the even indices, `D5CF8` (country 0) on the odd ones | verified |
+| `D5CC7` | `0x55CC7` | country block `[4130:0020]=1..7`, reached from the table above | verified |
 | Z80 `0x2D9D` | `0x2D9D` (Z80 ROM) | `in a,(04); or 0F0h` country DIP read — the handler for 80188 command `0xF9`, requested by `sub_D5A8B` | verified |
 | `D016D` / `D018C` | `0x5016D` / `0x5018C` | NMI `dmd_vblank_isr`, reads `A000:0100` | verified |
 | `D74FF` / `D750A` | `0x574FF` / `0x5750A` | freshness gate (`[1147]==0`) | verified |
