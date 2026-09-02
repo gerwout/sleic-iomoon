@@ -13,6 +13,7 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 IPDB latest/` | Latest known v1.3 ROM set (from IPDB) — see its [README](1.3%20IPDB%20latest/README.md) |
 | `1.3 IPDB latest/Start-Tournament-Patch/` | PRESS START tournament patch for the IPDB set — see its [README](1.3%20IPDB%20latest/Start-Tournament-Patch/README.md) |
 | `1.3 Early version/` | An earlier v1.3 ROM set — see its [README](1.3%20Early%20version/README.md) |
+| `PIC16C57/` | IC23 DMD-raster PIC dump, recovered from the locked chip by a recovery lab — see its [README](PIC16C57/README.md) |
 | `related-machines/` | ROM images of other SLEIC machines (Sleic Pin-Ball, Bike Race, Doña Elvira 2) — see its [README](related-machines/README.md) |
 
 ## MD5 checksums — IO Moon
@@ -30,6 +31,7 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 Early version/V1 3_03.bin` | 524,288 bytes (512 KB) | `5f4b441f3b6bb8b27689c3fc1fc5d708` | Sound ROM 1 (OKI MSM6376 ADPCM) |
 | `1.3 Early version/V1 3_04.bin` | 524,288 bytes (512 KB) | `7393923e265050a4adb706d7477bd4fd` | Sound ROM 2 (OKI MSM6376 ADPCM) |
 | `1.3 Early version/V1 3_05.bin` | 32,768 bytes (32 KB) | `da674b87ca562221ce5a63568b8cec1e` | Z80 CPU ROM (27C256) |
+| `PIC16C57/PIC16F57-DIP28-1D05-20260815.bin` | 8,192 bytes (8 KB) | `a244f2d8060c2d92a814e20bdd55ecfe` | IC23 PIC16C57 DMD raster coprocessor (16F57-adjusted, cracked from locked original) |
 
 ## MD5 checksums — related SLEIC machines
 

@@ -2,13 +2,21 @@
 
 [← Back to main README](../README.md)
 
-Three programmable chips across the two CPU boards contain undumped firmware. All three are required for a complete emulation.
+Three programmable chips across the two CPU boards contain firmware that was never publicly dumped. All three are required for a complete emulation.
 
-| Rank | Ref  | Part                       | Package        | Board             |
-|------|------|----------------------------|----------------|-------------------|
-| 1    | IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029A (16-bit) |
-| 2    | IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029A (16-bit) |
-| 3    | IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030A (Z80)    |
+## Status (updated 2026-09-02)
+
+**All three chips turned out to be LOCKED** — the security / code-protect fuse is blown on every one of them, so none can be read directly with a programmer.
+
+**The PIC at IC23 has now been successfully cracked.** The locked chip was sent to a commercial chip-recovery lab, which defeated the code protection and returned a verified-good dump (received 2026-09-02). The recovered code — adjusted by the lab for the pin-compatible flash-based **PIC16F57** — has been burned to a replacement chip and **confirmed working in the real machine**. The dump is archived in this repository at [`../roms/PIC16C57/PIC16F57-DIP28-1D05-20260815.bin`](../roms/PIC16C57/) (see its README for format, verification, and how the dump was authenticated against the locked chip's scrambled read-back).
+
+| Rank | Ref  | Part                       | Package        | Board             | State |
+|------|------|----------------------------|----------------|-------------------|-------|
+| 1    | IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029A (16-bit) | **Locked → CRACKED, dumped ✅** |
+| 2    | IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029A (16-bit) | Locked — still undumped |
+| 3    | IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030A (Z80)    | Locked — still undumped |
+
+For the two locked PALs the remaining recovery path is truth-table reconstruction (DuPAL / dupico), described in their Path B sections below.
 
 Everything else on the IO Moon boards is either already archived (the 27C040 program / display / sound EPROMs and the 27C256 Z80 ROM) or runtime-mutable (the 28C64A NVRAM at IC14 on the 16-bit board). For the full board IC lists and the function of every other chip, see [`board_011-029A_ics.md`](board_011-029A_ics.md) and [`board_011-030A_ics.md`](board_011-030A_ics.md).
 
@@ -25,7 +33,9 @@ A common misconception is that a TL866II+ / T48 universal programmer can read ev
 
 ---
 
-## IC23 — PIC 16C57-HS/P  (16-bit board, 011-029A)
+## IC23 — PIC 16C57-HS/P  (16-bit board, 011-029A)  ✅ DUMPED
+
+> **Resolved 2026-09-02.** The chip was **locked** (Path B below). A first read attempt on a universal programmer (2026-06-28) returned only scrambled data — later shown to be exactly the **XOR of the three nibbles of every 12-bit word**, which is what a code-protected 16C5x hands back (12 bits collapse to 4, so the real code is unrecoverable from that read alone). The chip went to a commercial recovery lab, which defeated the protection. The returned dump was verified locally: 100 % valid 12-bit instructions, correct `GOTO 0x000` reset vector at `0x7FF`, all jump targets in-range — and it reproduces the locked chip's scrambled read-back **2048/2048 words**, authenticating it against this exact physical chip. Dump + full details: [`../roms/PIC16C57/`](../roms/PIC16C57/).
 
 - **Datasheet**: [`../datasheets/pic16c5x.pdf`](../datasheets/pic16c5x.pdf) (Microchip PIC16C5X family).
 - **Role**: DMD raster coprocessor. The 80188 writes DMD frames and control words at segment `A000h`; the PIC turns these into the plasma-panel raster timing (`RDATA`, `RCLK`, `COLATCH`, `DE`, `VSYNC`, and the `VA3–VA12` video-RAM address). It does **not** drive the YM3812 — that chip is selected directly by the 80188's peripheral chip-select `/PCS5`, and the PIC has no electrical connection to it (every PIC I/O pin is a DMD signal). Confirmed by tracing sheets 011-029-01, -03 and -07. *(Earlier revisions of this doc listed the PIC as the probable YM3812 driver; that has been ruled out.)*
@@ -223,6 +233,6 @@ The two PALs are the awkward case: there is no cheap modern programmer that read
 
 ## What this dump set unlocks
 
-- **IC23** — emulation of the DMD raster path, the single largest open question in the current PinMAME work. (The YM3812 sound path does **not** depend on this dump: the 80188 drives the YM3812 directly via `/PCS5`.)
+- **IC23** ✅ **(dumped)** — emulation of the DMD raster path, the single largest open question in the current PinMAME work. (The YM3812 sound path does **not** depend on this dump: the 80188 drives the YM3812 directly via `/PCS5`.)
 - **IC7** — the 80188-side chip-select decode map.
 - **IC8** — the Z80-side memory and I/O decode map.
