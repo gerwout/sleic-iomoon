@@ -66,12 +66,14 @@ lD0CE2	okcs_strobe
 lD0CFC	pcs0_bit5_clear
 lD0D09	pcs0_bit5_set_far
 lD0D1B	fm_player_tick
+lD0D37	fm_sequencer_step
 lD0D99	ym3812_write
 lD0DA9	ym3812_settle_delay
 lD0DB4	fm_song_select
 cD0C57	oki_trigger_a
 bD0DE5
 gD2F20
+lD3002	main_loop
 cD2F22	main_entry
 bD303A
 gD2F20

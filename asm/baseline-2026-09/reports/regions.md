@@ -11,8 +11,8 @@ addresses, ROM1 file offset = address - 0x80000.
 | `D00B9..D0440` | `D000` | 903 | `boot_pcs_and_queue_init`, `pcs4_bit3_strobe`, `boot_queue2_init`, `qout_push`, `isr_type02_nmi`, `qout_service_pcs1`, `isr_type08_timer0`, `pcs4_clear_bit7`, `isr_type0C_int0` |
 | `D046D..D07A9` | `D000` | 828 | `nvstore_write_dword_far`, `nvstore_read_dword_far`, `nvstore_write_byte_far`, `nvstore_read_byte_far`, `nvstore_write_triple_83`, `nvstore_write_triple_84`, `nvstore_check_triple_83`, `nvstore_check_triple_84`, `pcs0_window_open`, `pcs0_window_close` |
 | `D08C9..D0C19` | `D000` | 848 | `boot_sound_state_init` |
-| `D0C57..D0DE5` | `D000` | 398 | `oki_trigger_a`, `oki_trigger_b`, `okcs_strobe`, `pcs0_bit5_clear`, `pcs0_bit5_set_far`, `fm_player_tick`, `ym3812_write`, `ym3812_settle_delay`, `fm_song_select` |
-| `D2F22..D303A` | `D2F2` | 280 | `main_entry` |
+| `D0C57..D0DE5` | `D000` | 398 | `oki_trigger_a`, `oki_trigger_b`, `okcs_strobe`, `pcs0_bit5_clear`, `pcs0_bit5_set_far`, `fm_player_tick`, `fm_sequencer_step`, `ym3812_write`, `ym3812_settle_delay`, `fm_song_select` |
+| `D2F22..D303A` | `D2F2` | 280 | `main_entry`, `main_loop` |
 | `D303C..D448D` | `D2F2` | 5201 | 17 unnamed |
 | `D449D..D4FD4` | `D2F2` | 2871 | 9 unnamed |
 | `D4FDC..D5D01` | `D2F2` | 3365 | `inbound_byte_take_a` |

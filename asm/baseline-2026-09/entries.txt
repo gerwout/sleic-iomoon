@@ -34,6 +34,12 @@ D0343  D000  isr_type0C_int0             # IVT type 0C (80188 INT0)
 # ---------------------------------------------------------- main firmware
 D2F22  D2F2  main_entry                  # target of boot_init's final far JMP
 
+# ---------------------------------------------- interior points worth naming
+# Already inside a region reached above; listed here only so the listing
+# carries a name for them.  Both were read out of the instruction stream:
+D3002  D2F2  main_loop                   # tail of main_entry: reads 413C:014F, dispatches, every branch JMPs back here
+D0D37  D000  fm_sequencer_step           # body of fm_player_tick's stream walker (EE/EF/FF/DD control bytes)
+
 # --- round r1: 38 targets reached by CALL/JMP from already-decoded code
 D0138  D000  sub_D0138  # CALL from D2F99
 D01E5  D000  sub_D01E5  # CALL from D0392

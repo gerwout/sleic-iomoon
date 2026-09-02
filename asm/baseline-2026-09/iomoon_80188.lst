@@ -5392,10 +5392,11 @@ fm_player_tick:
     D0D28:    1F                         POP      DS
     D0D29:    CB                         RETF     
     D0D2A:    83 3E EC 12 00             CMP      012EC, 00000
-    D0D2F:    74 06                      JE       0D0D37
+    D0D2F:    74 06                      JE       fm_sequencer_step
     D0D31:    FF 0E EC 12                DEC      012EC
     D0D35:    1F                         POP      DS
     D0D36:    CB                         RETF     
+fm_sequencer_step:
     D0D37:    B8 00 A0                   MOV      AX, 0A000
     D0D3A:    8E C0                      MOV      ES, AX
     D0D3C:    8B 36 EA 12                MOV      SI, 012EA
@@ -6074,6 +6075,7 @@ main_entry:
     D2FFA:    6A 00                      PUSH     000
     D2FFC:    9A B4 0D 00 D0             CALL     0D000:00DB4 {fm_song_select}
     D3001:    59                         POP      CX
+main_loop:
     D3002:    B8 3C 41                   MOV      AX, 0413C
     D3005:    8E C0                      MOV      ES, AX
     D3007:    26 A0 4F 01                MOV      AL, ES:B[0014F]
@@ -6086,13 +6088,13 @@ main_entry:
     D301A:    74 10                      JE       0D302C
     D301C:    EB 15                      JMP      0D3033
     D301E:    9A 1C 01 F2 D2             CALL     0D2F2:0011C {sub_D303C}
-    D3023:    EB DD                      JMP      0D3002
+    D3023:    EB DD                      JMP      main_loop
     D3025:    9A 5F 01 F2 D2             CALL     0D2F2:0015F {sub_D307F}
-    D302A:    EB D6                      JMP      0D3002
+    D302A:    EB D6                      JMP      main_loop
     D302C:    9A 25 02 F2 D2             CALL     0D2F2:00225 {sub_D3145}
-    D3031:    EB CF                      JMP      0D3002
+    D3031:    EB CF                      JMP      main_loop
     D3033:    9A 0C 33 F2 D2             CALL     0D2F2:0330C {sub_D622C}
-    D3038:    EB C8                      JMP      0D3002
+    D3038:    EB C8                      JMP      main_loop
 
 
 ___BDATA_0007:
@@ -42642,7 +42644,7 @@ D0D1B: Call   @ D038D   (fm_player_tick)
 
 D0D2A: Jump   @ D0D26
 
-D0D37: Jump   @ D0D2F
+D0D37: Jump   @ D0D2F   (fm_sequencer_step)
 
 D0D40: Jump   @ D0D97
       Jump   @ D0D83
@@ -42708,7 +42710,7 @@ D2FBB: Jump   @ D2FAD
 
 D2FCB: Jump   @ D2FB9
 
-D3002: Jump   @ D3038
+D3002: Jump   @ D3038   (main_loop)
       Jump   @ D3031
       Jump   @ D302A
       Jump   @ D3023
