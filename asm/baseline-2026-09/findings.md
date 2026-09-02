@@ -1165,6 +1165,72 @@ switch bytes; it needs no marker stream (F4) and no frame clock.
 The menu is also entered automatically on a boot self-test fault, from
 `main_entry` at `D2FB4` (see F12).
 
+### How you navigate it (added 2026-09-03, Task 16)
+
+"Waits for ANY inbound byte" is true of the *lamp test*, and it is what made
+the earlier navigation guesses possible. The ordinary item handlers are
+narrower: they accept exactly four codes and dispatch through a four-entry
+table. `sub_DD480` `DD480`, the handler for record type 0, is the pattern:
+
+```
+DD4E1: CALL sub_DF9D4 / MOV [001B],AL / CMP [001B],0 / JE 0DD4E1  ; block for a byte
+DD4F5: 2D 3F 00            SUB AX, 0003F
+DD4FA: 83 FB 03 / 77 E2    CMP BX,3 / JNBE 0DD4E1                 ; only 0x3F..0x42
+DD501: 2E FF A7 37 03      JMP CS:W[BX + 00337]                   ; table at DD587
+DD587: 2B 03  0D 03  B6 02  FE 02      -> DD57B  DD55D  DD506  DD54E
+```
+
+| code | target | what it does |
+|---|---|---|
+| `0x3F` | `DD57B` | redraw, return 1 — **exit** this item to its caller |
+| `0x40` | `DD55D` | at record index 0 the same exit, otherwise `sub_DF829` — **back/up** |
+| `0x41` | `DD506` | `[4137:0013]++` with a wrap at `record[2]-1`, recompute the display line `413C:0158`, redraw — **scroll** |
+| `0x42` | `DD54E` | `sub_DF764([4137:0013])` — **select** the line under the cursor |
+
+`sub_DD669` `DD669` (record type 9) has the same shape with its own table at
+`DD6F4`, adding volume up/down on `0x41`/`0x42`.
+
+So: TEST (`0x3F`) opens and exits, the **left flipper** (`0x41`) scrolls, the
+**right flipper** (`0x42`) selects, START (`0x40`) goes back. The cursor is
+`[4137:0013]`, **not** `413C:015A` — `015A` is written in exactly one place in
+the whole ROM (`DD263`, zeroed on entry) and holds the record being displayed,
+which changes only on a descent.
+
+**The menu is a tree of 46-byte records in the LMCS window**, reached through
+the far pointer `[4137:004B]` that `sub_DD3FB` `DD3FB` sets to flat `0x00100`
+(English) or `0x00D08` (country 5, Spanish). Each record is
+`{word type, word item count, word line count, 4 x 8-byte line descriptor,
+4 x word child index}`. Walked from record 0 the tree is 38 records deep:
+
+```
+0  ADJUSTMENT      -> 1 SOUND/VIDEO, 2 GAME, 3 TECHNICAL
+1  SOUND           -> 4 VOLUME (type 9), 5 CUSTOM MESSAGE (type 6)
+2  GAME            -> 31, 6, 7, 8
+3  TECHNICAL       -> 22 BOARD TEST, 23 CREDITS (type 8), 30 TILTS
+```
+
+with 8 → {9,10,11}, 11 → {12,15,18}, 12 → {13,14}, 15 → {16,17},
+18 → {19,20,21}, 22 → {24,25,26}, 25 → {35,36,37}, 26 → {32,33,34},
+6 → {27,28,29}. Types 1-13 are leaf pages; type 0 is a submenu.
+
+**Two of these matter to a driver.** Record 4 (type 9) is the VOLUME page and
+it calls `fm_song_select(1)` on entry (`DD66F`) — a real firmware music
+trigger reachable **with no credits**, from attract, in three keypresses. And
+record 23 (type 8) is the CREDITS page, which renders the live pricing table
+and is the cheapest check that the country DIP (F11) is being read correctly.
+
+Verified in emulation on 2026-09-03 against the observed DMD: the root draws
+`- ADJUSTMENT -` over SOUND/VIDEO, GAME, TECHNICAL; scrolling moves the
+highlight; selecting TECHNICAL then CREDITS renders
+`1 OF 50E CRED:1 / 1 OF 100 CRED:3 / 1 OF 200 CRED:6`, matching country 7's
+preset byte for byte; and country 5 renders the same tree in Spanish
+(`- AJUSTE -`, SONIDO/VIDEO, JUEGO, TECNICO) from record table `0x0D08`.
+
+**There is no OKI sound-test page.** Above `DD000` the ROM has exactly two
+calls to the OKI dispatcher `sub_D0B70`, and one of them is the coin sound in
+`sub_DD1C1` (`DD1E0`); the other is `F2C2E`, in game code. The sound branch of
+the menu is FM and volume only.
+
 Adjacent fact, same mechanism: the **language prompt** at boot is
 `sub_D5AD1` `D5AD1` — push Z80 command `0xED`, spin on `sub_D5D8D` for
 `0x45` (option A, draws the string triple at record offsets `0x0C/0x0E/0x10`)
@@ -1189,9 +1255,13 @@ states that happen to be listening for them.
 menu" open; the earlier project guesses recorded in `CLAUDE.md` —
 "`0x3F` = select", "scroll/select like Bike Race", "`0x33` opens the menu" —
 are all **rejected**: `0x3F` *opens* the menu, `0x33` is the test-mode
-variant of the auto-repeating port-`0x03` bit-5 input, and navigation is by
-80188-initiated request/response (`0xED` -> `0x45`/`0x46`), not by a scroll
-code. The "menu display loop is paced by PIC markers" belief is rejected with
+variant of the port-`0x03` bit-5 input (which F11 now identifies as the coin
+mechanism's pulse line, so `0x33` is what a coin pulse reports while test mode
+is open), and the `0xED` -> `0x45`/`0x46` exchange is a request/response, not
+navigation. *Amended 2026-09-03:* navigation IS by scroll and select after
+all, just not on the codes the old guesses picked — the flipper codes `0x41`
+and `0x42` scroll and select, and `0x3F`/`0x40` exit and go back. See "How you
+navigate it" above; the earlier guesses stay rejected on their specifics. The "menu display loop is paced by PIC markers" belief is rejected with
 F4.
 
 ---
