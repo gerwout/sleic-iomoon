@@ -1,0 +1,698 @@
+# IO Moon 80188 -- code entry points for the 2026-09 baseline disassembly.
+#
+#   <flat-address>  <CS value>  <label>          # evidence
+#
+# Flat addresses are 80188 physical addresses.  ROM1 ("V1 3_01.bin") is
+# mapped at 0x80000-0xFFFFF, so file offset = flat - 0x80000.  <CS value> is
+# the segment register value the code runs under; it is needed so that near
+# branch targets resolve inside the right segment (dasmxx 'g' command).
+#
+# Every line here was justified from the instruction stream itself -- see
+# README.md for the evidence trail.  Labels are deliberately provisional and
+# describe what was observed, not what the routine is assumed to mean.
+
+# ---------------------------------------------------------------- reset path
+FFFF0  FFFF  reset_vector                # 80188 power-on CS:IP = FFFF:0000
+FFF00  FFF0  boot_umcs_init              # target of the reset far JMP
+D0000  D000  boot_init                   # target of boot_umcs_init's far JMP
+
+# ------------------------------------------------ routines called from boot
+D00B9  D000  boot_pcs_and_queue_init     # CALL from boot_init+0x22
+D011C  D000  boot_queue2_init            # CALL from boot_init+0x27
+D00FA  D000  pcs4_bit3_strobe            # CALL from boot_init+0x2C
+F0000  F000  boot_ram_var_init           # CALL from boot_init+0x31
+D0B2B  D000  boot_sound_state_init       # CALL from boot_init+0x36
+
+# ------------------------------------------------------- IVT (ROM1 file 0)
+# The IVT is a static 64-entry table in ROM at ROM1 file offset 0, seen at
+# physical 0 through the LMCS window; there is no copy loop.  Exactly three
+# vectors differ from the FFF0:F000 filler:
+D016D  D000  isr_type02_nmi              # IVT type 02 (NMI)
+D024F  D000  isr_type08_timer0           # IVT type 08 (80188 timer)
+D0343  D000  isr_type0C_int0             # IVT type 0C (80188 INT0)
+
+# ---------------------------------------------------------- main firmware
+D2F22  D2F2  main_entry                  # target of boot_init's final far JMP
+
+# --- round r1: 38 targets reached by CALL/JMP from already-decoded code
+D0138  D000  sub_D0138  # CALL from D2F99
+D01E5  D000  sub_D01E5  # CALL from D0392
+D0331  D000  sub_D0331  # CALL from D031B
+D04A9  D000  sub_D04A9  # CALL from D2FC3
+D04BF  D000  sub_D04BF  # CALL from D2F8A (+1 more)
+D0C57  D000  sub_D0C57  # CALL from D0291
+D0C84  D000  sub_D0C84  # CALL from D02C4
+D0D09  D000  sub_D0D09  # CALL from D0284
+D0D1B  D000  sub_D0D1B  # CALL from D038D
+D0DB4  D000  sub_D0DB4  # CALL from D2FFC
+D303C  D2F2  sub_D303C  # CALL from D301E
+D307F  D2F2  sub_D307F  # CALL from D3025
+D3145  D2F2  sub_D3145  # CALL from D302C
+D5133  D2F2  sub_D5133  # CALL from D2F3F
+D5468  D2F2  sub_D5468  # CALL from D2FAF
+D55AD  D2F2  sub_D55AD  # CALL from D2F54
+D5A45  D2F2  sub_D5A45  # CALL from D2F6D
+D5AD1  D2F2  sub_D5AD1  # CALL from D2FCB
+D5D1B  D2F2  sub_D5D1B  # CALL from D2F59
+D5E7A  D2F2  sub_D5E7A  # CALL from D2F9F
+D60DE  D2F2  sub_D60DE  # CALL from D2FD0
+D612D  D2F2  sub_D612D  # CALL from D2FF0
+D622C  D2F2  sub_D622C  # CALL from D3033 (+1 more)
+DAA92  D72A  sub_DAA92  # CALL from D2FF5
+DBCA1  D72A  sub_DBCA1  # CALL from D2FEB
+DD253  DD25  sub_DD253  # CALL from D2FB4
+DD3FB  DD25  sub_DD3FB  # CALL from D2F44
+F00C4  F000  sub_F00C4  # CALL from F0007
+F00F1  F000  sub_F00F1  # CALL from F000C
+F0113  F000  sub_F0113  # CALL from F0011
+F0124  F000  sub_F0124  # CALL from F0016
+F08A5  F000  sub_F08A5  # CALL from D0383
+F08EB  F000  sub_F08EB  # CALL from D035E
+F0E1A  F000  sub_F0E1A  # CALL from D039C
+F0F93  F000  sub_F0F93  # CALL from D0376
+F1054  F000  sub_F1054  # CALL from D03A8
+F114A  F000  sub_F114A  # CALL from D0265
+F1303  F000  sub_F1303  # CALL from D036A
+
+# --- pass 1: scanptr.py dispatch
+F05A9  F000  sub_F05A9  # dispatch, 1 site(s), first F3440
+F061A  F000  sub_F061A  # dispatch, 1 site(s), first F3516
+F0656  F000  sub_F0656  # dispatch, 1 site(s), first F34AB
+F06A7  F000  sub_F06A7  # dispatch, 1 site(s), first F3581
+F15DC  F000  sub_F15DC  # dispatch, 1 site(s), first F165A
+F1625  F000  sub_F1625  # dispatch, 1 site(s), first F1612
+F166D  F000  sub_F166D  # dispatch, 1 site(s), first F16EB
+F16B5  F000  sub_F16B5  # dispatch, 1 site(s), first F16A2
+F179C  F000  sub_F179C  # dispatch, 3 site(s), first F173A
+F1912  F000  sub_F1912  # dispatch, 1 site(s), first F194E
+F1B60  F000  sub_F1B60  # dispatch, 1 site(s), first F1B95
+F1BA8  F000  sub_F1BA8  # dispatch, 1 site(s), first F1BDD
+F1BF0  F000  sub_F1BF0  # dispatch, 1 site(s), first F1C25
+F1C38  F000  sub_F1C38  # dispatch, 1 site(s), first F1C6D
+F1C80  F000  sub_F1C80  # dispatch, 1 site(s), first F1CB5
+F1CC8  F000  sub_F1CC8  # dispatch, 1 site(s), first F1CFD
+F1D10  F000  sub_F1D10  # dispatch, 1 site(s), first F1D4C
+F1D5F  F000  sub_F1D5F  # dispatch, 1 site(s), first F1D9B
+F1DFC  F000  sub_F1DFC  # dispatch, 2 site(s), first F1DE3
+F1EA6  F000  sub_F1EA6  # dispatch, 2 site(s), first F1E8D
+F1F50  F000  sub_F1F50  # dispatch, 2 site(s), first F1F37
+F1FFA  F000  sub_F1FFA  # dispatch, 2 site(s), first F1FE1
+F20A4  F000  sub_F20A4  # dispatch, 2 site(s), first F208B
+F214E  F000  sub_F214E  # dispatch, 2 site(s), first F2135
+F21F8  F000  sub_F21F8  # dispatch, 2 site(s), first F21DF
+F22A2  F000  sub_F22A2  # dispatch, 2 site(s), first F2289
+F234C  F000  sub_F234C  # dispatch, 2 site(s), first F2333
+F23F6  F000  sub_F23F6  # dispatch, 2 site(s), first F23DD
+F24A0  F000  sub_F24A0  # dispatch, 2 site(s), first F2487
+F254A  F000  sub_F254A  # dispatch, 2 site(s), first F2531
+F25F4  F000  sub_F25F4  # dispatch, 2 site(s), first F25DB
+F269E  F000  sub_F269E  # dispatch, 2 site(s), first F2685
+F2748  F000  sub_F2748  # dispatch, 2 site(s), first F272F
+F27F2  F000  sub_F27F2  # dispatch, 2 site(s), first F27D9
+F289C  F000  sub_F289C  # dispatch, 2 site(s), first F2883
+F2946  F000  sub_F2946  # dispatch, 2 site(s), first F292D
+F29F0  F000  sub_F29F0  # dispatch, 2 site(s), first F29D7
+F2A9A  F000  sub_F2A9A  # dispatch, 2 site(s), first F2A81
+F2B45  F000  sub_F2B45  # dispatch, 1 site(s), first F2B32
+F2BDC  F000  sub_F2BDC  # dispatch, 1 site(s), first F2BC9
+F2C2B  F000  sub_F2C2B  # dispatch, 1 site(s), first F2C18
+F2C7C  F000  sub_F2C7C  # dispatch, 46 site(s), first F1374
+F2C83  F000  sub_F2C83  # dispatch, 8 site(s), first F1654
+F2CBC  F000  sub_F2CBC  # dispatch, 10 site(s), first F13B8
+F2CF5  F000  sub_F2CF5  # dispatch, 73 site(s), first F136E
+F2D2C  F000  sub_F2D2C  # dispatch, 2 site(s), first F1A27
+F2D67  F000  sub_F2D67  # dispatch, 31 site(s), first F1CAF
+F2DA2  F000  sub_F2DA2  # dispatch, 5 site(s), first F3198
+F2E36  F000  sub_F2E36  # dispatch, 6 site(s), first F4551
+F2E7D  F000  sub_F2E7D  # dispatch, 12 site(s), first F420A
+F2F55  F000  sub_F2F55  # dispatch, 3 site(s), first F2F02
+F2F7F  F000  sub_F2F7F  # dispatch, 2 site(s), first F2F3C
+F305D  F000  sub_F305D  # dispatch, 1 site(s), first F304A
+F3097  F000  sub_F3097  # dispatch, 1 site(s), first F3084
+F30E3  F000  sub_F30E3  # dispatch, 1 site(s), first F30D0
+F311D  F000  sub_F311D  # dispatch, 1 site(s), first F310A
+F31B1  F000  sub_F31B1  # dispatch, 1 site(s), first F319E
+F31F9  F000  sub_F31F9  # dispatch, 1 site(s), first F31E6
+F3241  F000  sub_F3241  # dispatch, 1 site(s), first F32C6
+F328D  F000  sub_F328D  # dispatch, 1 site(s), first F327A
+F32D9  F000  sub_F32D9  # dispatch, 1 site(s), first F335E
+F3325  F000  sub_F3325  # dispatch, 1 site(s), first F3312
+F3384  F000  sub_F3384  # dispatch, 7 site(s), first F0F21
+F33A3  F000  sub_F33A3  # dispatch, 9 site(s), first F0F1B
+F359B  F000  sub_F359B  # dispatch, 2 site(s), first F3072
+F37F1  F000  sub_F37F1  # dispatch, 1 site(s), first F37DE
+F3839  F000  sub_F3839  # dispatch, 1 site(s), first F3826
+F38D5  F000  sub_F38D5  # dispatch, 1 site(s), first F38C2
+F391D  F000  sub_F391D  # dispatch, 1 site(s), first F390A
+F3966  F000  sub_F3966  # dispatch, 1 site(s), first F3953
+F39BC  F000  sub_F39BC  # dispatch, 1 site(s), first F39A9
+F3A04  F000  sub_F3A04  # dispatch, 1 site(s), first F39F1
+F3A4C  F000  sub_F3A4C  # dispatch, 1 site(s), first F3A39
+F3A94  F000  sub_F3A94  # dispatch, 1 site(s), first F3A81
+F3ADC  F000  sub_F3ADC  # dispatch, 1 site(s), first F3AC9
+F3B24  F000  sub_F3B24  # dispatch, 1 site(s), first F386F
+F3B7A  F000  sub_F3B7A  # dispatch, 1 site(s), first F3B67
+F3BC2  F000  sub_F3BC2  # dispatch, 1 site(s), first F3BAF
+F3C0A  F000  sub_F3C0A  # dispatch, 1 site(s), first F3BF7
+F3C52  F000  sub_F3C52  # dispatch, 1 site(s), first F3C3F
+F3C9A  F000  sub_F3C9A  # dispatch, 2 site(s), first F3B11
+F3CFA  F000  sub_F3CFA  # dispatch, 1 site(s), first F3CE7
+F3D60  F000  sub_F3D60  # dispatch, 1 site(s), first F3D4D
+F3DA8  F000  sub_F3DA8  # dispatch, 1 site(s), first F3D95
+F3E80  F000  sub_F3E80  # dispatch, 1 site(s), first F3E6D
+F3EA4  F000  sub_F3EA4  # dispatch, 1 site(s), first F3E9C
+F3EEC  F000  sub_F3EEC  # dispatch, 1 site(s), first F3ED9
+F3F10  F000  sub_F3F10  # dispatch, 1 site(s), first F3F08
+F3F58  F000  sub_F3F58  # dispatch, 1 site(s), first F3F45
+F3FA3  F000  sub_F3FA3  # dispatch, 1 site(s), first F3F90
+F4025  F000  sub_F4025  # dispatch, 1 site(s), first F4012
+F4049  F000  sub_F4049  # dispatch, 1 site(s), first F4041
+F4091  F000  sub_F4091  # dispatch, 1 site(s), first F407E
+F40B5  F000  sub_F40B5  # dispatch, 1 site(s), first F40AD
+F40FD  F000  sub_F40FD  # dispatch, 1 site(s), first F40EA
+F4148  F000  sub_F4148  # dispatch, 1 site(s), first F4135
+F4160  F000  sub_F4160  # dispatch, 2 site(s), first F48D4
+F41CD  F000  sub_F41CD  # dispatch, 1 site(s), first F41BA
+F4223  F000  sub_F4223  # dispatch, 1 site(s), first F4210
+F4244  F000  sub_F4244  # dispatch, 1 site(s), first F423C
+F428F  F000  sub_F428F  # dispatch, 1 site(s), first F427C
+F42E5  F000  sub_F42E5  # dispatch, 1 site(s), first F42D2
+F4306  F000  sub_F4306  # dispatch, 1 site(s), first F42FE
+F4351  F000  sub_F4351  # dispatch, 1 site(s), first F433E
+F43A7  F000  sub_F43A7  # dispatch, 1 site(s), first F4394
+F43C8  F000  sub_F43C8  # dispatch, 1 site(s), first F43C0
+F4455  F000  sub_F4455  # dispatch, 1 site(s), first F4442
+F44A8  F000  sub_F44A8  # dispatch, 1 site(s), first F4495
+F4511  F000  sub_F4511  # dispatch, 1 site(s), first F44FE
+F456A  F000  sub_F456A  # dispatch, 1 site(s), first F4557
+F45C0  F000  sub_F45C0  # dispatch, 1 site(s), first F45AD
+F45E1  F000  sub_F45E1  # dispatch, 1 site(s), first F45D9
+F463A  F000  sub_F463A  # dispatch, 1 site(s), first F4627
+F4690  F000  sub_F4690  # dispatch, 1 site(s), first F467D
+F46B1  F000  sub_F46B1  # dispatch, 1 site(s), first F46A9
+F470A  F000  sub_F470A  # dispatch, 1 site(s), first F46F7
+F4760  F000  sub_F4760  # dispatch, 1 site(s), first F474D
+F4781  F000  sub_F4781  # dispatch, 1 site(s), first F4779
+F47E4  F000  sub_F47E4  # dispatch, 1 site(s), first F47D1
+F4837  F000  sub_F4837  # dispatch, 1 site(s), first F4824
+F487F  F000  sub_F487F  # dispatch, 1 site(s), first F486C
+F4928  F000  sub_F4928  # dispatch, 2 site(s), first F509F
+F4995  F000  sub_F4995  # dispatch, 1 site(s), first F4982
+F49EB  F000  sub_F49EB  # dispatch, 1 site(s), first F49D8
+F4A0C  F000  sub_F4A0C  # dispatch, 1 site(s), first F4A04
+F4A57  F000  sub_F4A57  # dispatch, 1 site(s), first F4A44
+F4AAD  F000  sub_F4AAD  # dispatch, 1 site(s), first F4A9A
+F4ACE  F000  sub_F4ACE  # dispatch, 1 site(s), first F4AC6
+F4B19  F000  sub_F4B19  # dispatch, 1 site(s), first F4B06
+F4B6F  F000  sub_F4B6F  # dispatch, 1 site(s), first F4B5C
+F4B90  F000  sub_F4B90  # dispatch, 1 site(s), first F4B88
+F4C1D  F000  sub_F4C1D  # dispatch, 1 site(s), first F4C0A
+F4C70  F000  sub_F4C70  # dispatch, 1 site(s), first F4C5D
+F4CD9  F000  sub_F4CD9  # dispatch, 1 site(s), first F4CC6
+F4D32  F000  sub_F4D32  # dispatch, 1 site(s), first F4D1F
+F4D88  F000  sub_F4D88  # dispatch, 1 site(s), first F4D75
+F4DA9  F000  sub_F4DA9  # dispatch, 1 site(s), first F4DA1
+F4E02  F000  sub_F4E02  # dispatch, 1 site(s), first F4DEF
+F4E58  F000  sub_F4E58  # dispatch, 1 site(s), first F4E45
+F4E79  F000  sub_F4E79  # dispatch, 1 site(s), first F4E71
+F4ED2  F000  sub_F4ED2  # dispatch, 1 site(s), first F4EBF
+F4F28  F000  sub_F4F28  # dispatch, 1 site(s), first F4F15
+F4F49  F000  sub_F4F49  # dispatch, 1 site(s), first F4F41
+F4FAF  F000  sub_F4FAF  # dispatch, 1 site(s), first F4F9C
+F5002  F000  sub_F5002  # dispatch, 1 site(s), first F4FEF
+F504A  F000  sub_F504A  # dispatch, 1 site(s), first F5037
+F50FE  F000  sub_F50FE  # dispatch, 21 site(s), first F3E96
+F510F  F000  sub_F510F  # dispatch, 4 site(s), first F3DDD
+
+# --- pass 1: scanptr.py prologue
+F1388  F000  sub_F1388  # prologue, 1 site(s), first F1388
+F13D1  F000  sub_F13D1  # prologue, 1 site(s), first F13D1
+F141A  F000  sub_F141A  # prologue, 1 site(s), first F141A
+F1463  F000  sub_F1463  # prologue, 1 site(s), first F1463
+F14AC  F000  sub_F14AC  # prologue, 1 site(s), first F14AC
+F14F5  F000  sub_F14F5  # prologue, 1 site(s), first F14F5
+F153E  F000  sub_F153E  # prologue, 1 site(s), first F153E
+F158D  F000  sub_F158D  # prologue, 1 site(s), first F158D
+F16FE  F000  sub_F16FE  # prologue, 1 site(s), first F16FE
+F174D  F000  sub_F174D  # prologue, 1 site(s), first F174D
+F17EB  F000  sub_F17EB  # prologue, 1 site(s), first F17EB
+F1833  F000  sub_F1833  # prologue, 1 site(s), first F1833
+F1882  F000  sub_F1882  # prologue, 1 site(s), first F1882
+F18CA  F000  sub_F18CA  # prologue, 1 site(s), first F18CA
+F1961  F000  sub_F1961  # prologue, 1 site(s), first F1961
+F19B0  F000  sub_F19B0  # prologue, 1 site(s), first F19B0
+F19F8  F000  sub_F19F8  # prologue, 1 site(s), first F19F8
+F1A40  F000  sub_F1A40  # prologue, 1 site(s), first F1A40
+F1A88  F000  sub_F1A88  # prologue, 1 site(s), first F1A88
+F1AD0  F000  sub_F1AD0  # prologue, 1 site(s), first F1AD0
+F1B18  F000  sub_F1B18  # prologue, 1 site(s), first F1B18
+F1DAE  F000  sub_F1DAE  # prologue, 1 site(s), first F1DAE
+F1E58  F000  sub_F1E58  # prologue, 1 site(s), first F1E58
+F1F02  F000  sub_F1F02  # prologue, 1 site(s), first F1F02
+F1FAC  F000  sub_F1FAC  # prologue, 1 site(s), first F1FAC
+F2056  F000  sub_F2056  # prologue, 1 site(s), first F2056
+F2100  F000  sub_F2100  # prologue, 1 site(s), first F2100
+F21AA  F000  sub_F21AA  # prologue, 1 site(s), first F21AA
+F2254  F000  sub_F2254  # prologue, 1 site(s), first F2254
+F22FE  F000  sub_F22FE  # prologue, 1 site(s), first F22FE
+F23A8  F000  sub_F23A8  # prologue, 1 site(s), first F23A8
+F2452  F000  sub_F2452  # prologue, 1 site(s), first F2452
+F24FC  F000  sub_F24FC  # prologue, 1 site(s), first F24FC
+F25A6  F000  sub_F25A6  # prologue, 1 site(s), first F25A6
+F2650  F000  sub_F2650  # prologue, 1 site(s), first F2650
+F26FA  F000  sub_F26FA  # prologue, 1 site(s), first F26FA
+F27A4  F000  sub_F27A4  # prologue, 1 site(s), first F27A4
+F284E  F000  sub_F284E  # prologue, 1 site(s), first F284E
+F28F8  F000  sub_F28F8  # prologue, 1 site(s), first F28F8
+F29A2  F000  sub_F29A2  # prologue, 1 site(s), first F29A2
+F2A4C  F000  sub_F2A4C  # prologue, 1 site(s), first F2A4C
+F2AF6  F000  sub_F2AF6  # prologue, 1 site(s), first F2AF6
+F2B94  F000  sub_F2B94  # prologue, 1 site(s), first F2B94
+F2EC4  F000  sub_F2EC4  # prologue, 1 site(s), first F2EC4
+F2F1B  F000  sub_F2F1B  # prologue, 1 site(s), first F2F1B
+F2FB1  F000  sub_F2FB1  # prologue, 1 site(s), first F2FB1
+F3011  F000  sub_F3011  # prologue, 1 site(s), first F3011
+F3169  F000  sub_F3169  # prologue, 1 site(s), first F3169
+F37A9  F000  sub_F37A9  # prologue, 1 site(s), first F37A9
+F388D  F000  sub_F388D  # prologue, 1 site(s), first F388D
+F3E38  F000  sub_F3E38  # prologue, 1 site(s), first F3E38
+F3FDD  F000  sub_F3FDD  # prologue, 1 site(s), first F3FDD
+F4185  F000  sub_F4185  # prologue, 1 site(s), first F4185
+F4406  F000  sub_F4406  # prologue, 1 site(s), first F4406
+F4795  F000  sub_F4795  # prologue, 1 site(s), first F4795
+F494D  F000  sub_F494D  # prologue, 1 site(s), first F494D
+F4BCE  F000  sub_F4BCE  # prologue, 1 site(s), first F4BCE
+F4F60  F000  sub_F4F60  # prologue, 1 site(s), first F4F60
+
+# --- round r2: 83 targets reached by CALL/JMP from already-decoded code
+D046D  D000  sub_D046D  # CALL from D65D9 (+16 more)
+D0492  D000  sub_D0492  # CALL from D6702 (+4 more)
+D04D2  D000  sub_D04D2  # CALL from D66AB (+1 more)
+D04F3  D000  sub_D04F3  # CALL from D66B3 (+1 more)
+D0514  D000  sub_D0514  # CALL from D66C4 (+1 more)
+D0549  D000  sub_D0549  # CALL from D66A2
+D057E  D000  sub_D057E  # CALL from D04C6 (+1 more)
+D059F  D000  sub_D059F  # CALL from D04CC (+1 more)
+D05C0  D000  sub_D05C0  # CALL from D6247 (+1 more)
+D06E2  D000  sub_D06E2  # CALL from D6242
+D08C9  D000  sub_D08C9  # CALL from D6256
+D08FF  D000  sub_D08FF  # CALL from D663B
+D0B70  D000  sub_D0B70  # CALL from F2C2E
+D0CE2  D000  sub_D0CE2  # CALL from D0CA6 (+1 more)
+D0D99  D000  sub_D0D99  # CALL from D0D6C
+D3251  D2F2  sub_D3251  # CALL from D3058
+D32FB  D2F2  sub_D32FB  # CALL from D30C3
+D368C  D2F2  sub_D368C  # CALL from D31D3
+D36F1  D2F2  sub_D36F1  # CALL from D31A7
+D3751  D2F2  sub_D3751  # CALL from D31B5
+D37A1  D2F2  sub_D37A1  # CALL from D31BC
+D380E  D2F2  sub_D380E  # CALL from D31CE
+D3856  D2F2  sub_D3856  # CALL from D31F0
+D38C3  D2F2  sub_D38C3  # CALL from D31FE
+D3920  D2F2  sub_D3920  # CALL from D31F5
+D449D  D2F2  sub_D449D  # CALL from D31DC
+D46F8  D2F2  sub_D46F8  # CALL from D3237
+D536C  D2F2  sub_D536C  # CALL from D65FB (+2 more)
+D53C9  D2F2  sub_D53C9  # CALL from D623F
+D54E6  D2F2  sub_D54E6  # CALL from D5A84
+D5543  D2F2  sub_D5543  # CALL from D6679
+D5608  D2F2  sub_D5608  # CALL from D51E7
+D565F  D2F2  sub_D565F  # CALL from D642E (+4 more)
+D5729  D2F2  sub_D5729  # CALL from DD299
+D5A8B  D2F2  sub_D5A8B  # CALL from D6641 (+1 more)
+D5B5D  D2F2  sub_D5B5D  # CALL from D54C7
+D5D8D  D2F2  sub_D5D8D  # CALL from D5AE0
+D5F03  D2F2  sub_D5F03  # CALL from D5A60
+D6757  D2F2  sub_D6757  # CALL from D6750
+D69CC  D2F2  sub_D69CC  # CALL from D6673 (+1 more)
+D6A36  D2F2  sub_D6A36  # CALL from D6681
+D72AA  D72A  sub_D72AA  # CALL from D54D2
+D7636  D72A  sub_D7636  # CALL from D31AC
+D7ABC  D72A  sub_D7ABC  # CALL from D305D
+DC74B  D72A  sub_DC74B  # CALL from D3203
+DC7D7  D72A  sub_DC7D7  # CALL from D3120
+DC9C0  D72A  sub_DC9C0  # CALL from D641F (+7 more)
+DCD29  D72A  sub_DCD29  # CALL from D30B3
+DD2E6  DD25  sub_DD2E6  # CALL from DD294
+E0D23  DD25  sub_E0D23  # CALL from D5EF7
+F00A0  F000  sub_F00A0  # CALL from F4F6A (+16 more)
+F00E0  F000  sub_F00E0  # CALL from F4C72 (+2 more)
+F01C3  F000  sub_F01C3  # CALL from F4C83 (+2 more)
+F01E4  F000  sub_F01E4  # CALL from F1228 (+9 more)
+F02C3  F000  sub_F02C3  # CALL from F4C86 (+2 more)
+F02E9  F000  sub_F02E9  # CALL from F122B (+6 more)
+F0348  F000  sub_F0348  # CALL from F5011 (+141 more)
+F036D  F000  sub_F036D  # CALL from F2F97 (+4 more)
+F039E  F000  sub_F039E  # CALL from F33BB (+2 more)
+F03D4  F000  sub_F03D4  # CALL from F2DBA
+F0564  F000  sub_F0564  # CALL from F1085 (+2 more)
+F0701  F000  sub_F0701  # CALL from F50D2 (+7 more)
+F0849  F000  sub_F0849  # CALL from F2E79
+F0877  F000  sub_F0877  # CALL from F2EC0
+F0907  F000  sub_F0907  # CALL from D5179 (+2 more)
+F0CCB  F000  sub_F0CCB  # CALL from D5181
+F0D3F  F000  sub_F0D3F  # CALL from D5194
+F0DC0  F000  sub_F0DC0  # CALL from D519A
+F0DF5  F000  sub_F0DF5  # CALL from D51BA
+F0E96  F000  sub_F0E96  # CALL from D51C0
+F0F29  F000  sub_F0F29  # CALL from F4149 (+1 more)
+F0F73  F000  sub_F0F73  # CALL from D51C8 (+1 more)
+F0FDE  F000  sub_F0FDE  # CALL from D51CE
+F0FFA  F000  sub_F0FFA  # CALL from D30EA
+F108E  F000  sub_F108E  # CALL from D51AD
+F10E5  F000  sub_F10E5  # CALL from D51B3
+F111A  F000  sub_F111A  # CALL from D51D5
+F123D  F000  sub_F123D  # CALL from D51DB
+F3371  F000  sub_F3371  # CALL from F3333 (+9 more)
+F379E  F000  sub_F379E  # CALL from F4BCA (+1 more)
+F3882  F000  sub_F3882  # CALL from F4F5C (+3 more)
+F3FBC  F000  sub_F3FBC  # CALL from F414D (+1 more)
+F5114  F000  sub_F5114  # CALL from F50B2 (+28 more)
+
+# --- pass 2: jumptab.py
+DD30D  DD25  sub_DD30D  # jump-table entry, 1 table(s), first DD308
+DD31C  DD25  sub_DD31C  # jump-table entry, 1 table(s), first DD308
+DD327  DD25  sub_DD327  # jump-table entry, 1 table(s), first DD308
+DD332  DD25  sub_DD332  # jump-table entry, 1 table(s), first DD308
+DD33D  DD25  sub_DD33D  # jump-table entry, 1 table(s), first DD308
+DD348  DD25  sub_DD348  # jump-table entry, 1 table(s), first DD308
+DD353  DD25  sub_DD353  # jump-table entry, 1 table(s), first DD308
+DD35E  DD25  sub_DD35E  # jump-table entry, 1 table(s), first DD308
+DD369  DD25  sub_DD369  # jump-table entry, 1 table(s), first DD308
+DD377  DD25  sub_DD377  # jump-table entry, 1 table(s), first DD308
+DD385  DD25  sub_DD385  # jump-table entry, 1 table(s), first DD308
+DD3B0  DD25  sub_DD3B0  # jump-table entry, 1 table(s), first DD308
+DD3BF  DD25  sub_DD3BF  # jump-table entry, 1 table(s), first DD308
+DD3CE  DD25  sub_DD3CE  # jump-table entry, 1 table(s), first DD308
+
+# --- round r3: 108 targets reached by CALL/JMP from already-decoded code
+D03C0  D000  sub_D03C0  # CALL from D08DB
+D0957  D000  sub_D0957  # CALL from D08CA
+D0978  D000  sub_D0978  # CALL from D08CF
+D0B16  D000  sub_D0B16  # CALL from D0921 (+1 more)
+D0B22  D000  sub_D0B22  # CALL from D0937
+D0CB8  D000  sub_D0CB8  # CALL from D0BBE
+D0DA9  D000  sub_D0DA9  # CALL from D0DA5 (+1 more)
+D33A5  D2F2  sub_D33A5  # CALL from DC7F0
+D34F4  D2F2  sub_D34F4  # CALL from D3975 (+1 more)
+D3CDB  D2F2  sub_D3CDB  # CALL from D3926
+D4626  D2F2  sub_D4626  # CALL from D3A92
+D4884  D2F2  sub_D4884  # CALL from D4711
+D48DA  D2F2  sub_D48DA  # CALL from D475B
+D4ABC  D2F2  sub_D4ABC  # CALL from D4798
+D4C1A  D2F2  sub_D4C1A  # CALL from D47D5
+D4CF4  D2F2  sub_D4CF4  # CALL from D47F2
+D51EF  D2F2  sub_D51EF  # CALL from DC756
+D5911  D2F2  sub_D5911  # CALL from D4862
+D5AEB  D2F2  sub_D5AEB  # CALL from D5449
+D5C3E  D2F2  sub_D5C3E  # CALL from D5AA6
+D6BAE  D2F2  sub_D6BAE  # CALL from D6A21
+D6D36  D2F2  sub_D6D36  # CALL from D6A1C
+D6DDF  D2F2  sub_D6DDF  # CALL from D69EB
+D6E88  D2F2  sub_D6E88  # CALL from D69F2
+D6F2F  D2F2  sub_D6F2F  # CALL from D69F9
+D6FD5  D2F2  sub_D6FD5  # CALL from D6A00
+D707E  D2F2  sub_D707E  # CALL from D6A07
+D715C  D2F2  sub_D715C  # CALL from D6A0E
+D7204  D2F2  sub_D7204  # CALL from D6A15
+D72F2  D72A  sub_D72F2  # CALL from DC808 (+3 more)
+D7453  D72A  sub_D7453  # CALL from D763D
+D74FF  D72A  sub_D74FF  # CALL from D7AC3
+D7835  D72A  sub_D7835  # CALL from DC8ED (+1 more)
+D7A12  D72A  sub_D7A12  # CALL from DC79B
+D7B7A  D72A  sub_D7B7A  # CALL from DC831
+D8066  D72A  sub_D8066  # CALL from D7ADF
+D82CA  D72A  sub_D82CA  # CALL from D766E
+D83B6  D72A  sub_D83B6  # CALL from D7676
+D840B  D72A  sub_D840B  # CALL from D767E
+D8473  D72A  sub_D8473  # CALL from D7686
+D84C8  D72A  sub_D84C8  # CALL from D76AE
+D8590  D72A  sub_D8590  # CALL from D768E
+D85EB  D72A  sub_D85EB  # CALL from D7696
+D867F  D72A  sub_D867F  # CALL from D769E
+D8713  D72A  sub_D8713  # CALL from D76A6
+D878B  D72A  sub_D878B  # CALL from D76B6
+D890F  D72A  sub_D890F  # CALL from D76BE
+D89B5  D72A  sub_D89B5  # CALL from D7705
+D8A7C  D72A  sub_D8A7C  # CALL from D774B
+D8B30  D72A  sub_D8B30  # CALL from D7752
+D8C71  D72A  sub_D8C71  # CALL from D7759
+D8E09  D72A  sub_D8E09  # CALL from D7760
+D8E3F  D72A  sub_D8E3F  # CALL from D7767
+D9111  D72A  sub_D9111  # CALL from D776E
+D9124  D72A  sub_D9124  # CALL from D7775
+D915A  D72A  sub_D915A  # CALL from D777C
+D92C0  D72A  sub_D92C0  # CALL from D7666
+D93B2  D72A  sub_D93B2  # CALL from D7783
+D93FB  D72A  sub_D93FB  # CALL from D778A
+D9739  D72A  sub_D9739  # CALL from D7743
+D9B91  D72A  sub_D9B91  # CALL from D77A7
+D9CAB  D72A  sub_D9CAB  # CALL from D77AE
+D9CCE  D72A  sub_D9CCE  # CALL from D77BC
+D9D04  D72A  sub_D9D04  # CALL from D77B5
+D9EBB  D72A  sub_D9EBB  # CALL from D7791
+DA1DF  D72A  sub_DA1DF  # CALL from D47CF (+2 more)
+DAB03  D72A  sub_DAB03  # CALL from DC7A8
+DAD33  D72A  sub_DAD33  # CALL from D373D
+DBCE7  D72A  sub_DBCE7  # CALL from D4544 (+1 more)
+DBD26  D72A  sub_DBD26  # CALL from DC7E9
+DBD4E  D72A  sub_DBD4E  # CALL from D4566 (+1 more)
+DBD6A  D72A  sub_DBD6A  # CALL from DC7FF
+DBED2  D72A  sub_DBED2  # CALL from DC765
+DC2A6  D72A  sub_DC2A6  # CALL from D374A
+DC4C9  D72A  sub_DC4C9  # CALL from DC76E
+DC53C  D72A  sub_DC53C  # CALL from DC80C
+DC71B  D72A  sub_DC71B  # CALL from D3711
+DC934  D72A  sub_DC934  # CALL from D76F8 (+4 more)
+DD480  DD25  sub_DD480  # CALL from DD30D
+DD58F  DD25  sub_DD58F  # CALL from DD31C
+DD669  DD25  sub_DD669  # CALL from DD3B0
+DD6FC  DD25  sub_DD6FC  # CALL from DD332
+DDA6A  DD25  sub_DDA6A  # CALL from DD327
+DDAE1  DD25  sub_DDAE1  # CALL from DD33D
+DDB1F  DD25  sub_DDB1F  # CALL from DD3BF
+DDB6F  DD25  sub_DDB6F  # CALL from DD377
+DDBE9  DD25  sub_DDBE9  # CALL from DD348
+DDDE1  DD25  sub_DDDE1  # CALL from DD353
+DDFB3  DD25  sub_DDFB3  # CALL from DD35E
+DE0F5  DD25  sub_DE0F5  # CALL from DD369
+DE338  DD25  sub_DE338  # CALL from DD3CE
+DE3CD  DD25  sub_DE3CD  # CALL from E0D3F
+DF61B  DD25  sub_DF61B  # CALL from E0D98
+E0F7E  DD25  sub_E0F7E  # CALL from DD392
+E1F1A  DD25  sub_E1F1A  # CALL from DD3A1
+E3269  E326  sub_E3269  # CALL from DCA51
+E3278  E326  sub_E3278  # CALL from DCA3B
+F0135  F000  sub_F0135  # CALL from F0F6B (+4 more)
+F015D  F000  sub_F015D  # CALL from F0F6E (+1 more)
+F0196  F000  sub_F0196  # CALL from F0807 (+2 more)
+F0205  F000  sub_F0205  # CALL from F10DF (+14 more)
+F0264  F000  sub_F0264  # CALL from F0AFE (+1 more)
+F04E6  F000  sub_F04E6  # CALL from F1262 (+3 more)
+F0C49  F000  sub_F0C49  # CALL from F0A6E (+3 more)
+F0C7B  F000  sub_F0C7B  # CALL from F0A59 (+8 more)
+F0CAD  F000  sub_F0CAD  # CALL from F0A79
+F36F6  F000  sub_F36F6  # CALL from D44B5
+F3701  F000  sub_F3701  # CALL from D44BC
+
+# --- pass 3: jumptab.py
+DD506  DD25  sub_DD506  # jump-table entry, 1 table(s), first DD501
+DD54E  DD25  sub_DD54E  # jump-table entry, 1 table(s), first DD501
+DD55D  DD25  sub_DD55D  # jump-table entry, 1 table(s), first DD501
+DD57B  DD25  sub_DD57B  # jump-table entry, 1 table(s), first DD501
+DD618  DD25  sub_DD618  # jump-table entry, 1 table(s), first DD613
+DD647  DD25  sub_DD647  # jump-table entry, 1 table(s), first DD613
+DD64E  DD25  sub_DD64E  # jump-table entry, 1 table(s), first DD613
+DD655  DD25  sub_DD655  # jump-table entry, 1 table(s), first DD613
+DD6AD  DD25  sub_DD6AD  # jump-table entry, 1 table(s), first DD6A8
+DD6C3  DD25  sub_DD6C3  # jump-table entry, 1 table(s), first DD6A8
+DD6CF  DD25  sub_DD6CF  # jump-table entry, 1 table(s), first DD6A8
+DD6DB  DD25  sub_DD6DB  # jump-table entry, 1 table(s), first DD6A8
+DE06A  DD25  sub_DE06A  # jump-table entry, 1 table(s), first DE065
+DE07C  DD25  sub_DE07C  # jump-table entry, 1 table(s), first DE065
+DE0A9  DD25  sub_DE0A9  # jump-table entry, 1 table(s), first DE065
+DE0D8  DD25  sub_DE0D8  # jump-table entry, 1 table(s), first DE065
+E0FC2  DD25  sub_E0FC2  # jump-table entry, 1 table(s), first E0FBD
+E1000  DD25  sub_E1000  # jump-table entry, 1 table(s), first E0FBD
+E100B  DD25  sub_E100B  # jump-table entry, 1 table(s), first E0FBD
+E101C  DD25  sub_E101C  # jump-table entry, 1 table(s), first E0FBD
+E1F5E  DD25  sub_E1F5E  # jump-table entry, 1 table(s), first E1F59
+E1F9C  DD25  sub_E1F9C  # jump-table entry, 1 table(s), first E1F59
+E1FA7  DD25  sub_E1FA7  # jump-table entry, 1 table(s), first E1F59
+E1FB8  DD25  sub_E1FB8  # jump-table entry, 1 table(s), first E1F59
+
+# --- pass 3: scanptr.py pushptr
+F3646  F000  sub_F3646  # pushptr, 1 site(s), first D88FC
+F3651  F000  sub_F3651  # pushptr, 1 site(s), first D8855
+F365C  F000  sub_F365C  # pushptr, 1 site(s), first D88B1
+F3667  F000  sub_F3667  # pushptr, 1 site(s), first D8803
+F3672  F000  sub_F3672  # pushptr, 1 site(s), first D88F6
+F367D  F000  sub_F367D  # pushptr, 1 site(s), first D884F
+F3688  F000  sub_F3688  # pushptr, 1 site(s), first D88AB
+F3693  F000  sub_F3693  # pushptr, 1 site(s), first D87FD
+
+# --- round r4: 92 targets reached by CALL/JMP from already-decoded code
+D0401  D000  sub_D0401  # CALL from DD6CF (+1 more)
+D098C  D000  sub_D098C  # CALL from DD681
+D09BC  D000  sub_D09BC  # CALL from DD6C8
+D09F3  D000  sub_D09F3  # CALL from DD6D4
+D0A33  D000  sub_D0A33  # CALL from DD6E0 (+1 more)
+D0CFC  D000  sub_D0CFC  # CALL from D0CC3
+D40F1  D2F2  sub_D40F1  # CALL from D3D47
+D45BC  D2F2  sub_D45BC  # CALL from DC00A
+D4FDC  D2F2  sub_D4FDC  # CALL from D4DD2
+D50D7  D2F2  sub_D50D7  # CALL from D4FCD
+D562F  D2F2  sub_D562F  # CALL from D92A1 (+1 more)
+D5F99  D2F2  sub_D5F99  # CALL from DDB61
+D734B  D72A  sub_D734B  # CALL from D7627 (+1 more)
+D7B47  D72A  sub_D7B47  # CALL from DA20A
+D800A  D72A  sub_D800A  # CALL from D7534 (+1 more)
+D8154  D72A  sub_D8154  # CALL from D8140
+D81B9  D72A  sub_D81B9  # CALL from D8626 (+2 more)
+D823B  D72A  sub_D823B  # CALL from D9230 (+1 more)
+D8D00  D72A  sub_D8D00  # CALL from D8CE8
+D8EE1  D72A  sub_D8EE1  # CALL from D8E6C
+D9037  D72A  sub_D9037  # CALL from D8E67
+D9444  D72A  sub_D9444  # CALL from D9433 (+1 more)
+D9532  D72A  sub_D9532  # CALL from D97AE
+D95B0  D72A  sub_D95B0  # CALL from DBF88 (+2 more)
+D97D1  D72A  sub_D97D1  # CALL from D9C85
+D9B49  D72A  sub_D9B49  # CALL from D9BB5
+D9B76  D72A  sub_D9B76  # CALL from D9B98
+D9F7D  D72A  sub_D9F7D  # CALL from DA1ED
+DA19D  D72A  sub_DA19D  # CALL from DA418
+DA41E  D72A  sub_DA41E  # CALL from D9F3D
+DA57E  D72A  sub_DA57E  # CALL from D9EC8
+DA96D  D72A  sub_DA96D  # CALL from D7549
+DAA15  D72A  sub_DAA15  # CALL from D8080
+DAAAF  D72A  sub_DAAAF  # CALL from D9DF9 (+6 more)
+DAB56  D72A  sub_DAB56  # CALL from D9E2D (+1 more)
+DAB92  D72A  sub_DAB92  # CALL from D8902
+DAC03  D72A  sub_DAC03  # CALL from D8ED4
+DAC69  D72A  sub_DAC69  # CALL from D97C1
+DAD52  D72A  sub_DAD52  # CALL from D8B1F (+1 more)
+DB369  D72A  sub_DB369  # CALL from D8AF5
+DB503  D72A  sub_DB503  # CALL from D9C98
+DB5F3  D72A  sub_DB5F3  # CALL from D919D
+DB716  D72A  sub_DB716  # CALL from D9E7E
+DB839  D72A  sub_DB839  # CALL from D8CEF
+DB8F7  D72A  sub_DB8F7  # CALL from D9266
+DBB4B  D72A  sub_DBB4B  # CALL from DBF6C (+1 more)
+DBB9B  D72A  sub_DBB9B  # CALL from D8C1C
+DBC0D  D72A  sub_DBC0D  # CALL from DC010
+DC045  D72A  sub_DC045  # CALL from DC57B
+DC075  D72A  sub_DC075  # CALL from DC508
+DC2FC  D72A  sub_DC2FC  # CALL from DC547 (+1 more)
+DC386  D72A  sub_DC386  # CALL from DC2D0
+DC410  D72A  sub_DC410  # CALL from DC543 (+1 more)
+DC47E  D72A  sub_DC47E  # CALL from DC523
+DC497  D72A  sub_DC497  # CALL from DC596
+DC5AF  D72A  sub_DC5AF  # CALL from D9E35 (+1 more)
+DC8FE  D72A  sub_DC8FE  # CALL from D9D93 (+9 more)
+DC97A  D72A  sub_DC97A  # CALL from DC03D (+23 more)
+DE3DF  DD25  sub_DE3DF  # CALL from DDBC2
+DF5CC  DD25  sub_DF5CC  # CALL from DDAF9
+DF764  DD25  sub_DF764  # CALL from DD553
+DF829  DD25  sub_DF829  # CALL from E1F66 (+14 more)
+DF87E  DD25  sub_DF87E  # CALL from DE3BE (+8 more)
+DF8C6  DD25  sub_DF8C6  # CALL from DDD7B
+DF9D4  DD25  sub_DF9D4  # CALL from E1F3B (+11 more)
+DFBA0  DD25  sub_DFBA0  # CALL from DD4DA
+DFC9E  DD25  sub_DFC9E  # CALL from DD5EC
+DFD87  DD25  sub_DFD87  # CALL from DD647
+DFF47  DD25  sub_DFF47  # CALL from DD64E
+E0107  DD25  sub_E0107  # CALL from DDBCC
+E029D  DD25  sub_E029D  # CALL from DE025 (+2 more)
+E03D0  DD25  sub_E03D0  # CALL from DE343 (+10 more)
+E060A  DD25  sub_E060A  # CALL from DDAA7 (+1 more)
+E09EE  DD25  sub_E09EE  # CALL from DDF7A (+4 more)
+E0A2B  DD25  sub_E0A2B  # CALL from DE39D (+9 more)
+E1034  DD25  sub_E1034  # CALL from E0FF9 (+1 more)
+E1170  DD25  sub_E1170  # CALL from E1004
+E1603  DD25  sub_E1603  # CALL from E100F
+E1AA0  DD25  sub_E1AA0  # CALL from E0FF0 (+1 more)
+E1FD0  DD25  sub_E1FD0  # CALL from E1F95 (+1 more)
+E2162  DD25  sub_E2162  # CALL from E1FA0
+E2805  DD25  sub_E2805  # CALL from E1FAB
+E2F02  DD25  sub_E2F02  # CALL from E1F8C (+1 more)
+E3314  E326  sub_E3314  # CALL from D3EED (+2 more)
+F052B  F000  sub_F052B  # CALL from DE273 (+4 more)
+F1339  F000  sub_F1339  # CALL from D8C4A
+F33EF  F000  sub_F33EF  # CALL from DAB0F
+F35D8  F000  sub_F35D8  # CALL from D3F00
+F35E3  F000  sub_F35E3  # CALL from D402E
+F35EE  F000  sub_F35EE  # CALL from D4035
+F35F9  F000  sub_F35F9  # CALL from D464F
+F3604  F000  sub_F3604  # CALL from D4656
+
+# --- round r5: 53 targets reached by CALL/JMP from already-decoded code
+D093B  D000  sub_D093B  # CALL from DF5FA
+D0A5D  D000  sub_D0A5D  # CALL from D0A2E (+3 more)
+D0ACA  D000  sub_D0ACA  # CALL from D0A29 (+2 more)
+D52D5  D2F2  sub_D52D5  # CALL from D5118 (+2 more)
+D5BCF  D2F2  sub_D5BCF  # CALL from D6028
+D60B4  D2F2  sub_D60B4  # CALL from D5127 (+2 more)
+D7C2B  D72A  sub_D7C2B  # CALL from DB412 (+2 more)
+D7DBC  D72A  sub_D7DBC  # CALL from DADC0 (+5 more)
+DA468  D72A  sub_DA468  # CALL from DA5A3 (+1 more)
+DA5B5  D72A  sub_DA5B5  # CALL from D7396
+DA6E4  D72A  sub_DA6E4  # CALL from D73BE
+DA7EB  D72A  sub_DA7EB  # CALL from D7375
+DAB26  D72A  sub_DAB26  # CALL from D9A49 (+2 more)
+DAE22  D72A  sub_DAE22  # CALL from DB3F4
+DAE87  D72A  sub_DAE87  # CALL from DB452
+DAEA7  D72A  sub_DAEA7  # CALL from D9A81
+DAFF7  D72A  sub_DAFF7  # CALL from D9AB0
+DB120  D72A  sub_DB120  # CALL from D9ADF
+DB225  D72A  sub_DB225  # CALL from D9B14
+DB333  D72A  sub_DB333  # CALL from DB422
+DB457  D72A  sub_DB457  # CALL from DB7D4 (+2 more)
+DB9BD  D72A  sub_DB9BD  # CALL from D97EC
+DBB7B  D72A  sub_DBB7B  # CALL from D81FB
+DC09C  D72A  sub_DC09C  # CALL from DC48E
+DC0D0  D72A  sub_DC0D0  # CALL from DC4A7
+DC10D  D72A  sub_DC10D  # CALL from DC44F
+DC194  D72A  sub_DC194  # CALL from DC346
+DC21B  D72A  sub_DC21B  # CALL from DC3D0
+DC4B0  D72A  sub_DC4B0  # CALL from DA457
+DC636  D72A  sub_DC636  # CALL from DB7C8
+DC6AC  D72A  sub_DC6AC  # CALL from DB7ED (+4 more)
+DCA91  D72A  sub_DCA91  # CALL from D8FFE (+1 more)
+DCBCA  D72A  sub_DCBCA  # CALL from D603D (+1 more)
+DCD9E  D72A  sub_DCD9E  # CALL from D8050
+DD03D  D72A  sub_DD03D  # CALL from D8057
+DE44C  DD25  sub_DE44C  # CALL from E09D1 (+21 more)
+DE736  DD25  sub_DE736  # CALL from DFF16 (+3 more)
+DEE60  DD25  sub_DEE60  # CALL from E00D6 (+3 more)
+E0A51  DD25  sub_E0A51  # CALL from DFAC9 (+1 more)
+E0B0A  DD25  sub_E0B0A  # CALL from DFA98 (+1 more)
+E0C24  DD25  sub_E0C24  # CALL from DFA74 (+1 more)
+E0E29  DD25  sub_E0E29  # CALL from E2C9A (+22 more)
+E0EB1  DD25  sub_E0EB1  # CALL from E2E91 (+15 more)
+F0102  F000  sub_F0102  # CALL from D9FBA
+F0497  F000  sub_F0497  # CALL from F055D
+F1230  F000  sub_F1230  # CALL from DA42F
+F2FFD  F000  sub_F2FFD  # CALL from DA9F4 (+1 more)
+F3007  F000  sub_F3007  # CALL from DA9FB (+1 more)
+F35C2  F000  sub_F35C2  # CALL from DAA71 (+1 more)
+F35CD  F000  sub_F35CD  # CALL from DAA78 (+1 more)
+F3784  F000  sub_F3784  # CALL from D50F8 (+1 more)
+F5122  F000  sub_F5122  # CALL from D900C (+1 more)
+F515D  F000  sub_F515D  # CALL from D50BC
+
+# --- round r6: 15 targets reached by CALL/JMP from already-decoded code
+D0AF8  D000  sub_D0AF8  # CALL from D0AF4 (+10 more)
+D73C9  D72A  sub_D73C9  # CALL from D7E23 (+1 more)
+D7B15  D72A  sub_D7B15  # CALL from DC4C0
+D7F56  D72A  sub_D7F56  # CALL from D60C6
+DA879  D72A  sub_DA879  # CALL from DC100 (+1 more)
+DAF9F  D72A  sub_DAF9F  # CALL from DAF02
+DB0EA  D72A  sub_DB0EA  # CALL from DB054
+DB1F6  D72A  sub_DB1F6  # CALL from DB1AA (+1 more)
+DB2D4  D72A  sub_DB2D4  # CALL from DB28E
+DC675  D72A  sub_DC675  # CALL from DC6E0
+DCFAB  D72A  sub_DCFAB  # CALL from DCF7E (+3 more)
+DD1C1  D72A  sub_DD1C1  # CALL from DD194 (+2 more)
+F34C5  F000  sub_F34C5  # CALL from DBB2B
+F35AC  F000  sub_F35AC  # CALL from F2FFE
+F35B7  F000  sub_F35B7  # CALL from F3008

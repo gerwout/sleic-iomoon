@@ -1,0 +1,68 @@
+# IO Moon 80188 -- provisional names for entry points whose behaviour was
+# read out of the instruction stream.  grow.py applies these on top of the
+# auto-generated "sub_<addr>" names in entries.txt, so a full rebuild from
+# the seed keeps them.
+#
+#   <flat-address>  <label>   # what was actually decoded
+#
+# Deliberately descriptive of the observed peripheral/RAM traffic rather
+# than of any assumed purpose.  A0000/A0080/... are the 80188 PACS
+# peripheral chip selects PCS0..PCS6 (PACS base 0xA0000, 0x80 spacing).
+
+# -- reset / boot ---------------------------------------------------------
+FFFF0  reset_vector                # 80188 power-on CS:IP = FFFF:0000
+FFF00  boot_umcs_init              # OUT FFA0,C03C (UMCS) then far JMP D000:0000
+D0000  boot_init                   # SS/SP, DS/ES=4000, 15-entry chip-select OUT table at CS:0041, 5 far calls, far JMP D2F2:0002
+D00B9  boot_pcs_and_queue_init     # seeds PCS6/PCS0/PCS1/PCS4 and the 4000:1158 queue
+D011C  boot_queue2_init            # seeds the 4000:1220 inbound log and its far pointers [1150]/[1152], [1154]/[1156]
+D00FA  pcs4_bit3_strobe            # sets then clears bit 3 of the PCS4 A0200 shadow [1138]
+F0000  boot_ram_var_init           # clears 4000:0000-03FF and 0600-09FF, fills 4000:0400-05FF with FF, clears 7000:0000-03FF, seeds ~30 work variables
+D0B2B  boot_sound_state_init       # clears the sound state block at 4000:12EE-1305
+
+# -- interrupt handlers (from the ROM-resident IVT, ROM1 file offset 0) ---
+D016D  isr_type02_nmi              # IVT type 02: reads PCS2 A0100, byte 0x32 bumps [1144], else appends to the 4000:1220 log and sets [1147]
+D024F  isr_type08_timer0           # IVT type 08: OKI duration counters, oki_trigger_a/b, general timers, EOI = clear INSERV bit 0
+D0343  isr_type0C_int0             # IVT type 0C: qout_service_pcs1, fm_player_tick, animation calls, EOI = clear INSERV bit 4
+D0331  pcs4_clear_bit7             # clears bit 7 of the PCS4 A0200 shadow [1138]
+
+# -- 80188 -> peripheral byte queue (PCS1/PCS3/PCS4) ---------------------
+D0138  qout_push                   # pushes a byte into the 4000:1158 queue, advances [114E]
+D01E5  qout_service_pcs1           # pops 4000:1158 via [114C], waits PCS3 A0180 bit 0, writes PCS1 A0080, strobes PCS4 A0200 bits 6/5
+
+# -- inbound byte log consumers ------------------------------------------
+D5AEB  inbound_byte_take_a         # if [1147], LES BX,[1150] and take one byte from the 4000:1220 log
+D5E7A  inbound_byte_take_b         # same shape as inbound_byte_take_a; the copy main_entry polls
+
+# -- segment-5040 non-volatile store -------------------------------------
+D057E  pcs0_window_open            # PCS0 A0000 <- shadow &~08 | 10; brackets every segment-5040 access
+D059F  pcs0_window_close           # PCS0 A0000 <- shadow &~10 | 08; the inverse
+D046D  nvstore_write_dword_far     # 4 bytes to ES:SI inside the window
+D0492  nvstore_read_dword_far      # DX:AX from ES:BX inside the window
+D04A9  nvstore_write_byte_far      # byte to ES:BX inside the window
+D04BF  nvstore_read_byte_far       # byte from ES:BX inside the window
+D04D2  nvstore_write_triple_83     # one value to 5040:0083 / 0116 / 020C
+D04F3  nvstore_write_triple_84     # one value to 5040:0084 / 0117 / 020D
+D0514  nvstore_check_triple_83     # compares 5040:0083 against 0116 and 020C; on mismatch zeroes all three
+D0549  nvstore_check_triple_84     # the same check for 5040:0084 / 0117 / 020D
+
+# -- OKI MSM6376 (PCS6 A0300 latch, PCS0 A0000 bit 5 strobe) -------------
+D0C57  oki_trigger_a               # sample# -> A0300, duration word from the CS:0C1F table -> [12FD]
+D0C84  oki_trigger_b               # sample# -> A0300 twice (bit 7 clear then set), duration -> [1300]
+D0CE2  okcs_strobe                 # clears then sets bit 5 of the PCS0 A0000 shadow [1134]
+D0CFC  pcs0_bit5_clear             # clears bit 5 of the PCS0 shadow
+D0D09  pcs0_bit5_set_far           # sets bit 5 of the PCS0 shadow, RETF
+
+# -- YM3812 (PCS5 A0280 index / A0281 data) ------------------------------
+D0D1B  fm_player_tick              # gated on [12EE]; counts [12EC] down, then fm_sequencer_step
+D0D37  fm_sequencer_step           # walks a CS: byte stream: EE=duration EF=tempo FF=end DD=jump, else ym3812_write
+D0D99  ym3812_write                # AH -> A0280 (index), settle, AL -> A0281 (data), settle
+D0DA9  ym3812_settle_delay         # 10-iteration DEC AL busy loop between the two ports
+D0DB4  fm_song_select              # sets the sequencer stream pointer/state from a song index
+
+# -- main firmware --------------------------------------------------------
+D2F22  main_entry                  # target of boot_init's far JMP; boot checks, then falls into main_loop
+D3002  main_loop                   # reads the mode byte 413C:014F and dispatches to one of four handlers, forever
+
+# -- animation / DMD image streaming -------------------------------------
+F0348  anim_stream_open            # reads a header from ES:SI into [1106] / [10FE] / [1100]
+F1303  anim_dispatch_10F6          # MOV AX,[4000:10F6]; JMP AX -- the animation-handler dispatcher
