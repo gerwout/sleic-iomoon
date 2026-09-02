@@ -107,7 +107,7 @@ ALIAS_X86 = {
 }
 
 
-# The Z80 equivalent -- deliberately empty. Over the 4743 instructions of the
+# The Z80 equivalent -- deliberately empty. Over the 4760 instructions of the
 # Z80 baseline, dasmz80 and unidasm spell every mnemonic identically, so no
 # alias is *needed* to explain an observed difference, and by the same rule
 # that governs ALIAS_X86 above none is added. Leaving the table here (rather

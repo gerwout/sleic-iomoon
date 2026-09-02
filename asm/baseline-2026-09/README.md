@@ -849,7 +849,7 @@ is how the bit-level uses below are readable at all:
 | port | shadow | role, and the instructions that show it |
 |---|---|---|
 | `0x00` IN | -- | inbound data byte from the 80188. Read in exactly two places, each immediately after enabling a port-81 gate bit: the NMI handler (`008C`, gate bit 4) and `host_read_byte` (`01D6`, gate bit 6). |
-| `0x01` IN | -- | status from the 80188. **Bit 1 is the outbound handshake**: `host_send_c0fc`/`_c008_a`/`_c008_b` all begin `IN A,($01) / BIT 1,A / JR Z,self`, spinning until it is set before touching port `0x80`. **Bit 5** is the datum read by `direct_input_scan`'s 16-way scan. |
+| `0x01` IN | -- | status from the 80188. **Bit 1 is the bus-free/ready handshake for a transfer in either direction**: all three `host_send_*` routines *and* the inbound `host_read_byte` (`01B6-01BA`) begin `IN A,($01) / BIT 1,A / JR Z,self`, spinning until it is set before touching port `0x80` or port `0x00`. **Bit 5** is the datum read by `direct_input_scan`'s 16-way scan. |
 | `0x02` IN | -- | **switch-matrix row byte.** Read once per column by `sw_read_col0..5`, `CPL`-ed and stored to `C0E7/E9/EB/ED/EF/F1`, with the change mask going to `C0DB..C0E0`. |
 | `0x03` IN | `C0F7` | a second, non-matrixed input byte: `IN A,($03) / CPL -> (C0F7) / OR (C0F8) -> (C0E3)` in `input_port03_read`. `input_port03_bit3` tests bit 3 of it directly. |
 | `0x04` IN | -- | status/cabinet input, always bit-tested, never stored whole: bit 0 gates `direct_input_scan`, bit 7 is the spin condition in `selftest_wait_reset`. |
@@ -872,7 +872,7 @@ this baseline has already classified:
 
 | address | bytes | where |
 |---|---|---|
-| `2072` | `DB 23` | inside the 256-entry command table (`2000-21FF`): the low/high halves of adjacent entries |
+| `2072` | `DB 23` | inside the 256-entry command table (`2000-21FF`) -- it is the aligned low+high byte of the single entry `0x39` = `$23DB` |
 | `21FC` | `D3 27` | same table -- it is entry `0xFE` = `$27D3`, stored little-endian |
 | `3CBE` | `D3 5A` | inside the sixteen data blocks at `38CC-4FD4` |
 | `3CC6` | `DB 5E` | same |
@@ -891,8 +891,15 @@ So the 141 sites above are the complete I/O surface of this ROM.
   column per call, paced by a settling counter in `C0F9`, with the state
   pointer in `C0E5`. Each column has its own change handler
   (`sw_col0_changed` at `2FE7` and five siblings at `+0x41` intervals) which
-  walks the change mask bit by bit and calls a distinct per-bit routine --
-  i.e. the switch *numbering* is directly readable out of those six routines.
+  walks the change mask bit by bit and calls a distinct per-bit routine. Those
+  per-bit routines are two uniform 8-byte-stride runs, at `316D` and `32AF`,
+  **48 of them in total** -- one per matrix input -- and each does nothing but
+  load its own code into `C0FC` and send it to the 80188: codes `0x0A-0x31`
+  for the first 40 and `0x34-0x3B` for the last 8 (`0x32`/`0x33` are taken by
+  the `0D3C`/`0D44` senders). The port-`0x03` handlers at `125B`/`1278`/
+  `1285`/`12D2`/`1342` do the same with `0x3E-0x42`. So the switch *numbering*
+  -- and the exact byte each switch sends over J1 -- is directly readable out
+  of this ROM.
 * **The lamp matrix is 8 columns x 8 bits = 64 lamps**, data on port `0x84`
   from `C10F..C116`, column strobe on port `0x83`, one column per call of
   `lamp_scan_tick` (`3446`) through the `C117` state pointer.
@@ -964,25 +971,59 @@ Old addresses and claims were used only as probes. Decoding fresh:
   `C0E5`, per-column change handlers.
 * **Ports `0x82-0x87` are lamp/solenoid/switch-scan, not sound** (the current
   `CLAUDE.md` position) -- confirmed; the Z80 writes no sound chip.
-* **Port `0x01` bit 1 IN is the outbound handshake, not an OKI-ready line**
-  -- confirmed: it is the spin condition of every one of the three
-  `host_send_*` routines, immediately before a port-`0x80` write.
-* **Port `0x81` bit 1 = data-valid, bit 4 = the NMI path's inbound gate,
-  bit 5 = the command strobe, bit 6 = the polled inbound gate** -- all four
-  confirmed mechanically (each is set immediately before, and cleared
-  immediately after, the transfer it gates).
+* **Port `0x01` bit 1 IN is the J1 handshake, not an OKI-ready line** --
+  confirmed, and it is not outbound-only: it is the spin condition of all
+  three `host_send_*` routines immediately before a port-`0x80` write **and**
+  of the inbound `host_read_byte` (`01B6-01BA`) immediately before its
+  port-`0x00` read, i.e. a bus-free/ready line for a transfer in either
+  direction.
+* **Port `0x81` bit 1 = data-valid, bit 2 = the `C0FC`-channel strobe, bit 4 =
+  the NMI path's inbound gate, bit 5 = the `C008`-channel strobe, bit 6 = the
+  polled inbound gate** -- all five confirmed mechanically (each is set
+  immediately before, and cleared immediately after, the transfer it gates).
 * **64 lamps** (`docs/switch_lamp_solenoid.md`) -- confirmed exactly: 8
   columns x 8 data bits.
 
 **Refined or not confirmed.**
 
-* Port `0x81` **bit 2** is *not* a switch strobe: it is pulsed only by
-  `host_send_c0fc`, after the port-`0x80` write, as a second strobe distinct
-  from bit 5. The switch strobe is port `0x82`.
-* Port `0x81` **bit 3** is not mentioned in the older material at all. It is
-  toggled every 16 ticks of the `C045` counter by `port81_bit3_toggle`
-  (`0C97`), i.e. driven as a periodic square wave, and bit 0 is cleared with
-  it.
+* Port `0x81` **bit 2** is the strobe of the **`C0FC` command channel**, and
+  that channel does carry switch codes. `host_send_c0fc` (`0116-0143`) spins
+  on port-01 bit 1, writes `(C0FC)` to port `0x80`, then pulses bit 2 -- the
+  same position bit 5 occupies for the `C008` channel. There are 85 stores to
+  `C0FC` in the ROM, and the largest group is the switch matrix's own per-bit
+  handlers: `sw_col0_changed..sw_col5_changed` dispatch each set bit of their
+  change mask to a routine in the runs at `316D`(+8) and `32AF`(+8), which
+  together are **exactly 48 routines** -- one per matrix input -- each loading
+  a distinct code (`0x0A-0x31`, then `0x34-0x3B`) into `C0FC` and sending it.
+  The port-`0x03` handlers do the same with `0x3E-0x42`. So the old doc's
+  "switch-byte strobe to the 80188" label for bit 2 is **supported**, not
+  refuted; what this ROM does not establish is that the channel is *only*
+  switch codes -- boot sends `0x47` and `0D3C`/`0D44` send `0x32`/`0x33` down
+  the same path. Note this is a **different mechanism** from the port-`0x82`
+  matrix **column** strobe: `0x82` scans the matrix hardware, bit 2 hands the
+  resulting code to the 80188. Both exist; neither replaces the other.
+* Port `0x81` **bit 3** -- **the older material is wrong here.**
+  `docs/z80_io_ports.md` line 41 states bit 3 is "**never set** (no `or 008h`
+  before any `out (081h),a`) -- unused on the Z80 side". It is not unused:
+  `port81_bit3_toggle` (`0C97`) flips it every 16 ticks of the `C045` counter
+  with `SET 3,A` (`CB DF`, `0CB0`) and `RES 3,A` (`CB 9F`, `0CA6`), each
+  immediately before an `OUT ($81),A`, driving it as a periodic square wave;
+  `RES 0,A` (`CB 87`, `0CA8`) clears bit 0 on the same path.
+
+  The **methodology lesson** matters more than the bit: the old analysis
+  searched for `or 008h` (`F6 08`) immediates and concluded from their absence
+  that the bit was untouched. That premise is literally true -- the ROM's five
+  `F6 08` sites (`05F6`, `0674`, `0849`, `094D`, `0BC8`) all operate on `C005`,
+  `C006` or `C008`, i.e. ports `0x85`/`0x86` and the port-`0x80` payload, and
+  none is on the port-`0x81` path -- but the inference is not, because the Z80
+  also has **`CB`-prefixed `SET`/`RES` bit instructions**, which that search
+  could not see. A mask-immediate grep is not a bit-usage census.
+
+  For the record, the complete census over all 22 `OUT ($81),A` sites: the
+  immediate masks are `OR 01/02/03/04/10/20/40` and `AND BF/DF/EF/FB/FD/FE`
+  (the old doc's list, plus `EF`), and the **only** `SET`/`RES` on `A`
+  anywhere in the whole listing are the three at `0CA6`/`0CA8`/`0CB0`. Bit 7
+  is genuinely never manipulated, so the old doc's bit-7 claim stands.
 * Port `0x81` **bit 0** is set on the two `c008` sends and cleared on the
   read. "Sound-channel select" is consistent with that but is not something
   this ROM proves.
