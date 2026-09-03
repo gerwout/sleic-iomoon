@@ -31,15 +31,14 @@ Every machine here is built the same way:
 |------|--------|-------|
 | Game CPU | Intel 80188 | Game rules, DMD frame composition, both sound chips |
 | I/O CPU | Zilog Z80 | Switch matrix scan, lamps, coils; talks to the 80188 over the J1 byte port |
-| Display coprocessor | Intel 8039 (`SLEIC1`, `SLEIC3`) or PIC16C5x (IO Moon) | Rasterizes the staged frame buffer onto the plasma panel |
+| Display coprocessor | Intel 8039 (`SLEIC1`, `SLEIC3`) or PIC16C57 (IO Moon) | Free-running rasterizer over the staged frame buffer; sends the 80188 nothing |
 | FM music | Yamaha YM3812 (OPL2) | Driven by the 80188; IO Moon pairs it with a YM3014B DAC (IC61) |
 | Speech / FX | OKI MSM6376 | ADPCM samples in dedicated ROMs |
 | NVRAM | EEPROM (28C64A on IO Moon and Bike Race) | Config + audits, validated against a ROM template at boot |
 
 The 80188 peripheral block sits at `0xA0000` (`PACS`) on IO Moon and Bike Race
-alike — byte-identical configuration — as does the Timer0 setup that yields the
-99.18 Hz tick. See [`80188_config.md`](80188_config.md) and
-[`pinmame_integration_findings.md`](pinmame_integration_findings.md).
+alike — byte-identical configuration — as does the timer-0 setup that yields the
+99.18 Hz tick. See [`80188_config.md`](80188_config.md).
 
 ## Z80 lineage — where Doña Elvira 2 fits
 
@@ -100,22 +99,24 @@ for a, b in itertools.combinations(files, 2):
 
 ## Where the machines diverge
 
-**Display coprocessor.** Sleic Pin-Ball and Bike Race use an Intel 8039 whose ROM
-is dumped (`sp01`, `bkdsp01`); IO Moon uses a PIC16C5x that is read-protected and
-still undumped ([`chips_to_dump.md`](chips_to_dump.md)). The two 8039 programs are
-the same rasterizer family but not identical — they share only their first 8 bytes,
-and are 133 bytes (`sp01`) and 117 bytes (`bkdsp01`) of program in an 8 KB part.
-Bike Race's is a verified pure one-way rasterizer: it disables interrupts
-immediately, never reads from or writes to the 80188, and only samples its T1
-panel-sync pin. That is the evidence behind IO Moon's DMD wire protocol
-([`dmd_wire_protocol.md`](dmd_wire_protocol.md)) despite its own coprocessor being
-unreadable.
+**Display coprocessor.** Sleic Pin-Ball and Bike Race use an Intel 8039; IO Moon
+uses a PIC16C57. All three ROMs are now available — `sp01`, `bkdsp01`, and the
+IO Moon PIC recovered from its code-protected part
+([`chips_to_dump.md`](chips_to_dump.md),
+[`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm)) — and all three
+are the same kind of program: a pure one-way rasterizer that reads nothing back
+from the 80188. The two 8039 programs share only their first 8 bytes and are 133
+bytes (`sp01`) and 117 bytes (`bkdsp01`) in an 8 KB part; Bike Race's disables
+interrupts immediately and samples only its T1 panel-sync pin. IO Moon's is 150
+words, samples only the external dot clock on T0CKI, and its one asymmetry — a
+200:30 per-plane row-hold ratio — is what makes buffer plane 0 the MSB of the
+4-level grey scale.
 
 **YM3812 register/data select.** The same chip, wired three different ways:
 
 | Machine | How the A0 line is driven |
 |---------|---------------------------|
-| IO Moon | two addresses — `0xA0280` (register) and `0xA0281` (data) |
+| IO Moon | two addresses — `0xA0280` (index) and `0xA0281` (data) |
 | Sleic Pin-Ball | single address `0xA0280`; A0 = `0xA0000` (PCS0) **bit 1** |
 | Bike Race | single address `0xA0280`; A0 alternates per write |
 
@@ -135,12 +136,16 @@ START" screen, which is why its PinMAME driver embeds a factory NVRAM image. See
 **Graphics ROM mapping.** Bike Race maps two 128 KB graphics ROMs at MCS1
 `0x20000` (`bkcpu06`) and MCS2 `0x40000` (`bkcpu05`), with work RAM at MCS0 and the
 DMD frame buffer at MCS3 `0x60000`. IO Moon instead pairs a single 512 KB code
-ROM with a 512 KB graphics ROM ([`dmd_graphics.md`](dmd_graphics.md)).
+ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
+64 KB page at a time into MCS2 `0x60000` by PCS0 bits 0–2, and its own MCS3
+`0x70000` holds the DMD staging buffer
+([`hardware_architecture.md`](hardware_architecture.md)).
 
 ## What is still missing
 
-- **IO Moon's PIC16C5x display coprocessor** — read-protected, undumped. Bike
-  Race's 8039 substitutes for it as a behavioural model.
+- **The two PALs on the IO Moon boards** — IC7 (80188 chip-select glue) and IC8
+  (Z80 decode), both with the security fuse blown. Neither blocks emulation; see
+  [`chips_to_dump.md`](chips_to_dump.md) for exactly what each would settle.
 - **Doña Elvira 2's 80188, graphics, sound and display ROMs** — only the Z80 I/O
   ROM exists here. Without the 80188 code the machine can be neither emulated nor
   meaningfully documented beyond its I/O layer.

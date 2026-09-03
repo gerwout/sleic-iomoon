@@ -23,13 +23,12 @@ used *on the PIC16C57 specifically* — is decap, mask the EPROM array, and UV�
 `[SRC]` The only documented non‑invasive route (over‑voltage "PIC Burnout") is **not confirmed for the plain
 PIC16C5x family** and is destructive to memory. `[SRC]` The lab's refusal to give a die photo is weak evidence
 either way. Best estimate: **decap + UV fuse‑erase, ~65% confidence**; non‑invasive glitch ~25%; other ~10%.
-The owner's "cracked without decapping" hunch is **plausible but not supported by the balance of evidence** —
-see Q4.
+A non-invasive crack is **plausible but not supported by the balance of evidence** — see Q4.
 
 **(c) A pure‑software decryptor is mathematically impossible.** The protected read maps a 12‑bit word to a
 single 4‑bit XOR — a 3‑nibble→1‑nibble fold. Each observed nibble has **256 (16×16) pre‑images**. Information
 is destroyed at read time, inside the chip, before any bit leaves the package. No algorithm — however clever —
-can invert 4 bits back into the original 12. The owner's hoped‑for "decrypt the old .rom" tool cannot exist.
+can invert 4 bits back into the original 12. No tool that "decrypts" the locked read can exist.
 Confidence: **certain (information theory, not opinion).**
 
 **(d) Practical guidance for other SLEIC owners.** There is no cheap software unlock. The realistic paths are:
@@ -66,7 +65,7 @@ behaving exactly as Microchip designed the fuse to behave.
 
 ## Q2. Which parts of the chip are protected? (Correcting a common assumption)
 
-The owner's mental model — "only program memory is scrambled; the ID words and config word stay readable" — is
+The idea that "only program memory is scrambled; the ID words and config word stay readable" is
 the model for the mask‑ROM (`CR`) parts, **not** for our OTP part. DS30190H Table for **PIC16C57**
 (CP‑enable pattern `XXXXXXXX0XXX`, p.9) reads, in *Protected* mode: `[SPEC]`
 
@@ -87,12 +86,11 @@ ID words are *scramble‑invariant*, so a locked read and an unlocked read of th
 convention, not because the fuse exempts them. Net: the ID match authenticates nothing about protection state;
 it is simply consistent with both readings.
 
-**Correction folded in (owner's "the first bytes were readable"):** they were not. `[LOCAL]` Word 0 of the June
-locked read is `0xD`, which is precisely the nibble‑XOR of the real word `0x4A3` (`0x4 ^ 0xA ^ 0x3 = 0xD`) — the
-scramble, not the code. The prefix merely *looked* like data because scrambled nibbles are varied and nonzero
-(not `FF`/`00`), so the eye reads them as "real." The transform held for **all 2048 words with zero
-exceptions**, from word 0 onward, so **no program‑memory byte was ever available in plaintext on the locked
-chip.** The only genuinely un‑obscured region is the ID words — and, as shown above, only because they are
+**No prefix of the locked read is plaintext either.** `[LOCAL]` Word 0 of the locked read is `0xD`, which is
+precisely the nibble‑XOR of the real word `0x4A3` (`0x4 ^ 0xA ^ 0x3 = 0xD`) — the scramble, not the code. Such a
+prefix *looks* like data because scrambled nibbles are varied and nonzero (not `FF`/`00`). The transform holds
+for **all 2048 words with zero exceptions**, from word 0 onward, so **no program‑memory byte was ever available
+in plaintext on the locked chip.** The only genuinely un‑obscured region is the ID words — and, as shown above, only because they are
 scramble‑invariant. Any crypto/entropy analysis of the old dump must treat the *entire* array (word 0 included)
 as XOR‑folded ciphertext, never as leaked plaintext.
 
@@ -125,14 +123,14 @@ take hours. Glitch/over‑voltage attacks on PICs are real, but a turnkey PIC16C
 <https://forums.parallax.com/discussion/123993/how-to-recover-code-of-pic16c57> ·
 <https://siliconpr0n.org/wiki/doku.php?id=tutorial:mcu_security>
 
-## Q4. Weighing the owner's "they did it without decapping" speculation
+## Q4. Weighing the "cracked without decapping" possibility
 
 **Verdict: plausible, but the evidence leans the other way. Do not treat "no die photo" as proof of
 non‑invasive.** `[INFER]`
 
-- *For the owner:* a non‑invasive over‑voltage/glitch attack would leave no die to photograph, which fits the
+- *For:* a non‑invasive over‑voltage/glitch attack would leave no die to photograph, which fits the
   lab's refusal. And a lab may refuse photos simply to protect a proprietary process. `[INFER]`
-- *Against the owner:* (i) decap + UV‑fuse‑erase is the *default* commercial service for OTP PICs and the
+- *Against:* (i) decap + UV‑fuse‑erase is the *default* commercial service for OTP PICs and the
   method with a documented track record **on the PIC16C57 itself** (Q3 #1); (ii) the confirmed non‑invasive
   technique isn't validated for this family; (iii) a refusal to share photos is at least as consistent with
   "we decapped it and don't publish die shots" (or "the die was consumed/damaged"); (iv) most decisive — **the
@@ -153,7 +151,7 @@ The protected read computes `f(w) = n2 ^ n1 ^ n0` where `w`'s nibbles are `n2 n1
 **4096 possible words → 16 possible outputs**; every output nibble has **256 pre‑images**. The lost bits are
 discarded *inside the die at read time*, before anything reaches the pins, so the information is not "encrypted"
 (recoverable with a key) — it is **destroyed** (unrecoverable in principle). `[LOCAL]`/`[SPEC]` No decryptor,
-AI, or brute‑force can reconstruct 150 program words from their XOR shadows. The owner's hope here has to be set
+AI, or brute‑force can reconstruct 150 program words from their XOR shadows. That expectation has to be set
 aside — gently, but with certainty.
 
 **What *does* exist, at research/overview level (cite, don't follow as a recipe):**

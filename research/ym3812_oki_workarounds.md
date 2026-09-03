@@ -1,23 +1,17 @@
 # YM3812 / OKI workarounds in PinMAME drivers
 
-> **2026-06 correction — this survey's premise is obsolete.** It was written on
-> the assumption that the IO Moon YM3812 (and OKI) were driven by an *undumped*
-> coprocessor (the PIC 16C57 at IC23), so PinMAME would need a lancelot-style C
-> substitution. That is **wrong**: the **80188 drives both sound chips directly**,
-> and the 80188 ROM **is dumped**. The YM3812 is written over `/PCS5`
-> (`0xA0280`/`0xA0281`) by a music sequencer at `D000:0D37`/`0D99` (10 FM tracks),
-> and the OKI MSM6376 from `D000:0B70`/`0C57` (`0xA0300` latch, `/OKCS` strobe via
-> `0xA0000` bit 5). The PIC at IC23 is the **DMD rasterizer only** and drives no
-> sound chip; the Z80 forwards sound-command bytes to the 80188 over J1 but drives
-> no chip either. So there is **nothing undumped to substitute for** — the right
-> approach is to emulate the 80188's own writes, exactly as the working PinMAME
-> driver now does. The cross-driver survey below is still accurate about *those*
-> drivers, but the "Recommended pattern for Io Moon" sections are superseded.
+Survey of how PinMAME drivers cope when a sound chip is present on the real PCB
+but driven by an undumped microcontroller, PAL, or otherwise opaque firmware.
 
-Survey of how PinMAME drivers cope when a sound chip is present on the real
-PCB but actually driven by an undumped microcontroller, PAL, or otherwise
-opaque firmware. (Originally intended to pick a precedent for the Sleic Io Moon
-driver — see the correction above for why that precedent is no longer needed.)
+**IO Moon is not one of those cases**, and the survey is kept for the general
+pattern rather than as a template for this machine. Both IO Moon sound chips are
+driven directly by the 80188, whose ROM is dumped: the YM3812 over `/PCS5`
+(`0xA0280` index / `0xA0281` data) from the sequencer at `D000:0D37` / `0D99`,
+and the OKI MSM6376 from the dispatcher `D000:0B70` through `0C57`/`0C84` (the
+`0xA0300` latch plus the `/OKCS` strobe on `0xA0000` bit 5). The PIC at IC23 is
+the DMD rasterizer and drives neither; the Z80 has no wires to either chip and
+forwards no sound commands. So the driver emulates the 80188's own writes, and no
+C substitution is involved.
 
 ## Summary table
 
@@ -32,13 +26,12 @@ driver — see the correction above for why that precedent is no longer needed.)
 | `tabart.c` | YM2203, YM3526 / AY8910 | Z80 sound CPU | All ROMs dumped; chips mapped (tabart.c:102-117). | Standard. |
 | `spinb.c`, `inder.c` (MSM5205 boards) | MSM5205 | Z80/8085 sound CPUs | All ROMs dumped (some BAD_DUMP); ADPCM chip fed nibble-by-nibble from the sound CPU via callback (spinb.c:1130-1180, inder.c:702-770). | Standard. |
 | `alvgdmd.c` (Pistol Poker / Mystery Castle DMD) | n/a (DMD raster) | Intel 8031 micro | 8031 emulated, ROM dumped (alvgdmd.c:263). | Standard. |
-| `sleic.c` (Io Moon, SLEIC2) | **YM3812**, OKIM6376, DAC | **80188 drives both directly** (YM3812 over `/PCS5`; OKI over `0xA0300` + `/OKCS`). The PIC 16C57 is DMD-raster only; the Z80 forwards command bytes over J1 but drives no chip. | The early stub reached the OKI via a Z80 port handler (`sleic.c:395`) and left the YM3812 silent; the working driver now emulates the 80188's own writes to both chips. | _Superseded — the 80188 ROM is dumped, so no C substitution is needed (see correction at top)._ |
+| `sleic.c` (Io Moon, SLEIC2) | **YM3812**, OKIM6376 | **80188 drives both directly** (YM3812 over `/PCS5`; OKI over `0xA0300` + `/OKCS`). The PIC 16C57 is DMD-raster only; the Z80 drives neither chip and forwards no sound commands. | The 80188 is emulated and its ROM is dumped, so both chips are written by the emulated CPU. | Standard chip-on-CPU emulation — no workaround, and no substitution needed. |
 
 The only driver in the tree that actually substitutes for an undumped sound
 coprocessor in C is **lancelot.c**. Every other driver either has a dumped
 sound ROM (alvgs, alvg gen-2 BSMT, jvh formula1, gts3, tabart, spinb, inder,
-alvgdmd) or accepts that the chip is silent (mephisto, jvh movmastr, sleic
-today).
+alvgdmd) or accepts that the chip is silent (mephisto, jvh movmastr).
 
 Sample-playback substitution (`MDRV_SOUND_ADD(SAMPLES, ...)`) does exist in
 `gpsnd.c`, `by35snd.c`, `taitos.c`, `gts1.c` and `core.c`, but it is
@@ -96,103 +89,64 @@ The game is shipped as `GAME_IMPERFECT_SOUND` (lancelot.c:443), not
 "good enough" even though it is admittedly a fragile transcription of
 behaviour observed on real hardware.
 
-## Recommended pattern for Io Moon
+## Why Io Moon needs none of this
 
-The Io Moon situation maps onto lancelot.c almost one-for-one, with a
-useful simplification:
+The lancelot pattern exists because the CPU that writes the sound chips is
+missing. On IO Moon that CPU is the 80188, whose ROM is dumped and which the
+driver already emulates instruction by instruction, so its sound writes arrive at
+the emulated peripheral block on their own:
 
-| | Lancelot | Io Moon |
-| --- | --- | --- |
-| Main CPU | Z80 | 80188 |
-| Undumped consumer | TMP91P640 | PIC 16C57-HS |
-| Command channel | Z80 OUT 0x34 | _(N/A — see correction: the 80188 drives its own sound chips; the `4000:1158+` queue is the DMD/animation path, not sound)_ |
-| Music chip | YMF262 (OPL3) | YM3812 (OPL2) — driven directly by the 80188 over `/PCS5`, **not** by any PIC |
-| ADPCM chip | OKIM6295 | OKIM6376 — driven directly by the 80188 (`0xA0300` latch + `/OKCS`), **not** by the Z80 |
-| Auxiliary tone ROM | snd_u5.bin in REGION_USER2 | none known yet |
+```c
+/* sleic2_periph_w, inside the PACS block at 0xA0000 */
+case 0x280: YM3812_control_port_0_w(0, data); break;   /* PCS5, index */
+case 0x281: YM3812_write_port_0_w(0, data);   break;   /* PCS5, data  */
+case 0x300: iomoon_oki_latch = data;          break;   /* PCS6, phrase + channel */
+case 0x000: if (falling edge of bit 5) iomoon_oki_strobe();  /* PCS0, /OKCS = ST */
+```
 
-The Mephisto pattern (declare YM3812, never drive it) is what `sleic.c`
-already does. The Io Moon driver should follow lancelot.c instead:
+Consequently:
 
-### Minimal bridge
+- **No PIC core is needed.** The PIC16C57 at IC23 is the DMD rasterizer; it
+  drives no sound chip, and its dump confirms it has no command interface at all.
+- **No command-queue interception is needed.** The queue at `4000:1158` carries
+  Z80 commands for lamps, drivers and mode changes — not sound.
+- **No hand-coded register sequences are needed.** The ROM contains the whole FM
+  driver: a sequencer at `D000:0D37` walking `(register, value)` streams, a song
+  table of ten tracks at `CS:0DE5`, and a single write primitive at `D000:0D99`.
+- **No SAMPLES substitution is needed**, and it would be the wrong tool anyway —
+  in this tree `SAMPLES` is reserved for mechanical effects.
 
-1. **Don't emulate the PIC**. Drop any plan to MDRV_CPU_ADD the
-   16C57 — PinMAME has no PIC 16C5x core, and the firmware is missing
-   anyway. Lancelot precedent says it is fine to declare only the audio
-   chips and skip the host micro entirely.
-2. **Hook the command queue from the 80188 side**. In
-   `SLEIC2_80188_writemem` add a write handler covering the queue
-   region (`4000:1158+`, physical 0x41158..). Mirror the bytes into
-   `iomoon_shared_ram` exactly as today (the 80188 code expects to read
-   them back, so MWA_RAM is still needed), but also push each one into
-   a small C-side FIFO.
-3. **Drain the FIFO into YM3812 writes**. A mame_timer running at the
-   PIC's natural cadence (probably the panel refresh, ~120 Hz) pops one
-   byte from the FIFO and pattern-matches it. The mapping cmd ->
-   YM3812 register sequence has to be reverse-engineered (or eventually
-   transcribed from a logic-analyzer capture of the real PIC's pin
-   output), but the *shape* of the bridge is exactly lancelot's
-   `snd_w` / `timer_callback`:
-   - For tone / sfx events: emit a hand-coded sequence of
-     `YM3812_control_port_0_w(0, reg)` /
-     `YM3812_write_port_0_w(0, val)` pairs that set up operator
-     envelopes, F-number, key-on / key-off.
-   - For music: if a separate tone-stream ROM is ever found (or
-     extracted from the 80188 graphics ROM), play it back through
-     `YM3812_write_port_0_w` driven by the YM3812's own timer-IRQ
-     callback. The existing stub `ym3812_irq` in sleic.c:193 is the
-     right place to advance the stream.
-4. **Pre-program the YM3812 in MACHINE_INIT**. Mirror what
-   lancelot's MACHINE_INIT does for the YMF262: set operator levels,
-   feedback / algorithm bits, key-scale levels, default tremolo /
-   vibrato. Without this, register writes for individual notes will
-   produce silence.
-5. **No SAMPLES path**. The SAMPLES driver in PinMAME is reserved by
-   convention for mechanical effects. Substituting a sampled music
-   track for YM3812 output would be unprecedented in the tree and
-   would also make the eventual real-PIC dump harder to slot in.
-6. **Mark the driver `GAME_IMPERFECT_SOUND`**, not `GAME_NOT_WORKING`,
-   once any subset of commands produces audible output — that is the
-   precedent lancelot.c sets.
+The one thing IO Moon does share with the drivers surveyed above is that its
+YM3812's IRQ is not wired to any CPU: the 80188's interrupt controller unmasks
+only timer 0 and INT0, so the OPL2's internal timers have nowhere to go and the
+`ym3812_irq` callback body stays empty.
 
-### What the bridge does *not* need to do
-
-> **Superseded (2026-06).** This subsection assumed neither CPU writes the
-> YM3812 and that the OKI is driven from the Z80 — both now known to be false.
-> The 80188 drives **both** sound chips itself (YM3812 over `/PCS5`, OKI over
-> `0xA0300`/`/OKCS`), and its ROM is dumped, so the correct implementation is
-> simply to decode those peripheral writes in `sleic.c` and forward them to the
-> emulated `YM3812_*` / `OKIM6376_*` cores — **no PIC core, no C-side command
-> substitution, and no command-queue interception are needed.** That is what the
-> working driver now does.
+The OKI hookup needs one translation, because PinMAME's `OKIM6295` core speaks a
+two-byte 6295 protocol rather than the 6376's `ST` / `CH2` pins: the driver turns
+each `/OKCS` falling edge into the phrase-latch-and-start byte pair the core
+expects. That is an interface adapter inside the driver, not a substitute for
+missing firmware.
 
 ---
 
-## Summary (<250 words)
+## Summary
 
-The PinMAME tree contains exactly one driver that emulates an undumped
-sound coprocessor in host C code: **`lancelot.c`** (Peyper, Sir Lancelot,
-1994). Its Toshiba TMP91P640 micro has a NO_DUMP mask ROM, and PinMAME
-substitutes for it by intercepting the Z80's sound-command port writes
-and translating them into hand-coded `OKIM6295_data_0_w` and
-`YMF262_data_A_0_w` sequences, driven by mame_timers and the chip's own
-status / IRQ callbacks. Lancelot also includes a tiny VGM-style player
-that streams pre-extracted OPL register sequences from a separate
-auxiliary ROM (REGION_USER2). The game ships as `GAME_IMPERFECT_SOUND`,
-not `GAME_NOT_WORKING`.
+The PinMAME tree contains exactly one driver that emulates an undumped sound
+coprocessor in host C code: **`lancelot.c`** (Peyper, Sir Lancelot, 1994). Its
+Toshiba TMP91P640 micro has a `NO_DUMP` mask ROM, and PinMAME substitutes for it
+by intercepting the Z80's sound-command port writes and translating them into
+hand-coded `OKIM6295_data_0_w` and `YMF262_data_A_0_w` sequences, driven by
+mame_timers and the chip's own status / IRQ callbacks. Lancelot also includes a
+small VGM-style player that streams pre-extracted OPL register sequences from an
+auxiliary ROM (`REGION_USER2`). The game ships as `GAME_IMPERFECT_SOUND`.
 
-Every other driver in the tree either has a dumped sound CPU and
-emulates it faithfully (alvgs, jvh, tabart, gts3, spinb, inder, alvgdmd),
-or leaves the chip silent (mephisto declares YM3812 but never writes it,
-which is what `sleic.c` does today). `SAMPLES` substitution exists but is
-restricted to mechanical effects, and no driver replaces a music chip
-with sample playback.
+Every other driver in the tree either has a dumped sound CPU and emulates it
+faithfully (alvgs, jvh, tabart, gts3, spinb, inder, alvgdmd) or leaves the chip
+silent (mephisto declares a YM3812 and never writes it). `SAMPLES` substitution
+exists but is restricted to mechanical effects, and no driver replaces a music
+chip with sample playback.
 
-**Recommendation for Io Moon: copy the lancelot.c pattern.** Add a write
-handler on the 80188 side covering the circular command queue at
-`4000:1158+`, push bytes into a C FIFO, and drain them through a
-mame_timer that issues `YM3812_control_port_0_w` /
-`YM3812_write_port_0_w` register sequences. Pre-program operator
-envelopes in `MACHINE_INIT(SLEIC)`. Do not emulate the PIC (PinMAME has
-no PIC 16C5x core, and lancelot.c sets the precedent for skipping it).
-Do not use SAMPLES. Once any subset of commands produces audible output,
-flip the games from `GAME_NOT_WORKING` to `GAME_IMPERFECT_SOUND`.
+**Io Moon sits in the first group**: the CPU that writes both chips is dumped and
+emulated, so `sleic.c` decodes the 80188's peripheral writes and forwards them to
+the `YM3812_*` and `OKIM6376_*` cores. The lancelot pattern is documented here
+for machines that genuinely need it.
