@@ -1451,10 +1451,38 @@ a game that scores nothing never reaches it.
 
 **Confidence:** confirmed for the protocol, the contacts, the drain code and
 the SW40-5 polarity.
-**Open:** what advances the balls-played field. In emulation `413C:0036` and
-`413C:00FF` hold 0 and 1 for a whole game of five balls, so `D3C5B` never
-takes the game-over branch; whether `D3999` is reached at all is not
-established. **Inferred:** whether the ball leaves the ball-exit contact
+**A ball that scores too little is given back, and that is what gates the
+accounting.** The mode-4 loop tests `sub_D368C` before it reaches `sub_D3920`:
+
+```
+D31D3: CALL sub_D368C / OR AX,AX
+D31DA: JE 0D31E3                      ; 0 -> on to the accounting at D31F5
+D31DC: CALL sub_D449D / JMP 0D323C    ; non-zero -> replay the ball
+```
+```
+sub_D368C D368C:
+  D3692: PUSH 05040 / PUSH 00043 / CALL nvstore_read_dword_far   ; DX:AX
+  D36A5: BX = ES:000F2 / CX = ES:000F0            ; the score now
+  D36AF: SUB CX, 0002D / SBB BX, 0002F            ; minus the score at ball start
+  D36B7: CMP DX, BX / JL D36ED                    ; threshold < delta -> return 0
+  D36BD: CMP AX, CX / JB D36ED
+  D36C6: CMP ES:000EE, 0 / JNE D36ED              ; no extra ball pending
+  D36D3: CMP ES:000ED, 0 / JNE D36ED
+  D36E0: CMP ES:000DB, 0 / JNE D36ED
+  D36E8: MOV AX, 00001                            ; -> replay this ball
+```
+
+so a ball scoring **at or below** the adjustment at `5040:0043` is replayed and
+never reaches the accounting. Under the firmware's own factory seed that
+threshold is **100 000**.
+
+Above it the accounting runs as written and a game ends. Measured over one
+player and three balls: `413C:0036` goes 0 -> 1 -> 2 -> 3 and `413C:00FF`
+1 -> 2 -> 3; the third ball takes `D3C5B: JNB 0D3CD7`, `D3CD7: XOR AX,AX /
+RETF` returns 0, the caller's `D31FC: JE 0D3237` reaches `sub_D46F8`, and the
+machine returns to attract (`413C:014F` 4 -> 1) once the last ball is home.
+
+**Inferred:** whether the ball leaves the ball-exit contact
 because a player pulls a plunger or because a coil launches it — neither ROM says, and the only
 firmware requirement is that it does leave (with bit 3 held closed the
 ball-start path re-runs about every 4 s instead of settling into play). The
