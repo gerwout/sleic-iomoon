@@ -6,7 +6,7 @@
 # Every name here describes *observed peripheral or RAM traffic*, not a
 # guessed purpose. Where a name implies a role (lamp, solenoid, switch) the
 # comment says which instructions justify it. Treat them as hypotheses.
-# Nothing here was taken from asm/z80_annotated.asm or docs/z80_io_ports.md.
+# Nothing here was taken from asm/superseded/z80_annotated.asm or docs/z80_io_ports.md.
 
 0100  port81_bit1_set        # LD A,(C001) / OR #$02 / OUT ($81) -- sets shadow bit 1
 010B  port81_bit1_clear      # LD A,(C001) / AND #$FD / OUT ($81) -- clears the same bit

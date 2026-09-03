@@ -283,21 +283,26 @@
 094: A20   GOTO  0x020              ; next frame -> plane 0
 ;
 ; =============================================================================
+; NO BYTE PATH TO THE 80188
+; =============================================================================
+; This program exchanges no byte with the 80188 in either direction, so an
+; emulator has nothing to synthesise on its behalf: it delivers Z80 bytes and
+; samples the seg-7000h buffer on the panel's own clock.
+;
+; 0xA0100 is PCS2, the inbound J1 latch, and it carries Z80 bytes and nothing
+; else (findings F4). The bytes 0x47, 0x45 and 0x46 are ordinary Z80 replies on
+; the C0FC event channel -- 0x47 is the Z80's boot "alive" byte (Z80 0410) and
+; 0x45/0x46 the two answers to 80188 command 0xED (Z80 2BEB). They are not
+; per-frame markers, and this program could not emit them in any case: every
+; port bit here is a raster signal and the one input pin is never sampled.
+;
+; =============================================================================
 ; OPEN QUESTIONS (for the PinMAME driver work)
 ; =============================================================================
 ; 1. Pin-name mapping: RA0-RA3/RC2/RC3 vs the schematic nets (RDATA, RCLK,
 ;    COLLAT, DE, VSYNC, SDATA) needs sheet 011-029-07 read side-by-side with
 ;    this listing; the roles above are inferred from code structure + the
 ;    measured wire protocol.
-; 2. RESOLVED, and it is a negative result: there is no marker byte stream to
-;    reproduce. 0xA0100 is PCS2, the inbound J1 latch, and it carries Z80
-;    bytes and nothing else (findings F4). The bytes 0x47, 0x45 and 0x46 are
-;    ordinary Z80 replies sent over the C0FC event channel — 0x47 is the
-;    Z80's boot "alive" byte (Z80 0410) and 0x45/0x46 are the two answers to
-;    80188 command 0xED (Z80 2BEB) — not per-frame markers. This program has
-;    no path to that latch, and the emulator must therefore synthesise
-;    nothing: it delivers Z80 bytes and samples the seg-7000h buffer on the
-;    panel's own clock.
-; 3. Absolute timings require the PIC crystal frequency (not recoverable
+; 2. Absolute timings require the PIC crystal frequency (not recoverable
 ;    from the dump; measure on the board or derive from the 599 kHz DOTCLK).
 ; =============================================================================

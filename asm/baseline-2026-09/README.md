@@ -9,8 +9,8 @@ cross-checked against independent decoders:
 * **Part 2 -- the Z80 I/O CPU** (`V1 3_05.bin`), `dasmz80` vs unidasm.
   Starts at "Part 2 -- the Z80 I/O CPU (IC5)".
 
-**Nothing here was taken from the older `asm/80188_annotated.asm`,
-`asm/z80_annotated.asm` or from `docs/*.md`.** Old addresses were used only
+**Nothing here was taken from the older `asm/superseded/80188_annotated.asm`,
+`asm/superseded/z80_annotated.asm` or from `docs/*.md`.** Old addresses were used only
 as *probes* -- "decode here and see whether a coherent handler is really
 there" -- and each part's "Agreement and disagreement with the older
 material" section records what that check confirmed and what it
@@ -524,7 +524,7 @@ A fresh disassembly of `roms/1.3 IPDB latest/V1 3_05.bin` (32 KiB, the 27C256
 at IC5 on the Z80 board), built with `dasmz80` and cross-checked against
 `unidasm -arch z80`.
 
-Same rule as Part 1: `asm/z80_annotated.asm` and `docs/z80_io_ports.md` were
+Same rule as Part 1: `asm/superseded/z80_annotated.asm` and `docs/z80_io_ports.md` were
 used only as *hypotheses to probe*. Every address below was decoded fresh,
 and "Agreement and disagreement with the older material (Z80)" records what
 that confirmed and what it did not.

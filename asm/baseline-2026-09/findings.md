@@ -1,6 +1,6 @@
-# IO Moon — driver contract, F1..F14
+# IO Moon — driver contract, F1..F15
 
-Fourteen numbered facts extracted from the **2026-09 fresh baselines** in this
+Fifteen numbered facts extracted from the **2026-09 fresh baselines** in this
 directory. Later driver tasks reference them by number.
 
 **Sources, and only these sources.** Every address citation below was read out
@@ -13,7 +13,8 @@ of one of:
 | `asm/pic16c57_annotated.asm` | IC23 PIC16C57 raster program, 3-tool verified (150 words) |
 | the ROM images themselves | raw byte reads, quoted with the offset |
 
-`docs/*.md`, `asm/80188_annotated.asm`, `asm/z80_annotated.asm` and the old
+`docs/*.md`, `asm/superseded/80188_annotated.asm`,
+`asm/superseded/z80_annotated.asm` and the old
 `sleic` branch driver were used **only as hypotheses to test**. Where one of
 them is named below it is being adjudicated, never cited as evidence.
 
