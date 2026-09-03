@@ -10,7 +10,7 @@ After power-on reset, the 80188 begins execution at `0xFFFF0` (the standard x86 
 CPU Reset
     │
     ▼
-0xFFFF0: JMP FAR FFFF:0000
+0xFFFF0: JMP FAR FFF0:0000
     │
     ▼
 0xFFF00: MOV DX, FFA0h          ; UMCS register (upper-memory chip-select)
@@ -27,12 +27,14 @@ CPU Reset
          MOV DS, AX
          MOV ES, AX
          │
-         ├── Configure I/O ports from table at DS:0041
-         ├── CALL sub_D00B9      ; Initialize DMD controller
-         ├── CALL sub_D011C      ; Initialize buffers
-         ├── CALL sub_D00FA      ; Reset display
-         ├── CALL sub_F0000      ; Extended initialization
-         └── CALL sub_D0B2B      ; Additional setup
+         ├── Program the peripheral control block from the 30-entry
+         │   table in ROM at CS:0041 (chip selects, timer 0, the
+         │   interrupt controller, both parked DMA channels) — F1
+         ├── CALL sub_D00B9      ; PCS0/PCS4/PCS6 idle levels, queue pointers
+         ├── CALL sub_D011C      ; clear the DMD buffers
+         ├── CALL sub_D00FA      ; the single PCS4 bit-3 pulse (F13)
+         ├── CALL sub_F0000      ; extended initialisation
+         └── CALL sub_D0B2B      ; additional setup
          │
          STI                     ; Enable interrupts
          JMP D2F2:0002           ; Enter main game loop
@@ -45,31 +47,36 @@ CPU Reset
 The main loop at `0xD2F22` runs continuously and handles all game logic:
 
 ```
-0xD2F22: Main Game Loop
+0xD2F22: Main loop head
     │
-    ├── Call display update routines
-    ├── Call sub_D5133          ; Game state update
-    ├── Call sub_DD3FB          ; Additional processing
+    ├── Read the country/language byte from NVRAM 0x1BF into [4000:1001]
+    ├── Call sub_D5133          ; state setup
+    ├── Call sub_DD3FB          ; select the English or Spanish record table
     │
     ▼
     ┌──────────────────────────────────────────┐
-    │  Wait Loop (loc_D2F59)                   │
-    │  Polls sub_D5D1B until non-zero return   │
+    │  Boot handshake (loc_D2F59)              │
+    │  Spins on sub_D5D1B until the Z80's      │
+    │  0x47 "alive" byte arrives over J1       │
     └──────────────────────────────────────────┘
     │
-    ├── Call sub_D5A45          ; Process switch input
-    ├── Call sub_D622C          ; Game logic
+    ├── Call sub_D5A45          ; process pending input
+    ├── Call sub_D622C          ; NVRAM signature check / factory defaults
     │
     ▼
     ┌──────────────────────────────────────────┐
     │  State Machine (loc_D3002)               │
     │  Switch on ES:[014F]:                    │
-    │    1 → sub_D303C  (Attract mode)         │
-    │    2 → sub_D307F  (Game active)          │
-    │    4 → sub_D3145  (Special/match)        │
-    │    else → sub_D622C (default handler)    │
+    │    1 → sub_D303C  (attract)              │
+    │    2 → sub_D307F  (credits present)      │
+    │    4 → sub_D3145  (ball in play)         │
     └──────────────────────────────────────────┘
 ```
+
+Nothing past `D2F59` runs until the Z80 sends `0x47`, and the machine also runs a
+direct-input self-check there: it pushes Z80 command `0xC0`, waits for the reply
+`0x7A` ("all direct inputs clear"), and on any other answer goes straight to the
+fault display and the service menu.
 
 ---
 
@@ -77,17 +84,21 @@ The main loop at `0xD2F22` runs continuously and handles all game logic:
 
 The game state is stored at `413C:014F`. The main loop dispatches to different handlers based on this value:
 
-| State | Value | Handler | Description |
-|-------|-------|---------|-------------|
-| Attract | `01` | `sub_D303C` | Demo mode, waiting for coin/start |
-| Active | `02` | `sub_D307F` | Game in progress |
-| Special | `04` | `sub_D3145` | Match/lottery sequence after game end |
+| Value | Handler | Description |
+|-------|---------|-------------|
+| `1` | `sub_D303C` | Attract — no credits |
+| `2` | `sub_D307F` | Credits present, waiting for START |
+| `3` | — | Game started (`sub_D8154` writes this at `D815F`) |
+| `4` | `sub_D3145` | Ball in play, through end-of-ball and the match sequence |
 
 State transitions:
 
-- **Attract → Active**: Player inserts coin and presses START
-- **Active → Special**: Game ends, enter match sequence
-- **Special → Attract**: Match animation completes, return to demo mode
+- **1 → 2**: a coin is priced into a credit
+- **2 → 3**: START is pressed; `sub_D8066` decrements the credit triple and, on
+  the first player, calls `sub_D8154`, which bumps the games-played audit and
+  starts the in-game song
+- **3 → 4**: the ball is served
+- **4 → 1**: the last ball is home and the match animation completes
 
 ---
 
@@ -95,14 +106,28 @@ State transitions:
 
 The IO Moon supports operator-configurable settings stored in EEPROM. The configuration system has three key functions:
 
+The non-volatile store is a window at **segment `5040`** (flat `0x50400`+),
+gated by the complementary PCS0 bits 3 and 4; every access is bracketed by
+`pcs0_window_open` `D057E` / `pcs0_window_close` `D059F` and goes through one of
+four accessors (finding F10):
+
 | Function | Address | Description |
 |----------|---------|-------------|
-| `config_load_defaults` | `0xD0C57` | Load factory default settings |
-| `config_load_eeprom` | `0xD0C84` | Load settings from EEPROM |
-| `config_save_eeprom` | `0xD0CB8` | Save current settings to EEPROM |
-| `config_validate` | `0xD0CE0` | Validate loaded configuration |
+| `nvstore_read_byte_far` | `0xD04BF` | 8-bit read |
+| `nvstore_write_byte_far` | `0xD04A9` | 8-bit write |
+| `nvstore_read_dword_far` | `0xD0492` | 32-bit read |
+| `nvstore_write_dword_far` | `0xD046D` | 32-bit write |
+| `nvstore_write_triple_83` / `_84` | `0xD04D2` / `0xD04F3` | write the triplicated credit bytes |
+| `nvstore_check_triple_83` / `_84` | `0xD0514` / `0xD0549` | majority-compare them; zero all three on mismatch |
+| `sub_D05C0` | `0xD05C0` | signature check against the copyright block at `CS:07A9` |
+| `sub_D622C` | `0xD622C` | write the factory defaults when the signature fails |
 
-Configuration data includes pricing, game settings (balls per game, tilt sensitivity), language selection, and high score thresholds.
+Stored data includes the pricing table (`0x1C4`–`0x1CF`), the country byte
+(`0x1BF`), balls per game (`0x3C`), the tilt-warning count (`0x42`), the
+short-ball replay threshold (dword `0x43`), the credit balance (triplicated at
+`0x83`/`0x116`/`0x20C` with the sub-credit remainder at `0x84`/`0x117`/`0x20D`),
+five 17-byte high-score records from `0x85`, and the audit dwords from `0x118`.
+The highest offset the firmware touches is `0x31D`.
 
 The **display language** is a single binary byte: `[4000:1001] == 5` renders Spanish,
 any other value renders English. It is read from NVRAM `5040:01BF` at `D2F2E → D2F3B`,
@@ -114,47 +139,59 @@ disagrees. The country DIP therefore drives the language. See
 
 ---
 
-## Display Command Queue
+## The outbound command queue
 
-The 80188 uses a command queue system for DMD updates:
+The 80188 stages **Z80 command bytes** — indices into the Z80's 256-entry table
+at `$2000` — in a circular byte queue in its own work RAM:
 
-- **Write pointer**: `4000:114C`
-- **Read pointer**: `4000:114E`
-- **Queue buffer**: Starts at `4000:1158`
+- **Read pointer (consumer)**: `4000:114C`
+- **Write pointer (producer)**: `4000:114E`
+- **Queue body**: from `4000:1158`
 
-The `display_cmd_queue` function at `0xD0138` is referenced 80 times throughout the code, making it one of the most-called functions. Commands include frame loading, text display, animation triggers, and screen clearing.
+`qout_push` at `0xD0138` is the producer, with **172 call sites** and 54 distinct
+constant immediates; `qout_service_pcs1` at `0xD01E5` is the consumer, called
+from the INT0 ISR, and hands one byte at a time to PCS1 `0xA0080`. The payload is
+lamp, driver, mode and test-mode commands — not sound and not display data
+(finding F12). See [`inter_cpu_communication.md`](inter_cpu_communication.md).
 
-### Key Display Functions
+### Key display functions
 
-| Address | Function | Description |
-|---------|----------|-------------|
-| `0xD0138` | `display_cmd_queue` | Queue a display command (80 references) |
-| `0xF0701` | Text display | Render text string on DMD (font type, position, string pointer) |
-| `0xF0907` | `dmd_frame_load` | Load a DMD frame from ROM data |
-| `0xD00B9` | DMD init | Initialize DMD controller hardware |
-| `0xD00FA` | DMD reset | Clear display buffers |
+| Address | Function |
+|---------|----------|
+| `0xF08A5` | Composite: `(background AND mask) OR sprite`, both planes |
+| `0xF08EB` | Blit the composite planes into the display buffer at `7000:0000` |
+| `0xF0348` | `anim_stream_open` — read a graphics page header and start a stream |
+| `0xF00A0` | Select the graphics page (PCS0 bits 0–2) |
+| `0xF0701` | Render a text string on the DMD (font type, position, string pointer) |
+| `0xD00B9` | Boot: peripheral idle levels and queue pointers |
+| `0xD00FA` | Boot: the single PCS4 bit-3 pulse |
 
 ---
 
 ## Test Menu
 
-The test menu is accessed by pressing the TEST button (switch code `0x33`) during
-attract mode. Menu state is `game_state_var [413C:014F] == 3`. The live navigator
-acts on the **RIGHT-flipper code `0x3F`** (advance/select) and `0x40` (upper flipper,
-alt-advance); it ignores the left-flipper code `0x3E`. The switch-event → menu path,
-the per-page draw functions, and the switch codes are documented in
+The service menu is opened by the TEST button, switch code **`0x3F`**, dispatched
+from the switch-code shadow at `D7AD5` into the menu root `sub_DD253`. It is a
+tree of 38 forty-six-byte records reached through the far pointer `[4137:004B]`;
+the cursor is `[4137:0013]` and the record being displayed is `[413C:015A]`.
+Navigation is TEST (`0x3F`) to exit, START (`0x40`) to go back, and the two
+flipper codes `0x41` / `0x42` to scroll and select. The full record tree, the
+per-record dispatch and the language selection are in
 [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
 
-The menu structure:
+Entering the menu queues Z80 command `0xF7` (test mode on) and leaving it queues
+`0xF8`, which **reboots the I/O Z80** by design.
+
+The top of the tree:
 
 ```
-- TECNICO -
-├── TEST TABLERO
-│   ├── BOBINAS       (Solenoid test - cycles through all solenoids)
-│   ├── LUCES         (Lamp test - 3 modes: sequential, all-on, chase)
-│   └── CONTACTOS     (Switch test - displays switch code on activation)
-├── CREDITOS          (Credit/pricing configuration)
-└── FALTA             (Tilt configuration)
+- ADJUSTMENT / AJUSTE -
+├── SOUND/VIDEO       → VOLUME (plays song 1 on entry), CUSTOM MESSAGE
+├── GAME              → the game adjustments
+└── TECHNICAL
+    ├── BOARD TEST    (solenoid, lamp and switch tests)
+    ├── CREDITS       (the live pricing table)
+    └── TILTS
 ```
 
 ### Factory Reset
@@ -167,15 +204,23 @@ The "BORRADO DE TODO" function erases all statistics, high scores, advertising s
 
 Key game state variables in segment `413C`:
 
-| Offset | Function | References |
-|--------|----------|------------|
-| `00D7` | Game flag 1 | Multiple |
-| `00D9` | Game flag 2 | Multiple |
-| `014F` | State machine variable (1, 2, or 4) | Core dispatch |
-| `10E6` | Timer counter | Timer-based events |
-| `10F0` | Timer enable flag | Timer control |
+| Offset | Function |
+|--------|----------|
+| `00D4` | Credit balance — a **cache** of the NVRAM pair `0x83 + 0x84` |
+| `00D5` | Coin-pulse accumulator, folded in from `[4000:1144]` by `sub_D800A` |
+| `00D6` | `last_switch_code` — the byte `sub_D7453` popped from the inbound FIFO |
+| `00D7` | Players in the current game |
+| `00A9`–`00B0` | The live pricing table, loaded from NVRAM `0x1C4`–`0x1CF` at boot |
+| `00EB` | Ball-over flag, set by `sub_D92C0` |
+| `00F8` / `00F9` | Ball counts in device 2 and the trough |
+| `00FF` | Ball number in play |
+| `014F` | Game mode (1 attract, 2 credits present, 3 game started, 4 ball in play) |
+| `015A` | The menu record currently displayed |
 
-The segment `413C` is the most heavily referenced data area in the code, with **920 cross-references** — it contains the primary shared game state.
+Segment `413C` is the most heavily referenced data area in the code — it holds
+the primary game state. Configuration derived at boot lives one segment lower, in
+`4130` (country number at `0020`, balls per game at `003D`, the extra-ball
+threshold at `0039`/`003B`), and the menu cursor in `4137`.
 
 ---
 
@@ -194,5 +239,6 @@ For ROM modifications, the most useful hook points are:
 
 Unused ROM space for code caves exists at:
 
-- `0xC0000`–`0xCFFFF`: Large block of `0xFF` bytes (ROM1 graphics area, much of it unused)
+- `0xC0000`–`0xCFFFF`: a large block of `0xFF` bytes at the bottom of the UMCS
+  window (ROM1 file `0x40000`–`0x4FFFF`), mapped and executable but unused
 - `0xF5000`–`0xF9000`: Smaller `0xFF` regions in the F000 code segment

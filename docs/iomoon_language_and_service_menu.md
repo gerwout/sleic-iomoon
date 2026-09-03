@@ -2,27 +2,20 @@
 
 [← Back to main README](../README.md)
 
-This document covers two closely related IO Moon (SLEIC2) subsystems that were
-reverse-engineered and **verified during PinMAME driver work**:
+This document covers three closely related IO Moon (SLEIC2) subsystems:
 
-1. how the firmware selects its on-screen **language** (Spanish vs. English), and
-2. how switch presses drive the **service / test menu**.
+1. how the firmware selects its on-screen **language** (Spanish vs. English),
+2. how the **country DIP** drives both that and the coin values, and
+3. how switch presses open and drive the **service / test menu**.
 
-Several earlier notes (in the annotated disassembly, in `game_software.md`, and in
-older progress notes) got the polarity of the language test backwards and the
-menu-navigation flipper wrong. The conclusions below were confirmed two ways:
+Everything below is verified two ways: against the cross-checked disassembly in
+[`../asm/baseline-2026-09/`](../asm/baseline-2026-09/) (findings F5, F11, F14),
+and against rendered DMD output from a running PinMAME `SLEIC2` machine.
 
-- **DMD output verification** — forcing the language byte to a known value in a live
-  PinMAME run and reading the rendered attract DMD ("BALL MISSING" in English vs. its
-  Spanish equivalent).
-- **ROM dump-diff** — comparing the *1.3 IPDB latest* and *1.3 Early version* dumps
-  byte-for-byte at the relevant code.
-
-All file offsets below are into ROM1 `roms/1.3 IPDB latest/V1 3_01.bin`. The 80188
-runs this ROM in segment `D000` upward, so **linear `0xDxxxx` = file `0xDxxxx − 0x80000`**
+All file offsets are into ROM1 `roms/1.3 IPDB latest/V1 3_01.bin`. The 80188 runs
+this ROM in segment `D000` upward, so **linear `0xDxxxx` = file `0xDxxxx − 0x80000`**
 (e.g. linear `D5CAC` = file `0x55CAC`); segment `D000` = file `0x50000`. The Z80 ROM
-is `V1 3_05.bin` (flat). Addresses were spot-checked with `ndisasm`; where an earlier
-label was off it is called out explicitly.
+is `V1 3_05.bin` (flat).
 
 ---
 
@@ -41,20 +34,17 @@ There are ~51 such sites in ROM1 (41 of the exact 6-byte form above plus a handf
 of equivalent variants), and **none of them compares `[1001]` against any value other
 than `5`**. The language is therefore **binary** — there is no third value in play.
 
-### Polarity (DMD-verified — do not invert)
+### Polarity (DMD-verified)
 
 > **`[1001] == 5` renders SPANISH. Any other value renders ENGLISH.**
 
-The firmware default is **`0x04`** (English). This was proven on live DMD output:
-forcing `[1001] = 0x04` makes the attract DMD render **"BALL MISSING" in English**;
-forcing `[1001] = 0x05` renders the Spanish text. An earlier disassembly trace
-labelled the `== 5` branch (and the "seg-3000" pre-rendered text set) as *English* —
-**that label was swapped.** The corrected mapping:
+Verified on live DMD output: with `[1001] = 0x04` the attract DMD renders
+"BALL MISSING" in English, and with `[1001] = 0x05` it renders the Spanish text.
 
 | `[1001]` value | Language | Pre-rendered text set |
 |----------------|----------|------------------------|
 | `0x05`         | Spanish  | second bitmap of each pair (~seg `1000` set) |
-| anything else (default `0x04`) | English | first bitmap of each pair (~seg `3000` set) |
+| anything else  | English  | first bitmap of each pair (~seg `3000` set) |
 
 The two text sets are **pre-rendered DMD bitmaps in ROM2**, stored as parallel/paired
 entries (≈41 pointer pairs) and selected by the `[1001] == 5` test. A representative
@@ -68,10 +58,9 @@ DA9B6  jmp  DA9BD
 DA9B8  call F000:3007             ; English text variant
 ```
 
-> **Correction:** `DA9A9` was previously described as the test that "enters the
-> service menu." It is not — it is one of the ~51 language tests (it branches between
-> two pre-rendered text variants). Menu state lives in `[413C:014F]`, **not** in
-> `[1001]` (see §C).
+`DA9A9` is one of the ~51 language tests, branching between two pre-rendered text
+variants. It has nothing to do with the service menu, which is opened by switch
+code `0x3F` (see §C).
 
 ### Where `[1001]` is seeded — once, from NVRAM, at the top of the main loop
 
@@ -91,22 +80,14 @@ D2F39  mov  es, dx
 D2F3B  mov  [es:1001h], al        ; <-- the ONLY write to [1001]
 ```
 
-So the live language is sourced from **NVRAM `5040:01BF`** (the 28C64A) and read
-**once per pass through the main-loop head** (`D2F22`), i.e. once per game cycle —
-**not every frame.** The inner per-frame loop is `loc_D2F59` (it polls `D2F2:2DFB`
-and loops back to `D2F59`); it never re-reads `01BF`. A previously-assumed
-"per-frame `D2F28` reload" is therefore wrong in spirit (`D2F28` *is* the read site,
-but it is on the once-per-game-cycle path, not the per-frame path).
+So the live language is sourced from **the non-volatile store, offset `0x1BF`**
+and read **once per pass through the main-loop head** (`D2F22`), i.e. once per
+game cycle, not every frame. `D000:04BF` is the generic byte-read accessor (its
+epilogue is at `D04CC`); the caller that reads `0x1BF` and stores it into `[1001]`
+is `D2F2E → D2F3B`.
 
-> **Address note:** earlier notes located the language NVRAM read "at config-load,
-> PC ~`D04CC`." `D04CC` is actually the tail (the `call 0x59f` epilogue) of the
-> generic NVRAM byte-**read** accessor whose entry is **`D000:04BF`**. The *caller*
-> that reads `01BF` and stores it into `[1001]` is `D2F2E → D2F3B`. The functional
-> conclusion ("read once, into `[1001]`") is unchanged; the address is corrected to
-> `D2F2E`/`D2F3B`.
-
-`5040:01BF` itself is written (from `[4000:0020]`) by the country-init block in §B
-via the NVRAM byte-**write** accessor `D000:04A9` (e.g. callers at `D6619`/`D6669`).
+`0x1BF` itself is written (from `[4130:0020]`) by the country-init block in §B via
+the byte-write accessor `D000:04A9` (callers at `D6619`/`D6669`).
 
 ---
 
@@ -170,6 +151,33 @@ unrelated data.
    routine) and `DD406` (menu record table `0x00D08` instead of `0x00100`); every
    other value gets the English ones.
 
+### Which switch is the low bit, and where the ROM differs from the manual
+
+`SW2` is the low bit, with ON = 0. That is settled by the presets themselves and
+not by the two obvious anchors: country 0 = the manual's UK row and country 5 =
+its Spain row are both invariant under swapping SW2 and SW4 (`000` and `101` are
+palindromes), and so is Germany (`010`). The rows that discriminate are Italy,
+Netherlands, France and Belgium, and with SW2 as the low bit six of the eight
+rows match the manual exactly:
+
+| Value | Divisors (pulses) | Credits | Manual row | Verdict |
+|-------|-------------------|---------|------------|---------|
+| 0 | 3 / 5 / 10 | 1 / 2 / 5 | United Kingdom | exact |
+| 1 | 2 / 5 / 10 | 1 / 3 / 7 | France | differs (manual 3/5/10, 1/2/5) |
+| 2 | 1 / 2 / 5 | 1 / 3 / 8 | Germany | exact |
+| 3 | 1 / 2 / 4 | 1 / 3 / 7 | Italy | exact |
+| 4 | 2 / 5 / 10 | 1 / 3 / 7 | Netherlands | exact |
+| 5 | 2 / 4 / 8 / 20 | 1 / 3 / 7 / 18 | Spain | coins exact, third credit 7 vs 8 |
+| 6 | 2 / 4 / 10 | 1 / 3 / 8 | Belgium | differs (manual 2/5/10, 1/3/7) |
+| 7 | 1 / 2 / 4 | 1 / 3 / 6 | Portugal | coins exact, third credit 6 vs 7 |
+
+Reverse SW2 and SW4 and three of the four discriminating rows break — value 3
+would have to be Belgium, value 4 France and value 6 Italy — buying only
+Netherlands at value 1. The ROM is what runs: values 1 and 6 carry coin values
+that are not the manual's at all (value 1 is a byte-for-byte duplicate of value
+4's Netherlands preset), and values 5 and 7 differ by one credit on their largest
+coin.
+
 ### Conclusion
 
 > **In V1.3 the country DIP sets both the coin values and the display language.** A
@@ -183,203 +191,277 @@ unrelated data.
 
 ## C. Service-menu navigation
 
-### Menu state lives in `[413C:014F]`
+### What opens it
 
-The game state machine variable **`game_state_var` `[413C:014F]` (physical `0x4150F`)**
-selects the top-level behaviour:
+**Switch code `0x3F` opens the service menu.** It is the Z80's port-`0x03` bit-1
+input (`sub_1278` at `1278`), delivered over J1 like any other switch code and
+dispatched from the `413C:00D6` shadow:
 
-| Value | State |
-|-------|-------|
-| `1`   | attract |
-| `2`   | game in progress |
-| `3`   | **menu / special-display** |
-| `4`   | special |
+```asm
+D7ACF  mov al, [es:00D6h]      ; the switch-code shadow (F5)
+D7AD5  cmp ax, 3Fh
+D7AD8  jz  D7AE6
+D7AE6  call 0DD25:0003         ; sub_DD253, the menu root
+```
 
-The menu state is `[014F] == 3` (7 read sites; written `= 3` at file `0x5815F`),
-**not** `[1001] == 5` (which is the language test, §A).
+The same test also appears at `D32A4` and `D334E` (`cmp byte [es:00D6h], 3Fh`).
+Code `0x40` (START) is the adjacent branch at `D7ADA` and is not the menu key.
+The menu is also entered automatically on a boot self-test fault, from
+`main_entry` at `D2FB4`.
+
+The menu root `sub_DD253`:
+
+```asm
+DD263  mov word [es:015Ah], 0    ; record index = 0
+DD274  push 0F7h / call qout_push ; Z80 command 0xF7 = enter test mode
+DD294  call sub_DD2E6            ; the menu loop
+DD29E  push 0F8h / call qout_push ; Z80 command 0xF8 = leave test mode
+```
+
+On the Z80 side `0xF7` → `2DC4` sets `C068`; `0xF8` → `2DD9` clears it, does `DI`
+and `JP boot` — **leaving the menu reboots the I/O Z80**, which re-runs
+`boot_port_init` and re-initialises every lamp column and both driver latches.
+That is the firmware's design, not a fault.
 
 ### How a switch press reaches the menu code
 
-The path from a button to the menu navigator is **edge-driven, one byte per press**:
+The path from a button to the menu is edge-driven, one byte per press:
 
-1. **Z80 → J1 → 80188 NMI.** The NMI handler **`dmd_vblank_isr` (`D016D`,
-   file `0x5016D`)** reads the J1 inbound latch at `es:[0100h]` (= `A000:0100` =
-   peripheral chip-select PCS2, physical `0xA0100`):
-
-   ```asm
-   D018C  mov al, [es:0100h]    ; read J1 latch
-   D0190  cmp al, 32h           ; end-of-frame marker?
-   D0192  jnz …
-   D0194  inc byte [1144h]      ; 0x32 just bumps a frame counter
-   ```
-
-   A byte `0x32` is an **end-of-frame marker** (it increments `[1144]`), **not** a
-   switch. Any other byte is appended to a small ring buffer at `[4000:1154/1150]`
-   and the handler sets the **switch-event-pending flag `[4000:1147] = 0xFF`**.
-
-2. **Freshness gate + consumer — `dmd_text_display` (`D74FF`, file `0x574FF`).**
-   At **`D750A`** it returns early if the pending flag is clear:
+1. **Z80 → J1 → 80188 NMI.** The Z80 stages the code in `C0FC` and strobes
+   port-`0x81` bit 2. The 80188's NMI handler `isr_type02_nmi` (`D016D`) reads
+   the inbound latch at PCS2 `0xA0100`:
 
    ```asm
-   D750A  mov al, [es:1147h]    ; switch_event_pending
-   D750E  cbw
-   D750F  or  ax, ax
-   D7511  jnz D7518             ; only proceed if a fresh byte exists
+   D018C  mov al, [es:0100h]    ; the ONLY read of 0xA0100 in the whole ROM
+   D0190  cmp al, 32h           ; the coin-mechanism pulse?
+   D0192  jnz D019B
+   D0194  inc byte [1144h]      ; 0x32 is counted, not queued
+   D019B  ...                   ; everything else -> the FIFO at 4000:1220
+   D01C4  mov byte [1147h], 0FFh ; "byte available"
    ```
 
-   At **`D75CD`** it dequeues one ring byte into
-   **`last_switch_code` `[413C:00D6]` (physical `0x41496`)**, writes `0x00` back into
-   the ring slot, and advances the read pointer:
+2. **Dequeue and shadow.** `sub_D7453` (and about a dozen sibling poll routines)
+   pops one byte from the FIFO — far read pointer at `[1150]`, write pointer at
+   `[1154]` — and stores it in `last_switch_code` `[413C:00D6]` (physical
+   `0x41496`):
 
    ```asm
-   D75D2  les bx, [es:1150h]    ; ring read pointer
-   D75D7  mov al, [es:bx]       ; ring byte
-   D75DF  mov [es:00D6h], al    ; -> last_switch_code
+   D745E  mov al, [es:1147h]     ; anything pending?
+   D7471  cmp word [es:1144h], 0 ; the coin counter first
+   D749C  les bx, [es:1150h]     ; FIFO read pointer
+   D74A9  mov [es:00D6h], al     ; ES = 413C -> flat 0x41496
    ```
 
-   Because the consumer **zeroes the slot**, a repeated identical code looks "stuck"
-   if you only inspect `[00D6]`; each physical press delivers exactly one byte.
+   Every consumer pops **unconditionally** and then tests, so a byte arriving
+   while the firmware sits in a different poll routine is consumed and dropped.
 
-3. **Menu navigator — `dmd_attract_cycle` (`D7ABC`).** At **`D7AD5`**:
+3. **Dispatch.** `D7AD5` compares the shadow against `0x3F` as above.
 
-   ```asm
-   D7AD5  cmp ax, 3Fh           ; RIGHT flipper -> game_mode_transition (enter/exit TOGGLE)
-   D7AD8  jz  D7AE6             ; -> game_mode_transition DD253 (DD25:0003)
-   D7ADA  cmp ax, 40h           ; UPPER flipper -> page STEP (via [413C:00D7] counter)
-   D7ADD  jnz D7B11
-   D7ADF  call D72A:0DC6
-   ```
+`413C:00D6` is a firmware RAM variable, not a hardware mailbox: an emulator must
+deliver the byte through J1 and let `sub_D7453` fill it. Note also that game code
+stores `0x32` into it directly at four sites (`DAF0C`, `DB1B4`, `DB298`,
+`DB2BA`), so a value in the shadow does not imply a byte arrived over J1.
 
-   The same `cmp byte [es:00D6h], 3Fh` test also appears in
-   `attract_display_update` (`D3251`) at `d32a4` and in
-   `attract_animation_cycle` (`D32FB`) at `d334e`.
+### The record tree
 
-> **IO Moon's V1.3 service menu has NO Bike-Race-style scroll/select code pair**
-> (corrected by live-driver testing — the earlier "`0x3F` = advance/select" was
-> wrong). The 80188 **never** compares `last_switch_code` against `0x34/0x35/0x36`
-> (Bike Race's scroll/select/back family); those codes exist on the wire only as
-> matrix Row-5 playfield switches. The menu's only live inputs are:
-> - **`0x33`** (TEST/End) — **ENTER** the menu (the Z80's TEST switch emits `0x32` in
->   attract / `0x33` only in game, gated on `c068` @ Z80 `0x0D35`),
-> - **`0x3F`** (RIGHT flipper) — **enter/exit TOGGLE** (`game_mode_transition` DD253),
-> - **`0x40`** (UPPER flipper) — **page STEP** (increments `[413C:00D7]`; at `==1` sets
->   state 3, then walks pages),
-> - **`0x3E`** (LEFT flipper) — **ignored** by the menu.
->
-> So on real hardware you *enter* with TEST, *step pages* with the upper flipper, and
-> *exit* with the right flipper — there is no per-item cursor. Bike Race (`0x35`=scroll,
-> `0x34`=select, verified at `ED1B8`/`ED1F0`) is genuinely different here.
->
-> **Driver note:** the emulated Z80's *direct-switch* event path (port 0x03 → debounced
-> `C0E3` → emit) does **not** regenerate codes in PinMAME (a forced port-0x03 bit
-> produces no J1 byte), so the cabinet buttons must be injected as J1 codes; only the
-> *matrix-scanned* switches (coin acceptor `0x37`, playfield) reach the 80188 through the
-> Z80. The faithful Z80 codes are LEFT=`0x3E`, RIGHT=`0x3F`, UPPER=`0x40`, START=`0x41`,
-> TEST/Coin=`0x42`, on port 0x03 bits 0/1/4/3/2 respectively (`asm/z80_annotated.asm`
-> lines 162-167 + flipper dispatch `0x1242`/`0x1252`).
+The menu loop `sub_DD2E6` indexes a table of **46-byte (`0x2E`) records** through
+the far pointer at `[4137:004B]`, using `[413C:015A]` as the index, and dispatches
+each record's first word through a 14-way jump table at `CS:018F`:
 
-### Menu page draw functions
+```asm
+DD2F1  mov ax, [es:015Ah] / imul ax, 2Eh
+DD2F8  les bx, [004Bh] / add bx, ax
+DD2FE  mov bx, [es:bx] / cmp bx, 0Dh
+DD306  shl bx, 1 / jmp word [cs:bx+018Fh]
+```
 
-Which menu page is shown is held in `[413C:00F4]`. The draw functions are
-**draw-only** (no input handling — input is the §C path above), and all converge on a
-common draw routine at **`loc_F3764`**:
+`sub_DD3FB` sets that far pointer to flat **`0x00100`** (English) or **`0x00D08`**
+(country 5, Spanish). Each record is
+`{word type, word item count, word line count, 4 × 8-byte line descriptor,
+4 × word child index}`. Walked from record 0 the tree is 38 records deep:
 
-| Routine | Address | Page |
-|---------|---------|------|
-| `service_credits_menu`   | `F35B7` | credits / pricing |
-| `service_switch_test`    | `F35AC` | CONTACTOS (switch test) |
-| `service_tilt_menu`      | `F35C2` | FALTA (tilt) |
-| `service_sound_menu`     | `F35CD` | sound |
-| `service_video_menu`     | `F35D8` | video |
-| `service_game_menu`      | `F35E3` | game settings |
-| ↳ balls                  | `F35EE` | NUM. BOLAS |
-| ↳ extra-ball             | `F35F9` | ORBITAS / extra ball |
-| ↳ awards                 | `F3604` | awards |
-| ↳ match                  | `F36E0` | match |
-| ↳ custom message         | `F36EB` | custom advertising message |
-| `service_statistics_*`   | `F370C` / `F3717` / `F3738` / `F3743` | statistics pages |
-| `service_factory_reset`  | `F3759` | BORRADO DE TODO |
-| `service_lamp_test`      | `F33EF` | LUCES (lamp test) |
-| `service_solenoid_test`  | `F3371` | BOBINAS (solenoid test) |
+```
+0  ADJUSTMENT      -> 1 SOUND/VIDEO, 2 GAME, 3 TECHNICAL
+1  SOUND           -> 4 VOLUME (type 9), 5 CUSTOM MESSAGE (type 6)
+2  GAME            -> 31, 6, 7, 8
+3  TECHNICAL       -> 22 BOARD TEST, 23 CREDITS (type 8), 30 TILTS
+```
+
+with 8 → {9,10,11}, 11 → {12,15,18}, 12 → {13,14}, 15 → {16,17},
+18 → {19,20,21}, 22 → {24,25,26}, 25 → {35,36,37}, 26 → {32,33,34},
+6 → {27,28,29}. Type 0 is a submenu; types 1–13 are leaf pages.
+
+### Navigation
+
+Ordinary item handlers accept exactly four codes and dispatch through a
+four-entry table. `sub_DD480` (record type 0) is the pattern:
+
+```asm
+DD4E1  call sub_DF9D4 / mov [001Bh],al / cmp byte [001Bh],0 / jz DD4E1  ; block
+DD4F5  sub ax, 3Fh
+DD4FA  cmp bx, 3 / ja DD4E1                     ; only 0x3F..0x42
+DD501  jmp word [cs:bx+0337h]                   ; table at DD587
+DD587  2B 03  0D 03  B6 02  FE 02   -> DD57B  DD55D  DD506  DD54E
+```
+
+| Code | Button | Target | Action |
+|------|--------|--------|--------|
+| `0x3F` | TEST | `DD57B` | redraw, return 1 — **exit** this item to its caller |
+| `0x40` | START | `DD55D` | at record 0 the same exit, otherwise `sub_DF829` — **back / up** |
+| `0x41` | left flipper | `DD506` | `[4137:0013]++` with a wrap at `record[2]-1`, recompute the display line `413C:0158`, redraw — **scroll** |
+| `0x42` | right flipper | `DD54E` | `sub_DF764([4137:0013])` — **select** the line under the cursor |
+
+`sub_DD669` (record type 9, the VOLUME page) has the same shape with its own
+table at `DD6F4`, adding volume up/down on `0x41`/`0x42`.
+
+The cursor is `[4137:0013]`, **not** `[413C:015A]`: `015A` is written in exactly
+one place in the whole ROM (`DD263`, zeroed on entry) and holds the record being
+displayed, which changes only on a descent.
+
+### What paces the display
+
+Nothing external. Each menu item is a blocking routine that pushes Z80 commands
+and spins on an inbound byte — the lamp test `sub_D5F99` is the clearest case:
+
+```asm
+D5FA4  push 0FAh / call qout_push      ; Z80 cmd 0xFA
+D5FCC  push [000Eh] / call qout_push   ; push lamp codes 0x01..0x31 in turn
+D6027  call sub_D5BCF / or al,al / jz D6027   ; wait for ANY inbound byte
+```
+
+So the menu holds open for exactly as long as switch bytes keep being delivered.
+It needs no frame clock and no marker stream: the DMD raster coprocessor at IC23
+sends the 80188 nothing at all.
+
+### Two pages worth knowing
+
+- **Record 4, VOLUME** (type 9) calls `fm_song_select(1)` on entry (`DD66F`) — a
+  real firmware music trigger reachable from attract with no credits, in three
+  keypresses.
+- **Record 23, CREDITS** (type 8) renders the live pricing table, which is the
+  cheapest check that the country DIP (§B) is being read correctly.
+
+Verified against the rendered DMD: the root draws `- ADJUSTMENT -` over
+SOUND/VIDEO, GAME, TECHNICAL; scrolling moves the highlight; selecting TECHNICAL
+then CREDITS renders `1 OF 50E CRED:1 / 1 OF 100 CRED:3 / 1 OF 200 CRED:6`,
+matching country 7's preset byte for byte; and country 5 renders the same tree in
+Spanish (`- AJUSTE -`, SONIDO/VIDEO, JUEGO, TECNICO) from record table `0x0D08`.
+
+**There is no OKI sound-test page.** Above `DD000` the ROM has exactly two calls
+to the OKI dispatcher `sub_D0B70`, and one of them is the coin sound in
+`sub_DD1C1` (`DD1E0`); the other is `F2C2E`, in game code. The sound branch of
+the menu is FM and volume only.
+
+### The boot language prompt
+
+`sub_D5AD1` `D5AD1` pushes Z80 command `0xED` and spins on `sub_D5D8D` for `0x45`
+(option A, drawing the string triple at record offsets `0x0C`/`0x0E`/`0x10`) or
+`0x46` (option B, offsets `0x06`/`0x08`/`0x0A`). The Z80's `0xED` handler `2BEB`
+reads **port `0x04` bit 5** — SW40-5 — to choose: low is the service position
+"no balls dispensed" and answers at once, high is normal play and checks the ball
+trough first.
+
+**That prompt is one *use* of `0x45`, not its definition.** `0x45` also reaches
+the ordinary switch-code shadow and is dispatched there at five sites — `D7B2E`,
+`DC063`, `DC08E`, `DC0B5`, `DC0EE`. Routing it only to `sub_D5D8D`, or reserving
+it as a "prompt reply", breaks every one of those. The same holds for `0x46` and
+`0x47`: they are event codes the Z80 sends, and the prompt and the boot handshake
+are two of the states that happen to be listening for them.
 
 ---
 
 ## D. Switch hex codes (IO Moon)
 
-These are the codes the Z80 (`V1 3_05.bin`) places on J1 for the 80188 to read as
-`last_switch_code`. They are the IO Moon values; do not confuse them with the Bike
-Race codes in `bikerace_switch_map.md`.
+These are the codes the Z80 (`V1 3_05.bin`) places on the J1 event channel for the
+80188 to read as `last_switch_code`. They are the IO Moon values; do not confuse
+them with the Bike Race codes in [`bikerace_switch_map.md`](bikerace_switch_map.md).
 
-| Code | Switch | Z80 handler |
-|------|--------|-------------|
-| `0x3E` | LEFT flipper | `0x125B` |
-| `0x3F` | RIGHT flipper | `0x1278` |
-| `0x40` | UPPER flipper | `0x1285` |
-| `0x41` | START | `0x12C6` |
-| `0x42` | COIN | `0x1336` |
-| `0x37` | MONEDERO (coin acceptor, matrix) | — |
-| `0x33` | TEST / service-menu enter | — |
+| Code | Input | Z80 handler |
+|------|-------|-------------|
+| `0x0A`–`0x31` | switch matrix, columns 0–4 (`0x0A + 8c + b`) | 40 routines at `316D`, step 8 |
+| `0x32` | coin mechanism, port `0x03` bit 5 (`0x33` in test mode) | `0D3C` / `0D44` |
+| `0x34`–`0x3B` | switch matrix, column 5 (`0x34 + b`) | 8 routines at `32AD`, step 8 |
+| `0x38`–`0x3D` | trough/device counts re-sent by the ball commands `0xEA`/`0xEB` | `2A90`, `2AA0`, `2AA8`, `2AEB`, `2AF3`, `2AFB` |
+| `0x3E` | TILT, port `0x03` bit 0 | `sub_125B` `125B` |
+| `0x3F` | TEST — **opens and exits the service menu** | `sub_1278` `1278` |
+| `0x40` | START, port `0x03` bit 4 — **back/up in the menu** | `sub_1285` `1285` |
+| `0x41` | LEFT flipper (test mode only) — **scroll** | `sub_1292` `12D0` |
+| `0x42` | RIGHT flipper (test mode only) — **select** | `sub_12D8` `1340` |
+| `0x43` | ball over — sent by trough contact 0 instead of its own `0x0A` | `161E` |
+| `0x45` / `0x46` | the two answers to 80188 command `0xED` (and ordinary event codes) | `2C17` / `2C09` |
+| `0x47` | the Z80's boot "alive" byte | `0410`, resent at `2E24` |
+| `0x48`–`0x4A` | "no balls" / "gave up" replies to the ball commands | `2A45`, `2AB0`, `2B03` |
+| `0x50`–`0x79` | the 16-way direct-input scan (disabled on this machine) | `direct_input_scan` `0DBF`, table at `1218` |
+| `0x7A` | "all direct inputs clear", the reply to command `0xC0` | `11F5` |
+| `0xF0`+nibble | the port-`0x04` DIP report, the reply to command `0xF9` | `2D9D` |
 
-### DMD / J1 marker bytes (not switches)
-
-These bytes ride the same `0xA0100` ring but are display markers, consumed by the
-NMI / frame logic rather than the switch path:
-
-| Byte | Meaning |
-|------|---------|
-| `0x32` | coin-pulse / end-of-frame marker (increments `[1144]`) |
-| `0x45` / `0x46` | DMD field swap |
-| `0x47` | DMD vsync |
+**There are no marker bytes.** `0xA0100` carries Z80 bytes and nothing else: the
+DMD raster coprocessor has no path to that latch and no command interface at all
+(see [`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm) and finding
+F4). `0x32` is the coin pulse, and `0x45`/`0x46`/`0x47` are ordinary Z80 replies.
 
 ---
 
-## E. Corrections to mislabeled routines
+## E. Routine identities
 
-The auto-disassembler's labels are wrong for several routines around the switch /
-menu path. The corrected identities:
+Generated labels in [`../asm/superseded/`](../asm/superseded/) are wrong for
+several routines on this path. The identities established from the fresh decode:
 
-- **`DA22D` is the high-score INITIALS-ENTRY handler, not a service-menu dispatcher.**
-  It reads `last_switch_code` (`mov al,[es:00D6h]`), tests `0x40`/`0x41`/`0x42`
-  (upper-flipper / START / COIN), and walks an alphabet index at local `[0005]`
-  (seeded to `0x34` at `DA24F`). It is the player-initials entry screen.
-- **The in-game ball-launch switch dispatcher is `switch_dispatch_table_lookup`
-  (`D7C2B`)** → a 12-entry code table at **`D72A:0AEC`** (file `0x57D8C`), stored as
-  16-bit words: `{0E 19 21 22 2E 34 35 36 37 3E 43 44}`. It is reached only from
-  `ball_launch_display` (`DAAAF`), i.e. ball serve — this (not the service menu) is
-  where `0x3E` is consumed **in-game**.
-- **`D000:04BF`** is the generic NVRAM byte-**read** accessor (epilogue at `D04CC`);
-  **`D000:04A9`** is the NVRAM byte-**write** accessor. The language read into
+- **`D000:016D` is the inbound-J1-byte NMI handler**, not a DMD vblank ISR — it
+  reads PCS2 and touches no pixel data.
+- **`D000:0343` is the INT0 handler**, not a timer ISR; timer 0's handler is at
+  `D000:024F`.
+- **`DA22D` is the high-score initials-entry handler**, not a service-menu
+  dispatcher. It reads `last_switch_code`, tests `0x40`/`0x41`/`0x42`, and walks
+  an alphabet index at local `[0005]` (seeded to `0x34` at `DA24F`).
+- **`D000:04BF`** is the generic non-volatile byte-**read** accessor (epilogue at
+  `D04CC`); **`D000:04A9`** is the byte-**write** accessor. The language read into
   `[1001]` happens at `D2F2E → D2F3B` (§A).
+- **The `F35xx` family are paired language text-draw routines, not menu pages.**
+  `sub_F2FFD` is a one-line far-callable wrapper around `sub_F35AC` and
+  `sub_F3007` around `sub_F35B7`, and the two wrappers are the Spanish/English
+  arms of the `cmp [1001],5` branch at `DA9B1`/`DA9B8`. The menu's own dispatch is
+  the 14-way jump table at `CS:018F` described in §C.
+- **The in-game switch dispatcher is `sub_D7636`**, whose 55-entry table at
+  `CS:0527` is range-checked against `0x0E` first, so the ball-handling codes
+  `0x0A`–`0x0D` deliberately reach no handler there.
 
 ---
 
 ## Address reference table
 
-All addresses spot-checked with `ndisasm` against `roms/1.3 IPDB latest/`.
-
-| Address | File offset | What | Status |
-|---------|-------------|------|--------|
-| `[4000:1001]` | RAM `0x41001` | language byte (`==5` ⇒ Spanish) | DMD-verified |
-| `[413C:014F]` | RAM `0x4150F` | game/menu state (`3` = menu) | verified |
-| `[413C:00D6]` | RAM `0x41496` | `last_switch_code` | verified |
-| `[4000:1147]` | RAM `0x41147` | switch-event-pending flag | verified |
-| `[4000:1144]` | RAM `0x41144` | end-of-frame counter (`0x32` bumps it) | verified |
-| `D2F2E`/`D2F3B` | `0x52F2E`/`0x52F3B` | read NVRAM `01BF` → write `[1001]` (once/cycle) | verified (was mis-cited as `D04CC`) |
-| `D000:04BF` | `0x504BF` | NVRAM byte-read accessor (tail `D04CC`) | verified |
-| `D000:04A9` | `0x504A9` | NVRAM byte-write accessor | verified |
-| `DA9A9` | `0x5A9A9` | a `cmp [1001],5` language branch (not menu-enter) | verified |
-| `D5CAC` | `0x55CAC` | `and 0Eh` country mask | verified |
-| `D5CC2` | `0x55CC2` | `jmp [cs:bx+2DE1]` indexed dispatch | verified |
-| `CS:2DE1` with `CS = D2F2` | flat `D5D01` = `0x55D01` | country dispatch table — the seven country setters on the even indices, `D5CF8` (country 0) on the odd ones | verified |
-| `D5CC7` | `0x55CC7` | country block `[4130:0020]=1..7`, reached from the table above | verified |
-| Z80 `0x2D9D` | `0x2D9D` (Z80 ROM) | `in a,(04); or 0F0h` country DIP read — the handler for 80188 command `0xF9`, requested by `sub_D5A8B` | verified |
-| `D016D` / `D018C` | `0x5016D` / `0x5018C` | NMI `dmd_vblank_isr`, reads `A000:0100` | verified |
-| `D74FF` / `D750A` | `0x574FF` / `0x5750A` | freshness gate (`[1147]==0`) | verified |
-| `D75CD` | `0x575CD` | ring → `last_switch_code` consumer | verified |
-| `D7AD5` | `0x57AD5` | `cmp 0x3F` menu enter/exit toggle | verified |
-| `DA22D` | `0x5A22D` | initials-entry handler (not menu) | verified |
-| `D7C2B` | `0x57C2B` | `switch_dispatch_table_lookup` | verified |
-| `D72A:0AEC` | `0x57D8C` | 12-code ball-launch table | verified |
+| Address | File offset | What |
+|---------|-------------|------|
+| `[4000:1001]` | RAM `0x41001` | country / language byte (`==5` ⇒ Spanish) |
+| `[4000:1144]` | RAM `0x41144` | coin-pulse counter (`0x32` bumps it) |
+| `[4000:1147]` | RAM `0x41147` | inbound-byte-available flag |
+| `[4000:1220]` | RAM `0x41220` | inbound J1 byte FIFO, through `0x412E7` |
+| `[4130:0020]` | RAM `0x41320` | country number 0–7 |
+| `[4137:0013]` | RAM `0x41383` | service-menu cursor |
+| `[4137:004B]` | RAM `0x413BB` | far pointer to the menu record table |
+| `[413C:00D6]` | RAM `0x41496` | `last_switch_code` |
+| `[413C:014F]` | RAM `0x4150F` | game mode (1 attract, 2 credits, 3 game start, 4 ball in play) |
+| `[413C:015A]` | RAM `0x4151A` | the menu record being displayed |
+| `D016D` / `D018C` | `0x5016D` / `0x5018C` | `isr_type02_nmi`, the only read of `0xA0100` |
+| `D2F2E` / `D2F3B` | `0x52F2E` / `0x52F3B` | read store offset `0x1BF` → write `[1001]`, once per cycle |
+| `D000:04A9` / `D000:04BF` | `0x504A9` / `0x504BF` | non-volatile byte write / read accessors |
+| `D5A8B` | `0x55A8B` | push Z80 command `0xF9` and wait for the DIP report |
+| `D5CAC` | `0x55CAC` | `and 0Eh` country mask |
+| `D5CC2` | `0x55CC2` | `jmp [cs:bx+2DE1]`, `CS = D2F2` → the table at `D5D01` |
+| `D5D01` | `0x55D01` | country dispatch table: the seven setters on even indices, `D5CF8` (country 0) on the odd ones |
+| `D69CC` | `0x569CC` | apply the country's coin preset |
+| `D7453` / `D74A9` | `0x57453` / `0x574A9` | dequeue one FIFO byte into `last_switch_code` |
+| `D7AD5` | `0x57AD5` | `cmp 0x3F` — the service-menu entry test |
+| `DD253` | `0x5D253` | menu root: `0xF7`, the loop, `0xF8` |
+| `DD2E6` / `DD306` | `0x5D2E6` / `0x5D306` | menu loop and its 14-way jump table at `CS:018F` |
+| `DD480` / `DD501` / `DD587` | `0x5D480` / `0x5D501` / `0x5D587` | record-type-0 handler, its four-code dispatch and its table |
+| `DD3FB` | `0x5D3FB` | select the English (`0x00100`) or Spanish (`0x00D08`) record table |
+| `DA22D` | `0x5A22D` | high-score initials entry |
+| `DA9A9` | `0x5A9A9` | a `cmp [1001],5` language branch |
+| Z80 `0x1278` | `0x1278` (Z80 ROM) | port-`0x03` bit 1 → code `0x3F` |
+| Z80 `0x2BEB` | `0x2BEB` (Z80 ROM) | command `0xED`: `IN A,($04) / BIT 5,A` → `0x45` or `0x46` |
+| Z80 `0x2D9D` | `0x2D9D` (Z80 ROM) | command `0xF9`: `IN A,($04) / OR 0F0h` |
+| Z80 `0x2DC4` / `0x2DD9` | `0x2DC4` / `0x2DD9` | commands `0xF7` / `0xF8` — test mode on, and off with a reboot |
 
 ---
 

@@ -2,30 +2,60 @@
 
 [← Back to main README](../README.md)
 
-All tables below are derived from the original SLEIC IO Moon service manual (Spanish, 1996) and verified against the Z80 ROM disassembly.
+The C-numbers and names below are the original SLEIC IO Moon service manual's
+contact list. The **ports and codes** beside them are read out of the Z80 ROM
+(`V1 3_05.bin`) in [`../asm/baseline-2026-09/`](../asm/baseline-2026-09/) and are
+findings F5 / F7 / F15 of
+[`findings.md`](../asm/baseline-2026-09/findings.md); where the ROM and the
+manual's summary differ, the ROM is what runs and the difference is called out.
 
-> For the switch **codes that drive the service/test menu** (flippers `0x3E`/`0x3F`/`0x40`, START `0x41`, COIN `0x42`, MONEDERO `0x37`, TEST `0x33`) and the menu navigation path, see [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md). Note the menu navigator acts on the **RIGHT-flipper code `0x3F`** and ignores `0x3E`.
+> For how the service menu is opened and navigated, see
+> [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md):
+> TEST (`0x3F`) opens and exits it, the flipper codes `0x41` and `0x42` scroll
+> and select, and START (`0x40`) goes back.
 
 ---
 
-## Switches (50 total)
+## Switches
 
-### Direct Switches (6)
+The Z80 delivers **48 matrix positions** (6 columns × 8 rows), **6 cabinet
+inputs** on port `0x03`, and a further 16-way multiplexed **direct-input scan**
+on port `0x87` / port `0x01` bit 5 that is disabled on this machine
+(port `0x04` bit 0 gates `direct_input_scan` off). The manual's contact list
+runs C1–C50.
 
-These switches are read directly via dedicated I/O ports, bypassing the switch matrix.
+### Cabinet inputs (port `0x03`)
 
-| Code | Spanish Name | English Name | Z80 Port | ROM Code |
-|------|-------------|--------------|----------|----------|
-| C1 | Pulsador flipper izquierdo | Left Flipper Button | Port `0x03` | `0x3E` |
-| C2 | Pulsador Start | START Button | Port `0x03` bit 3 | `0x41` |
-| C3 | Entrada Monedas | Coin Input | Port `0x03` bit 2 | `0x42` |
-| C4 | Pulsador de Test | TEST/Service Button | Port `0x03`/`0x04` | `0x33` |
-| C5 | Pulsador flipper derecho | Right Flipper Button | Port `0x03` | `0x3F` |
-| C20 | Contacto de falta | Tilt Switch | Port `0x04` | TBD |
+Read directly, bypassing the matrix. The bit → code mapping is exact; the
+C-number beside each is the manual's.
 
-### Matrix Switches (44)
+| Code | Port `0x03` bit | Spanish Name | English Name | Z80 handler |
+|------|-----------------|--------------|--------------|-------------|
+| `0x32` (`0x33` in test mode) | 5 | Entrada Monedas (C3) | Coin mechanism — one code per press | `0D3C` / `0D44` |
+| `0x3E` | 0 | Contacto de falta (C20) | Tilt | `sub_125B` |
+| `0x3F` | 1 | Pulsador de Test (C4) | TEST / service menu | `sub_1278` |
+| `0x40` | 4 | Pulsador Start (C2) | START | `sub_1285` |
+| `0x41` | 3 | Pulsador flipper izquierdo (C1) | Left flipper button | `sub_1292` |
+| `0x42` | 2 | Pulsador flipper derecho (C5) | Right flipper button | `sub_12D8` |
 
-The switch matrix uses 6 rows × 8 columns, scanned via Port `0x02` (column read) and Port `0x82` (row strobe).
+The two flipper bits fire the port-`0x85` coil pairs directly (`sub_05C7` /
+`sub_05ED`) and only emit `0x41` / `0x42` over J1 while test mode is set; the
+other four emit their code on every press. `0x32` is the one code the 80188's
+NMI does not queue — it counts it in `[4000:1144]` as a coin pulse instead.
+
+### Matrix contacts
+
+6 columns × 8 rows = 48 positions, strobed on port `0x82` (one-hot `0x01`–`0x20`)
+and read back on port `0x02`. **Column c, bit b → code `0x0A + 8c + b`** for
+c = 0..4, and **`0x34 + b`** for column 5.
+
+Four positions are identified from the firmware: **column 0 bits 0–3, codes
+`0x0A`–`0x0D`, are the ball-handling contacts** — bits 0–2 the three trough
+contacts (manual C6/C7/C8) and bit 3 the ball-exit contact (C9). Contact 0 is the
+trough entry: it doubles as the ball-over sensor and reports code `0x43` instead
+of its own `0x0A`, and the ball complement is three. The remaining 44 positions
+are exact as codes but are not yet tied to individual entries in the manual's
+list below.
 
 | Code | Spanish Name | English Name |
 |------|-------------|--------------|
@@ -138,22 +168,33 @@ General illumination is controlled by RELE2 on the power board. These are not in
 | LC62 | Planet 2 |
 | LC63–LC64 | Not Connected |
 
-The lamp matrix is controlled by the Z80 via ports `0x82`–`0x84` (7 columns × 16 rows).
+The lamp matrix is driven by the Z80 as **8 columns × 8 bits = 64**: the row byte
+goes to port `0x84` (active high), then the one-hot column strobe to port `0x83`
+(`0x01`–`0x80`), one column per Z80 interrupt. Each lamp has two bank bits — bank 1
+at `C0FF`–`C106` and bank 2 at `C107`–`C10E` — which together give steady-on,
+blinking and off; see [`z80_io_ports.md`](z80_io_ports.md).
 
 ---
 
-## Solenoids (18 total)
+## Drivers (solenoids)
 
-The machine has 18 solenoids (21 total including dual-wound flippers), controlled by the Z80 via ports `0x85` and `0x86`.
+Two 8-bit latches on Z80 ports `0x85` and `0x86`, **active LOW** — `boot_port_init`
+`041B` writes `0xFF` to both at reset, so a cleared bit fires a driver. That is
+**16 driver bits**, and they are not 16 independent devices: port `0x86` drives
+all eight of its bits independently, while on port `0x85` bits 0/1, 2/3 and 4/5
+are driven as complementary pairs and bits 6 and 7 individually. **13 addressable
+devices**, then — the complementary pairs being the power/hold windings the
+manual counts as dual-wound flippers.
 
-The solenoid types include:
+The driven loads are:
 
-- **Flippers**: Left, Right, Upper (dual-wound: power + hold coils)
+- **Flippers**: left, right, upper (dual-wound: power + hold)
 - **Pop bumpers**: 5 units
-- **Slingshots/Kickers**: 2 units
-- **VUKs (Vertical Up Kickers)**: 2 scoops
-- **Drop target bank reset**: 1 coil
-- **Ball eject/serve**: Multiple coils for ball management
-- **Flashlamp drivers**: Controlled via +24V flash circuit (TW1/TW2)
+- **Slingshots / kickers**: 2 units
+- **VUKs (vertical up-kickers)**: 2 scoops
+- **Drop-target bank reset**: 1 coil
+- **Ball eject / serve** coils for ball management
+- **Flashlamp drivers** on the +24 V flash circuit (TW1/TW2)
 
-The exact solenoid-to-port mapping is documented in the [Z80 annotated assembly](../asm/z80_annotated.asm).
+Which command byte reaches which bit is decoded by the Z80's 256-entry table at
+`$2000` (commands `0xCB`–`0xE7`); see [`z80_io_ports.md`](z80_io_ports.md).
