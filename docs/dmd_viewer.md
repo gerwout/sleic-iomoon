@@ -142,7 +142,11 @@ By default, the viewer renders each pixel as a scaled dot with a dark gap, simul
 
 ### Bit Inversion
 
-The IO Moon stores DMD frame data with **inverted bits** (0 = lit, 1 = off). The viewer inverts by default for correct display. Use `--no-invert` to see the raw bit pattern.
+On the real machine **a set bit is a lit pixel** — the firmware applies no
+inversion anywhere between the graphics ROM and the display buffer, and the
+panel shows the bytes as they stand
+([`dmd_graphics.md`](dmd_graphics.md), finding F13). This viewer nevertheless
+**inverts by default**; pass `--no-invert` for the hardware convention.
 
 <p align="center">
   <img src="../images/dmd_invert_comparison.png" alt="Bit Inversion Comparison" width="700">
@@ -184,25 +188,29 @@ The font viewer has additional filter keys:
 
 ### DMD Hardware
 
-The display is driven by the 80188 via memory-mapped registers at segment `A000h`:
-
-| Register | Address | Function |
-|----------|---------|----------|
-| Control 1 | `A000:0000` | DMD control (`0x28` = display on) |
-| Control 2 | `A000:0080` | Secondary control |
-| Mode | `A000:0200` | Mode register (bit 3 = strobe) |
-| Enable | `A000:0300` | Enable register (`0x80` = enabled) |
+The 80188 composes each frame in work RAM and blits two 512-byte bitplanes into a
+1 KB display buffer at `7000:0000`–`7000:03FF`; the PIC16C57 at IC23 free-runs a
+raster over that buffer at about 73 visible frames a second. There is no frame
+strobe and no double buffering — see [`dmd_graphics.md`](dmd_graphics.md).
+(Segment `A000h` is the 80188's peripheral chip-select block — the J1 byte-port
+latches and the two sound chips — not a DMD register window.)
 
 ### 4-Level Brightness
 
-The 4 brightness levels are achieved by combining two bitplanes:
+The 4 brightness levels are the two bitplanes combined as
+`2 × plane0_bit + plane1_bit`, plane 0 being the MSB because the PIC holds each
+of its rows about 6.7× longer:
 
-| Value | Plane 0 | Plane 1 | Brightness | Viewer Color |
-|-------|---------|---------|------------|--------------|
+| Value | Plane 0 (×2) | Plane 1 (×1) | Brightness | Viewer Color |
+|-------|--------------|--------------|------------|--------------|
 | 0 | off | off | Off | `#000000` (black) |
-| 1 | on | off | Dim | `#552200` (dark orange) |
-| 2 | off | on | Medium | `#AA4400` (medium orange) |
+| 1 | off | on | Dim | `#552200` (dark orange) |
+| 2 | on | off | Medium | `#AA4400` (medium orange) |
 | 3 | on | on | Full | `#FF6600` (bright orange) |
+
+`decode_frame()` in the script computes `p0_bit + 2 * p1_bit`, i.e. it swaps
+levels 1 and 2 against the panel. Levels 0 and 3 are unaffected, and the
+single-bitplane static-screen and font paths are unaffected entirely.
 
 ### Animated Frame Format
 
@@ -212,12 +220,12 @@ Each animated frame occupies 1030 bytes:
 Offset  Size  Description
 ------  ----  -----------
 0x00    6     Header: 20 00 10 00 00 02
-              (height=32, 0, width_bytes=16, 0, 0, planes=2)
+              (three LE words: rows=32, bytes/row=16, plane stride=512)
 0x06    512   Bitplane 0 (16 bytes/row × 32 rows)
 0x206   512   Bitplane 1 (16 bytes/row × 32 rows)
 ```
 
-Data is stored with **inverted bits**: a `0` bit means the pixel is lit, and a `1` bit means it is off. This was confirmed by visual comparison with actual DMD output.
+A set bit is a lit pixel (see *Bit Inversion* above).
 
 ### Static Screen Format
 
@@ -231,7 +239,7 @@ At runtime the firmware picks the language by the byte `[4000:1001]`: `== 5` sel
 the Spanish bitmap, any other value (default `0x04`) selects English. This polarity is
 DMD-verified — see [`iomoon_language_and_service_menu.md`](iomoon_language_and_service_menu.md).
 
-Static screens use 1 bitplane only (on/off, no brightness levels) and are **not** bit-inverted.
+Static screens use 1 bitplane only (on/off, no brightness levels).
 
 ### Detection Algorithms
 

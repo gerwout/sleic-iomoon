@@ -314,8 +314,15 @@ def decode_frame(rom_data: bytes, frame_info: dict, invert: bool = True) -> np.n
     
     Frame format:
     - 1024 bytes total: 512 bytes plane 0 + 512 bytes plane 1
-    - Each plane: 32 rows Ã— 16 bytes = 512 bytes
-    - Pixel value = plane0_bit + 2*plane1_bit (gives 0-3)
+    - Each plane: 32 rows x 16 bytes = 512 bytes
+
+    NOTE: this renderer's conventions differ from the hardware's, and both
+    differences are cosmetic (they swap brightness levels 1 and 2):
+    - the panel treats a SET bit as lit; `invert` defaults to True here, so
+      pass invert=False (--no-invert) for the hardware convention;
+    - the panel weights plane 0 as the MSB (2*p0 + p1); this computes
+      p0 + 2*p1.
+    See docs/dmd_graphics.md.
     """
     data_offset = frame_info['data_offset']
     frame_data = rom_data[data_offset:data_offset + FRAME_DATA_SIZE]
@@ -336,7 +343,8 @@ def decode_frame(rom_data: bytes, frame_info: dict, invert: bool = True) -> np.n
             b0 = plane0[row_offset + byte_idx]
             b1 = plane1[row_offset + byte_idx]
             
-            # Invert bytes if needed (common in DMD ROMs: 0=lit, 1=off)
+            # Optional inversion; on IO Moon a SET bit is lit, so the
+            # hardware convention is invert=False (see the docstring)
             if invert:
                 b0 = ~b0 & 0xFF
                 b1 = ~b1 & 0xFF

@@ -9,57 +9,69 @@
 | Panel | 128 × 32 gas plasma dot matrix (board `011-022`) |
 | Color depth | 2-bit (4 brightness levels, time-multiplexed) |
 | Bitplanes | 2 (combined for 4 shades) |
-| Display coprocessor | **Microchip PIC 16C54HS** at IC23 on the CPU 16-bit board (`011-029A`) |
-| Controller register window | Memory-mapped from the 80188 at segment `A000h` |
+| Display coprocessor | **Microchip PIC 16C57-HS/P** at IC23 on the CPU 16-bit board (`011-029A`) |
+| Display buffer | `7000:0000`–`7000:03FF` in the 80188's address space (MCS3) |
 | Panel power supply | 95 V AC / 58 V AC (connectors TW3–TW6, board `011-023`) |
 
-> The PIC 16C54HS is the actual DMD rasterizer: the 80188 writes frame buffers and control registers to segment `A000h`, and the PIC reads those, generates the scan/strobe timing the plasma panel needs, and clocks pixel data out. The MAME upstream driver header lists this PIC as "optional"; on IO Moon (service manual section 7.2.1 / page 92) it is **required** and labelled "ayudado en las funciones del display por otro de 8 bits PIC 16C54HS". The PIC's internal firmware is undumped.
+> The PIC at IC23 is the DMD rasterizer, and it is a **free-running** one: it has
+> no command interface, samples no data port, and exchanges no byte with the
+> 80188 in either direction. It walks the video-RAM address over the 1 KB display
+> buffer and sequences the panel's row/latch/frame strobes; the panel simply shows
+> whatever stands in that buffer when the raster reaches it. Its 150 programmed
+> words are disassembled in
+> [`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm). The service
+> manual (section 7.2.1 / page 92) describes it as "ayudado en las funciones del
+> display por otro de 8 bits PIC 16C54HS"; the part actually fitted, and dumped,
+> is a PIC16C57-HS/P.
 
 ---
 
-## DMD Controller Registers
+## The frame pipeline
 
-The 80188 talks to the PIC 16C54HS rasterizer through a small set of memory-mapped registers in segment `A000h`. From the `dmd_controller_init` routine at `0xD00B9` in `asm/80188_annotated.asm`:
+The 80188 composes every frame in its own work RAM and ends with a plain copy
+into the 1 KB display buffer at segment `7000`, which is all the panel ever sees.
+Everything is 128×32 two-plane: 16 bytes per row × 32 rows = 512 bytes per plane.
+This is finding **F13** of [`findings.md`](../asm/baseline-2026-09/findings.md).
 
-| Register | Address | Init value | Function | RAM shadow |
-|----------|---------|------------|----------|-----------|
-| `DMD_CTRL1`  | `A000:0000` | `0x28` | Display on / format | `4000:1134` (`dmd_display_mode`) |
-| `DMD_CTRL2`  | `A000:0080` | `0x00` | Display flags | `4000:1135` (`dmd_display_flags`) |
-| `DMD_MODE`   | `A000:0200` | `0x07` | Mode register; bit 3 = swap-buffer / frame strobe | `4000:1138` (`dmd_control_shadow`) |
-| `DMD_ENABLE` | `A000:0300` | `0x80` | Master enable | — |
+```
+4000:0000-01FF  sprite / foreground plane 0   \ cleared by sub_F00C4
+4000:0200-03FF  sprite / foreground plane 1   /
+4000:0400-05FF  mask, one plane                 (0xFF = pass-all)
+4000:0600-07FF  background plane 0            \ where the animation loader lands its frames
+4000:0800-09FF  background plane 1            /
+4000:0A00-0BFF  composite plane 0             \ the blit source
+4000:0C00-0DFF  composite plane 1             /
+7000:0000-01FF  display plane 0               \ what the PIC rasters
+7000:0200-03FF  display plane 1               /
+```
 
-Each register is written as a single byte. The 80188 keeps a shadow of `DMD_MODE` in its work RAM (`4000:1138`) because the hardware register is write-only — every change to bit 3 (the frame strobe) is done by reading the shadow, OR-ing in `0x08`, writing the result, NOPping four times, AND-ing out `0x08`, and writing again. That is the per-frame "swap buffers" pulse the PIC waits on.
+**Composite** (`sub_F08A5`) computes `(background AND mask) OR sprite` for both
+planes, 32 rows × 16 bytes. **Blit** (`sub_F08EB`) copies `4000:0C00` → `7000:0200`
+and `4000:0A00` → `7000:0000`. The two are the alternating branches of the INT0
+ISR at `D000:0343` — `[4000:1142]` toggles on entry, the even branch blits and
+dispatches animation, the odd branch composites and ticks the FM player — so the
+display buffer is refreshed at INT0/2.
 
-Frame buffer addresses live in the 80188's work RAM (segment `4000h`):
+**There is no frame strobe and no double buffering.** PCS4 `0xA0200` bit 3 — the
+one candidate for a "swap buffers" pulse — is written exactly once in the entire
+ROM, by `pcs4_bit3_strobe` `D00FA`, called only from `boot_init`. The PIC is a
+free-running raster with no command interface, so it displays whatever stands in
+`7000:0000`–`03FF` at the moment it scans it. A sample can therefore catch a blit
+in progress and show one plane a frame ahead of the other; the real panel has the
+same race for the same reason.
 
-| Address | Function |
-|---------|----------|
-| `4000:1150` | `display_buf_ptr1` — current read pointer (active buffer) |
-| `4000:1152` | `display_buf_seg1` — current buffer segment (always `4000h`) |
-| `4000:1154` | `display_buf_ptr2` — next read pointer (preparing buffer) |
-| `4000:1156` | `display_buf_seg2` — next buffer segment |
-| `4000:1220+` | Frame buffer area (double-buffered, ~1 KB per buffer) |
+**Nothing in this path inverts.** The firmware ANDs, ORs and copies these bytes
+and never NOTs or XORs them.
 
-The PIC reads these pointers on every frame strobe and rasterizes the buffer at `display_buf_ptr1` to the panel. The 80188 fills the alternate buffer in the background, then swaps pointers and toggles `DMD_MODE` bit 3.
+The registers the 80188 writes in segment `A000h` are **not** DMD registers:
+`A000h` is the peripheral chip-select block, carrying the J1 byte-port latches
+and both sound chips. The boot values `sub_D00B9` writes there — PCS0 `0x28`,
+PCS6 `0x80`, PCS4 `0x07` — are the idle levels of those, not display controls.
+See [`80188_config.md`](80188_config.md).
 
-Source references: `dmd_controller_init` (D00B9), `dmd_reset_pulse` (D00FA), `display_buffer_init` (D011C).
-
-### Secondary frame buffer at segment `7000h`
-
-In addition to the work-RAM buffer at `4000:1220`, the 80188 also writes a **1 KB bitmap buffer at `7000:0000`–`7000:03FF`**. Two routines in the F-segment system code zero out this entire region:
-
-- `0xF0113` — annotated as `dmd_pixel_set` in `asm/80188_annotated.asm` but actually a frame-buffer clear: `ES=7000h, DI=0, CX=0x400, AL=0; REP STOSB`.
-- `0xF0124` — annotated as `dmd_pixel_clear` with identical logic to `F0113`.
-
-A PinMAME debugger trace (see `research/pinmame_session_2/`) shows `F0121` (the inner STOSB of `F0113`) firing **at ~290 times per second**, which matches the 145 Hz panel × 2 planes refresh rate from `dmd_wire_protocol.md`. So one of these routines is called once per plane refresh, clearing the next plane before it is drawn.
-
-This second buffer is not described in the existing inter-CPU documentation. It is most likely physical RAM external to the 80188, selected by IC8 PAL16L8 glue (which has not been dumped), and read by the PIC 16C54HS in addition to or instead of `4000:1220`. The exact division of labour between `4000:1220` and `7000:0000` is still to be worked out — possible interpretations:
-
-- `4000:1220` carries **rendering primitives / command stream**; `7000:0000` is the **rasterised 1 KB framebuffer** that the PIC streams to the panel.
-- The two buffers correspond to the two bitplanes (one plane = 512 bytes; two planes = 1024 bytes) and are alternated.
-- One is the "active" buffer the PIC reads, the other is the "preparing" buffer the 80188 writes; the strobe at `A000:0200` bit 3 swaps them.
-
-The `display_buf_ptr1` at `4000:1150` always points to `4000:1220` after `display_buffer_init`, so the segment-`7000h` buffer cannot be selected by the documented pointer-swap mechanism — it must be either a fixed second buffer or part of the 1-plane-only "fast bitmap" path. Further reverse engineering of the `F0113` / `F0124` callers (`F0011` / `F0016` in the disassembly XREFs) should clarify.
+Two more routines in the F-segment clear the display buffer at boot:
+`0xF0113` and `0xF0124` (`ES=7000h, DI=0, CX=0x400, AL=0; REP STOSB`), whatever
+names the older generated listings gave them.
 
 ---
 
@@ -70,13 +82,15 @@ The ROM contains **400 animated frames** stored sequentially in ROM2 (`0x00000`�
 ### Header (6 bytes)
 
 ```
-Byte 0: 0x20  — Height (32 pixels)
-Byte 1: 0x00  — Reserved
-Byte 2: 0x10  — Width in bytes (16 = 128 pixels ÷ 8)
-Byte 3: 0x00  — Reserved
-Byte 4: 0x00  — Reserved
-Byte 5: 0x02  — Number of bitplanes (2)
+Bytes 0-1: 0x0020  — rows (32)
+Bytes 2-3: 0x0010  — bytes per row (16 = 128 pixels / 8)
+Bytes 4-5: 0x0200  — plane stride (512 = one plane)
 ```
+
+Three little-endian words, and they are exactly the fields `anim_stream_open`
+(`0xF0348`) reads into `[4000:1102]`, `[1104]` and `[1106]` before
+`sub_F036D` copies the two planes into the background buffers. Every populated
+64 KB page of `V1 3_02.bin` begins with the identical triple.
 
 ### Data (1024 bytes)
 
@@ -102,22 +116,36 @@ pixel_value = (2 × plane0_bit) + plane1_bit
 | 2 | 1 | 0 | Medium |
 | 3 | 1 | 1 | Bright (full) |
 
-> 🛠️ **Correction (verified against real hardware)**: an earlier version of this document had Plane 0 as the *LSB* (weight ×1) and Plane 1 as the MSB. That was wrong. The corrected mapping above matches:
->
-> 1. The PPUC `dmdreader` Sleic decoder (see [`dmd_wire_protocol.md`](dmd_wire_protocol.md)) — the wire-side authoritative source. Confirmed by the maintainer to work correctly on a real IO Moon machine.
-> 2. A visual comparison of `dmd_viewer.py` output against the swapped convention. The MSB-first interpretation produces natural antialiased halos (orange-brown gradient at the edges of bright shapes); the LSB-first interpretation produces unnaturally dark "shadow" halos. See the side-by-side comparison below.
->
-> The PIC 16C54HS appears to stream bitplanes in ROM order, so ROM Plane 0 = wire Plane 0 = MSB. There is no plane-order reversal in the PIC.
->
-> 📷 Visual comparison of three frames (`#0`, `#50`, `#200`), left column = old LSB-first interpretation, right column = corrected MSB-first interpretation:
->
-> ![Plane-order comparison](../images/dmd_plane_order_comparison.png)
->
-> ⚠️ **`scripts/dmd_viewer.py` still uses the old LSB-first convention** in `decode_frame()` (see `dmd_viewer.py:348`): `image[row, col] = p0_bit + 2 * p1_bit`. To match real hardware it should be `image[row, col] = 2 * p0_bit + p1_bit`. The visible difference is small — only pixels at brightness levels 1 and 2 are affected; levels 0 and 3 are unchanged. The script's static-screen and font rendering are unaffected (single-bitplane).
+**Plane 0 is the MSB**, and three independent things say so:
 
-### Bit Inversion
+1. The PIC's own raster program holds each row of the plane it scans first for
+   **200** delay iterations against **30** for the second — a 6.7:1 duty ratio —
+   and it scans `7000:0000`–`01FF` first
+   ([`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm)).
+2. The PPUC `dmdreader` Sleic decoder shifts wire plane 0 left by one and wire
+   plane 1 by zero (see [`dmd_wire_protocol.md`](dmd_wire_protocol.md)), and it
+   is confirmed working on a real IO Moon machine.
+3. Rendered frames: the moon disc's anti-aliased edge ramps level 1 → 2 → 3 from
+   outside in, and the service menu draws unselected items in plane 1 alone and
+   the selected item in both planes — dim against bright only with plane 1 as the
+   LSB.
 
-Frame data is stored with **inverted bits**: a `0` bit in the ROM means the pixel is **lit**, and a `1` bit means it is **off**. The `dmd_viewer.py` script inverts by default for correct display.
+![Plane-order comparison](../images/dmd_plane_order_comparison.png)
+
+### Bit polarity: a set bit is lit
+
+A `1` bit is a **lit** pixel, throughout: in the ROM frame data, in the work-RAM
+pipeline, in the display buffer and on the wire. The firmware applies no
+inversion anywhere between the graphics ROM and `7000:0000`, and rendering ROM
+frames with `1` = lit produces coherent images (frame 120 of `V1 3_02.bin`, for
+instance, is a clean lunar disc), while the inverted reading produces a
+full-screen lit rectangle with a hole in it.
+
+> ⚠️ `scripts/dmd_viewer.py` does not use this convention by default. It inverts
+> (`--no-invert` turns that off) and it weights the planes the other way round —
+> `decode_frame()` computes `p0_bit + 2 * p1_bit` where the panel computes
+> `2 * p0_bit + p1_bit`. Its static-screen and font rendering are single-bitplane
+> and unaffected.
 
 ---
 
@@ -174,7 +202,8 @@ The identified static screens include game messages in both Spanish and English,
 
 ## Scrolling Credits
 
-The credits animation data occupies the range `0xA9D00`–`0xAC000`. Unlike the static screens, credits are stored as a **continuous vertical strip** that scrolls upward during the attract mode credits sequence.
+The credits animation data occupies the range `0xA9D00`–`0xAC000` of the combined
+`ROM2 + ROM1` image (= ROM1 file offset `0x29D00`–`0x2C000`). Unlike the static screens, credits are stored as a **continuous vertical strip** that scrolls upward during the attract mode credits sequence.
 
 The `dmd_viewer.py` script extracts **42 individual text elements** from this strip by detecting content boundaries (rows with at least some lit pixels, grouped into elements with a minimum height of 5 rows).
 
@@ -240,15 +269,21 @@ A **character mapping table** at ROM offset `0x809B0` (96 bytes) maps ASCII code
 
 ---
 
-## Memory Layout Summary
+## Memory layout summary
+
+Offsets into the **combined `ROM2 + ROM1`** image the tooling uses
+(`cat "V1 3_02.bin" "V1 3_01.bin" > io_moon_combined.bin`), which is not the
+80188's address space — see [`hardware_architecture.md`](hardware_architecture.md)
+for the three windows the CPU actually sees.
 
 ```
-0x00000 – 0x6F974 : Animated DMD frames (400 × 1030 bytes)
-0x70000 – 0x7FFFF : Additional graphics/data
-0x80000 – 0x809AF : Unknown data
-0x809B0 – 0x80A0F : Character mapping table (ASCII → glyph index)
+0x00000 – 0x6F974 : ROM2: animated DMD frames (400 x 1030 bytes, seven 64 KB pages)
+0x70000 – 0x7FFFF : ROM2 page 7, blank
+0x80000 – 0x800FF : ROM1: the resident 80188 interrupt vector table
+0x80100 – 0x809AF : ROM1: service-menu records (English at 0x100, Spanish at 0xD08)
+0x809B0 – 0x80A0F : Character mapping table (ASCII -> glyph index)
 0x82000 – 0xA0000 : Static screens (bilingual pairs)
 0xA0000 – 0xA1100 : Font glyphs (131 entries)
 0xA9D00 – 0xAC000 : Scrolling credits animation data
-0xD0000 – 0xFFFFF : Program code
+0xC0000 – 0xFFFFF : ROM1: 80188 program code (segments D000/E000/F000 + boot stub)
 ```
