@@ -62,10 +62,12 @@ DA9B8  call F000:3007             ; English text variant
 variants. It has nothing to do with the service menu, which is opened by switch
 code `0x3F` (see §C).
 
-### Where `[1001]` is seeded — once, from NVRAM, at the top of the main loop
+### Where `[1001]` is written — three sites
 
-`[1001]` is **written in exactly one place** in the entire 80188 program — file
-`0x52F3B`, at the head of the main game loop (`D2F22`):
+There are **three** writes to `[1001]` in the 80188 program, and they split into
+two roles: one reload per game cycle, and two overrides at boot.
+
+**The per-cycle reload**, at the head of the main loop (`D2F22`, file `0x52F3B`):
 
 ```asm
 D2F22  push ds
@@ -77,7 +79,7 @@ D2F2E  call D000:04BF             ; NVRAM byte-read accessor (returns AL)
 D2F33  add  sp, 4
 D2F36  mov  dx, 4000h
 D2F39  mov  es, dx
-D2F3B  mov  [es:1001h], al        ; <-- the ONLY write to [1001]
+D2F3B  mov  [es:1001h], al        ; byte form: 26 A2 01 10
 ```
 
 So the live language is sourced from **the non-volatile store, offset `0x1BF`**
@@ -86,8 +88,27 @@ game cycle, not every frame. `D000:04BF` is the generic byte-read accessor (its
 epilogue is at `D04CC`); the caller that reads `0x1BF` and stores it into `[1001]`
 is `D2F2E → D2F3B`.
 
-`0x1BF` itself is written (from `[4130:0020]`) by the country-init block in §B via
-the byte-write accessor `D000:04A9` (callers at `D6619`/`D6669`).
+**The two boot overrides** are in the country-init block §B describes, and they
+write the DIP-derived country number straight through rather than reading it back
+from the store. Both use the register form, which is why a grep for the
+immediate-store encoding alone does not find them:
+
+```asm
+D6607  mov  dl, [0020h]           ; the country number from [4130:0020]
+D660D  mov  [es:1001h], dl        ; register form: 26 88 16 01 10
+D6612  ...                        ; then persist it to store offset 0x1BF
+```
+
+with the identical sequence again at `D6656`-`D665C`, on the branch `D664D`
+takes when the DIP-derived country disagrees with the stored one. Each is
+immediately followed by a write of the same value to store offset `0x1BF`
+through `D000:04A9` (callers at `D6619` / `D6669`).
+
+**The ordering is what makes the DIP authoritative.** `boot_init` runs the
+country block first, so both the store and `[1001]` already hold the DIP's value
+by the time the main-loop head reloads `[1001]` from the store — the reload
+therefore re-reads what the DIP just wrote. Forcing `[1001]` from outside the
+firmware is overwritten at the next boot for the same reason.
 
 ---
 
@@ -131,6 +152,7 @@ unrelated data.
    D5CAF  and  al, 0Eh              ; keep SW2-SW4
    D5CB6  sub  ax, 2
    D5CBB  cmp  bx, 0Ch / ja D5CF8   ; a nibble of 0 goes to country 0
+   D5CC0  shl  bx, 1                ; word index
    D5CC2  jmp  word [cs:bx+2DE1h]   ; CS = D2F2 -> the table at D5D01
    ```
 

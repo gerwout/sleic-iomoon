@@ -108,10 +108,13 @@ DMA channels:
   **INT0** (`FF38` = `0000`, priority 0, edge-triggered) are unmasked; DMA0,
   DMA1, INT1, INT2 and INT3 all have MSK set (`000F`), and PRIMSK (`FF2A`) = 1
   restricts service to priority levels 0–1.
-- **Both DMA channels are programmed and parked** — the control word `FFA0` is
-  written *first*, with ST (bit 1) and CHG (bit 2) both clear, so the write
-  cannot start a channel, and nothing re-arms them at runtime. Sound is explicit
-  ISR-driven writes to the peripheral block, not DMA.
+- **Both DMA channels are programmed and parked.** The table's entries 18 and 19
+  write the **value** `0xFFA0` to the DMA0 and DMA1 **control-word ports**
+  `0xFFCA` and `0xFFDA` — do not confuse that value with port `0xFFA0`, which is
+  UMCS. Those two writes come *first*, ahead of the transfer counts and pointers
+  in entries 20-29, and the value has ST (bit 1) and CHG (bit 2) both clear, so
+  neither write can start a channel. Nothing re-arms them at runtime. Sound is
+  explicit ISR-driven writes to the peripheral block, not DMA.
 
 Together with the resident vector table that gives three live interrupt sources —
 NMI (`D000:016D`), timer 0 (`D000:024F`) and INT0 (`D000:0343`) — described in
