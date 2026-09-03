@@ -4,7 +4,7 @@
   <img src="images/dmd_single_frame.png" alt="IO Moon DMD Frame" width="700">
 </p>
 
-**IO Moon** is a pinball machine manufactured in 1996 by **SLEIC** (*Creaciones e Investigaciones Electrónicas, S.L.*) based in Alcobendas, Madrid, Spain. The theme revolves around a space exploration mission to Jupiter. The machine was designed by Luis J. Gosálbez Carrasco (software), Toñi Hernandez (software), and Santos Aranda (hardware).
+**IO Moon** is a pinball machine manufactured in 1994 by **SLEIC** (*Creaciones e Investigaciones Electrónicas, S.L.*) based in Alcobendas, Madrid, Spain. The theme revolves around a space exploration mission to Jupiter. The machine was designed by Luis J. Gosálbez Carrasco (software), Toñi Hernandez (software), and Santos Aranda (hardware).
 
 This repository documents the results of an extensive reverse engineering effort on the IO Moon ROM images. It contains analysis tools, annotated disassembly listings, and technical documentation covering the dual-CPU hardware architecture, the DMD graphics format, the OKI sound chip, and a ROM patch for tournament play.
 
@@ -205,7 +205,7 @@ sleic-io-moon/
 │   │       └── V1 3_01.bin            # Patched Display ROM 1
 │   └── related-machines/              # ROM images of other SLEIC machines
 │       ├── README.md
-│       ├── sleic-pin-ball/            # Sleic Pin-Ball (SLEIC1, 1994) — complete, 4 ROMs
+│       ├── sleic-pin-ball/            # Sleic Pin-Ball (SLEIC1, 1993) — complete, 4 ROMs
 │       │   ├── README.md
 │       │   ├── sp01-1_1.rom           # I8039 display coprocessor
 │       │   ├── sp02-1_1.rom           # OKI sample ROM
@@ -375,7 +375,7 @@ by cross-checking against them. Their ROM images are archived under
 
 | Machine | Year | PinMAME family | Dump status |
 |---------|------|----------------|-------------|
-| [Sleic Pin-Ball](roms/related-machines/sleic-pin-ball/) | 1994 | `SLEIC1` | complete (4 ROMs) |
+| [Sleic Pin-Ball](roms/related-machines/sleic-pin-ball/) | 1993 | `SLEIC1` | complete (4 ROMs) |
 | [Bike Race](roms/related-machines/bike-race/) | 1992 | `SLEIC3` | complete (7 ROMs) |
 | [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | **partial — Z80 I/O ROM only** |
 

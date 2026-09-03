@@ -13,8 +13,8 @@ where they diverge, and what is still missing.
 
 | Machine | Year | PinMAME family | ROMs archived here | Dump status |
 |---------|------|----------------|--------------------|-------------|
-| Sleic Pin-Ball | 1994 | `SLEIC1` | [`roms/related-machines/sleic-pin-ball/`](../roms/related-machines/sleic-pin-ball/) | complete (4) |
-| IO Moon | 1996 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
+| Sleic Pin-Ball | 1993 | `SLEIC1` | [`roms/related-machines/sleic-pin-ball/`](../roms/related-machines/sleic-pin-ball/) | complete (4) |
+| IO Moon | 1994 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
 | Bike Race | 1992 | `SLEIC3` | [`roms/related-machines/bike-race/`](../roms/related-machines/bike-race/) | complete (7) |
 | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | **partial — Z80 I/O ROM only** |
 
@@ -60,7 +60,7 @@ Two orders of magnitude separate the three later machines from Sleic Pin-Ball.
 **Doña Elvira 2's I/O firmware is a sibling of the IO Moon and Bike Race code**,
 i.e. it runs the same later Z80 board generation (IO Moon's is the `011-030A`,
 inventoried in [`board_011-030A_ics.md`](board_011-030A_ics.md)), and shares
-essentially nothing with the 1994 Sleic Pin-Ball I/O code.
+essentially nothing with the 1993 Sleic Pin-Ball I/O code.
 
 Code volume agrees with that grouping:
 
