@@ -121,7 +121,9 @@ Nothing downstream of that point runs until the byte is delivered.
 |---------|----------|
 | `4000:1001` | **Country / language byte** (`== 5` ⇒ Spanish, else English); loaded from the non-volatile store offset `0x1BF` at `D2F3B`, and rewritten from the SW40 country DIP at `D664D` whenever the two disagree |
 | `4000:1134` | **PCS0 output shadow** — graphics page (bits 0–2), NVRAM window gate (bits 3/4), OKI `/OKCS` (bit 5) |
+| `4000:1135` | **PCS1 output shadow** — the last byte presented on the outbound latch |
 | `4000:1138` | **PCS4 output shadow** — the J1 outbound handshake bits |
+| `4000:1145` | Divider that makes `qout_service_pcs1` act on one call in four; boot value 4 |
 | `4000:1142` | INT0 half-frame toggle: even = DMD blit + animation dispatch, odd = DMD composite + FM tick + outbound-queue service |
 | `4000:1144` | **Coin-pulse counter** — the NMI increments it for inbound byte `0x32` instead of queueing the byte |
 | `4000:1147` | **Inbound-byte-available flag**, set to `0xFF` by the NMI |
