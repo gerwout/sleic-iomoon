@@ -9,8 +9,15 @@ per-track offsets), and exports each track to raw register logs, standard
 
 This is the companion to [`extract_oki_msm6376.md`](extract_oki_msm6376.md): the
 OKI MSM6376 carries **speech + sound effects**, while the YM3812 carries the
-**music** (see [`z80_io_ports.md`](z80_io_ports.md) → "YM3812 routing" and
-[`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md)).
+**music** (see [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md)).
+
+> **What the extractor is good for.** It locates the tracks and exports their
+> register streams faithfully — the raw and VGM outputs are the ROM's own
+> `(register, value)` sequence, byte for byte. The **rendered WAV is
+> approximate**: it depends on two global parameters that the ROMs do not state
+> (the YM3812 master clock and the sequencer tick rate, both discussed under
+> *Fidelity notes*), and on a resampling step imposed by the offline OPL2 core.
+> Use the raw/VGM exports as the reference and treat the WAV as a preview.
 
 ## The music engine (re-derived from the 80188 disassembly)
 
@@ -35,8 +42,10 @@ Segment `CS = D000`, so a file offset = `0x50000 + Dxxxx`.
   Index port first (`0xA0280`, A0=0), then data port (`0xA0281`, A0=1). The
   extractor replays writes in this exact ROM order; the busy-wait settling delay
   is a hardware bus-timing detail and has no effect on the emulated OPL2 result.
-- The sequencer is **ticked from the DMD frame ISR**, not a free-running sound
-  timer — see "Fidelity notes" for the rate.
+- The sequencer is ticked by `fm_player_tick` `CS:0D1B`, called from the **INT0**
+  ISR at `D000:0343` — and only on that ISR's odd half-frame, because `[4000:1142]`
+  toggles on entry. So the music tick rate is INT0 / 2. (The timer-0 ISR at
+  `D000:024F` drives the OKI's duration counters, not the FM player.)
 
 Decoding all 10 tracks yields **zero invalid OPL2 registers** and ~510 KeyOn
 events — the correctness proof for the opcode encoding.
@@ -53,31 +62,32 @@ python3 scripts/iomoon_fm_extract.py --rom "roms/1.3 IPDB latest/V1 3_01.bin" \
         --track 1 --format wav --out out
 ```
 
-The hardware-correct **clock (4.0 MHz)** and **tick rate (72.5 Hz)** are now the
-defaults — no flags needed. Key options: `--table-offset` (default `0x50DE5`),
+The defaults are **`--ym-clock 4000000`** and **`--tick-hz 72.5`**; see
+*Fidelity notes* for what each rests on. Key options: `--table-offset` (default `0x50DE5`),
 `--seg-base` (default `0x50000`), `--count` (auto from the table), `--ym-clock`
-(YM3812 φM; default `4000000` = the IO Moon YACLK; sets the VGM header **and**
-corrects WAV pitch/envelope speed — the old `3579545` PC value is wrong),
-`--tick-hz` (sequencer/music tick; default `72.5`; controls **tempo**),
+(YM3812 φM; default `4000000`, the inferred IO Moon `YACLK`; sets the VGM header
+**and** scales WAV pitch/envelope speed), `--tick-hz` (sequencer/music tick;
+default `72.5`; controls **tempo**),
 `--wav-rate` (default `48000`), `--filter-hz` (reconstruction low-pass cutoff,
 default `12000`), `--no-filter` (raw OPL2 output, no analog model).
 
 ## Fidelity notes
 
-Earlier renders produced the *right tracks* but sounded "awkwardly different".
-Three global parameters were wrong; the per-register data was always faithful.
+The per-register data is faithful: the extractor replays the ROM's own
+`(register, value)` stream. Two **global** parameters are not stated by any ROM,
+and both scale the rendered result rather than its content.
 
-### 1. YM3812 master clock = **4.0 MHz** (was 3.579545 MHz)
+### 1. YM3812 master clock — 4.0 MHz, inferred
 
-IC60's clock pin (φM) is fed **`YACLK` from the IC20 (74LS393) divider chain**
-off the board's 8 MHz timing domain — it is **not** a 3.579545 MHz PC-soundcard
-colorburst crystal (see [`board_011-029A_ics.md`](board_011-029A_ics.md) IC60 and
-[`hardware_architecture.md`](hardware_architecture.md) "Clocking"). The YM3812's
-φM ceiling is 4.0 MHz, and the only in-spec 74LS393 tap of 8 MHz is **8 MHz / 2 =
-4.0 MHz** — which is also the standard pinball OPL2 clock and the value the
-PinMAME `sleic.c` stub uses. Using 4.0 MHz instead of 3.579545 MHz raises pitch
-by **+1.92 semitones** and speeds every FM envelope/LFO by **~11.7 %**. This is
-the single biggest contributor to the wrong sound.
+IC60's clock pin (φM) is fed `YACLK` from the IC20 (74LS393) divider chain off
+the board's 8 MHz timing domain (see [`board_011-029A_ics.md`](board_011-029A_ics.md)
+IC60 and [`hardware_architecture.md`](hardware_architecture.md) "Clocking"), so it
+is not the 3.579545 MHz colorburst clock of a PC sound card. The YM3812's φM
+ceiling is 4.0 MHz and the only in-spec 74LS393 tap of 8 MHz is 8 MHz / 2 =
+**4.0 MHz**, which is also the standard pinball OPL2 clock and the value the
+PinMAME `SLEIC2` driver uses. The tap is read off the divider chain, not
+measured, so this remains an inference; against 3.579545 MHz it raises pitch by
++1.92 semitones and speeds every FM envelope and LFO by ~11.7 %.
 
 > Implementation note: PyOPL's DOSBox core *always* synthesises a 3.579545 MHz
 > chip and resamples; you cannot move its pitch by changing the sample rate. The
@@ -85,16 +95,22 @@ the single biggest contributor to the wrong sound.
 > `3579545/clock` to shift pitch + envelope speed, while pre-compensating the
 > tick scheduling so the musical tempo (set by `--tick-hz`) is preserved.
 
-### 2. Music tick rate = **~72.5 Hz** (was 60 Hz)
+### 2. Music tick rate — 72.5 Hz, and the open one
 
-The sequencer is serviced from the **DMD frame ISR** (`D000:0343` →
-`call music_sequencer D000:0D1B`), **not** the sound timer ISR (`D000:024F`,
-which calls `dmd_strobe_clear`, not the player). The frame ISR contains a 1-bit
-toggle gate (`[1142h]`, `D0352`/`D0359`/`D037E`) so the player advances on
-**every other** frame interrupt. The DMD wire-frame rate is **~145 Hz** (Saleae
-capture, [`dmd_wire_protocol.md`](dmd_wire_protocol.md)); with **2 bitplanes per
-visible frame** the player ticks once per visible frame ≈ **145 / 2 = 72.5 Hz**.
-The old 60 Hz default made every track ~21 % too slow (`72.5/60 = 1.208×`).
+The sequencer is serviced from the **INT0** ISR at `D000:0343`
+(`call fm_player_tick D000:0D1B` at `D038D`), which contains a one-bit toggle
+gate (`[1142h]` at `D0352`/`D0359`/`D037E`), so the player advances on every
+*other* INT0. Tempo is therefore **INT0 / 2**, exactly.
+
+**What INT0's absolute rate is, is not settled.** Neither ROM says which line
+feeds it; finding F3 lists the candidates and none of them is confirmed, and the
+PinMAME driver ships 72.5 Hz as an emulation-serviceability constant (the highest
+rate at which both its handlers stay served) rather than as a hardware
+derivation. 72.5 is used here as the default because it matches the driver, so
+the two agree with each other — but a correction of INT0 by a factor of two or
+four moves every rendered track's tempo by the same factor. This is the one open
+number in the FM model, and it is calibrated by ear against a real machine, not
+from the ROMs.
 
 ### 3. Output reconstruction (YM3014B DAC + analog filter)
 
@@ -106,10 +122,10 @@ with a DC-block + a one-pole reconstruction low-pass (`--filter-hz`, default
 12 kHz) and a −3 dBFS headroom/peak limiter so nothing clips. Use `--no-filter`
 for the bare OPL2 timbre.
 
-### Already correct — register-level handling
+### Register-level handling
 
-These were **not** bugs; the extractor replays the in-ROM `(register,value)`
-stream verbatim through a real OPL2 core, so the OPL2 emulation honours all of:
+The extractor replays the in-ROM `(register, value)` stream verbatim through a
+real OPL2 core, so the emulation honours all of:
 
 - **Write order / inter-write delay** — index port then data port, exact ROM
   order; the hardware settling delay does not change the emulated result.
@@ -130,10 +146,13 @@ stream verbatim through a real OPL2 core, so the OPL2 emulation honours all of:
 
 ## Verification
 
-Rendered through PyOPL (DOSBox OPL2) at the corrected 4.0 MHz clock / 72.5 Hz
-tick, track 1 produces a **~101 s** WAV with a real arranged structure (quiet
-intro building to a full mix), confirming the music is genuine FM synthesis — not
-OKI-sampled audio. A controlled single-note check confirms the clock correction
-shifts a 520 Hz note to 580 Hz (+1.89 semitones, matching the 4.0/3.579545 ratio)
-while leaving the track duration unchanged (tempo is set by `--tick-hz` and is
-independent of the OPL2 clock). No track clips (peak ≤ −3 dBFS).
+Rendered through PyOPL (DOSBox OPL2) at the 4.0 MHz clock and 72.5 Hz tick,
+track 1 produces a **~101 s** WAV with a real arranged structure (a quiet intro
+building to a full mix), which confirms the music is genuine FM synthesis rather
+than OKI-sampled audio. A controlled single-note check shows the clock parameter
+shifting a 520 Hz note to 580 Hz (+1.89 semitones, matching the 4.0/3.579545
+ratio) while leaving the track duration unchanged, i.e. pitch and tempo are
+independent knobs as intended. No track clips (peak ≤ −3 dBFS).
+
+What is verified is that the exported streams are the ROM's; what the rendering
+sounds like against the real machine depends on the two parameters above.

@@ -2,15 +2,16 @@
 
 [← Back to main README](../README.md)
 
-> **RESOLVED (2026-06):** the open question this document circles — whether/how the
-> IO Moon YM3812 is driven — is now **answered**. The **80188 drives the YM3812
-> directly via /PCS5 (`0xA0280` index / `0xA0281` data)** for the in-game music;
-> the driver code was located and byte-verified in `V1 3_01.bin` (OPL2 write
-> primitive `D000:0D99`, music sequencer `D000:0D37`, song table `CS:0DE5`). The
-> "PIC does both jobs" and "BOM-only / never driven" hypotheses below are
-> **superseded** — see the Update section at the end. (IC23 is DMD-only.)
+Survey of the existing PinMAME drivers that declare the Yamaha YM3812 FM
+synthesizer, and where IO Moon sits among them. Source:
+`pinmame/src/wpc/{jvh,alvg,alvgs,mephisto,sleic}.c`.
 
-Survey of every existing PinMAME driver that declares the Yamaha YM3812 FM synthesizer. The point is to identify a hookup pattern that might apply to the SLEIC IO Moon and to compare the **already-attempted-but-stalled** PinMAME drivers against IO Moon's situation. Source: `pinmame/src/wpc/{jvh,alvg,alvgs,mephisto,sleic}.c`.
+**IO Moon's own hookup, for reference:** the 80188 drives the YM3812 directly
+over `/PCS5`, with the index port at `0xA0280` (A0 = 0) and the data port at
+`0xA0281` (A0 = 1) — two distinct addresses, not an A0 toggle on one. The write
+primitive is `D000:0D99`, the sequencer `D000:0D37` and the song table `CS:0DE5`,
+and there are ten tracks. See [`iomoon_fm_extract.md`](iomoon_fm_extract.md) and
+finding F8 in [`findings.md`](../asm/baseline-2026-09/findings.md).
 
 YM3812 datasheets: [`../datasheets/ym3812.pdf`](../datasheets/ym3812.pdf) (device datasheet) and [`../datasheets/ym3812_opl2_application_manual.pdf`](../datasheets/ym3812_opl2_application_manual.pdf) (OPL2 register-level programming manual); the companion DAC is [`../datasheets/ym3014b.pdf`](../datasheets/ym3014b.pdf).
 
@@ -84,63 +85,40 @@ But `cirsa_readsnd`, `cirsa_writesnd`, `cirsa_readsndport`, `cirsa_writesndport`
 
 This is "attached but unmappable" — the original driver author knew the chip is on the board but couldn't (or didn't) figure out how it's wired from disassembly alone.
 
-### Sleic (current `sleic.c`)
+### Sleic (`sleic.c`, `SLEIC2` = IO Moon)
 
-The existing PinMAME SLEIC stub does exactly the Cirsa thing:
+IO Moon is the outlier in this survey: it is the only machine here whose YM3812
+hangs off the **main game CPU** rather than a dedicated sound CPU. There is no
+6809, no sound-CPU ROM and no command port; the 80188's own game code writes FM
+registers between everything else it does.
 
 ```c
-static void ym3812_irq(int irq) {
-  // cpu_set_irq_line(SLEIC_MAIN_CPU, 0, irq ? ASSERT_LINE : CLEAR_LINE);   <-- commented out
-}
+static struct YM3812interface SLEIC2_ym3812_intf = { 1, 4000000, { 100 }, { ym3812_irq } };
 
-static struct YM3812interface SLEIC_ym3812_intf = {
-    1, 4000000, { 100 }, { ym3812_irq },
-};
-
-MACHINE_DRIVER_START(SLEIC2)             /* IO Moon */
-    MDRV_IMPORT_FROM(SLEIC)
-    MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)   /* <-- declared */
-    MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)
-    MDRV_SOUND_ADD(DAC, SLEIC_dac_intf)
-MACHINE_DRIVER_END
+/* in sleic2_periph_w, inside the PACS block at 0xA0000 */
+case 0x280: YM3812_control_port_0_w(0, data); break;   /* index */
+case 0x281: YM3812_write_port_0_w(0, data);   break;   /* data  */
 ```
 
-- YM3812 declared on the SLEIC base machine.
-- IRQ callback present but body **commented out** — even if internal YM3812 timers fire, nothing happens.
-- No memory or port handlers anywhere refer to `YM3812_control_port_0_w` / `YM3812_write_port_0_w`.
+Two details of that hookup:
 
-State: identical to Cirsa. The chip is present in the mixer, never written, makes no sound.
+- **The index and data ports are separate addresses**, `0xA0280` and `0xA0281`.
+  That is the same shape as the 6809 machines' `BASE` / `BASE+1`, but reached by
+  memory-mapped `mov` stores through a peripheral chip-select rather than by a
+  6809 store. (Sleic Pin-Ball and Bike Race, on the same board family, drive A0
+  differently again — see [`sleic_board_family.md`](sleic_board_family.md).)
+- **The YM3812's IRQ is not wired to the CPU.** The 80188's interrupt controller
+  unmasks only timer 0 and INT0 (finding F1), so there is no line for the OPL2's
+  internal timers to reach; the `ym3812_irq` callback body stays empty.
 
-## What this means for the IO Moon driver work
+## Notes on the shared parameters
 
-1. **There is no PinMAME precedent for a YM3812 driven by an 80188 directly.** Every working YM3812 hookup goes through a dedicated 6809 sound CPU with the chip at consecutive byte memory addresses.
-2. **There is a precedent for "YM3812 declared but never wired" — Cirsa / Mephisto**. Those drivers are still in production with the chip silent. The IO Moon stub already follows this pattern.
-3. **If the YM3812 *is* actually used on IO Moon**, the simplest emulation hookup would be to add a `YM3812_control_port_0_w` / `YM3812_write_port_0_w` handler pair to the 80188 memory map at whatever address we discover. The likely location is inside the MMCS window (segment `A000h`) at an offset distinct from the four documented DMD register offsets (`0x0000/0x0080/0x0200/0x0300`).
-4. **The two-byte footprint** (index + data) means the new PinMAME handler additions are exactly one read + two write entries:
-   ```c
-   /* hypothetical IO Moon YM3812 at A000:XXXX */
-   { 0xa0XXX, 0xa0XXX, YM3812_status_port_0_r },        /* in read map */
-   { 0xa0XXX, 0xa0XXX, YM3812_control_port_0_w },       /* in write map */
-   { 0xa0YYY, 0xa0YYY, YM3812_write_port_0_w },         /* YYY = XXX+1 */
-   ```
-5. **The IRQ callback needs to be wired**: `cpu_set_irq_line(SLEIC_MAIN_CPU, ...)` — uncomment, and verify the IRQ vector handler exists in the 80188 init table at `CS:0041` (it does — entries at `0xFF32`/`0xFF34` configure INT0/INT1 control words).
-6. **The clock value in the current stub is 4 MHz** — same as Alvin G; this is the standard YM3812 master clock in pinball. Likely correct without changing.
-
-For the immediate driver work, start by **leaving the YM3812 attached-but-unmapped (current state) and run the ROM in MAME's debugger with logging on segment A000h**. Any write to A000:XXXX that's *not* one of the four DMD register offsets is a candidate YM3812 register access. If no such write ever happens after running through attract mode + a full game, hypothesis (2) — the chip is BOM-only — wins. *(Superseded: this was later resolved — the YM3812 base is `/PCS5` = `0xA0280`/`0xA0281` and the chip plays the in-game music, so it must be mapped; see the Update section below. "BOM-only" was an attract-only artefact.)*
-
----
-
-## Update — RESOLVED (2026-06): YM3812 driven by the 80188; 10 FM music tracks in ROM1
-
-- IC60 is **confirmed populated** with a real `YAMAHA / YM3812 / JAPAN` 24-pin DIP, with the decoupling/support parts it needs to function. Not a placeholder.
-- Earlier PinMAME tracing showed zero FM writes **only because that trace ran in attract / isolated-boot mode, which is silent** — the music plays during *gameplay*. That was never evidence of a silent chip.
-- The 80188's `4000:1158+` byte queue is the **display/animation** queue; the sound drivers are a **separate 80188 code path** (below). The PIC at IC23 is **DMD-only** (all its pins are DMD signals on sheet 011-029-07) — the "one PIC, two jobs" idea is **wrong**.
-
-### What actually drives it (byte-verified in `V1 3_01.bin`; `D000` = file `0x50000`)
-
-- **One FM write site** — `D000:0D99` (file `0x50D99`): `mov es:[0280h],ah` (YM3812 index port, `0xA0280`) → OPL2 settling-delay subroutine (`0x50DA9`) → `mov es:[0281h],al` (data port, `0xA0281`, file `0x50DA1`). A whole-ROM signature scan finds this as the **sole** FM write site; all register programming flows through it.
-- **Music sequencer** `D000:0D37` walks `(register, value)` opcode streams (`0xEE` note-duration, `0xEF` tempo, `0xDD` loop-with-target, `0xFF` end; default = FM register write), pointer in `[12EAh]`, ticked per frame from a timer ISR.
-- **Song table** at `CS:0DE5` (file `0x50DE5`) — **exactly 10 entries → 10 FM music tracks** (targets `0x50DF9, 0x50E32, 0x51662, 0x52106, 0x52769, 0x522A8, 0x525E9, 0x526A9, 0x529FA, 0x52C8E`). Decoding all ten yields **510 KeyOn events and ~3,600 FM register writes with zero invalid OPL2 registers**; track 1 contains a full OPL2 instrument setup using the exact channel→operator slot offsets (0,1,2,8,9,10,16,17,18) — unmistakably hand-written FM driver data. Track 0 is a short "all-notes-off" init stub.
-- **OKI cross-check** — the MSM6376 sample ROMs hold **28 phrases, 0.11–4.49 s each (~50 s total)**: short speech/SFX only, **no music-length phrase**. So music is FM, not sampled; the OKI handles speech + sound effects.
-
-**Implication for the PinMAME driver**: do **not** leave the YM3812 attached-but-unmapped. Map it at `0xA0280` (index, A0=0) / `0xA0281` (data, A0=1) inside the 80188's `A000h` peripheral window and route those writes to PinMAME's `YM3812_control_port_0_w` / `YM3812_write_port_0_w`; the emulated OPL2 will then play the 10 tracks. **Dumping IC23 is unnecessary for sound** (it is DMD-only); dumping **IC7** only refines the OKI control-latch bit map.
+1. **Clock.** 4 MHz is what IO Moon uses, matching Alvin G and the usual pinball
+   OPL2 rate; the IO Moon figure is inferred from the board's 8 MHz divider chain
+   (see [`iomoon_fm_extract.md`](iomoon_fm_extract.md)) rather than measured.
+2. **The two-byte footprint** (index + data) is universal across all of these
+   drivers, whatever the CPU.
+3. **"Declared but never written" is a real state in this tree** — Cirsa /
+   Mephisto is in production that way. It is worth knowing as a category, because
+   a silent trace is not by itself evidence that a chip is unused: IO Moon's music
+   plays only in gameplay, and attract mode is silent by design.

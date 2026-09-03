@@ -151,5 +151,5 @@ The sampling rate is wrong. Try different values with `--khz` (common rates: 4, 
 - The MSM6376 is a speech synthesis IC by OKI Semiconductor, designed for low-bitrate voice playback.
 - It uses a variant of Dialogic/IMA ADPCM with 4-bit encoded samples.
 - The chip supports up to 128 individually addressable voice phrases per ROM.
-- Sample playback rate is determined by an external clock divider, not stored in the ROM data.
-- The Z80 coprocessor in the IO Moon controls the MSM6376 via ports `0x80` (data) and `0x81` (control).
+- Sample playback rate is determined by an external clock divider, not stored in the ROM data. On IO Moon it works out at about **32 kHz**, measured by dividing each phrase's nibble count by the playing time the firmware's own duration table gives it (28 of 28 phrases land in 31.5–32.2 kHz). That measurement is in units of timer-0 ticks, so it inherits the timer's own open assumption: if the 80188's timer 0 interrupts only on max count B rather than on every terminal count, the rate is half of this, ~16 kHz — the other standard 6376 strapping. The two are an octave apart and are separated by ear against a real machine.
+- The MSM6376 is driven by the **80188**, not the Z80: the phrase number and channel bit are latched at `0xA0300` (`/PCS6`) and started by pulsing bit 5 of `0xA0000` (`/PCS0`) as `/ST`. The Z80 has no connection to the chip and forwards no sound commands. See [`inter_cpu_communication.md`](inter_cpu_communication.md).
