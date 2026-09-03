@@ -44,14 +44,14 @@ The IO Moon uses a **three-CPU architecture**:
 | 80188 chip-select PAL | AMD/MMI PAL20L10ACNS — IC7 on board 011-029A (**undumped**)                             |
 | 80188 reset / watchdog | Maxim MAX699 supervisor — IC6 on board 011-029A                                        |
 | Game ROM              | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total) on board 011-029A                      |
-| Display CPU           | Microchip PIC 16C57-HS/P — IC23 on board 011-029A (**undumped**)                        |
+| Display CPU           | Microchip PIC 16C57-HS/P — IC23 on board 011-029A (dumped; [`roms/PIC16C57/`](roms/PIC16C57/)) |
 | Display               | 128 × 32 **gas plasma** dot panel, 4 brightness levels                                 |
 | FM sound              | Yamaha YM3812 (IC60) + Yamaha YM3014B DAC (IC61) on board 011-029A                      |
 | Voice synth           | OKI MSM6376 ADPCM — IC51 on board 011-029A                                              |
 | Sound ROM             | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total) on board 011-029A                      |
 | NVRAM                 | Microchip 28C64A EEPROM — IC14 on board 011-029A (8 KB)                                 |
 | Music balance         | Xicor X9C503P digital potentiometer — IC63 on board 011-029A                            |
-| I/O CPU               | Goldstar Z8400A PS Z80A @ 8 MHz — IC1 on board 011-030A                                 |
+| I/O CPU               | Goldstar Z8400A PS Z80A (4 MHz grade; X10 board crystal 8 MHz) — IC1 on board 011-030A   |
 | Z80 work RAM          | Goldstar GM76C28-10 2 K × 8 SRAM — IC7 on board 011-030A                                |
 | Z80 I/O decode PAL    | AMD PAL16L8A-2CN — IC8 on board 011-030A (**undumped**)                                 |
 | Z80 reset / watchdog  | Analog Devices ADM699AN supervisor — IC15 on board 011-030A                             |
@@ -61,9 +61,11 @@ The IO Moon uses a **three-CPU architecture**:
 
 For the complete chip-by-chip inventory of each board, see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md) (16-bit board) and [`docs/board_011-030A_ics.md`](docs/board_011-030A_ics.md) (Z80 board).
 
-The **80188** runs game logic, the state machine, scoring, the inter-CPU link, and **both** sound chips: the **OKI MSM6376** voice synth carries **speech and sound effects** (phrase number and start written through the IC50 and IC40 latches), while the **YM3812** FM synth carries the **music** — 10 FM tracks, memory-mapped via peripheral chip-select `/PCS5`. The YM3812 driver was located and byte-verified in the 80188 ROM: a register-write primitive at `D000:0D99` and a sequencer at `D000:0D37` reading a song-index table, with all 10 tracks decoding to valid OPL2 registers (see [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md)). The **Z80** scans the switch matrix and drives the lamp matrix and solenoids; its sound routines issue commands to the 80188 over the inter-board link rather than driving the sound chips directly. The **PIC 16C57-HS/P** at IC23 generates the DMD raster timing — the 80188 writes frame data and control words into the DMD register area at segment `A000h`, and the PIC converts these into the timing the plasma panel needs; it does **not** drive the YM3812. These driver assignments were verified by tracing the 011-029 and 011-030 schematics and the ROM disassembly; see [`docs/board_011-029A_ics.md`](docs/board_011-029A_ics.md), [`docs/ym3812_pinmame_precedents.md`](docs/ym3812_pinmame_precedents.md), and [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md).
+The **80188** runs game logic, the state machine, scoring, the inter-CPU link, the DMD frame composition, and **both** sound chips. The **OKI MSM6376** voice synth carries **speech and sound effects**: the phrase number and channel bit are latched at `/PCS6` (`0xA0300`) and started by pulsing bit 5 of `/PCS0` (`0xA0000`) as `/ST`, through the IC50 and IC40 latches. The **YM3812** FM synth carries the **music** — 10 tracks, at `/PCS5`, with the index port at `0xA0280` and the data port at `0xA0281`; the register-write primitive is at `D000:0D99` and the sequencer at `D000:0D37`, reading a song-index table at `CS:0DE5` (see [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md)).
 
-The 80188 and Z80 communicate over connector **J1 — an 8-bit handshaken byte-port**, one byte at a time under a request/acknowledge handshake. There is **no shared RAM and no HOLD/HLDA bus arbitration**: J1 has no address bus, so segment `4000h` is 80188-private work RAM that the Z80 cannot reach. The Z80 forwards switch codes and sound-command bytes to the 80188 over J1; the 80188 reads each inbound byte at its `/PCS2` latch (`0xA0100`).
+The **Z80** scans the switch matrix and drives the lamp matrix and the two driver latches. It is connected to neither sound chip and forwards no sound commands. The **PIC 16C57-HS/P** at IC23 generates the DMD raster timing, and it is a free-running one: it has no command interface, exchanges no byte with the 80188, and simply rasters whatever stands in the 1 KB display buffer at segment `7000h` when it gets there ([`asm/pic16c57_annotated.asm`](asm/pic16c57_annotated.asm)).
+
+The 80188 and Z80 communicate over connector **J1 — an 8-bit byte-port with handshakes**, one byte at a time, with each direction raising an interrupt on the receiving CPU. There is **no shared RAM and no HOLD/HLDA bus arbitration**: J1 has no address bus, so segment `4000h` is 80188-private work RAM that the Z80 cannot reach. The Z80 sends switch and status codes, which the 80188 reads at its `/PCS2` latch (`0xA0100`); the 80188 sends lamp, driver and mode commands, which the Z80 dispatches through a 256-entry table.
 
 For a detailed breakdown of the hardware architecture, see:
 
@@ -73,13 +75,13 @@ For a detailed breakdown of the hardware architecture, see:
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
 - [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
-- [Chips Worth Dumping](docs/chips_to_dump.md) — The undumped programmable parts (one PIC, two PALs) with dumping procedures
+- [Chips Worth Dumping](docs/chips_to_dump.md) — The three programmable parts, their state, and the dumping procedures for each
 - [Component Datasheets](datasheets/README.md) — Offline PDF datasheets for every IC on the boards, linked from the board IC inventories
-- [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — Complete I/O mapping from the service manual
+- [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — The service manual's contact list against the codes and ports the ROM uses
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
 - [Inter-CPU Communication](docs/inter_cpu_communication.md) — J1 8-bit byte-port protocol between the 80188 and Z80
-- [Language Model & Service-Menu Navigation](docs/iomoon_language_and_service_menu.md) — `[1001]` language polarity (DMD-verified), the dead country-DIP path, switch codes, and the menu navigation flow
+- [Language Model & Service-Menu Navigation](docs/iomoon_language_and_service_menu.md) — `[1001]` language polarity (DMD-verified), the country DIP that drives both coinage and language, the switch codes, and the 38-record menu tree
 
 ---
 
@@ -105,7 +107,7 @@ sleic-io-moon/
 │   ├── hardware_architecture.md       # Hardware architecture overview
 │   ├── board_011-029A_ics.md          # 16-bit / 80188 board IC inventory
 │   ├── board_011-030A_ics.md          # 8-bit / Z80 board IC inventory
-│   ├── chips_to_dump.md               # Undumped programmable parts + procedures
+│   ├── chips_to_dump.md               # The three programmable parts + procedures
 │   ├── dmd_graphics.md                # DMD graphics format & encoding
 │   ├── dmd_wire_protocol.md           # PIC → plasma panel wire protocol
 │   ├── ym3812_pinmame_precedents.md   # YM3812 hookup precedents in PinMAME
@@ -114,12 +116,9 @@ sleic-io-moon/
 │   ├── 80188_config.md                # 80188 peripheral configuration
 │   ├── inter_cpu_communication.md     # J1 byte-port inter-CPU link
 │   ├── game_software.md               # Game state machine & boot sequence
-│   ├── iomoon_language_and_service_menu.md   # Language polarity + service-menu navigation
+│   ├── iomoon_language_and_service_menu.md   # Language, country DIP, service-menu tree
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
-│   ├── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
-│   ├── iomoon_pinmame_driver_extracted.md    # IO Moon PinMAME driver facts (extracted notes)
-│   ├── iomoon_pinmame_progress_2026-06-08.md # PinMAME integration progress snapshot
-│   └── pinmame_integration_findings.md       # PinMAME integration findings write-up
+│   └── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
 ├── datasheets/                        # Offline PDF datasheets for every board IC
 │   ├── README.md                      # Datasheet catalogue (part → file → source)
 │   ├── 80c188.pdf                     # Intel 80186/80188 CPU (IC1, 011-029A)
@@ -167,13 +166,26 @@ sleic-io-moon/
 │   ├── candidate_lm7805.pdf           # Candidate part: LM7805 5 V regulator
 │   └── candidate_tip122.pdf           # Candidate part: TIP122 Darlington transistor
 ├── asm/
-│   ├── 80188_annotated.asm            # Fully annotated 80188 ROM disassembly
-│   ├── z80_annotated.asm              # Fully annotated Z80 ROM disassembly
+│   ├── README.md                      # Index: which listing is authoritative and why
+│   ├── baseline-2026-09/              # AUTHORITATIVE cross-verified 80188 + Z80 disassembly
+│   │   ├── findings.md                #   F1-F15, the driver contract
+│   │   ├── README.md                  #   method, entry points, agreement with older material
+│   │   ├── iomoon_80188.lst           #   the 80188 listing (83 regions, 29,810 instructions)
+│   │   ├── iomoon_z80.lst             #   the Z80 listing (12 regions, 4,760 instructions)
+│   │   ├── reports/                   #   region inventory, jump tables, cross-verification
+│   │   └── tools/                     #   the scripts that build and check the listings
+│   ├── pic16c57_annotated.asm         # IC23 DMD raster program, 3-tool verified
+│   ├── superseded/                    # Earlier annotated pair; raw decode sound, labels unreliable
+│   │   ├── 80188_annotated.asm
+│   │   └── z80_annotated.asm
 │   ├── sleicpin_80188_ndisasm.asm     # Sleic Pin-Ball (SLEIC1) 80188 raw disassembly
 │   ├── sleicpin_80188_hlil.txt        # Sleic Pin-Ball (SLEIC1) 80188 HLIL export (201 functions)
 │   └── sleicpin_z80dasm.asm           # Sleic Pin-Ball (SLEIC1) Z80 raw disassembly
 ├── roms/
 │   ├── README.md                      # MD5 checksum index for every ROM image
+│   ├── PIC16C57/                      # IC23 DMD coprocessor dump, recovered from the locked part
+│   │   ├── README.md
+│   │   └── PIC16F57-DIP28-1D05-20260815.bin
 │   ├── 1.3 Early version/             # Early ROM set
 │   │   ├── README.md
 │   │   ├── V1 3_01.bin                # Display ROM 1 (80188)
@@ -232,21 +244,10 @@ sleic-io-moon/
 │   └── SLEIC_1994_Sleic_Pin_Ball_…pdf # Sleic Pin-Ball service manual (93 pp, no schematics)
 └── research/                          # Investigative notes that informed the docs
     ├── board_inventory.md             # Original photo-by-photo IC inventory
-    ├── 80188_to_z80_mailbox.md        # 80188→Z80 command-path investigation (J1 byte-port)
+    ├── 80188_to_z80_mailbox.md        # The 80188→Z80 command queue at 4000:1158
     ├── z80_irq_timing.md              # Z80 periodic-IRQ rate derivation
-    ├── ym3812_oki_workarounds.md      # YM3812 hookup investigation
-    ├── pinmame_boot_log/              # PinMAME first-boot tracing
-    │   ├── 00_summary.txt
-    │   ├── 01_pcb_init.txt
-    │   ├── 02_dmd_register_writes.txt
-    │   ├── 03_irq_ticks.txt
-    │   ├── 04_init.txt
-    │   └── README.md
-    ├── pinmame_session_2/             # PinMAME follow-up tracing
-    │   ├── 00_summary.txt
-    │   ├── 01_pcs_reached.txt
-    │   ├── 02_a000_pattern.txt
-    │   └── 03_boot_pcb_init.txt
+    ├── ym3812_oki_workarounds.md      # How PinMAME copes with undumped sound coprocessors
+    ├── pic16c57_protection_analysis.md # How the locked IC23 was recovered and authenticated
     ├── bikerace_disasm/               # Bike Race (SLEIC3) disassembly & notes
     │   ├── bikerace_nvram.md
     │   ├── bkcpu04_80188_ndisasm.asm
@@ -269,7 +270,7 @@ sleic-io-moon/
 
 ### [DMD Viewer](docs/dmd_viewer.md) — `scripts/dmd_viewer.py`
 
-A Python tool for viewing, analyzing, and exporting DMD graphics from the IO Moon ROM. It can decode animated frames (400 frames, 2-bitplane, 4 brightness levels), static screens (274 bilingual text screens), scrolling credits, and font glyphs (131 characters in multiple sizes).
+A Python tool for viewing, analyzing, and exporting DMD graphics from the IO Moon ROM. It can decode animated frames (400 frames, 2-bitplane, 4 brightness levels), static screens (274 bilingual text screens), scrolling credits, and font glyphs (131 characters in multiple sizes). Its default rendering differs from the panel's in two respects — see [`docs/dmd_viewer.md`](docs/dmd_viewer.md).
 
 <p align="center">
   <img src="images/dmd_grid_animated.png" alt="DMD Grid View" width="700">
@@ -281,7 +282,7 @@ Extracts individual ADPCM audio samples from OKI MSM6376 sound ROM files. The MS
 
 ### [YM3812 FM Music Extractor](docs/iomoon_fm_extract.md) — `scripts/iomoon_fm_extract.py`
 
-The music counterpart to the OKI extractor. Extracts the IO Moon **YM3812 (OPL2) FM music** (10 tracks) straight from the 80188 code ROM (`V1 3_01.bin`), driven by the in-ROM song-index table rather than hard-coded offsets, and exports each track as raw register logs, standard VGM, and WAV (rendered through the offline DOSBox OPL2 core via PyOPL). The YM3812 driver was located and byte-verified in ROM — write primitive at `D000:0D99`, sequencer at `D000:0D37` — and decoding all 10 tracks yields zero invalid OPL2 registers.
+The music counterpart to the OKI extractor. Extracts the IO Moon **YM3812 (OPL2) FM music** (10 tracks) straight from the 80188 code ROM (`V1 3_01.bin`), driven by the in-ROM song-index table rather than hard-coded offsets, and exports each track as raw register logs, standard VGM, and WAV (rendered through the offline DOSBox OPL2 core via PyOPL). The write primitive is at `D000:0D99` and the sequencer at `D000:0D37`, and decoding all 10 tracks yields zero invalid OPL2 registers. The register streams it exports are the ROM's own, byte for byte; the **rendered WAV is approximate**, because pitch and tempo depend on two clocks the ROMs do not state — see [`docs/iomoon_fm_extract.md`](docs/iomoon_fm_extract.md).
 
 ### [PRESS START Patch](docs/press_start_patch.md) — `scripts/io_moon_press_start_patch.py`
 
@@ -306,22 +307,34 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [Hardware Architecture](docs/hardware_architecture.md) | Dual-CPU design, CPU board components, memory map, power connectors |
 | [DMD Graphics System](docs/dmd_graphics.md) | Frame format (header, bitplanes, encoding), static screens, fonts, credits |
 | [YM3812 FM Music Extractor](docs/iomoon_fm_extract.md) | The 80188 music engine (song-index table, sequencer opcodes, write primitive) and how the extractor exports the 10 FM tracks |
-| [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) | All 50 switches, 64 lamps, and 18 solenoids with codes and descriptions |
+| [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) | 48 matrix + 6 cabinet inputs with their codes, 64 lamps, 16 driver bits |
 | [Z80 I/O Port Map](docs/z80_io_ports.md) | Port assignments, switch matrix scan routine, key Z80 RAM addresses |
 | [80188 Peripheral Configuration](docs/80188_config.md) | Chip selects (UMCS, LMCS, PACS, MMCS, MPCS), wait states |
-| [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit handshaken byte-port between the 80188 and Z80 (no shared RAM) |
+| [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit byte-port between the 80188 and Z80 (no shared RAM) |
 | [Game Software Architecture](docs/game_software.md) | Boot sequence, main loop, state machine, text encoding, configuration system |
 | [The SLEIC Board Family](docs/sleic_board_family.md) | How IO Moon, Sleic Pin-Ball, Bike Race and Doña Elvira 2 relate: shared architecture, Z80 firmware lineage, where they diverge |
 
 ---
 
-## Annotated Assembly Listings
+## Disassembly Listings
 
-The `asm/` directory contains fully annotated disassembly listings for both CPUs:
+See [`asm/README.md`](asm/README.md) for the full index. The authoritative
+listings are:
 
-- **`80188_annotated.asm`** — The complete 80188 main CPU ROM (~10,458 instructions across segments D000h, E000h, and F000h). Covers the game state machine, DMD display routines, configuration system, scoring, and the boot sequence.
+- **[`asm/baseline-2026-09/`](asm/baseline-2026-09/)** — both IO Moon CPU ROMs,
+  cross-verified instruction by instruction against independent decoders
+  (`dasmx86` vs capstone vs ndisasm for the 80188's 29 810 instructions;
+  `dasmz80` vs unidasm for the Z80's 4 760). Its
+  [`findings.md`](asm/baseline-2026-09/findings.md) states the machine's
+  behaviour as fifteen numbered facts, F1–F15, which are the contract the
+  PinMAME `SLEIC2` driver implements.
+- **[`asm/pic16c57_annotated.asm`](asm/pic16c57_annotated.asm)** — the IC23 DMD
+  raster program, 150 words, agreed on by three independent disassemblers.
 
-- **`z80_annotated.asm`** — The Z80 coprocessor ROM (27C256, 32 KB). Covers switch matrix scanning, lamp matrix control, solenoid drivers, the sound-command staging it forwards to the 80188, and communication with the 80188 over the **J1 byte-port** (Z80 port 0x80 data + port 0x81 strobes; the Z80 does not drive the sound chips directly).
+An earlier annotated pair is kept under
+[`asm/superseded/`](asm/superseded/): its raw decode agrees with the baseline,
+but its generated routine names and data/code classification were never verified
+and a number of them are wrong. `asm/README.md` lists the documented cases.
 
 ---
 
@@ -331,8 +344,8 @@ The `roms/` directory holds the two known IO Moon ROM sets (plus the ROM images 
 
 | Filename      | Chip   | Size | CPU | Content                                           |
 |---------------|--------|------|-----|---------------------------------------------------|
-| `V1 3_01.bin` | 27C040 | 512 KB | 80188 | Display ROM 1 (ROM1: game code + upper graphics)  |
-| `V1 3_02.bin` | 27C040 | 512 KB | 80188 | Display ROM 2 (ROM2: lower graphics / DMD frames) |
+| `V1 3_01.bin` | 27C040 | 512 KB | 80188 | ROM1 (IC10): game code, plus fonts, static screens and menu records |
+| `V1 3_02.bin` | 27C040 | 512 KB | 80188 | ROM2 (IC11): animated DMD frames, in seven banked 64 KB pages |
 | `V1 3_03.bin` | 27C040 | 512 KB | OKI | Sound ROM 1                                       |
 | `V1 3_04.bin` | 27C040 | 512 KB | OKI | Sound ROM 2                                       |
 | `V1 3_05.bin` | 27C256 | 32 KB | Z80 | CPU ROM (switch/lamp/solenoid/sound control)      |
@@ -347,7 +360,7 @@ cat "V1 3_02.bin" "V1 3_01.bin" > io_moon_combined.bin
 copy /b "V1 3_02.bin" + "V1 3_01.bin" io_moon_combined.bin
 ```
 
-> **Note:** ROM2 goes first (lower addresses 0x00000–0x7FFFF), then ROM1 (upper addresses 0x80000–0xFFFFF).
+> **Note:** ROM2 goes first (lower addresses 0x00000–0x7FFFF), then ROM1 (upper addresses 0x80000–0xFFFFF). This layout is what the viewer scripts expect; it is **not** the 80188's address space, which sees ROM1's low half at `0x00000`, one banked page of ROM2 at `0x60000` and ROM1's high half at `0xC0000` — see [`docs/hardware_architecture.md`](docs/hardware_architecture.md).
 
 Full MD5 index for every ROM image in the repository: [`roms/README.md`](roms/README.md).
 
@@ -366,10 +379,11 @@ by cross-checking against them. Their ROM images are archived under
 | [Bike Race](roms/related-machines/bike-race/) | 1992 | `SLEIC3` | complete (7 ROMs) |
 | [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | **partial — Z80 I/O ROM only** |
 
-Bike Race matters most: it runs the same 80188 firmware family as IO Moon but with
-a **fully dumped I8039** display coprocessor where IO Moon has an undumped,
-read-protected PIC16C5x — so it serves as the live oracle for the shared hardware
-model.
+Bike Race matters most: it runs the same 80188 firmware family as IO Moon, with
+the same PACS peripheral base and a byte-identical timer-0 setup, so it is a live
+cross-check on the shared hardware model. Its display coprocessor is an I8039
+where IO Moon's is a PIC16C57; both are dumped, and both turn out to be pure
+one-way rasterizers.
 
 The Doña Elvira 2 Z80 ROM is a rare partial dump of a machine with no publicly
 available ROM images that we know of. It self-identifies as `SLEIC-PETACO DONA
