@@ -11,7 +11,7 @@
 >
 > | Position | Reading in this file | Actual part |
 > |---|---|---|
-> | IC51 (16-bit board) | "8-pin device, not the 42-pin OKI" | **OKI MSM6376**, PDIP-42 |
+> | IC51 (16-bit board) | "8-pin device, not the 42-pin OKI" | **OKI MSM6376**, surface-mount flat pack (not a DIP) |
 > | IC23 (16-bit board) | "18-pin, PIC16C54" | **PIC16C57-HS/P**, PDIP-28 — dumped, [`../roms/PIC16C57/`](../roms/PIC16C57/) |
 > | IC7 (16-bit board) | "an additional PIC16C5x" | **AMD/MMI PAL20L10ACNS** — the 80188 chip-select glue |
 > | IC34 (16-bit board) | "possibly a second PIC" | **TI CD74HC151E**, an 8-to-1 multiplexer |
@@ -114,6 +114,15 @@ Bottom edge: IC12 (24-pin SRAM)  IC13 (32-pin EMPTY socket)  IC14 (28C64A EEPROM
             J1 (20-pin ribbon header to Z80 board) at right
             J3 (audio output) at right
 ```
+
+**Photo-read position ambiguity (IC30/IC31/IC32).** This shot is rotated enough
+that the silkscreen reference designators near the two `SN74LS157N` multiplexers
+in this cluster cannot be tied unambiguously to specific pads: the two visible
+"157"-marked packages could sit at any two of IC30, IC31 and IC32. The canonical
+inventory ([`../docs/board_011-029A_ics.md`](../docs/board_011-029A_ics.md)) currently
+records the two 157s at IC30 and IC31, but this photo alone does not distinguish
+that pairing from an IC31/IC32 pairing — both remain unresolved evidence from this
+image.
 
 Chip-level identification deferred to the close-up images that follow.
 
@@ -310,7 +319,7 @@ dumping / firmware work.
 | IC41–IC46 | 74LSxx | TI / etc | PDIP-14/16 | glue | Yes | Medium |
 | IC47 | 74HCT138 | — | PDIP-16 | Address decoder | Yes | Medium |
 | IC50 | SN74LS273N | TI | PDIP-20 | Octal latch — the OKI phrase/channel latch at `/PCS6` | Yes | Settled |
-| IC51 | OKI MSM6376 | OKI | PDIP-42 | ADPCM voice / sample synthesiser | Yes | Settled — the 8-pin part read here is a neighbouring analogue device |
+| IC51 | OKI MSM6376 | OKI | surface-mount flat pack | ADPCM voice / sample synthesiser | Yes | Settled — the 8-pin part read here is a neighbouring analogue device |
 | IC52 | 27C040 (windowed) — sound EPROM | — | PDIP-32 windowed | Sound samples 1 | Yes | High |
 | IC53 | 27C040 (windowed) — sound EPROM | — | PDIP-32 windowed | Sound samples 2 | Yes | High |
 | IC54 | — | — | PDIP-32 socket | Unpopulated sound EPROM expansion | **No** | High |
@@ -382,8 +391,8 @@ Each entry below is something the photographs add to the principal-components
 table on pages 93 and 95 of the service manual. The three entries this pass
 raised as contradictions — an 8-pin part at IC51, an extra PIC at "IC57", and
 another at IC34 — were resolution artefacts and are resolved in the status note
-at the top of this file: IC51 is the 42-pin OKI MSM6376, "IC57" is IC7's
-PAL20L10, and IC34 is a CD74HC151E multiplexer. The machine has one PIC.
+at the top of this file: IC51 is the OKI MSM6376 in a surface-mount flat pack,
+"IC57" is IC7's PAL20L10, and IC34 is a CD74HC151E multiplexer. The machine has one PIC.
 
 3. **IC34** carries a DIP whose top-mark was not legible in this pass; it is a
    `TI CD74HC151E` 8-to-1 multiplexer in a PDIP-16.
@@ -497,10 +506,6 @@ still do not show:
 1. **Silkscreen pin labels at J1, J2 and J3** on the 16-bit board — obscured by
    the ribbons and by the paper labels on the EPROMs. Reading them needs a fresh
    photo with the ribbons disconnected.
-2. **OSC1's frequency** on the 16-bit board — the crystal can's text was not
-   readable, and no ROM states the CPU clock either, so the 10 MHz figure used
-   throughout remains an inference from the `N80C188-10` part
-   ([`../docs/hardware_architecture.md`](../docs/hardware_architecture.md)).
 2. **X10's division ratio** on the Z80 board — the crystal is 8 MHz and the CPU
    is a 4 MHz-grade Z80A, so it is divided, but by what is not visible.
 3. **IC6's socket population** on the Z80 board — covered by tape in both
