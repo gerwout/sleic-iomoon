@@ -17,7 +17,7 @@
 > | IC34 (16-bit board) | "possibly a second PIC" | **TI CD74HC151E**, an 8-to-1 multiplexer |
 > | "IC57" (16-bit board) | "an undocumented PIC" | no such position; it was IC7 |
 > | IC8 (16-bit board) | "74LSxx or PAL16L8" | **DM74LS74AN**, a dual flip-flop |
-> | IC50 / IC55 (16-bit board) | "32K×8 SRAM, DMD framebuffers" | 74LS273 latch (IC50, the OKI phrase latch) and 74LS139A decoder (IC55) |
+> | IC50 / IC55 (16-bit board) | "a pair of GM76C29 32K×8 SRAMs forming a double-buffered DMD framebuffer" | **IC50 is a `SN74LS273N` octal latch** (it holds the OKI phrase + channel byte at `/PCS6`). There is no DMD framebuffer SRAM pair: the board's only SRAMs are IC12 (32K×8 work RAM) and IC33 (2K×8, the DMD staging buffer), and the display buffer is 1 KB. IC55 is not identified in the canonical inventory. |
 > | IC15 (Z80 board) | "MAX699" | **ADM699AN** (the MAX699 is IC6 on the 16-bit board) |
 > | IC10/IC11 sticker "V1.3-02" vs "V1.2-04" | "a revision mismatch worth dumping" | the sticker convention is `V<set>-<chip number>`, so `V1.3-02` is chip 02 of the V1.3 set — not a sub-revision |
 >
@@ -100,7 +100,7 @@ Top edge:    J2 (14-pin ribbon to plasma display) ----- IC2/IC3/IC4/IC5 (20-pin 
                                                         IC22, IC21, IC20
                                                         JP7   IC23 (PIC, socketed)
                                                         IC30, IC31, IC32, IC33, IC34, IC55
-            IC1 (80188-10 PLCC68)                       IC50, IC55 (DMD framebuffer SRAMs)
+            IC1 (80188-10 PLCC68)                       IC50 (74LS273), IC55
                                                         IC10, IC11 (UV EPROMs, windowed)
                                                         IC52, IC53 (sound EPROMs, windowed)
                                                         IC54 (32-pin socket, likely unpopulated)
@@ -139,8 +139,9 @@ identifications apply. The two views combined give clearer reads on:
   crystal divided by 2 internally this is the standard Z80 clocking)
 - IC5: 28-pin UV-erasable EPROM, white quartz window visible, paper label
   reads `IO MOON V1.2-04`
-- IC8: 20-pin DIP, suspected PAL16L8 (the printed part number on top is not
-  legible in either image — needs a focused close-up)
+- IC8: 20-pin DIP — the `AMD PAL16L8A-2CN` that does the Z80 memory and I/O
+  decode (settled by direct inspection; the top-mark is not legible in either
+  photograph). Undumped — see [`../docs/chips_to_dump.md`](../docs/chips_to_dump.md)
 - IC15: 8-pin DIP near top edge — ADM699AN (Analog Devices watchdog supervisor)
 - IC41, IC51: bottom row, 18-pin DIPs — ULN2803A
 
@@ -151,7 +152,7 @@ Approximate full chip list visible (close-ups would let me read each one):
 | IC1 | PDIP-40 | Z80A (GoldStar Z0840004PSC) | I/O CPU |
 | IC5 | PDIP-28, windowed | 27C256 — `IO MOON V1.2-04` | Z80 ROM |
 | IC6 | PDIP-28 socket | (covered by tape; population unclear) | "Extended routines" socket per asm |
-| IC7 | PDIP-24 | 6116 SRAM (assumed, label not readable) | Z80 work RAM |
+| IC7 | PDIP-24 | Goldstar GM76C28-10, 2K×8 SRAM (settled by direct inspection) | Z80 work RAM |
 | IC8 | PDIP-20 | PAL16L8 (assumed, label not readable) | I/O decode |
 | IC15 | DIP-8 | ADM699AN | Watchdog supervisor |
 | IC41 | PDIP-18 | ULN2803A | Driver buffer |
@@ -231,12 +232,12 @@ Very clear close-up of the most important region.
 | IC1 | (square PLCC, marking partially obscured by ribbon) | **N80C188-10 / AM80C188-10** | PLCC-68 | Main 16-bit CPU, populated |
 | IC10 | windowed EPROM, paper sticker `IO MOON V1.2-04` (also `V1.3-02` on a different photo, see below) | 27C040 (or M27C2001) | PDIP-32, windowed | Game code/data |
 | IC11 | windowed EPROM | 27C040 | PDIP-32, windowed | Banked extension |
-| IC50 | `GoldStar GM76C29-10 / 9009 KOREA` | **GoldStar GM76C29 32K×8 SRAM** | PDIP-28 | DMD framebuffer RAM |
-| IC55 | `YAMAHA / YM...` partly visible **OR** `TOSHIBA TC55...` SRAM | Either a second SRAM or further YM3812-related chip — needs clarification | PDIP-28 | Probably the second DMD framebuffer SRAM (paired with IC50) |
+| IC50 | reading recorded here as `GoldStar GM76C29-10 / 9009 KOREA` | **`SN74LS273N` octal latch** (settled by direct inspection) — it holds the OKI phrase + channel byte written at `/PCS6` | PDIP-20 | Not SRAM; the board has no DMD framebuffer SRAM |
+| IC55 | marking not legible in this photograph | Not identified in the canonical inventory; **not** a framebuffer SRAM (see the IC50 row and the status note) | — | Open |
 | IC23 | DIP, socketed; top-mark Microchip-style, hard to read at this resolution | **PIC16C57-HS/P** (settled by direct inspection) | PDIP-28 | DMD raster coprocessor. **Socketed.** Dumped — [`../roms/PIC16C57/`](../roms/PIC16C57/). |
-| IC34 | 28-pin DIP, date code `9215 GCT/P` visible, top-mark not legible at this resolution | **TI CD74HC151E**, an 8-to-1 multiplexer (settled by direct inspection) | PDIP-16 | Not a programmable part |
+| IC34 | date code `9215 GCT/P` visible, top-mark not legible at this resolution | **TI CD74HC151E**, an 8-to-1 multiplexer (settled by direct inspection) | PDIP-16 | Not a programmable part |
 | IC25 | small DIP, marking unreadable | 74LS series | PDIP-16 | |
-| IC20, IC21, IC22, IC24 | row of 20-pin DIPs adjacent to IC1 / IC23 | suspected PAL16L8 cluster (candidate PAL positions, per the manual analysis) | PDIP-20 | Worth probing with a PAL programmer |
+| IC20, IC21, IC22, IC24 | row of DIPs adjacent to IC1 / IC23 | **the clock-divider chain and its buffer**: IC20 and IC21 are `DM74LS393N` dual counters, IC22 a `SN74LS27N` triple NOR, IC24 a `SN74LS07N` buffer (settled by direct inspection) | PDIP-14 | Not PALs. This chain divides the 8 MHz domain down to the ~977 Hz Z80 IRQ |
 | IC2, IC3, IC4, IC5 | 20-pin DIPs at top-left | 74LSxx latches | PDIP-20 | |
 | IC35 (visible at bottom-left of this image) | 28-pin DIP | likely a third SRAM or sound EPROM | PDIP-28 | |
 
@@ -250,7 +251,7 @@ Provides clearer reads on IC1, IC10, IC11, and IC14 region:
 | IC10 | EPROM window, sticker `IO MOON V1.3-02` | 27C040 / M27C2001 | PDIP-32, windowed | NOTE: sticker says **V1.3-02** here, not V1.2-04 as on the other ROMs and on the Z80's IC5 — there may be mixed-revision ROMs on this physical board. **Important data point** for the dump-archival side. |
 | IC11 | EPROM, second windowed package (sticker partly obscured by green tape) | 27C040 | PDIP-32, windowed | |
 | IC14 | (visible at right edge of view) `MICROCHIP / 28C64A-25 / SN/L` | **28C64A** 8K×8 EEPROM | PDIP-28 | NVRAM for settings/scores — **confirmed**. Manufacturer Microchip, -25 = 250 ns access time. |
-| IC55 / IC50 | (top-right of view) `GoldStar GM76C29-10` × 2 | GoldStar GM76C29 32K×8 SRAM × 2 | PDIP-28 | DMD framebuffer (pair) |
+| IC55 / IC50 | (top-right of view) two DIPs, readings recorded here as `GoldStar GM76C29-10` | **IC50 is a `SN74LS273N` octal latch**; IC55 is not identified in the canonical inventory. Neither is SRAM — see the status note | PDIP-20 (IC50) | Not a framebuffer pair |
 | IC60 | (top-right of view, partial) `YAMAHA YM3812` | YM3812 | PDIP-24 | |
 
 ### 11. `80188_board_011_029A.jpg` — close-up: bottom of 16-bit board (IC12/13/14, IC60, J1 ribbon)
@@ -259,7 +260,7 @@ Best image for the IC12 / IC13 / IC14 column and for IC7.
 
 | Ref | Visible top-mark | Identification | Package | Notes |
 |-----|----------|----------------|---------|-------|
-| IC12 | `UMC / UM62256BL-70LL / 9417S / N3082Z` | **UMC UM62256 32K×8 SRAM** (70 ns) | PDIP-28 | 80188 main work RAM (probably shared with Z80 over J1 ↔ J3 ribbon) |
+| IC12 | `UMC / UM62256BL-70LL / 9417S / N3082Z` | **UMC UM62256 32K×8 SRAM** (70 ns) | PDIP-28 | 80188 main work RAM (segment `4000h`). **80188-private** — J1 carries no address bus, so the Z80 cannot reach it |
 | IC13 | (empty 32-pin DIP socket — pads visible, no chip) | **VACANT** | PDIP-32 socket | Unpopulated expansion socket — confirms architecture doc. |
 | IC14 | `28C64A-25 SN/L / MICROCHIP / © 2007` (silkscreened year) | **Microchip 28C64A 8K×8 EEPROM** | PDIP-28 | NVRAM — confirmed. |
 | IC60 (top-left of view) | `YAMAHA YM3812 / JAPAN` (top edge visible) | YM3812 | PDIP-24 | **POPULATED.** |
@@ -295,7 +296,7 @@ dumping / firmware work.
 | IC12 | UM62256BL-70LL | UMC | PDIP-28 | 32K×8 SRAM (main work RAM) | Yes | High |
 | IC13 | — | — | PDIP-32 socket | Unpopulated expansion socket | **No** | High |
 | IC14 | 28C64A-25 | Microchip | PDIP-28 | 8K×8 EEPROM (NVRAM) | Yes | High |
-| IC20, IC21, IC22, IC24 | (markings unreadable) | suspected PAL16L8 | PDIP-20 (and IC24 is PDIP-16) | Bus / DMD glue — candidate PAL positions | Yes | Low — needs close-up |
+| IC20, IC21, IC22, IC24 | DM74LS393N ×2, SN74LS27N, SN74LS07N | National / TI | PDIP-14 | The clock-divider chain (IC20+IC21 counters into the IC22 NOR) and its IC24 buffer — 8 MHz down to the ~977 Hz Z80 IRQ, delivered over J3 | Yes | Settled |
 | IC23 | PIC16C57-HS/P | Microchip | PDIP-28 | **DMD raster coprocessor** — dumped | Yes, **SOCKETED** | Settled |
 | IC25 | 74LSxx | — | PDIP-16 | glue | Yes | Low |
 | IC30–IC34 | 74LS157 x2, GM76C28 SRAM (IC33), CD74HC151E (IC34) | TI / Goldstar | varies | Multiplexers, DMD staging SRAM | Yes | Settled — see the canonical inventory |
@@ -309,8 +310,8 @@ dumping / firmware work.
 | IC52 | 27C040 (windowed) — sound EPROM | — | PDIP-32 windowed | Sound samples 1 | Yes | High |
 | IC53 | 27C040 (windowed) — sound EPROM | — | PDIP-32 windowed | Sound samples 2 | Yes | High |
 | IC54 | — | — | PDIP-32 socket | Unpopulated sound EPROM expansion | **No** | High |
-| IC55 | SN74LS139AN | TI | PDIP-16 | Dual 2-to-4 decoder | Yes | Settled |
-| IC56 | SN74LS373AN | TI | PDIP-20 | Octal latch | Yes | High |
+| IC55 | not identified in the canonical inventory | — | — | Unknown; **not** SRAM (the 74LS139A dual decoder on this board is **IC56**, listed below) | Yes | Open |
+| IC56 | SN74LS139AN | TI | PDIP-16 | Dual 2-to-4 decoder | Yes | Settled |
 | IC57 | no such position — the chip read here is **IC7**, the PAL20L10ACNS | AMD/MMI | PDIP-24 | 80188 chip-select glue | Yes | Settled |
 | IC60 | YM3812 | Yamaha | PDIP-24 | FM synthesizer (OPL2) | **Yes — POPULATED** | High |
 | IC61 | YM3014 (likely, marking unread) | Yamaha | PDIP-8 / SOIC-8 | DAC for YM3812 output | Yes | Medium |
@@ -380,9 +381,8 @@ another at IC34 — were resolution artefacts and are resolved in the status not
 at the top of this file: IC51 is the 42-pin OKI MSM6376, "IC57" is IC7's
 PAL20L10, and IC34 is a CD74HC151E multiplexer. The machine has one PIC.
 
-3. **IC34** carries a 28-pin DIP whose top-mark was not legible in this pass;
-   it is a `TI CD74HC151E` 8-to-1 multiplexer.
-   28-pin DIP package. **Action:** as above, macro photo to confirm.
+3. **IC34** carries a DIP whose top-mark was not legible in this pass; it is a
+   `TI CD74HC151E` 8-to-1 multiplexer in a PDIP-16.
 
 4. **IC13 (32-pin socket) is genuinely unpopulated** — confirmed by image
    `80188_board_011_029A.jpg`. The manual leaves this slot ambiguous; we can
@@ -397,11 +397,11 @@ PAL20L10, and IC34 is a CD74HC151E multiplexer. The machine has one PIC.
    document had IC12 as "unidentified 32-pin DIP" — it should be classified
    as the 80188 main work RAM.
 
-7. **IC50 and IC55 are SRAM, specifically GoldStar GM76C29-10**. Two
-   identical 32K×8 SRAMs — almost certainly a pair forming the
-   double-buffered DMD framebuffer (consistent with the `dmd_wire_protocol`
-   description of the DMD controller). The architecture document did not
-   identify these.
+7. **IC50 is a `SN74LS273N` octal latch**, not SRAM: it holds the OKI phrase +
+   channel byte the 80188 writes at `/PCS6`. IC55 is not identified in the
+   canonical inventory. There is no DMD framebuffer SRAM pair on this board —
+   the display buffer is 1 KB in the 2K×8 GM76C28 at IC33, and the DMD is not
+   double-buffered at all (the one candidate swap strobe fires once, at boot).
 
 8. **IC14 EEPROM confirmed as Microchip 28C64A-25 in PDIP-28** — matches the
    manual. No correction needed; just confirmation.
