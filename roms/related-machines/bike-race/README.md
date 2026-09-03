@@ -19,10 +19,13 @@ this set valuable here: it is the live oracle for the shared SLEIC hardware mode
 | `bkcpu06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | 80188 | Graphics ROM, mapped at **MCS1 `0x20000`** |
 | `bkio07.bin` | 32,768 bytes (32 KB) | `0141e09fa7a4ff36c666a3d1e777d1c2` | Z80 | I/O CPU ROM (switch matrix, lamps, coils) — 18,635 bytes used |
 
-> **Graphics ROM order matters.** `bkcpu06` belongs at `0x20000` and `bkcpu05` at
-> `0x40000`. Swapped, the DMD composer reads a garbage frame descriptor at segment
-> `0x2000` and runs away in the blit loop. See
-> [`../../../docs/pinmame_integration_findings.md`](../../../docs/pinmame_integration_findings.md).
+> **Graphics ROM order matters.** `bkcpu06` belongs at `0x20000` (MCS1) and
+> `bkcpu05` at `0x40000` (MCS2). Swapped, the DMD composer reads a garbage frame
+> descriptor at segment `0x2000` and runs away in the blit loop. The PinMAME
+> `SLEIC3` ROM block and the `MACHINE_DRIVER_START(SLEIC3)` comments in
+> `src/wpc/sleic.c` carry this; see also
+> [`../../../docs/sleic_board_family.md`](../../../docs/sleic_board_family.md)
+> ("Graphics ROM mapping").
 
 ## What this set is used for in this repository
 
@@ -31,9 +34,14 @@ this set valuable here: it is the live oracle for the shared SLEIC hardware mode
   validation / factory-reset analysis.
 - [`../../../docs/bikerace_switch_map.md`](../../../docs/bikerace_switch_map.md) —
   switch-code map recovered from `bkcpu04` and `bkio07`.
-- [`../../../docs/pinmame_integration_findings.md`](../../../docs/pinmame_integration_findings.md) —
-  the 80188 chip-select/timer model, the I8039 rasterizer analysis, and the
-  bidirectional J1 findings, all decoded from these images.
+- [`../../../docs/sleic_board_family.md`](../../../docs/sleic_board_family.md) —
+  what Bike Race shares with IO Moon and where the two diverge: the same PACS
+  peripheral base `0xA0000` and a byte-identical timer-0 setup (`0xE003` /
+  `0x6276` → 99.18 Hz), against different graphics-ROM mapping, a different
+  YM3812 A0 arrangement (Bike Race alternates A0 on one address; IO Moon uses two)
+  and a different OKI `/OKCS` bit (PCS0 bit 4 here, bit 5 on IO Moon). The
+  per-machine memory maps and the I8039 rasterizer analysis live in the
+  `SLEIC3` blocks of `src/wpc/sleic.c` in the PinMAME tree.
 - [`../../../manuals/`](../../../manuals/) — the 1992 Spanish service manual with
   parts list and schematics, which supplies the physical switch and coil names.
 
