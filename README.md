@@ -4,7 +4,7 @@
   <img src="images/dmd_single_frame.png" alt="IO Moon DMD Frame" width="700">
 </p>
 
-**IO Moon** is a pinball machine manufactured in 1994 by **SLEIC** (*Creaciones e Investigaciones Electrónicas, S.L.*) based in Alcobendas, Madrid, Spain. The theme revolves around a space exploration mission to Jupiter. The machine was designed by Luis J. Gosálbez Carrasco (software), Toñi Hernandez (software), and Santos Aranda (hardware).
+**IO Moon** is a pinball machine released in 1996 by **SLEIC** (*Creaciones e Investigaciones Electrónicas, S.L.*) based in Alcobendas, Madrid, Spain. The theme revolves around a space exploration mission to Jupiter. The machine was designed by Luis J. Gosálbez Carrasco (software), Toñi Hernandez (software), and Santos Aranda (hardware).
 
 This repository documents the results of an extensive reverse engineering effort on the IO Moon ROM images. It contains analysis tools, annotated disassembly listings, and technical documentation covering the dual-CPU hardware architecture, the DMD graphics format, the OKI sound chip, and a ROM patch for tournament play.
 

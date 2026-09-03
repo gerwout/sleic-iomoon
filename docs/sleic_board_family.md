@@ -14,7 +14,7 @@ where they diverge, and what is still missing.
 | Machine | Year | PinMAME family | ROMs archived here | Dump status |
 |---------|------|----------------|--------------------|-------------|
 | Sleic Pin-Ball | 1993 | `SLEIC1` | [`roms/related-machines/sleic-pin-ball/`](../roms/related-machines/sleic-pin-ball/) | complete (4) |
-| IO Moon | 1994 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
+| IO Moon | 1996 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
 | Bike Race | 1992 | `SLEIC3` | [`roms/related-machines/bike-race/`](../roms/related-machines/bike-race/) | complete (7) |
 | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | **partial — Z80 I/O ROM only** |
 

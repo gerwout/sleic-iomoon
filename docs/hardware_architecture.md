@@ -20,7 +20,7 @@
 |----------|-------|
 | Manufacturer | SLEIC — Creaciones e Investigaciones Electrónicas, S.L. |
 | Location | Av. Valdelaparra 3, Pol. Ind. Alcobendas, 28100 Madrid, Spain |
-| Year | 1994 — the ROM's own copyright block, at `V1 3_01.bin` file offset `0x507A9`, reads `(C) SLEIC 1.994` and `(C) LUIS GOSALBEZ CARRASCO 1.994` (Spanish thousands notation) |
+| Year | Released 1996; the chip date codes place board assembly no earlier than mid-1995 (IC23's PIC is coded `9524`). The ROM's copyright block, at `V1 3_01.bin` file offset `0x507A9`, reads `(C) SLEIC 1.994` and `(C) LUIS GOSALBEZ CARRASCO 1.994` (Spanish thousands notation) — the software's copyright year |
 | Theme | Space exploration / Jupiter mission |
 
 ### Mechanical
