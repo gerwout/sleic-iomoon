@@ -1285,7 +1285,9 @@ Adjacent fact, same mechanism: the **language prompt** at boot is
 `sub_D5AD1` `D5AD1` — push Z80 command `0xED`, spin on `sub_D5D8D` for
 `0x45` (option A, draws the string triple at record offsets `0x0C/0x0E/0x10`)
 or `0x46` (option B, offsets `0x06/0x08/0x0A`). The Z80's `0xED` handler
-`2BEB` reads **port `0x04` bit 5** to choose.
+`2BEB` reads **port `0x04` bit 5** to choose, and F15 fixes which position is
+which: low is the service position "no balls dispensed" (answer at once),
+high is normal play (check the trough first).
 
 **But that prompt is one *use* of `0x45`, not its definition — do not
 special-case the code.** `0x45` also reaches the ordinary switch-code shadow
@@ -1349,7 +1351,14 @@ bit numbers, so which contact is which comes from the ROM below.
 | `0xEF` | `2BC7` | **balls home**: test the trough (`sub_2C1F`), run the ball-search coil sequence (`sub_2CFB`), wait (`sub_2D41`), repeat. Its ONLY exit is `sub_2C1F` returning 0 — `2C2B: AND 007` or `2C35: AND 00E` all-zero, i.e. three ADJACENT trough contacts closed | `0x45`, and only then |
 
 `0xEC` (`2C87`) is the same coil sequence with flipper-abortable waits and
-`0xED` (`2BEB`) is `0xEF` gated on port-`0x04` bit 5 (F11's SW40-5).
+`0xED` (`2BEB`) is the trough check gated on port-`0x04` bit 5 (F11's SW40-5).
+
+**That gate fixes SW40-5's polarity.** With bit 5 LOW, `2BEB` answers `0x45`
+without looking at a contact — which is precisely "no se dispensan bolas", so
+low is the SERVICE position. With it HIGH the handler runs the real check:
+strobe column 0, `sub_2C1F`, and either `sub_2851` -> `0x45` (balls home) or
+`0x46` and the eject sequence. Normal play is therefore bit 5 **high**, and
+in emulation it answers `0x45` in one frame at boot with a full trough.
 
 **The 80188 side.** `sub_DC10D` turns the `0xEA` answer into a ball count in
 `[413C:00F9]` through a 4-entry reply table at `CS:04EE4` (`DC144`-`DC17D`
@@ -1416,9 +1425,37 @@ there is the drain. Balls fill the trough **from contact 2 down**. Filling
 from the other end instead reports a drain the instant the game arms the
 monitor — measured: the ball ends about a second after it starts.
 
-**Confidence:** confirmed for the protocol, the contacts and the drain code.
-**Inferred:** whether the ball leaves the ball-exit contact because a player
-pulls a plunger or because a coil launches it — neither ROM says, and the only
+**Ball accounting, and what ends a game.** The counters the ball-over path
+feeds are per-player record fields, not the `4134` pair:
+
+```
+D3999: MOV ES:B[BX + 0002D], AL   ; end of ball, record[player*9+0x2D] = [413C:00FF]
+D3B81: CMP ES:000D7, 001 / JNBE   ; players > 1 -> rotate; 1 player -> D3C4E
+D3C53: MOV AL, ES:B[00036]        ; the same slot with [413C:00FE] = 1
+D3C57: CMP AL, 0003D              ; against balls per game, 4130:003D
+D3C5B: JNB 0D3CD7                 ; played >= balls/game -> the game ends
+D3C78: MOV ES:B[000FF], AL        ; else this is the next ball number
+```
+
+`4130:003D` and the extra-ball score threshold at `4130:0039/003B` are filled
+by `boot_init` from the non-volatile store (F10) — `D6711`-`D671F` reads
+`5040:003C` and `D66D2`-`D66E4` reads the dword at `5040:0085`. Measured under
+the firmware's own factory seed: balls per game **3**, threshold
+**50 000 000** (`5040:0085..88` = `80 F0 FA 02`), and the once-per-game award
+latch `4130:003E` **0**. Both are ordinary adjustments, neither is degenerate.
+
+The extra ball those cells award is spent before the ball advances —
+`D3526: INC [413C:00EE]` on crossing the threshold, `D3A9C`/`D3AB7` test and
+decrement it so the same ball is replayed — but it is gated on the score, so
+a game that scores nothing never reaches it.
+
+**Confidence:** confirmed for the protocol, the contacts, the drain code and
+the SW40-5 polarity.
+**Open:** what advances the balls-played field. In emulation `413C:0036` and
+`413C:00FF` hold 0 and 1 for a whole game of five balls, so `D3C5B` never
+takes the game-over branch; whether `D3999` is reached at all is not
+established. **Inferred:** whether the ball leaves the ball-exit contact
+because a player pulls a plunger or because a coil launches it — neither ROM says, and the only
 firmware requirement is that it does leave (with bit 3 held closed the
 ball-start path re-runs about every 4 s instead of settling into play). The
 second ball device on column 4 (`0xEB`, `0xEE` `2B86`) is traced but its
