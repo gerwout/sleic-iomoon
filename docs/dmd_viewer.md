@@ -208,9 +208,26 @@ of its rows about 6.7× longer:
 | 2 | on | off | Medium | `#AA4400` (medium orange) |
 | 3 | on | on | Full | `#FF6600` (bright orange) |
 
-`decode_frame()` in the script computes `p0_bit + 2 * p1_bit`, i.e. it swaps
-levels 1 and 2 against the panel. Levels 0 and 3 are unaffected, and the
-single-bitplane static-screen and font paths are unaffected entirely.
+`decode_frame()` in the script computes `p0_bit + 2 * p1_bit`, i.e. **the
+weighting on its own** swaps levels 1 and 2 against the panel, leaving 0 and 3
+alone.
+
+**Composed with the default inversion, though, the net effect is the other way
+round.** Inverting both planes maps every level `v` → `3 − v` (0↔3 *and* 1↔2), so
+the two differences cancel on levels 1 and 2 and reinforce on 0 and 3:
+
+| Plane 0 | Plane 1 | Panel | Script default |
+|---------|---------|-------|----------------|
+| 0 | 0 | 0 (off) | **3 (full)** |
+| 0 | 1 | 1 (dim) | 1 (dim) |
+| 1 | 0 | 2 (medium) | 2 (medium) |
+| 1 | 1 | 3 (full) | **0 (off)** |
+
+So the default output has **off and full-bright swapped** — not a cosmetic
+difference. `--no-invert` removes the inversion (leaving only the 1↔2 weighting
+swap); matching the panel exactly also needs the expression changed to
+`2 * p0_bit + p1_bit`. The single-bitplane static-screen and font paths are
+unaffected by either.
 
 ### Animated Frame Format
 

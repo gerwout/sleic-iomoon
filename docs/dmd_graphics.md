@@ -144,8 +144,11 @@ full-screen lit rectangle with a hole in it.
 > ⚠️ `scripts/dmd_viewer.py` does not use this convention by default. It inverts
 > (`--no-invert` turns that off) and it weights the planes the other way round —
 > `decode_frame()` computes `p0_bit + 2 * p1_bit` where the panel computes
-> `2 * p0_bit + p1_bit`. Its static-screen and font rendering are single-bitplane
-> and unaffected.
+> `2 * p0_bit + p1_bit`. The two differences do not cancel: composed, the default
+> output has levels **0 and 3 swapped** (off renders as full-bright and vice
+> versa), with levels 1 and 2 passing through. See
+> [`dmd_viewer.md`](dmd_viewer.md) for the truth table. Its static-screen and
+> font rendering is single-bitplane and unaffected.
 
 ---
 
@@ -187,7 +190,7 @@ Static screens are stored in **bilingual pairs** sharing a single header:
 Header (6 bytes) → English bitmap (512 bytes) → Spanish bitmap (512 bytes)
 ```
 
-Each bitmap uses **1 bitplane** only (on/off, no brightness levels). Static screens are **not** bit-inverted (unlike animated frames).
+Each bitmap uses **1 bitplane** only (on/off, no brightness levels), with a set bit lit — the same polarity as the animated frames, and as everything else in the display path.
 
 Which of the two paired bitmaps is shown is selected by the language byte
 `[4000:1001]`: **`== 5` ⇒ Spanish (second bitmap), any other value ⇒ English (first
@@ -280,7 +283,10 @@ for the three windows the CPU actually sees.
 0x00000 – 0x6F974 : ROM2: animated DMD frames (400 x 1030 bytes, seven 64 KB pages)
 0x70000 – 0x7FFFF : ROM2 page 7, blank
 0x80000 – 0x800FF : ROM1: the resident 80188 interrupt vector table
-0x80100 – 0x809AF : ROM1: service-menu records (English at 0x100, Spanish at 0xD08)
+0x80100 – 0x808D3 : ROM1: service-menu records — 38 x 46-byte records twice over,
+                    English at ROM1 offset 0x00100-0x007D3 and Spanish at
+                    0x00D08-0x0013DB (80188 flat addresses, via LMCS)
+0x808D4 – 0x809AF : ROM1: further tables in the LMCS window
 0x809B0 – 0x80A0F : Character mapping table (ASCII -> glyph index)
 0x82000 – 0xA0000 : Static screens (bilingual pairs)
 0xA0000 – 0xA1100 : Font glyphs (131 entries)

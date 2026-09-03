@@ -316,13 +316,18 @@ def decode_frame(rom_data: bytes, frame_info: dict, invert: bool = True) -> np.n
     - 1024 bytes total: 512 bytes plane 0 + 512 bytes plane 1
     - Each plane: 32 rows x 16 bytes = 512 bytes
 
-    NOTE: this renderer's conventions differ from the hardware's, and both
-    differences are cosmetic (they swap brightness levels 1 and 2):
+    NOTE: this renderer's conventions differ from the hardware's in two ways:
     - the panel treats a SET bit as lit; `invert` defaults to True here, so
-      pass invert=False (--no-invert) for the hardware convention;
+      pass invert=False (--no-invert) for the hardware convention. Inverting
+      both planes maps every level v -> 3-v, i.e. 0<->3 AND 1<->2;
     - the panel weights plane 0 as the MSB (2*p0 + p1); this computes
-      p0 + 2*p1.
-    See docs/dmd_graphics.md.
+      p0 + 2*p1, which on its own swaps levels 1 and 2.
+
+    Composed, the two differences cancel on levels 1 and 2 but NOT on 0 and 3:
+    the default output has off and full-bright SWAPPED (0<->3), with levels 1
+    and 2 passing through unchanged. That is not cosmetic. Pass invert=False
+    to remove the inversion; correcting the weighting needs the expression
+    below changed to 2*p0_bit + p1_bit. See docs/dmd_graphics.md.
     """
     data_offset = frame_info['data_offset']
     frame_data = rom_data[data_offset:data_offset + FRAME_DATA_SIZE]
