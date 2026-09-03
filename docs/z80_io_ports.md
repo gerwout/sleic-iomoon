@@ -35,7 +35,7 @@ driver.
 ## Port 0x81 control bits
 
 The Z80 keeps a shadow of port `0x81` in RAM at `0xC001` and read-modify-writes
-it. All 22 `OUT ($81),A` sites were inspected.
+it.
 
 | Bit | Mask | Function |
 |-----|------|----------|
@@ -48,9 +48,13 @@ it. All 22 `OUT ($81),A` sites were inspected.
 | 6 | `0x40` | **Inbound gate for the polled `IN A,($00)`** at `01D6`, used only by `direct_input_scan`. |
 | 7 | `0x80` | Never manipulated anywhere in the ROM. |
 
-The only `OR` masks that reach `OUT ($81),A` are `01h`, `02h`, `03h`, `04h`,
-`08h`, `10h`, `20h`, `40h`; the only `AND` masks are `BFh`, `DFh`, `F7h`, `FBh`,
-`FDh`, `FEh`.
+All 22 `OUT ($81),A` sites were inspected. Bits 0–2 and 4–6 are set and cleared
+with `OR`/`AND` immediates — the masks that reach the port are `01h`, `02h`,
+`03h`, `04h`, `10h`, `20h`, `40h` and `BFh`, `DFh`, `EFh`, `FBh`, `FDh`, `FEh`.
+**Bit 3 is the exception**: it is manipulated
+with the bit instructions `RES 3,A` (`CB 9F`) and `SET 3,A` (`CB DF`) in
+`port81_bit3_toggle` and nowhere else, which is why a search for immediate masks
+alone does not find it. Bit 7 is never touched by any instruction.
 
 ---
 
