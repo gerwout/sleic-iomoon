@@ -8,6 +8,8 @@
 
 This repository documents the results of an extensive reverse engineering effort on the IO Moon ROM images. It contains analysis tools, annotated disassembly listings, and technical documentation covering the dual-CPU hardware architecture, the DMD graphics format, the OKI sound chip, and a ROM patch for tournament play.
 
+**IO Moon is supported in [PinMAME](https://github.com/vpinball/pinmame)**, built on the findings in this repository: the emulation boots, plays complete games with working switches, lamps, solenoids and the service menu, and drives both sound chips (YM3812 FM music and OKI MSM6376 speech). All three known ROM sets are registered — `iomoon` (v1.3, latest), `iomoona` (v1.3, earlier revision) and `iomoont` (PRESS START tournament MOD). Bike Race and Sleic Pin-Ball are supported as well.
+
 ---
 
 ## Table of Contents
