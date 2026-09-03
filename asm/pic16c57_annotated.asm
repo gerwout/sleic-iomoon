@@ -37,13 +37,11 @@
 ;     external-counter mode) before advancing.
 ;   - It sequences the row/latch/frame strobes on PORTA/PORTC.
 ; There is NO command interface in this program: the PIC never reads a data
-; port (the single input pin RC7 is never sampled). The 80188-facing frame
-; markers (0x47 / 0x45 / 0x46 seen on the 0xA0100 latch) are therefore NOT
-; produced by PIC firmware decisions — they must be produced by board logic
-; derived from these strobes (plane-start pulse RA0, frame pulse RC3, row
-; strobes). The marker rhythm the 80188 firmware expects (per-plane swap +
-; per-frame vsync) maps 1:1 onto this program's structure:
-;     plane 0 start (RA0 pulse) ... plane 1 start ... frame gap (RC3 pulse)
+; port (the single input pin RC7 is never sampled), and it has no path to the
+; 80188 at all — it neither sends nor receives a byte. The panel simply
+; displays whatever stands in the 80188's seg-7000h staging buffer when this
+; raster scans it, and the 80188 sends no per-frame strobe either (the one
+; PCS4 bit-3 pulse in its ROM fires once, from boot_init). See findings F13.
 ;
 ; -----------------------------------------------------------------------------
 ; REGISTER MAP (file registers)
@@ -291,14 +289,15 @@
 ;    COLLAT, DE, VSYNC, SDATA) needs sheet 011-029-07 read side-by-side with
 ;    this listing; the roles above are inferred from code structure + the
 ;    measured wire protocol.
-; 2. The 0x47/0x45/0x46 marker bytes the 80188 reads at 0xA0100 are NOT
-;    emitted by this program (the PIC has no path to that latch in software —
-;    every port bit is a raster signal). They must be synthesised by board
-;    logic from RA0 (per-plane pulse) and RC3 (per-frame pulse). The cadence
-;    in this code — plane 0 start, plane 1 start, frame gap — is exactly the
-;    marker cadence the 80188 firmware expects, which pins down the timing
-;    the sleic.c marker machine must reproduce: two plane markers + one
-;    vsync marker per ~145 Hz wire frame.
+; 2. RESOLVED, and it is a negative result: there is no marker byte stream to
+;    reproduce. 0xA0100 is PCS2, the inbound J1 latch, and it carries Z80
+;    bytes and nothing else (findings F4). The bytes 0x47, 0x45 and 0x46 are
+;    ordinary Z80 replies sent over the C0FC event channel — 0x47 is the
+;    Z80's boot "alive" byte (Z80 0410) and 0x45/0x46 are the two answers to
+;    80188 command 0xED (Z80 2BEB) — not per-frame markers. This program has
+;    no path to that latch, and the emulator must therefore synthesise
+;    nothing: it delivers Z80 bytes and samples the seg-7000h buffer on the
+;    panel's own clock.
 ; 3. Absolute timings require the PIC crystal frequency (not recoverable
 ;    from the dump; measure on the board or derive from the 599 kHz DOTCLK).
 ; =============================================================================
