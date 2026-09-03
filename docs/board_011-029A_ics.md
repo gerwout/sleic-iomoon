@@ -22,7 +22,7 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 | Program / display ROM | IC10, IC11 | Two 27C040 EPROMs holding game code and DMD frames, mapped by the 80188. |
 | RAM | IC12, IC33 | 32 K × 8 main work RAM (IC12) plus a small 2 K × 8 scratchpad (IC33). |
 | NVRAM | IC14 | 28C64A EEPROM for operator settings and high scores. |
-| DMD coprocessor | IC23 | PIC 16C57 microcontroller — raster-drives the DMD. The YM3812 is **not** driven by the PIC; the 80188 drives it directly via `/PCS5` (see the IC23 and IC60 rows below). |
+| DMD coprocessor | IC23 | PIC 16C57 microcontroller — raster-drives the DMD, and nothing else: it has no command interface and no path to either sound chip (see the IC23 row below). |
 | Glue / timing | IC20, IC21, IC22, IC24, IC30, IC31, IC34, IC40, IC46, IC50, IC56 | Counters, multiplexers, latches, NOR/OR gates, open-collector drivers. |
 | Sound | IC51, IC52, IC53, IC60, IC61, IC62, IC63 | OKI ADPCM voice synth, OPL2 FM synth, DAC, op-amp, digital pot, sample ROMs. |
 
@@ -38,14 +38,14 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 | IC6  | Maxim MAX699                 | DIP-8   | [max699.pdf](../datasheets/max699.pdf) | Microprocessor supervisor: power-on reset, brownout detect, watchdog timeout, NVRAM write protect. |
 | IC7  | AMD/MMI PAL20L10ACNS         | PDIP-24 | [PAL handbook](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf) | Programmable Array Logic — 80188 chip-select / bus glue. **Undumped** (see [`chips_to_dump.md`](chips_to_dump.md)). |
 | IC8  | National DM74LS74AN          | PDIP-14 | [74ls74a.pdf](../datasheets/74ls74a.pdf) | Dual D-type positive-edge-triggered flip-flop with preset / clear. |
-| IC10 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | First display / code ROM (512 KB). Mapped by the 80188 via LMCS. |
-| IC11 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | Second display / code ROM (512 KB). |
+| IC10 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | ROM1, sticker `1001` (`V1 3_01.bin`, 512 KB): all 80188 code plus fonts, static screens and animation data. Seen through **two** chip-selects — its low half at LMCS `0x00000`-`0x3FFFF` and its high half at UMCS `0xC0000`-`0xFFFFF`. |
+| IC11 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | ROM2, sticker `1002` (`V1 3_02.bin`, 512 KB): animated DMD frames, in seven populated 64 KB pages. **Banked** — one page at a time into segment `6000h`, selected by PCS0 bits 0-2. |
 | IC12 | UMC UM62256D-70LL            | PDIP-28 | [62256](../datasheets/62256_generic_as6c62256.pdf) | 32 K × 8 CMOS SRAM, 70 ns. Main 80188 work RAM. |
 | IC14 | Microchip 28C64A             | PDIP-28 | [28c64a.pdf](../datasheets/28c64a.pdf) | 8 K × 8 parallel EEPROM. NVRAM — operator settings, high scores. |
 | IC20 | National DM74LS393N          | PDIP-14 | [74ls393.pdf](../datasheets/74ls393.pdf) | Dual 4-bit binary ripple counter. Part of the clock-divider chain. |
 | IC21 | National DM74LS393N          | PDIP-14 | [74ls393.pdf](../datasheets/74ls393.pdf) | Dual 4-bit binary ripple counter. |
 | IC22 | TI SN74LS27N                 | PDIP-14 | [74ls27.pdf](../datasheets/74ls27.pdf) | Triple 3-input NOR gate. |
-| IC23 | Microchip PIC 16C57-HS/P     | PDIP-28 | [pic16c5x.pdf](../datasheets/pic16c5x.pdf) | DMD raster coprocessor (RDATA / RCLK / COLATCH / DE / VSYNC / VA3–VA12 to the plasma panel). Does **not** drive the YM3812 — verified from the 011-029-07 schematic: every PIC I/O pin is a DMD signal and the YM3812 is selected by the 80188's `/PCS5`. 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins. **Undumped** (see [`chips_to_dump.md`](chips_to_dump.md)). |
+| IC23 | Microchip PIC 16C57-HS/P     | PDIP-28 | [pic16c5x.pdf](../datasheets/pic16c5x.pdf) | DMD raster coprocessor (RDATA / RCLK / COLATCH / DE / VSYNC / VA3–VA12 to the plasma panel). Free-running, with no command interface: the only input pin is never sampled and it exchanges no byte with the 80188. Every PIC I/O pin is a DMD signal (sheet 011-029-07), so it drives neither sound chip. 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins; 150 words programmed. **Dumped** — [`../roms/PIC16C57/`](../roms/PIC16C57/), disassembled in [`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm). |
 | IC24 | TI SN74LS07N                 | PDIP-14 | [74ls07.pdf](../datasheets/74ls07.pdf) | Hex buffer / driver with open-collector outputs. Voltage-level translation / open-drain interfacing. |
 | IC30 | TI SN74LS157N                | PDIP-16 | [74ls157.pdf](../datasheets/74ls157.pdf) | Quad 2-input data selector / multiplexer, non-inverting outputs. |
 | IC31 | TI SN74LS157N                | PDIP-16 | [74ls157.pdf](../datasheets/74ls157.pdf) | Quad 2-input data selector / multiplexer. |
@@ -58,7 +58,7 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 | IC46 | TI SN7406N                   | PDIP-14 | [7406.pdf](../datasheets/7406.pdf) | Hex inverter buffer / driver with open-collector high-voltage outputs (30 V). |
 | IC47 | National DM74LS32N           | PDIP-14 | [74ls32.pdf](../datasheets/74ls32.pdf) | Quad 2-input OR gate. |
 | IC50 | TI SN74LS273N                | PDIP-20 | [74ls273.pdf](../datasheets/74ls273.pdf) | Octal D-type flip-flop with master reset. Output latch. |
-| IC51 | OKI MSM6376                  | PDIP-42 | [OKI data book](../datasheets/msm6376_oki_voice_synthesis_databook_1994.pdf) | ADPCM voice / sample synthesiser. Driven by the **80188**: the phrase number + 2-channel bit are latched into IC50 (74LS273, clocked by `/OKCS` from IC7) and the start strobe `/ST` is a bit in IC40 (74LS273, clocked by `/PCS0 \| /WR`); data comes from the 80188 bus `D[0..7]`, clock from the IC20 divider (`OKCLK`). The Z80 does not drive it directly — it forwards sound commands to the 80188 over the inter-board link. (Earlier notes had this as Z80-driven; corrected by tracing 011-029-06.) Sample data is read from the sample ROMs on a separate OKI↔ROM bus. |
+| IC51 | OKI MSM6376                  | PDIP-42 | [OKI data book](../datasheets/msm6376_oki_voice_synthesis_databook_1994.pdf) | ADPCM voice / sample synthesiser. Driven by the **80188** and by nothing else: the phrase number + channel bit are latched into IC50 (74LS273) from `/PCS6` = `0xA0300`, and the start strobe `/ST` is a bit in IC40 (74LS273, clocked by `/PCS0 \| /WR`) pulsed from `0xA0000` bit 5; data comes from the 80188 bus `D[0..7]`, clock from the IC20 divider (`OKCLK`). The trigger routines are `D000:0C57` / `0C84` behind the dispatcher `D000:0B70` (finding F9). Sample data is read from the sample ROMs on a separate OKI↔ROM bus. `/OKBUSY` is buffered back to the 80188 through IC44, but the firmware never reads it — its busy model is the software duration table. |
 | IC52 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | OKI sample ROM 1. |
 | IC53 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | OKI sample ROM 2. |
 | IC56 | TI SN74LS139AN               | PDIP-16 | [74ls139a.pdf](../datasheets/74ls139a.pdf) | Dual 2-to-4-line decoder / demultiplexer. |
@@ -75,6 +75,6 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 | IC10 | EPROM 27C040           | Archived in [`../roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/). |
 | IC11 | EPROM 27C040           | Archived. |
 | IC14 | EEPROM 28C64A          | Runtime-mutable NVRAM — contents are not a useful preservation artefact. |
-| IC23 | PIC 16C57-HS/P ([datasheet](../datasheets/pic16c5x.pdf)) | **Undumped.** See [`chips_to_dump.md`](chips_to_dump.md). |
+| IC23 | PIC 16C57-HS/P ([datasheet](../datasheets/pic16c5x.pdf)) | Archived in [`../roms/PIC16C57/`](../roms/PIC16C57/); recovered from the code-protected part. |
 | IC52 | EPROM 27C040           | Archived. |
 | IC53 | EPROM 27C040           | Archived. |

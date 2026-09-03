@@ -2,32 +2,35 @@
 
 [← Back to main README](../README.md)
 
-Three programmable chips across the two CPU boards contain firmware that was never publicly dumped. All three are required for a complete emulation.
+Three programmable chips across the two CPU boards carry firmware that was never publicly dumped. The security / code-protect fuse is blown on all three, so none can be read directly with a programmer.
 
-## Status (updated 2026-09-02)
+## Status
 
-**All three chips turned out to be LOCKED** — the security / code-protect fuse is blown on every one of them, so none can be read directly with a programmer.
+| Ref  | Part                       | Package        | Board             | State |
+|------|----------------------------|----------------|-------------------|-------|
+| IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029A (16-bit) | **Dumped** — archived at [`../roms/PIC16C57/`](../roms/PIC16C57/), disassembled in [`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm) |
+| IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029A (16-bit) | Undumped |
+| IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030A (Z80)    | Undumped |
 
-**The PIC at IC23 has now been successfully cracked.** The locked chip was sent to a commercial chip-recovery lab, which defeated the code protection and returned a verified-good dump (received 2026-09-02). The recovered code — adjusted by the lab for the pin-compatible flash-based **PIC16F57** — has been burned to a replacement chip and **confirmed working in the real machine**. The dump is archived in this repository at [`../roms/PIC16C57/PIC16F57-DIP28-1D05-20260815.bin`](../roms/PIC16C57/) (see its README for format, verification, and how the dump was authenticated against the locked chip's scrambled read-back).
+The IC23 dump came from a commercial chip-recovery lab, which defeated the code protection and returned a verified-good image; the lab's adaptation of it for the pin-compatible flash **PIC16F57** runs in the real machine. Authentication is described in [`../roms/PIC16C57/README.md`](../roms/PIC16C57/) and [`../research/pic16c57_protection_analysis.md`](../research/pic16c57_protection_analysis.md): the recovered code reproduces the locked chip's scrambled nibble-XOR read-back for all 2048 words.
 
-| Rank | Ref  | Part                       | Package        | Board             | State |
-|------|------|----------------------------|----------------|-------------------|-------|
-| 1    | IC23 | Microchip PIC 16C57-HS/P   | PDIP-28 (OTP)  | 011-029A (16-bit) | **Locked → CRACKED, dumped ✅** |
-| 2    | IC7  | AMD/MMI PAL20L10ACNS       | PDIP-24        | 011-029A (16-bit) | Locked — still undumped |
-| 3    | IC8  | AMD PAL16L8A-2CN           | PDIP-20        | 011-030A (Z80)    | Locked — still undumped |
+**Neither remaining PAL blocks emulation.** The PinMAME `SLEIC2` driver implements the whole machine — boot, DMD, switches, lamps, drivers, coin and credit, the service menu, gameplay, and both sound chips — from the two CPU ROMs and the IC23 dump. What the PAL dumps would settle is a short, specific list:
 
-For the two locked PALs the remaining recovery path is truth-table reconstruction (DuPAL / dupico), described in their Path B sections below.
+- **IC7** — the exact bit-to-pin mapping of the PCS0 and PCS6 bytes at the OKI MSM6376, and the A16–A18 wiring of the PCS0 bits-0-2 graphics-page selector (the seven pages and their contents are confirmed; only the bit *order* is inferred). See findings F2 and F9.
+- **IC8** — the Z80-side memory and I/O decode, exactly rather than as inferred from the firmware's own `IN`/`OUT` sites.
+
+For both, the recovery path is truth-table reconstruction (DuPAL / dupico), described in their Path B sections below.
 
 Everything else on the IO Moon boards is either already archived (the 27C040 program / display / sound EPROMs and the 27C256 Z80 ROM) or runtime-mutable (the 28C64A NVRAM at IC14 on the 16-bit board). For the full board IC lists and the function of every other chip, see [`board_011-029A_ics.md`](board_011-029A_ics.md) and [`board_011-030A_ics.md`](board_011-030A_ics.md).
 
 ## How to read this document
 
-Every one of the three chips can be in one of two states, and the recovery path depends on which:
+A protectable chip can be in one of two states, and the recovery path depends on which:
 
 - **Unlocked** — the security / code-protect fuse has never been blown. A direct read returns the real contents.
-- **Locked** — the security / code-protect fuse is blown. A direct read returns garbage (`0xFFF` for the PIC, all-`F`s for a PAL). Recovery requires substantially more work, equipment, or money.
+- **Locked** — the security / code-protect fuse is blown. A direct read returns garbage (a nibble-XOR fold for the PIC, all-`F`s for a PAL). Recovery requires substantially more work, equipment, or money.
 
-You only discover which state a chip is in by attempting a read. Each chip section below lists both paths. The locked path is always harder and more expensive than the unlocked one.
+All three IO Moon parts are locked, so the Path B section of each is the one that applies here; Path A is kept because it is the cheaper route on any other board where the fuse is intact, and the state is only discoverable by attempting a read.
 
 A common misconception is that a TL866II+ / T48 universal programmer can read every chip on this list. That is **not true** for the two PALs — see the bipolar-PAL note below.
 
@@ -35,12 +38,12 @@ A common misconception is that a TL866II+ / T48 universal programmer can read ev
 
 ## IC23 — PIC 16C57-HS/P  (16-bit board, 011-029A)  ✅ DUMPED
 
-> **Resolved 2026-09-02.** The chip was **locked** (Path B below). A first read attempt on a universal programmer (2026-06-28) returned only scrambled data — later shown to be exactly the **XOR of the three nibbles of every 12-bit word**, which is what a code-protected 16C5x hands back (12 bits collapse to 4, so the real code is unrecoverable from that read alone). The chip went to a commercial recovery lab, which defeated the protection. The returned dump was verified locally: 100 % valid 12-bit instructions, correct `GOTO 0x000` reset vector at `0x7FF`, all jump targets in-range — and it reproduces the locked chip's scrambled read-back **2048/2048 words**, authenticating it against this exact physical chip. Dump + full details: [`../roms/PIC16C57/`](../roms/PIC16C57/).
+The chip is locked, so Path B below is the route that produced the dump: a commercial recovery lab defeated the protection. The returned image verifies locally — 100 % valid 12-bit instructions, correct `GOTO 0x000` reset vector at `0x7FF`, all jump targets in range — and it reproduces the locked chip's scrambled read-back for **2048/2048 words**, which authenticates it against this exact physical chip. A direct read of the locked part yields only the XOR of the three nibbles of each 12-bit word (12 bits collapse to 4), so it carries no recoverable code. Dump and full details: [`../roms/PIC16C57/`](../roms/PIC16C57/); disassembly: [`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm).
 
 - **Datasheet**: [`../datasheets/pic16c5x.pdf`](../datasheets/pic16c5x.pdf) (Microchip PIC16C5X family).
-- **Role**: DMD raster coprocessor. The 80188 writes DMD frames and control words at segment `A000h`; the PIC turns these into the plasma-panel raster timing (`RDATA`, `RCLK`, `COLATCH`, `DE`, `VSYNC`, and the `VA3–VA12` video-RAM address). It does **not** drive the YM3812 — that chip is selected directly by the 80188's peripheral chip-select `/PCS5`, and the PIC has no electrical connection to it (every PIC I/O pin is a DMD signal). Confirmed by tracing sheets 011-029-01, -03 and -07. *(Earlier revisions of this doc listed the PIC as the probable YM3812 driver; that has been ruled out.)*
-- **Memory**: 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins.
-- **Mounting**: soldered.
+- **Role**: DMD raster coprocessor, and nothing else. The program is 150 words: a free-running raster that walks the video-RAM address on PORTB (`VA` lines to the IC33 staging SRAM), sequences the row/latch/frame strobes on PORTA/PORTC (`RDATA`, `RCLK`, `COLATCH`, `DE`, `VSYNC`), and waits on T0CKI for the external serialiser's per-burst tick. It has **no command interface**: the only input pin, RC7, is never sampled, and it exchanges no byte with the 80188 in either direction. It does not drive the YM3812 — that chip is selected directly by the 80188's `/PCS5`, and every PIC I/O pin is a DMD signal (sheets 011-029-01, -03 and -07).
+- **Memory**: 2048 × 12-bit OTP program memory, 72 bytes RAM, 20 I/O pins; 150 words programmed.
+- **Mounting**: socketed.
 
 ### Path A — chip is unlocked (CP fuse not blown)
 
@@ -78,16 +81,17 @@ In practice, if the chip turns out to be locked, sending it to a recovery lab is
 
   The 80188 touches several memory-mapped peripherals that fall outside the internal CSU:
 
-  - The **peripheral chip-select block at segment `A000h`** (the 80188's `/PCS0`–`/PCS6` lines), which carries the DMD controller registers — where the 80188 hands frames to the PIC at IC23 — and the sound chip selects (YM3812 at `/PCS5`, OKI control latch / `/OKCS` strobe).
-  - The **J1 inbound byte-port latch** (`/PCS2`, `0xA0100`), where the 80188 reads bytes the Z80 sends over J1. (J1 is an 8-bit handshaken byte-port — there is no shared RAM and no HOLD / HLDA bus arbitration; segment `4000h` is 80188-private work RAM.)
-  - The **scratchpad SRAM at IC33** (2 K × 8) and the **28C64A NVRAM at IC14**.
+  - The **peripheral chip-select block at segment `A000h`** (the 80188's `/PCS0`–`/PCS6` lines), which carries the J1 byte-port latches and the sound chip selects (YM3812 at `/PCS5`, OKI control latch at `/PCS6` and the `/OKCS` strobe out of `/PCS0` bit 5).
+  - The **J1 inbound byte-port latch** (`/PCS2`, `0xA0100`), where the 80188 reads bytes the Z80 sends over J1. (J1 is an 8-bit byte-port with handshakes — there is no shared RAM and no HOLD / HLDA bus arbitration; segment `4000h` is 80188-private work RAM.)
+  - The **scratchpad SRAM at IC33** (2 K × 8, the DMD staging buffer at segment `7000h`) and the **28C64A NVRAM at IC14** (the segment-`5040h` window).
   - The output latches **IC40 / IC50** that buffer command and data writes on their way to the OKI MSM6376 and the DMD bus.
+  - The **graphics-ROM page select**: PCS0 bits 0–2 page one 64 KB window of IC11 into segment `6000h`, and the address lines that reaches are external to the 80188.
 
   IC7 generates the per-peripheral chip-selects for each of those, plus very likely the write-enable gating that protects the NVRAM from spurious writes during power transitions (in tandem with the MAX699 supervisor at IC6).
 
 - **Mounting**: soldered.
 
-- **Why dumping it matters**: with the fuse map archived, the full 80188-side memory map is documented and PinMAME can be made to honour real chip-select boundaries rather than the permissive `MRA_RAM` / `MWA_RAM` placeholders the current driver uses.
+- **Why dumping it matters**: it settles the two open bit-level questions on the 80188 side — the OKI latch's bit-to-pin mapping (finding F9) and the A16–A18 order of the graphics-page selector (finding F2). The emulated map itself is already pinned down by the boot chip-select table, which the driver hard-wires.
 
 ### Verified device structure and feedback path (schematic-confirmed, sheets 011-029-01 / -05)
 
@@ -151,7 +155,7 @@ Two practical approaches, in preferred order:
 
 1. **[DuPAL](https://github.com/jhallen/dupal3) or [dupico](https://github.com/Murunius/dupico) (DuPAL V3, RP2040-based).** A brute-force test rig that walks every input combination, reads every output, and constructs the truth table. Cost: ~€30–80 to build. Output is a synthesised `.jed`. The dupico detects input / output / hi-Z per pin and is not limited to 8 outputs, which is what makes it tractable for the 10-output PAL20L10 (a fact that rules out, for example, the Retro Chip Tester Professional even as a fuse-state-independent reader).
 
-   *PAL20L10 is a good DuPAL candidate from the chip side*: it has 12 dedicated inputs (pins 1–11, 13), 2 dedicated outputs (pins 14, 23) and 8 I/O pins (pins 15–22). On the IO Moon board all 8 I/O pins are wired as outputs, so the device presents 12 inputs and 10 outputs — dupico walks all 2¹² = 4 096 input combinations and reads all 10 outputs. As with the 16L8, dupico must first resolve the direction of each I/O pin (here they all resolve to *output*); this is **not** the dedicated-pin-only "trivial" case it was previously described as, but it is fully tractable.
+   *PAL20L10 is a good DuPAL candidate from the chip side*: it has 12 dedicated inputs (pins 1–11, 13), 2 dedicated outputs (pins 14, 23) and 8 I/O pins (pins 15–22). On the IO Moon board all 8 I/O pins are wired as outputs, so the device presents 12 inputs and 10 outputs — dupico walks all 2¹² = 4 096 input combinations and reads all 10 outputs. As with the 16L8, dupico must first resolve the direction of each I/O pin (here they all resolve to *output*), so this is not the dedicated-pin-only trivial case, but it is fully tractable.
 
    **On-board feedback does not stop DuPAL from recovering the fuse map.** The IO Moon 16-bit board *does* route one of IC7's outputs back to its own inputs — `/WR` (pin 16) is OR'd with `/PCS0` in IC47A (74LS32) to clock the IC40 latch (74LS273), whose outputs `EEE1`/`EEE2` return to IC7 pins 9/10 (see *Verified device structure* above). This is **external** feedback, and it is broken the moment the chip is on the bench: dupico drives `EEE1`, `EEE2`, `/WR` and every other pin independently, so the loop has zero effect on the extracted truth table. The only consequences are (a) the bench exercises input combinations that never occur in-circuit — harmless, in fact extra coverage — and (b) the board's *dynamic* behaviour cannot be reconstructed from the chip dump alone, which is not needed to re-create the PAL or to document the decode map. What *would* defeat a combinational extraction is a **registered output** (the 20L10 has none — no clock pin) or **internal asynchronous feedback** forming a latch (a fuse-map property, which dupico detects and handles by reading each I/O pin as input and output). Neither is present, so DuPAL/dupico recovers IC7's truth table cleanly.
 
@@ -175,7 +179,7 @@ Two practical approaches, in preferred order:
 
 - **Mounting**: soldered.
 
-- **Why dumping it matters**: with the fuse map archived, the Z80-side I/O and memory decode is documented exactly rather than inferred from firmware traces. The current PinMAME `z80_read_port` / `z80_write_port` handlers cover ports `0x80`–`0x87` based on disassembly evidence; an IC8 dump would either confirm that decode is complete or surface peripherals at addresses the firmware does not exercise in the trace window.
+- **Why dumping it matters**: with the fuse map archived, the Z80-side I/O and memory decode is documented exactly rather than inferred from the firmware's own port use. The PinMAME `SLEIC2` Z80 port handlers cover ports `0x00`–`0x04` in and `0x80`–`0x87` out on disassembly evidence; an IC8 dump would either confirm that decode is complete or surface peripherals at addresses the firmware never touches.
 
 ### Verified pinout and feedback path (schematic-confirmed, sheet 011-030-01)
 
@@ -231,8 +235,8 @@ The two PALs are the awkward case: there is no cheap modern programmer that read
 
 ---
 
-## What this dump set unlocks
+## What each dump is worth
 
-- **IC23** ✅ **(dumped)** — emulation of the DMD raster path, the single largest open question in the current PinMAME work. (The YM3812 sound path does **not** depend on this dump: the 80188 drives the YM3812 directly via `/PCS5`.)
-- **IC7** — the 80188-side chip-select decode map.
-- **IC8** — the Z80-side memory and I/O decode map.
+- **IC23** ✅ **(dumped)** — the DMD raster path. Its listing establishes the two-plane scan order, the 200:30 per-plane row-hold ratio that makes plane 0 the MSB of the 4-level grey scale, and — as a negative result that matters just as much — that the coprocessor has no command interface, so the 80188 neither receives frame markers from it nor sends it a per-frame strobe.
+- **IC7** — the OKI latch's bit-to-pin mapping and the graphics-page selector's bit order; refinements, not blockers.
+- **IC8** — the Z80-side memory and I/O decode map, as a check on the decode inferred from the firmware.

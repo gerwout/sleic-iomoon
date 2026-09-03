@@ -32,7 +32,7 @@ The 16-bit / 80188 board (`011-029A`) is documented separately in [`board_011-02
 
 | IC | Part | Package | Datasheet | Function |
 |----|------|---------|-----------|----------|
-| IC1  | Goldstar Z8400A PS           | PDIP-40 | [Z80 user manual](../datasheets/z80_cpu_user_manual.pdf) | Z80A 8-bit CPU. Drives switch / lamp / solenoid I/O and runs the sound sequencing, but does **not** drive the sound chips directly — it forwards sound commands to the 80188 over the inter-board link, and the 80188 drives the OKI MSM6376 (via the IC50 / IC40 latches) and the YM3812 (via `/PCS5`). The inter-board link is the **J1 byte-port** (handshaked, one byte at a time) — there is no shared RAM. |
+| IC1  | Goldstar Z8400A PS           | PDIP-40 | [Z80 user manual](../datasheets/z80_cpu_user_manual.pdf) | Z80A 8-bit CPU, a 4 MHz-grade part. Scans the switch matrix and drives the lamp matrix and the two driver latches; it has no connection to either sound chip and forwards no sound commands. The 80188 owns the OKI MSM6376 (via the IC50 / IC40 latches) and the YM3812 (via `/PCS5`). The inter-board link is the **J1 byte-port** (one byte at a time, with handshakes and an interrupt in each direction) — there is no shared RAM. |
 | IC2  | TI SN74LS244N                | PDIP-20 | [74ls244.pdf](../datasheets/74ls244.pdf) | Octal buffer / line driver, 3-state. Address / data bus buffer toward J3 (inter-board ribbon). |
 | IC3  | TI SN74LS244N                | PDIP-20 | [74ls244.pdf](../datasheets/74ls244.pdf) | Octal buffer / line driver, 3-state. |
 | IC4  | TI SN74LS245N                | PDIP-20 | [74ls245.pdf](../datasheets/74ls245.pdf) | Octal bus transceiver, 3-state. Data-bus buffer between the Z80 and the rest of the board. |
@@ -83,4 +83,4 @@ Eight 74LS374 latches × 8 bits = 64 bits of output across lamps, solenoids and 
 | IC5 | EPROM 27C256 ([datasheet](../datasheets/27c256.pdf)) | Archived as `v1_3_05.bin` in [`../roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/). |
 | IC8 | PAL16L8A-2CN ([datasheet](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf)) | **Undumped.** See [`chips_to_dump.md`](chips_to_dump.md). |
 
-The Z80 disassembly references `0x8000`–`0xBFFF` as "extended routines/data" and labels the position `IC6` as "not included" in the dump set. The inspected board carries no IC6 chip at that position — the socket is either vacant or absent on this revision.
+`0x8000`–`0xBFFF` is the IC6 expansion-ROM window. The inspected board carries no IC6 chip at that position — the socket is either vacant or absent on this revision — and no Z80 code reads the range.

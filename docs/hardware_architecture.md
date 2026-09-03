@@ -86,15 +86,19 @@ The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 
 
 ### Main CPU Board — 80188 (16-bit) — SLEIC-PETACO 011-029A
 
-The 80188 board carries the main 16-bit CPU (`AMD N80C188`, 10 MHz), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster.
+The 80188 board carries the main 16-bit CPU (`AMD N80C188-10`), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster.
 
-For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). Two programmable parts on this board are undumped: see [`chips_to_dump.md`](chips_to_dump.md).
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). The PAL at IC7 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
-The YM3812's chip-select is **/PCS5** (an 80188 peripheral chip-select; sheet 011-029-07) = memory address `0xA0280` (index) / `0xA0281` (data). It **is** driven by the 80188 directly — not by the PIC, not via the `4000:1158` queue: the IO Moon software plays **10 FM music tracks** through it. The driver code is byte-verified in ROM1 (write primitive `D000:0D99`, music sequencer `D000:0D37`, song table `CS:0DE5`) — see [`z80_io_ports.md`](z80_io_ports.md) ("YM3812 routing") and [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
+The YM3812's chip-select is **/PCS5** (an 80188 peripheral chip-select; sheet 011-029-07) = memory address `0xA0280` (index) / `0xA0281` (data). It is driven by the 80188 directly — not by the PIC and not through any queue: the IO Moon software plays **10 FM music tracks** through it. The write primitive is `D000:0D99`, the sequencer `D000:0D37` and the song table `CS:0DE5` (finding F8) — see [`iomoon_fm_extract.md`](iomoon_fm_extract.md) and [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
 
 #### Clocking
 
-The 80188 runs at 10 MHz from OSC1. The Z80 on board `011-030A` derives its periodic-IRQ frequency from a divider chain on the 16-bit board: two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22), positioned next to OSC1. The chain yields 8 MHz ÷ 8192 = **977 Hz**, which matches the rate derived from the Z80 firmware's lamp-refresh state machine in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md). The same chain almost certainly generates the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23.
+Neither ROM states any clock rate, so the figures below are inferred from the parts and the board and are flagged where that matters.
+
+The 80188's CLKOUT is taken as **10 MHz** from OSC1: IC1 is an `N80C188-10`, and 10 MHz is what makes the boot table's timer-0 programming (max count `0x6276` at CLKOUT/4) come out at the 99.18 Hz the firmware's delay counters are written around. The `-10` is the part's speed *grade*, not a reading of the crystal, so this is an inference with a clean scale factor on everything timed from it.
+
+The Z80 on board `011-030A` gets its periodic IRQ from a divider chain on the **16-bit** board: two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22), positioned next to OSC1, delivered to the Z80 board over the J3 ribbon. The chain yields 8 MHz ÷ 8192 = **977 Hz**, which matches the rate the Z80 firmware's lamp-refresh state machine implies in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md). The YM3812's φM (`YACLK`) and the OKI's clock (`OKCLK`) are taken off the same chain, as are the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23; the individual taps are read from the schematic net names rather than measured.
 
 #### Board placement (from figure 7-1)
 
@@ -134,7 +138,7 @@ IC13 and IC54 are unpopulated 32-pin DIP sockets — both are expansion options 
 
 ### Sound/Switch CPU Board — Z80 (8-bit) — SLEIC-PETACO 011-030A
 
-The Z80 board carries the 8-bit I/O CPU (`Goldstar Z8400A PS`, 8 MHz), its 32 KB program ROM (IC5) and 2 KB work RAM (Goldstar GM76C28-10 at IC7), the lamp / solenoid / switch-matrix latches and buffers, two ULN2803 Darlington arrays for current drive, four GL339 quad comparators for switch-return level sensing, a hardware watchdog (CD4040 counter + 74LS133 NAND + ADM699 supervisor) and a PAL16L8 at IC8 that does the Z80 memory and I/O decode.
+The Z80 board carries the 8-bit I/O CPU (`Goldstar Z8400A PS`, a Z80A), its 32 KB program ROM (IC5) and 2 KB work RAM (Goldstar GM76C28-10 at IC7), the lamp / solenoid / switch-matrix latches and buffers, two ULN2803 Darlington arrays for current drive, four GL339 quad comparators for switch-return level sensing, a hardware watchdog (CD4040 counter + 74LS133 NAND + ADM699 supervisor) and a PAL16L8 at IC8 that does the Z80 memory and I/O decode.
 
 For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-030A_ics.md`](board_011-030A_ics.md). The PAL at IC8 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
 
@@ -143,7 +147,7 @@ The Z80 board itself does not generate its own periodic IRQ — the 977 Hz rate 
 | Reference | Component | Notes |
 |-----------|-----------|-------|
 | SW40 | DIP switch block, 8-position | See DIP table below |
-| X10  | 8 MHz crystal                | Z80 clock |
+| X10  | 8 MHz crystal                | Board timing source. The Z80A at IC1 is a 4 MHz-grade part, so the CPU clock is a division of X10 rather than X10 itself; the divisor is not established from the ROM or the inventory. |
 
 #### Connectors (manual section 7.2.2.2)
 
@@ -198,35 +202,56 @@ France and Belgium rows do **not** match the coin values printed here.
 
 ## Memory Map
 
-### Physical ROM Layout
+### ROM file layout
+
+The two 27C040s hold, by file offset:
 
 ```
-Address Range     Size    Content
-─────────────────────────────────────────────
-0x00000–0x7FFFF   512 KB  ROM2 — DMD Graphics (animated frames)
-0x80000–0xCFFFF   320 KB  ROM1 — DMD Graphics (static screens, fonts, credits)
-0xD0000–0xDFFFF    64 KB  Code Segment D000 — Main program (8,532 instructions)
-0xE0000–0xEFFFF    64 KB  Code Segment E000 — Extended code/data (430 instructions)
-0xF0000–0xFFEFF    63 KB  Code Segment F000 — System code (1,491 instructions)
-0xFFF00–0xFFFFF   256 B   Boot code / reset vector (5 instructions)
+V1 3_01.bin  (IC10, "1001 JUEGO", ROM1) — 512 KB
+  0x00000–0x000FF   the interrupt vector table (resident, see below)
+  0x00100–0x3FFFF   menu records, fonts, static screens, credits, animation data
+  0x40000–0x4FFFF   code segment D000 — main program
+  0x50000–0x5FFFF   code segment E000 — extended code / data
+  0x60000–0x7FEFF   code segment F000 — system code
+  0x7FF00–0x7FFFF   boot stub + reset vector
+
+V1 3_02.bin  (IC11, "1002 BANK", ROM2) — 512 KB
+  0x00000–0x6FFFF   seven 64 KB pages of animated DMD frames
+  0x70000–0x7FFFF   page 7, blank
 ```
 
-Total executable code: ~10,458 instructions (~30 KB, ~3% of ROM). The remaining ~97% is DMD graphics data and lookup tables.
+The 2026-09 baseline decodes **29 810 instructions across 83 regions**
+(≈88 KB) of ROM1; the rest of both images is graphics data and lookup tables.
 
-### 80188 Segment Map
+### 80188 address space
+
+The 80188 does **not** see the two ROMs flat. Three windows carry them
+(finding F2, [`80188_config.md`](80188_config.md)):
+
+| 80188 range | Contents |
+|-------------|----------|
+| `0x00000`–`0x3FFFF` (LMCS) | ROM1 file `0x00000`–`0x3FFFF`: the resident IVT at physical 0 followed by fonts, static screens and animation data. Not banked. |
+| `0x60000`–`0x6FFFF` (MCS2) | **one 64 KB page of ROM2**, selected by PCS0 bits 0–2 (`sub_F00A0` at `F00A0`, 17 call sites pushing 0–6) |
+| `0xC0000`–`0xFFFFF` (UMCS) | ROM1 file `0x40000`–`0x7FFFF`: all code, and the reset vector at `0xFFFF0` |
+
+### 80188 segment map
 
 | Segment | Linear Range | Function |
 |---------|-------------|----------|
-| `4000h` | `0x40000` | Work RAM (80188-private; MMCS mid-range window) |
-| `4130h` | `0x41300` | Game configuration data |
-| `4134h` | `0x41340` | Game configuration (146 references) |
-| `4137h` | `0x41370` | Game mode data (32 references) |
-| `413Ch` | `0x413C0` | Game state variables (920 references) |
+| `0000h`–`3000h` | `0x00000`–`0x3FFFF` | LMCS: IVT, menu records, fonts, static screens, animation data (ROM1 low half) |
+| `4000h` | `0x40000` | Work RAM (80188-private; MCS0). DMD pipeline at `0000`–`0DFF`, link and player state at `1000`+ |
+| `4130h` | `0x41300` | Game configuration (country number, balls per game, thresholds) |
+| `4134h` | `0x41340` | Per-ball state (tilt warnings, …) |
+| `4137h` | `0x41370` | Menu state (cursor `0013`, record-table far pointer `004B`) |
+| `413Ch` | `0x413C0` | Game state variables — the most heavily referenced data area (switch-code shadow `00D6`, credits cache `00D4`, mode `014F`) |
 | `4152h` | `0x41520` | Stack segment (SP init = `0x0205`) |
-| `A000h` | `0xA0000` | Peripheral chip-select block (PCS0–PCS6): DMD control, OKI control latch, **YM3812 at /PCS5 = `0xA0280`/`0xA0281`** |
+| `5040h` | `0x50400` | Non-volatile store window (MCS1), gated by PCS0 bits 3/4 |
+| `6000h` | `0x60000` | Banked graphics page (MCS2) |
+| `7000h` | `0x70000` | DMD staging buffer, `0000`–`03FF` (MCS3) |
+| `A000h` | `0xA0000` | Peripheral chip-select block (PCS0–PCS6): the J1 latches, the OKI control latch and `/OKCS`, and the **YM3812 at /PCS5 = `0xA0280`/`0xA0281`** |
 | `D000h` | `0xD0000` | Main program code |
 | `E000h` | `0xE0000` | Extended code/data |
-| `F000h` | `0xF0000` | System code / BIOS |
+| `F000h` | `0xF0000` | System code |
 
 ### Z80 Memory Map
 
@@ -236,7 +261,7 @@ Total executable code: ~10,458 instructions (~30 KB, ~3% of ROM). The remaining 
 | `0x8000`–`0xBFFF` | 16 KB | IC6 socket — vacant on the inspected board |
 | `0xC000`–`0xC7FF` | 2 KB  | RAM IC7 (Goldstar GM76C28-10) — working memory |
 
-The Z80 disassembly (`asm/z80_annotated.asm:14`, `:55`) references `0x8000`–`0xBFFF` as "extended routines/data" and flags the position `IC6` as "not included" in the dump set. Inspection of a real board confirms the IC6 socket is unpopulated, so the disassembly's note simply documents an expansion option that this machine does not use.
+`0x8000`–`0xBFFF` is the IC6 expansion-ROM window. Inspection of a real board confirms the IC6 socket is unpopulated, and no Z80 code reads that range, so the window is unused on this machine.
 
 ---
 
