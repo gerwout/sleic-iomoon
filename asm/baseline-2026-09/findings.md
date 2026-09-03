@@ -534,9 +534,13 @@ command `0xED` (F4), `0x45` is tested against this shadow at `D7B2E`,
 `DC063`, `DC08E`, `DC0B5` and `DC0EE`. A driver must deliver it through the
 normal J1 path like any other code and must not treat it as reserved.
 
-**Confidence:** confirmed. The *physical* switch behind each code is not
-established for the 48 matrix positions — that needs the wiring diagram or the
-service manual's switch list; the codes and their matrix positions are exact.
+**Confidence:** confirmed. The *physical* switch behind each code is
+established for **four** of the 48 matrix positions and no more: column 0 bits
+0-3, codes `0x0A`-`0x0D`, are the ball-handling contacts, and **F15** carries
+that evidence — including the fact that code `0x0A`'s contact reports `0x43`
+(ball over) instead of its own code. The other 44 need the wiring diagram or
+the service manual's switch list; the codes and their matrix positions are
+exact for all 48.
 The six **cabinet** codes were identified on 2026-09-03 from what consumes
 them (F11, F14): `0x32` the coin mechanism, `0x3E` tilt, `0x3F` test /
 service-menu, `0x40` START, `0x41`/`0x42` the flipper buttons.
@@ -1312,22 +1316,136 @@ F4.
 
 ---
 
+## F15 — Ball handling: the trough contacts, the serve, and the drain code
+
+**Statement.** Four of the 48 matrix contacts are **ball-handling** contacts,
+not playfield events, and both CPUs block on them. They are **switch column 0
+bits 0-3**, codes `0x0A`-`0x0D`: bits 0-2 are the three trough contacts and
+bit 3 the ball-exit contact. **Contact 0 is the trough entry and doubles as
+the ball-over sensor**, reporting code `0x43` rather than its own `0x0A`.
+
+**They are not playfield events.** The in-game dispatcher `sub_D7636`
+range-checks against `0x0E` before its 55-entry table, so `0x0A`-`0x0D` reach
+no handler:
+
+```
+D7652: 2D 0E 00        SUB AX, 0000E
+D7657: 83 FB 36        CMP BX, 00036
+D765A: 76 03           JBE 0D765F        ; else fall through to the no-op D77C3
+D7661: 2E FF A7 27 05  JMP CS:W[BX + 00527]
+```
+
+The service manual's matrix list agrees for the group — its first four entries
+are `contacto salida bolas 1/2/3` and `bola fuera` — but the manual gives no
+bit numbers, so which contact is which comes from the ROM below.
+
+**The four commands** (Z80 handlers, 256-entry table at `$2000`):
+
+| cmd | handler | what it does | answers |
+|---|---|---|---|
+| `0xE9` | `2B03` | **serve**. If column-0 bit 3 is closed, answer at once; else report driver state 0 busy (`sub_08A7`) and poll column 0 until bit 3 closes — five tries of `0x3E8` ticks | `0x45` served, `0x4A` gave up |
+| `0xEA` | `2A45` | **count the trough**: closed contacts among C0DB bits 0-2, plus bit 3 | `0x48` none, `0x38`/`0x39`/`0x3A` = 1/2/3 |
+| `0xEB` | `2AB0` | the same count on **column 4** bits 0-2, a second ball device | `0x49` none, `0x3B`/`0x3C` |
+| `0xEF` | `2BC7` | **balls home**: test the trough (`sub_2C1F`), run the ball-search coil sequence (`sub_2CFB`), wait (`sub_2D41`), repeat. Its ONLY exit is `sub_2C1F` returning 0 — `2C2B: AND 007` or `2C35: AND 00E` all-zero, i.e. three ADJACENT trough contacts closed | `0x45`, and only then |
+
+`0xEC` (`2C87`) is the same coil sequence with flipper-abortable waits and
+`0xED` (`2BEB`) is `0xEF` gated on port-`0x04` bit 5 (F11's SW40-5).
+
+**The 80188 side.** `sub_DC10D` turns the `0xEA` answer into a ball count in
+`[413C:00F9]` through a 4-entry reply table at `CS:04EE4` (`DC144`-`DC17D`
+store 3/2/1/0); `sub_DC194` does the same for `0xEB` into `[413C:00F8]`. The
+ball-start path `sub_DC4C9`:
+
+```
+DC4D0: CALL sub_DC410            ; 0xEA with a 0x96-tick timeout and retry
+DC4D4: CALL sub_DC2FC            ; 0xEB, same shape
+DC4DC: CMP ES:000F9,0 / JE DC4FE ; trough empty -> ball search
+DC4F9: CMP DX,3 / JNL DC522      ; [00F9]+[00F8] >= 3 -> skip the search
+DC4FE: PUSH 0EF / CALL qout_push
+DC507: CALL sub_DC075 / OR AX,AX / JE DC507   ; wait for 0x45 -- NO TIMEOUT
+DC514: MOV ES:000F9, 003         ; a completed search means three in the trough
+DC522: CALL sub_DC47E            ; 0xE9, serve one
+DC52B: DEC [00F9]
+```
+
+`sub_DC53C` is the same with `CMP DX,3 / JE`. **Three is the ball
+complement**: `DC514`, `DC587` and `DC14D` all store 3, and `sub_2C1F` only
+ever clears with three adjacent contacts closed.
+
+**`DC507` and `2BC7` together are a deadlock** for any emulation that does not
+present balls. `0xEA` answers `0x48`, `DC4DC` takes the search branch, the
+80188 waits at `DC507` for a reply the Z80 cannot send, and the Z80 never
+leaves `2BC7` — so `main_loop` `0D4C` stops running and with it
+`input_port03_read_tick` `2E62` and the whole switch scan. Measured in
+emulation on 2026-09-03: at game start the Z80's I/O-site histogram switches
+from `2E64`/`0D78`/`0D90`/`0DC1` (main_loop, ~7600 reads per 300 frames each)
+to `32F5`/`3325`/`3319` (the column snapshots inside the ball loops) with the
+main-loop sites at **zero**, and no switch code of any kind reaches
+`413C:00D6` again.
+
+**The drain is code `0x43`, and it fixes the trough's orientation.** Contact
+0's per-bit routine is the only one of the 48 that does not send its own code:
+
+```
+316D:  LD A,#$0A / LD (C0FC),A / JP sub_161E
+161E:  LD A,(C068) / AND A / JP NZ,1642   ; TEST mode: send 0x0A like any contact
+1625:  LD A,(C054) / AND A / RET Z        ; monitor not armed -> report NOTHING
+162A:  LD A,(C04B) / AND A / RET NZ       ; 200-tick lockout still running
+162F:  LD HL,#$00C8 / LD (C049),HL / LD A,#$FF / LD (C04B),A
+163A:  LD A,#$43 / LD (C0FC),A / JP host_send_c0fc
+```
+
+`C054` is armed by 80188 command `0xF3` (Z80 `2A3A`: `C054 = 0xFF`) and
+disarmed by `0xF4` (`2A40`), and `sub_DC74B` pushes `0xF3` immediately after
+serving the ball (`DC779`). On the 80188 side `0x43` is **ball over** in both
+in-game tables: the dispatcher table at `CS:0527` sends it to `D7666 -> CALL
+sub_D92C0`, and the ball-in-play wait table at `CS:07AE` (`sub_D7A12`) sends
+it to `D7A3E -> CALL sub_D92C0`, where every other playfield code merely
+returns 1 to end the wait. `sub_D92C0` sets the ball-over flag
+`[413C:000EB] = 1` at `D93A7`, which the mode-4 loop `sub_D3145` tests at
+`D31C6`.
+
+Note also that `161E`'s normal-play path never calls `sub_3394`, so it never
+sets the reported-mask bit in `C0E8` — unlike contacts 1-3 (`sub_164A` /
+`sub_165A` / `sub_166A`), which set the mask and go quiet. Contact 0 therefore
+re-reports for as long as it is closed, at the `C04B` lockout rate.
+
+**Consequence:** contact 0 is the trough ENTRY. A ball rests on it only when it
+is home, it is open while a ball is out on the playfield, and a ball arriving
+there is the drain. Balls fill the trough **from contact 2 down**. Filling
+from the other end instead reports a drain the instant the game arms the
+monitor — measured: the ball ends about a second after it starts.
+
+**Confidence:** confirmed for the protocol, the contacts and the drain code.
+**Inferred:** whether the ball leaves the ball-exit contact because a player
+pulls a plunger or because a coil launches it — neither ROM says, and the only
+firmware requirement is that it does leave (with bit 3 held closed the
+ball-start path re-runs about every 4 s instead of settling into play). The
+second ball device on column 4 (`0xEB`, `0xEE` `2B86`) is traced but its
+physical identity is not established.
+
+**Disposition:** **no prior hypothesis to adjudicate** — F5 recorded the code
+map and left "which physical contact" open for all 48 positions. Four of them
+are now closed, from the ROM alone.
+
+---
+
 ## What changed
 
 **Counting basis.** Three facts — F2, F13 and F14 — have **split
 dispositions**, because the prior claim was right about one thing and wrong
 about another. They are counted **per hypothesis half** and dual-listed
-below, so a split fact appears under both of its halves. 14 facts therefore
-produce **17 disposition entries**.
+below, so a split fact appears under both of its halves. 15 facts therefore
+produce **18 disposition entries**.
 
 | disposition | entries | n |
 |---|---|---|
 | **confirmed** | F1; F5 (`0x41496` was right); F6; F8; F9; **F13's** `7000:0000`/`0200` two-plane layout and plane-0-as-MSB weighting | 6 |
 | **corrected** | F3 (NMI is the inbound-byte handler, not the DMD handler); F7 (ports `0x82`/`0x83`/`0x84` roles swapped relative to the old driver; 16 driver bits, not 18 solenoids); F10 (NVRAM is the segment-`5040` window); F12 (`4000:1158` is the Z80 command queue); **F2's** banking half — PCS0 *bits 0-2* page ROM2 into segment `6000`, so the intuition "PCS0 banks a graphics ROM" was right | 5 |
 | **rejected** | F4 (the marker byte stream); **F2's** *bits 4/5 over segment `0000`* form — segment `0000` is not banked at all, bits 3/4 gate the NVRAM window and bit 5 is `/OKCS`; **F13's** `0xA0200` bit-3 frame strobe and the bit inversion; **F14's** earlier project guesses (`0x3F` = select, Bike-Race-style scroll/select, `0x33` opens the menu, menu paced by PIC markers) | 4 |
-| **no prior hypothesis to adjudicate** | F11 (credit/coin entry points); **F14's** own open question, answered: code `0x3F` opens the menu | 2 |
+| **no prior hypothesis to adjudicate** | F11 (credit/coin entry points); **F14's** own open question, answered: code `0x3F` opens the menu; F15 (ball handling — four of F5's 48 physical contacts identified) | 3 |
 
-Cross-check: 6 + 5 + 4 + 2 = 17 entries over 14 facts, with F2, F13 and F14
+Cross-check: 6 + 5 + 4 + 3 = 18 entries over 15 facts, with F2, F13 and F14
 each contributing two. Every per-fact *Disposition* line above agrees with
 the row it appears in.
 
@@ -1338,7 +1456,7 @@ the row it appears in.
 |---|---|---|
 | 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given, but see the 2026-09-02 emulation result in F3: 290 Hz and 145 Hz are both unservable against the handler's measured cost, the driver ships 72.5 Hz as a serviceability constant matching no candidate, and the per-plane *source* hypothesis is weakened by the same measurement |
 | 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred |
-| 3 | F5 | the physical switch behind each code. *Narrowed 2026-09-03 to the 48 MATRIX positions only:* all six cabinet codes are now identified from what consumes them — `0x32` coin mech, `0x3E` tilt, `0x3F` test, `0x40` START, `0x41`/`0x42` the flipper buttons. Note `0x41`/`0x42` are emitted **only in test mode** (gated on `C068`/`C069`); in play those two bits fire the port-`0x85` coil pairs at `sub_05C7`/`sub_05ED` and send nothing. |
+| 3 | F5 | the physical switch behind each code. *Narrowed 2026-09-03 to 44 of the 48 MATRIX positions:* column 0 bits 0-3, codes `0x0A`-`0x0D`, are the ball-handling contacts and are identified in **F15**; and all six cabinet codes are now identified from what consumes them — `0x32` coin mech, `0x3E` tilt, `0x3F` test, `0x40` START, `0x41`/`0x42` the flipper buttons. Note `0x41`/`0x42` are emitted **only in test mode** (gated on `C068`/`C069`); in play those two bits fire the port-`0x85` coil pairs at `sub_05C7`/`sub_05ED` and send nothing. |
 | 4 | F6 | whether the Z80's two outbound strobes reach one 80188 latch |
 | 5 | F9 | the OKI latch bit-to-pin mapping |
 | 6 | F9 | the OKI duration-table extent past sample ~28 |
