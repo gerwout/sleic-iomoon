@@ -412,8 +412,9 @@ they are **Z80 replies to 80188 commands**, sent through the ordinary
    ```
 5. The PIC has no path to that latch. `asm/pic16c57_annotated.asm`: 150
    programmed words, every port bit is a raster signal, `RC7` (the only input
-   pin) is never sampled, and there is no data port. Its own OPEN QUESTIONS
-   item 2 says the markers "are NOT emitted by this program".
+   pin) is never sampled, and there is no data port. Its *NO BYTE PATH TO THE
+   80188* section says the same: the program "exchanges no byte with the 80188
+   in either direction".
 
 **Dequeue order, which is the part a driver gets wrong.** The NMI appends
 every non-`0x32` byte to a single FIFO (`4000:1220..12E7`, far read pointer
