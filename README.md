@@ -16,7 +16,7 @@ This repository documents the results of an extensive reverse engineering effort
 - [Repository Structure](#repository-structure)
 - [Scripts & Tools](#scripts--tools)
 - [Technical Documentation](#technical-documentation)
-- [Annotated Assembly Listings](#annotated-assembly-listings)
+- [Disassembly Listings](#disassembly-listings)
 - [ROM Files](#rom-files)
 - [Related SLEIC Machines](#related-sleic-machines)
 - [Manuals](#manuals)
