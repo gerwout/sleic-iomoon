@@ -103,6 +103,7 @@ The generated labels in [`../asm/superseded/`](../asm/superseded/) reverse the
 pointer roles: they call `[114ch]` `cmd_queue_write_ptr` and `[114eh]`
 `cmd_queue_read_ptr`, where the code uses `[114eh]` as the producer's write
 pointer and `[114ch]` as the consumer's read pointer. `sound_play_command`
-`0xD0978` in the same listings is not a sound path either — its single store is
-`mov byte es:[02b9h], 00h` with `ES = 5040h`, i.e. a write into the non-volatile
-store.
+`0xD0978` in the same listings is not a sound path either — it opens the PCS0
+non-volatile-store window, clears the store's byte `0x2B9`
+(`mov byte es:[02b9h], 00h` with `ES = 5040h`) and closes the window again, which
+makes it an F10 accessor, not a display or sound routine.

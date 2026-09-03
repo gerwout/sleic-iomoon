@@ -41,7 +41,7 @@ Documented examples:
 | `dmd_queue_service` `D01E5` | the outbound 80188→Z80 command-queue drain (F12) |
 | `cmd_queue_push` `D0138` | the push side of that same outbound command queue (F12) |
 | `DA22D` "menu dispatcher" | the high-score initials-entry handler |
-| `sound_play_command` `D0978` | a display-buffer write to `5040:02B9`; not a sound path |
+| `sound_play_command` `D0978` | a **non-volatile-store** write: it opens the PCS0 window, clears `5040:02B9` and closes it again. Not a sound path (F10) |
 | `d0d09`–`d0db3` classified as data | the YM3812 song-select and sequencer code (F8) |
 
 The region `D0C19`–`D0C56`, labelled configuration data, is the OKI
