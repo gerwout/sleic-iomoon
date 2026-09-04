@@ -215,6 +215,49 @@ address line: a marginal contact or a reader that fetched the opening pages twic
 would corrupt the beginning of a read and then settle, which is exactly the shape
 here.
 
+## The other graphics ROM, and the lineage
+
+Bike Race carries **two** graphics ROMs -- ROM 05 at MCS2 `0x40000` and ROM 06 at
+MCS1 `0x20000` -- the same count as IO Moon (chip 01's upper half and chip 02).
+ROM 04 is code; the on-screen text lives there, but as font indices, not bitmaps.
+
+ROM 05 is the larger sprite bank: **133 well-formed records against ROM 06's 32.**
+And it is **byte-identical across every known Bike Race set**, CRC `072ce879` in
+the 1992 parent, in `bikerac2` and in V4.1.
+
+That matters three ways.
+
+**The lineage never touches the graphics ROMs.** `bikerac2` is a genuinely
+different code revision -- `04` and `07` both rebuilt -- and it leaves *both*
+graphics ROMs alone. V4.1 rebuilds `04` and `07` again and tweaks `03` by 229
+bytes. A revision that changed ROM 06 and nothing else about the artwork would be
+the sole exception in the family.
+
+**The same dump session read ROM 05 perfectly.** 128 KB byte-for-byte correct,
+and applying the page-duplication test to it finds **zero** duplicated pages in
+its first 8 KB where `bk06` has three. Same machine, same reader, same sitting:
+the fault is one chip's read, not the setup.
+
+**The surviving records line up exactly with the correctly-read bytes.** This is
+the clincher. Of the 32 records in the 1992 ROM 06:
+
+| | count | all inside a... |
+|---|---:|---|
+| survived into `bk06` | **15** | correctly-read window |
+| lost from `bk06` | **17** | mis-read window |
+| anomalies | **0** | — |
+
+Not one record survives that sits in a mis-read page, and not one is lost that
+sits in a good one. So `bk06`'s table is not a different table with 19 records --
+it is the 1992 table with exactly the records that fell in the damaged pages
+knocked out, and exactly the records in the intact pages preserved. The first
+seven survivors, at `0x3C` through `0xF0`, are precisely the run that falls in
+the correctly-read `0x0030-0x00FF`.
+
+Taken with the owner's machine working, that makes the prediction a good deal
+firmer than "a valid table would fix it": **a clean re-read of ROM 06 should come
+back as `bkcpu06`, CRC `9db436d4`.**
+
 ## How to check and re-read
 
 The file condemns itself without reference to any other ROM. Three of its 0x200

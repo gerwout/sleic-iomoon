@@ -128,6 +128,30 @@ Nothing on the driver side can compensate. Three alternatives were built and run
 -- ROM 05 in the 06 slot, and `bk06` rotated `0x200` each way -- and none renders;
 the emulation is faithfully reading the byte the file contains.
 
+### Three things that say the chip is the 1992 one
+
+Bike Race has **two** graphics ROMs, 05 at MCS2 `0x40000` and 06 at MCS1
+`0x20000`, the same count as IO Moon. ROM 05 is the larger sprite bank -- 133
+well-formed records against ROM 06's 32 -- and it is byte-identical across every
+known Bike Race set, CRC `072ce879` in the parent, in `bikerac2` and here.
+
+1. **No Bike Race revision has ever changed a graphics ROM.** `bikerac2` rebuilds
+   `04` and `07` and leaves both alone; V4.1 rebuilds `04` and `07` again and
+   tweaks `03` by 229 bytes. A V4.1 that revised ROM 06 would be the family's
+   only exception.
+2. **The same dump session read ROM 05 perfectly** -- 128 KB correct, and zero
+   duplicated pages in its first 8 KB where `bk06` has three. Same machine, same
+   reader, same sitting, so the fault is one chip's read rather than the setup.
+3. **The surviving records match the correctly-read bytes exactly.** Of the 32
+   records in the 1992 ROM 06, 15 survive into `bk06` and every one of them sits
+   in a correctly-read window; 17 are lost and every one sits in a mis-read
+   window. **Zero anomalies.** So `bk06`'s table is not a different 19-record
+   table -- it is the 1992 table with precisely the records that fell in the
+   damaged pages knocked out.
+
+Together with the machine running correctly, that makes the expected outcome
+firm: a clean re-read should give `bkcpu06`, CRC `9db436d4`.
+
 ### Re-reading it
 
 The file condemns itself without reference to any other ROM: three of its 0x200
