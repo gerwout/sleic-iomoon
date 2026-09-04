@@ -18,12 +18,27 @@ part of this dump. The parent set's `BK01`
 | `bk03.bin` | 524,288 bytes (512 KB) | `8f49bf919392f32fc0366d0ec6c92ada` | `74c10536` | OKI MSM6376 | ADPCM sample ROM 2 |
 | `bk04.bin` | 131,072 bytes (128 KB) | `0ef6759ea3e87afd6b883d8052e8b2f3` | `33fd212e` | 80188 | Game + sound code, linear `0xE0000–0xFFFFF` |
 | `bk05.bin` | 131,072 bytes (128 KB) | `6367b9028b7470fc6dbad37a229bc761` | `072ce879` | 80188 | Graphics ROM, MCS2 `0x40000` — **same bytes as the parent set** |
-| `bk06.bin` | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | `ad48a30a` | 80188 | Graphics ROM, MCS1 `0x20000` |
+| `bk06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | `9db436d4` | 80188 | Graphics ROM, MCS1 `0x20000` — **NOT a V4.1 dump; a copy of the parent's `bkcpu06.bin`**, see below |
+| **`bk06.baddump.bin`** | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | **`ad48a30a`** | 80188 | **BAD DUMP — do not use.** The ROM 06 as read off the machine. Its first `0x1104` bytes are unusable. |
 | `bk07.bin` | 32,768 bytes (32 KB) | `244271a47eb206f3c3fc30c1f7d8fb17` | `200ff3fc` | Z80 | I/O CPU ROM (switch matrix, lamps, coils) |
 
-Every one of the six is byte-identical to a chip PinMAME already knows: `bk03`,
-`bk04`, `bk06` and `bk07` are the four members of the `bikerac3` clone set, and
-`bk02` and `bk05` are the parent `bikerace` set's `bksnd02.bin` and `bkcpu05.bin`.
+## `ad48a30a` is a bad dump — do not use it
+
+**CRC32 `ad48a30a` / MD5 `c42b2e81b987cbe63145eefda647da93` is a defective read of
+Bike Race V4.1's ROM 06.** It is kept here as `bk06.baddump.bin` because it is
+what came off the machine and the diagnosis rests on it, but it must not be used
+to run the game, redistributed as a dump, or listed in an emulator's ROM set. If
+you have a V4.1 image with that hash, it is this one.
+
+`bk06.bin` in this directory is **a copy of the parent set's `bkcpu06.bin`**
+(CRC `9db436d4`), placed here so the set is complete and runnable. It is
+*inferred* to be V4.1's ROM 06 on the evidence below, not dumped from a V4.1
+machine. **No good V4.1 ROM 06 dump exists.** If one is ever made and differs,
+this file and PinMAME's `bikerac3` both need updating.
+
+The other five chips are byte-identical to chips PinMAME already knows: `bk03`,
+`bk04` and `bk07` are the three members of the `bikerac3` clone set, and `bk02`
+and `bk05` are the parent's `bksnd02.bin` and `bkcpu05.bin`.
 
 ## What this dump establishes
 
@@ -198,16 +213,21 @@ any of these ROMs, and neither `bk04` nor the parent's `bkcpu04` carries one.
 
 ## Loading this set in PinMAME
 
-PinMAME wants the V4.1 chips under `bikerac3.zip`, using the driver's member names,
-alongside `bikerace.zip` for the inherited chips:
+`bikerac3` is a **three-chip clone**: only `03`, `04` and `07` differ from the
+parent, and `01`, `02`, `05` and `06` are inherited from `bikerace.zip`.
 
 ```
-bikerac3.zip   bk03.bin  bk04.bin  bk06.bin  bk07.bin
+bikerac3.zip   bk03.bin  bk04.bin  bk07.bin
 ```
 
-That zip is prebuilt at [`../../../pinmame/bikerac3.zip`](../../../pinmame/bikerac3.zip).
-The `bk02.bin` and `bk05.bin` in this directory are not members of it — PinMAME
-pulls those from `bikerace.zip` as `bksnd02.bin` and `bkcpu05.bin`.
+That zip is prebuilt at [`../../../pinmame/bikerac3.zip`](../../../pinmame/bikerac3.zip)
+and needs `bikerace.zip` on the same ROM path. `bk02.bin`, `bk05.bin` and
+`bk06.bin` in this directory are not members of it — PinMAME pulls those from the
+parent as `bksnd02.bin`, `bkcpu05.bin` and `bkcpu06.bin`.
+
+With ROM 06 inherited the set **works**: `bikerac3` no longer carries
+`GAME_NOT_WORKING`, boots, runs attract, takes coins and plays, and its DMD output
+matches the substitution run frame for frame.
 
 ## Note on redistribution
 

@@ -6,7 +6,7 @@ for. Most members are just a repackaging of an image already stored loose elsewh
 under [`../`](../) — the loose per-machine directories stay the archival copy and
 this directory is the emulator-facing packaging of them. The exception is
 `bikerac2`: its two distinguishing chips (`04`/`07`) are held **only** here.
-`bikerac3`'s four (`bk03`/`bk04`/`bk06`/`bk07`) are also archived loose, inside the
+`bikerac3`'s three (`bk03`/`bk04`/`bk07`) are also archived loose, inside the
 complete six-chip V4.1 pull at
 [`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/).
 
@@ -62,24 +62,25 @@ and the SHA1 in `sleicgames.c`.
 
 Chips 01/02/03/05/06 are the parent's.
 
-### `bikerac3.zip` — clone (V4.1), 4 chips differ
+### `bikerac3.zip` — clone (V4.1), 3 chips differ
 
 | Member | CRC32 | Chip |
 |--------|-------|------|
 | `bk03.bin` | `74c10536` | OKI sample ROM 2 |
 | `bk04.bin` | `33fd212e` | 80188 game + sound code |
-| `bk06.bin` | `ad48a30a` | Graphics ROM (MCS1) |
 | `bk07.bin` | `200ff3fc` | Z80 I/O CPU ROM |
 
-Chips 01/02/05 are the parent's — and for `02` and `05` that is now verified rather
-than assumed, against the complete six-chip V4.1 pull at
-[`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/). ROM 01
-of this revision has still never been dumped.
+Chips 01/02/05/06 are the parent's. For `02` and `05` that is verified rather than
+assumed, against the complete six-chip V4.1 pull at
+[`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/). ROM
+01 of this revision has never been dumped.
 
-The set is flagged `GAME_NOT_WORKING` in the driver because its artwork renders as
-garbage. A missing graphics ROM was the leading explanation; the V4.1 board
-photograph in [`../../docs/bikerace_boards.md`](../../docs/bikerace_boards.md)
-rules that out by showing three ROM positions and three ROMs.
+**ROM 06 is inherited because the only V4.1 dump of it, CRC `ad48a30a`, is a bad
+read** — it used to be a member of this zip, which is why the set was flagged
+`GAME_NOT_WORKING`. With `bkcpu06.bin` inherited from the parent the set works and
+the flag is gone. The evidence is in
+[`../../asm/bikerace-2026-09/reports/v41_sprite_table.md`](../../asm/bikerace-2026-09/reports/v41_sprite_table.md);
+the bad image is archived as `bk06.baddump.bin` alongside the loose chips.
 
 ### `sleicpin.zip` — 4 chips
 

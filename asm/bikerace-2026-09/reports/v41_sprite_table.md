@@ -1,9 +1,14 @@
 # Why Bike Race V4.1 draws garbage: ROM 06 does not match ROM 04
 
-`bikerac3`, the V4.1 set, is registered `GAME_NOT_WORKING` in PinMAME because it
-boots and runs but renders unreadable artwork. This is the evidence for what
-actually causes that, established from the cross-verified disassemblies in this
-directory and from captured DMD frames.
+`bikerac3`, the V4.1 set, used to be registered `GAME_NOT_WORKING` in PinMAME: it
+booted and ran but rendered unreadable artwork. This is the evidence for what
+caused that, established from the cross-verified disassemblies in this directory
+and from captured DMD frames.
+
+**It is resolved.** The V4.1 ROM 06 in circulation, CRC `ad48a30a`, is a bad
+dump; the driver now inherits `bkcpu06` from the parent set and `bikerac3` carries
+flag `0`. The bad image is archived as `bk06.baddump.bin` in
+[`../../../roms/related-machines/bike-race/v4.1/`](../../../roms/related-machines/bike-race/v4.1/).
 
 **The short version.** ROM 04 (the 80188 code) reaches the sprite/character
 table through far pointers held in its own code segment. Those pointers are
@@ -274,11 +279,15 @@ not.
 
 So: **re-read ROM 06, and check offset `0x001E` first.** It must be
 `08 00 01 00 08 00`; anything else and the read went wrong again. Re-seat the
-chip, and confirm the reader is set to a 27C010. A good read makes the whole set
-work, since ROMs 03, 04 and 07 are already sound.
+chip, and confirm the reader is set to a 27C010.
 
-Whether the corrected ROM 06 turns out to be byte-identical to `bkcpu06` is a
-separate question this cannot answer. The substitution run above shows only that
-*a* valid table at those offsets fixes the set, not that V4.1's table is the 1992
-one. If the re-read does come back as `bkcpu06` (CRC `9db436d4`), V4.1 is a
-three-chip clone -- `bk03`, `bk04` and `bk07` over the 1992 set.
+## What the driver does in the meantime
+
+`bikerac3` now inherits `bkcpu06.bin` from the parent and is a **three-chip
+clone** -- `bk03`, `bk04`, `bk07` -- with flag `0`. It boots, runs attract, takes
+coins and plays, and its DMD output matches the substitution run frame for frame.
+
+That inheritance rests on the evidence above, **not on a dump**: no good V4.1 ROM
+06 exists. The expectation is CRC `9db436d4`, and it is an expectation. If a
+clean re-read ever differs, the `bkcpu06.bin` line in the `bikerac3` ROM block and
+`bk06.bin` in the ROM archive are what change.

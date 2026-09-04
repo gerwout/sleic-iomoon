@@ -51,11 +51,10 @@ five chips on this board, `BK07` on the Z80 board, and `BK01` on the display boa
 that is not photographed here, for **seven chips total**, which is the same
 complement PinMAME's `SLEIC3` driver expects.
 
-That matters for the V4.1 set specifically, which renders garbage artwork under
-PinMAME and is flagged `GAME_NOT_WORKING` there. A missing fourth graphics ROM
-would have explained it; this photograph rules that explanation out. See
-[`../roms/related-machines/bike-race/v4.1/README.md`](../roms/related-machines/bike-race/v4.1/README.md)
-for what the ROM bytes rule out alongside it.
+That mattered for the V4.1 set, which used to render garbage artwork under
+PinMAME. A missing fourth graphics ROM would have explained it; this photograph
+ruled that out, and the cause turned out to be a bad dump of ROM 06. See
+[`../roms/related-machines/bike-race/v4.1/README.md`](../roms/related-machines/bike-race/v4.1/README.md).
 
 The four sample-ROM positions with only two stuffed are a separate observation and
 do not affect the game code: `IC49`/`IC50` are OKI sample ROMs, and the OKI is

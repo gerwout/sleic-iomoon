@@ -31,10 +31,15 @@ this set valuable here: it is the live oracle for the shared SLEIC hardware mode
 
 [`v4.1/`](v4.1/) holds the six socketed chips of a **second Bike Race machine**,
 one running V4.1: `BK02`–`BK06` off its 16-bit board and `BK07` off its Z80 board.
-Four of them are the `bikerac3` clone chips; the other two, `bk02` and `bk05`, are
-byte-identical to this directory's `bksnd02.bin` and `bkcpu05.bin` — which is the
-first direct confirmation that V4.1 leaves those two chips alone rather than an
-inheritance assumed by the clone set. `BK01` was not part of that pull.
+Three of them are the `bikerac3` clone chips; `bk02` and `bk05` are byte-identical
+to this directory's `bksnd02.bin` and `bkcpu05.bin` — the first direct confirmation
+that V4.1 leaves those two alone rather than an inheritance assumed by the clone
+set. `BK01` was not part of that pull.
+
+**The sixth, ROM 06, came out of the reader corrupt.** It is archived there as
+`bk06.baddump.bin`, CRC32 `ad48a30a`, and must not be used; the `bk06.bin` beside
+it is a copy of this directory's `bkcpu06.bin`, which the evidence says is what
+the V4.1 chip holds.
 
 Both of that machine's boards are photographed at full resolution in
 [`../../../docs/bikerace_boards.md`](../../../docs/bikerace_boards.md).

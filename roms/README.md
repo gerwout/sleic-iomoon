@@ -15,7 +15,7 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 Early version/` | An earlier v1.3 ROM set — see its [README](1.3%20Early%20version/README.md) |
 | `PIC16C57/` | IC23 DMD-raster PIC dump, recovered from the locked chip by a recovery lab — see its [README](PIC16C57/README.md) |
 | `related-machines/` | ROM images of other SLEIC machines (Sleic Pin-Ball, Bike Race, Doña Elvira 2) — see its [README](related-machines/README.md) |
-| `related-machines/bike-race/v4.1/` | The six socketed chips of a Bike Race machine running V4.1 — see its [README](related-machines/bike-race/v4.1/README.md) |
+| `related-machines/bike-race/v4.1/` | The six socketed chips of a Bike Race machine running V4.1, one of them a **bad dump** — see its [README](related-machines/bike-race/v4.1/README.md) |
 | `pinmame/` | These images repackaged as PinMAME-loadable `.zip` sets, plus the six Bike Race clone chips held only there — see its [README](pinmame/README.md) |
 
 ## MD5 checksums — IO Moon
@@ -54,7 +54,8 @@ together with its MD5 checksum for quick integrity verification.
 | `related-machines/bike-race/v4.1/bk03.bin` | 524,288 bytes (512 KB) | `8f49bf919392f32fc0366d0ec6c92ada` | OKI MSM6376 ADPCM samples 2 (V4.1) |
 | `related-machines/bike-race/v4.1/bk04.bin` | 131,072 bytes (128 KB) | `0ef6759ea3e87afd6b883d8052e8b2f3` | 80188 game + sound code (V4.1) |
 | `related-machines/bike-race/v4.1/bk05.bin` | 131,072 bytes (128 KB) | `6367b9028b7470fc6dbad37a229bc761` | 80188 graphics ROM, MCS2 `0x40000` (V4.1 — same bytes as `bkcpu05.bin`) |
-| `related-machines/bike-race/v4.1/bk06.bin` | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | 80188 graphics ROM, MCS1 `0x20000` (V4.1) |
+| `related-machines/bike-race/v4.1/bk06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | 80188 graphics ROM, MCS1 `0x20000` — a copy of the parent's `bkcpu06.bin`, **not a V4.1 dump** |
+| `related-machines/bike-race/v4.1/bk06.baddump.bin` | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | **BAD DUMP** of V4.1's ROM 06 (CRC32 `ad48a30a`) — archived as evidence, do not use |
 | `related-machines/bike-race/v4.1/bk07.bin` | 32,768 bytes (32 KB) | `244271a47eb206f3c3fc30c1f7d8fb17` | Z80 I/O CPU ROM (V4.1) |
 | `related-machines/dona-elvira-2/ST27C256-z80.bin` | 32,768 bytes (32 KB) | `358bd508dd8232bbfe9d8d14465015d3` | Z80 I/O CPU ROM (**only ROM dumped**) |
 
