@@ -20,7 +20,41 @@ firmware's TEST DE CONTACTOS, contact C-number read off the DMD).
     (file `0x163A6`); name far-ptr fetch `[es:bx+0x370c]/[+0x370e]` @ `0xF5E11`
     (file `0x15E11`). `bx = code*5` (`imul ax,ax,5` @ `0xF639C`).
   - Contact-name glyph-string pool @ linear `0xF3DDF` (file `0x13DDF`),
-    length-prefixed.
+    length-prefixed.  The bytes are DMD **font indices**, not ASCII:
+
+    | byte | glyph |
+    |---|---|
+    | `0x00`-`0x09` | `0`-`9` |
+    | `0x0A` | space |
+    | `0x0B`-`0x25` | `A`-`Z`, **with `Ñ` between `N` (`0x18`) and `O` (`0x1A`)** |
+    | `0x2C` | `.` |
+
+    Derived by aligning the pool against a name the live-hardware pass had already
+    read off the DMD (`0x2A` = C44 "SALIDA RAMPA 1", 14 glyphs against 14 bytes, no
+    conflicts) and confirmed by decoding the rest of the table: every entry comes out
+    as clean Spanish. Decode the COL4 block with it and the trough reads
+
+    ```
+      code 0x2C  bit 0x04  C22  EXPULSOR 1
+      code 0x2F  bit 0x20  C6   SALIDA BOLAS
+      code 0x30  bit 0x40  C7   BOLA EN ESPERA
+      code 0x31  bit 0x80  C8   BOLA FUERA
+    ```
+
+    which is where the "Bola en Espera" above comes from -- an earlier pass had C7 as
+    "Bola Retenida", a plausible gloss but not the firmware's own word.
+
+    **Decoding the whole table validates this page**: all 40 matrix C-numbers match
+    the ROM exactly. Four names in the table below are deliberately fuller than the
+    firmware's own and should not be "corrected" back -- they carry information the
+    ROM string does not:
+
+    | code | firmware name | this page |
+    |---|---|---|
+    | `0x13` | `FONDO BANCADA` | Diana Fondo Bancada |
+    | `0x14` | `VELETA` | Veleta / Pasillo 5 |
+    | `0x2B` | `BANDAS` | Bandas Derecha (sling) |
+    | `0x25`/`0x26` | `C. FLIPPER IZQ.` / `DER.` | Corte Flipper Izq./Der. (EOS) |
   - Master switch dispatcher @ `0xE9EB6` (`al=[es:0x71]; sub 0x0A; bound cmp 0x52;
     jmp [cs:bx+0x3B4]`), jump table @ linear `0xEA024` (file `0xA024`), CS=`0xE9C7`.
     This is the *gameplay* dispatcher; the *test/menu* code consumes the same
@@ -86,7 +120,7 @@ Ground-truth-confirmed codes are marked ✓.
 | 0x2D | 4,3 | C23 | Diana 3 | ✓ |
 | 0x2E | 4,4 | C24 | Diana 4 | ✓ |
 | 0x2F | 4,5 | C6  | Salida Bolas (trough) | table |
-| 0x30 | 4,6 | C7  | Bola Retenida (trough) | ✓ |
+| 0x30 | 4,6 | C7  | Bola en Espera (trough) | ✓ |
 | 0x31 | 4,7 | C8  | Bola Fuera (trough) | table |
 
 COL3 (0x22–0x29) and 0x31 were untested live but are fully pinned by the table;
