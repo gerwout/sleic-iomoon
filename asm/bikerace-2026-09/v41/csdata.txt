@@ -1,0 +1,8 @@
+# Data inside a code region: two far pointers the sprite routine loads out of
+# its own code segment.  sub_F08A3 reads them with LES SI, CS:[0A02] at F0A39
+# and LES SI, CS:[0A06] at F0A26 and F0A31.
+F0A02 F0A0A  # F000:0A02 = 2000:0636 and F000:0A06 = 2000:0BD6, both sprite
+             # records in ROM 06 at MCS1.  Decoded as code the second one's
+             # first byte D6 is the undocumented 8086 SALC, which dasmx86 does
+             # not implement and capstone and ndisasm do -- the one thing the
+             # cross-verifier could still disagree about.

@@ -40,42 +40,73 @@ carry the parent's bytes. `BK01` is still inherited on the assumption alone.
 the work RAM and the EEPROM. See
 [`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md).
 
-## Why `bikerac3` is `GAME_NOT_WORKING`, and what these bytes rule out
+## Why `bikerac3` is `GAME_NOT_WORKING`: ROM 06 does not match ROM 04
 
-V4.1 boots and runs under PinMAME but draws garbage artwork. Four things the
-complete set and the board photograph now establish, none of which were checkable
-before:
+V4.1 boots and runs under PinMAME but draws unreadable artwork. The cause is in
+this ROM set, not in the driver, and it is 4356 bytes wide.
 
-1. **The 80188 chip-select programming is unchanged.** The register/value table at
-   file offset `0x50` in `bk04` — `MMCS 0x01FF`, `PACS 0xA03C`, `MPCS 0xC0FC` — is
-   byte-identical to `bkcpu04`'s. V4.1 therefore decodes the same map the 1992 sets
-   do: `MCS1 0x20000` = ROM 06, `MCS2 0x40000` = ROM 05, `MCS3 0x60000` = the DMD
-   buffer.
-2. **The graphics ROM at `MCS2 0x40000` is unchanged.** `bk05` is byte-identical to
-   `bkcpu05`, all 128 KB of it.
-3. **The graphics ROM at `MCS1 0x20000` is unchanged from `0x1104` on.** `bk06`
-   differs from `bkcpu06` only across `0x0000-0x1103`, and the differences there
-   fall in 109 short scattered runs with the shape of edited glyph and sprite
-   bitmaps, not of a repointed table.
-4. **There is no fourth ROM position on the board** to hold artwork the set is
-   missing.
+`bk04` reaches the sprite/character table through far pointers held in its own
+code segment, and **those pointers are byte-identical to the 1992 set's** — all
+24 segment-`0x2000` pointer slots hold the same offset as the matching slot in
+`bkcpu04`, `0x0000`, `0x012C`, `0x014A`, `0x03A2` and `0x05FA` among them.
+`bkcpu06` holds a well-formed sprite record at each of those offsets; **`bk06`
+holds none.** Walking the record chain from `0x0000` — a 6-byte header `W, 1, H`
+then `ceil(W/8)*H*3` bytes of plane 0, plane 1 and mask — `bkcpu06` yields eleven
+8x8 sprites on a `0x1E` stride and then an 18x18 at `0x014A`, landing exactly on
+the addresses the code names. `bk06` fails on the very first record. Chip-wide
+there are 32 well-formed headers in `bkcpu06` and 19 in `bk06`, and in both they
+all lie inside `0x0000-0x1103`: that block is the whole sprite table, and V4.1's
+copy of it is a different table.
 
-So V4.1 addresses the same map and reads very nearly the same artwork bytes at the
-same addresses. What did change wholesale is the code: `bk04` differs from
-`bkcpu04` in 49 % of its bytes and `bk07` from `bkio07` in 38 %, both full rebuilds
-rather than relocations — a shifted-copy search over ±8 KB peaks at zero shift and
-only 39 % agreement, and both `bk04` and `bkcpu04` end their used region at the
-same `0x1FFF5`.
+Substituting `bkcpu06` for `bk06` — or replacing only its first `0x1104` bytes
+and leaving the other 124 KB of V4.1's own graphics in place — makes this set
+render correctly. Over 1200 headless frames with the DMD captured at every
+submit, the two substitutions produce **5131 of 5131 byte-identical frames**,
+seven distinct screens instead of two, "SLEIC PRESENTA / SU NUEVO PINBALL" and
+"FALTAN n BOLAS" clean. `bk03`, `bk04` and `bk07` are sound.
 
-That points the investigation at how V4.1's rebuilt code drives the DMD pipeline,
-or at what the driver models differently from what that code expects — not at a
-missing or mismapped graphics ROM.
+Three things this rules out, each checked rather than assumed:
 
-> The reason recorded above the `bikerac3` ROM block in `sleicgames.c` says
-> something else: that V4.1's graphics-descriptor table sends the artwork fetch to
-> `0x24000` instead of `0x40000`. That explanation predates this dump and is not
-> supported by the bytes above — it is worth re-establishing from a running trace
-> before anything is built on it.
+- **A missing chip.** The board carries exactly three 27C010 positions and all
+  three are populated
+  ([`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md)).
+- **A different memory map.** `bk04`'s 29-entry peripheral-control table at file
+  offset `0x50` — `MMCS 0x01FF`, `PACS 0xA03C`, `MPCS 0xC0FC` and the timer and
+  DMA setup — is byte-identical to `bkcpu04`'s, so V4.1 decodes ROM 06 at MCS1
+  `0x20000` and ROM 05 at MCS2 `0x40000` exactly as the 1992 sets do. So is the
+  255-byte interrupt-vector image it copies to physical 0 at boot.
+- **A driver bug.** V4.1's own code renders correctly under the same driver the
+  moment it is given a sprite table in the format it reads.
+
+The full evidence, with the pointer-slot table and the frame counts, is in
+[`../../../../asm/bikerace-2026-09/reports/v41_sprite_table.md`](../../../../asm/bikerace-2026-09/reports/v41_sprite_table.md),
+alongside the cross-verified disassemblies of both code ROMs it rests on.
+
+### `bk06` is a defective image
+
+Not a judgement call: the differing 4356 bytes are the 1992 chip's own data
+misread. Every 0x200-byte block in `0x0100-0x1103` whose address has bit 9 clear
+holds the contents of its bit-9-set neighbour, and every block whose address has
+bit 9 set is correct -- `bk06[i] == bkcpu06[i | 0x200]` for all 4102 bytes from
+`0x00FF` to `0x1103`. That is address line **A9 read as a constant 1**, the
+signature of an address line not connected during the read.
+
+It is visible in `bk06` alone, without reference to the 1992 chip: three
+0x200-byte half-blocks are duplicated back to back --
+`bk06[0x0400:0x0600] == bk06[0x0600:0x0800]`, the same at `0x0800`/`0x0A00` and
+`0x0C00`/`0x0E00` -- duplications `bkcpu06` does not have. No build tool stamps a
+sprite table's records twice; a reader with a floating address line does.
+
+So "V4.1 changed the first 4 KB of ROM 06" is not what happened. V4.1 did not
+change it; the dump misread it. The one part genuinely unaccounted for is
+`0x0000-0x00FF`, 256 bytes matching the 1992 chip at no offset.
+
+**This predicts something cheap to test: re-dump ROM 06 from a V4.1 machine and
+it will very likely read back as `bkcpu06`, CRC `9db436d4`.** If it does, V4.1 is
+a three-chip clone -- `bk03`, `bk04` and `bk07` over the 1992 set -- and it
+works; the substitution run described above is exactly that machine. The board
+photographed in [`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md)
+carries a `BIKE RACE BK06.V4.1` sticker and is the obvious candidate.
 
 ## Version labelling — one unresolved conflict
 

@@ -1,0 +1,463 @@
+# Bike Race 80188 seed entry points.  Format: <linear> <CS> <label> # evidence
+# Both code ROMs (bkcpu04 parent, bk04 V4.1) share this seed: their first
+# 0x33C bytes are byte-identical bar one, so the boot path is the same in both.
+FFF00 FFF0 reset_stub      # reset vector FFFF0 = EA 00 00 F0 FF -> JMP FFF0:0000
+E0000 E000 boot            # reset_stub sets UMCS=E03C then JMP E000:0000
+E01C4 E000 boot_init_1     # CALL from boot E0031
+E0221 E000 boot_init_2     # CALL from boot E0036
+E01FF E000 boot_init_3     # CALL from boot E003B
+F0000 F000 boot_init_4     # CALL from boot E0040
+E0B6F E000 boot_init_5     # CALL from boot E0045
+E50E7 E50E main            # boot E004B = JMP E50E:0007, after STI
+E0272 E000 nmi_isr         # IVT image E000:00C4, vector 02
+E0325 E000 timer0_isr      # IVT image E000:00C4, vector 08
+E0439 E000 int0_isr        # IVT image E000:00C4, vector 0C
+
+# --- round r1: 44 targets reached by CALL/JMP from already-decoded code
+E023D  E000  sub_E023D  # CALL from E5225 (+7 more)
+E02E0  E000  sub_E02E0  # CALL from E0488
+E0CBF  E000  sub_E0CBF  # CALL from E0367
+E0CEA  E000  sub_E0CEA  # CALL from E039A
+E0D7E  E000  sub_E0D7E  # CALL from E035A
+E0D90  E000  sub_E0D90  # CALL from E0483
+E0E49  E000  sub_E0E49  # CALL from E536A
+E53AF  E50E  sub_E53AF  # CALL from E538C
+E53F7  E50E  sub_E53F7  # CALL from E5393
+E541D  E50E  sub_E541D  # CALL from E5398
+E54E4  E50E  sub_E54E4  # CALL from E539F
+E83CB  E50E  sub_E83CB  # CALL from E51AB
+E950C  E50E  sub_E950C  # CALL from E51C1
+E957E  E50E  sub_E957E  # CALL from E51D5
+E95C5  E50E  sub_E95C5  # CALL from E51DA
+E979B  E50E  sub_E979B  # CALL from E51BC
+E97DE  E50E  sub_E97DE  # CALL from E53A6 (+1 more)
+EC88B  E9C7  sub_EC88B  # CALL from E511D
+EC9B3  E9C7  sub_EC9B3  # CALL from E5241
+F005D  F000  sub_F005D  # CALL from F0006 (+2 more)
+F008A  F000  sub_F008A  # CALL from F000B (+2 more)
+F00AC  F000  sub_F00AC  # CALL from F0010
+F00BD  F000  sub_F00BD  # CALL from F0015
+F00F7  F000  sub_F00F7  # CALL from F001A
+F0826  F000  sub_F0826  # CALL from E0479
+F086C  F000  sub_F086C  # CALL from E0454
+F08A3  F000  sub_F08A3  # CALL from E512D
+F0A78  F000  sub_F0A78  # CALL from E5135
+F0ACC  F000  sub_F0ACC  # CALL from E5148
+F0B2F  F000  sub_F0B2F  # CALL from E514E
+F0B59  F000  sub_F0B59  # CALL from E516E
+F0B7E  F000  sub_F0B7E  # CALL from E0492
+F0BDC  F000  sub_F0BDC  # CALL from E5174
+F0C64  F000  sub_F0C64  # CALL from E517C
+F0C84  F000  sub_F0C84  # CALL from E046C
+F0CCF  F000  sub_F0CCF  # CALL from E5182
+F0D3A  F000  sub_F0D3A  # CALL from E049E
+F0D69  F000  sub_F0D69  # CALL from E5161
+F0DB1  F000  sub_F0DB1  # CALL from E5167
+F0DDB  F000  sub_F0DDB  # CALL from E5189
+F0E0B  F000  sub_F0E0B  # CALL from E033B
+F0EFE  F000  sub_F0EFE  # CALL from E518F
+F0FC4  F000  sub_F0FC4  # CALL from E0460
+F10F2  F000  sub_F10F2  # CALL from E5332
+
+# --- pass 1: scanptr.py pushptr
+
+# --- round r2: 42 targets reached by CALL/JMP from already-decoded code
+E0536  E000  sub_E0536  # CALL from E9B52 (+1 more)
+E054A  E000  sub_E054A  # CALL from E9ADF (+17 more)
+E0569  E000  sub_E0569  # CALL from E9B0D (+1 more)
+E0584  E000  sub_E0584  # CALL from E9B15 (+1 more)
+E059F  E000  sub_E059F  # CALL from E9B26 (+1 more)
+E05CB  E000  sub_E05CB  # CALL from E9B04
+E05F7  E000  sub_E05F7  # CALL from E97F9 (+1 more)
+E06FB  E000  sub_E06FB  # CALL from E97F4
+E08DC  E000  sub_E08DC  # CALL from E9808
+E090D  E000  sub_E090D  # CALL from E9AEE
+E0BC2  E000  sub_E0BC2  # CALL from E54AE
+E0D57  E000  sub_E0D57  # CALL from E0D18 (+1 more)
+E0E0E  E000  sub_E0E0E  # CALL from E0DE1
+E5515  E50E  sub_E5515  # CALL from E550B
+E62B5  E50E  sub_E62B5  # CALL from E53D0
+E693A  E50E  sub_E693A  # CALL from E545E
+E8D2C  E50E  sub_E8D2C  # CALL from E996C (+3 more)
+E8F96  E50E  sub_E8F96  # CALL from F5041
+E93E3  E50E  sub_E93E3  # CALL from E9803
+E9428  E50E  sub_E9428  # CALL from E97F1
+E95DF  E50E  sub_E95DF  # CALL from E95D4
+E96C0  E50E  sub_E96C0  # CALL from E9599
+E9756  E50E  sub_E9756  # CALL from E95BC
+E9BCC  E50E  sub_E9BCC  # CALL from E9AE7
+E9C7E  E9C7  sub_E9C7E  # CALL from E53D5
+EC5E0  E9C7  sub_EC5E0  # CALL from E54BF
+EC93E  E9C7  sub_EC93E  # CALL from E5449
+EE798  EE79  sub_EE798  # CALL from EC908
+EE7A7  EE79  sub_EE7A7  # CALL from EC8F5
+F0196  F000  sub_F0196  # CALL from F0DC5 (+11 more)
+F01B7  F000  sub_F01B7  # CALL from F0EE9 (+11 more)
+F01D8  F000  sub_F01D8  # CALL from F0DAB (+7 more)
+F0237  F000  sub_F0237  # CALL from F0970 (+1 more)
+F02BC  F000  sub_F02BC  # CALL from F0EEC (+6 more)
+F031B  F000  sub_F031B  # CALL from F1101
+F04BC  F000  sub_F04BC  # CALL from F0F23 (+3 more)
+F052E  F000  sub_F052E  # CALL from F0D5C (+4 more)
+F0682  F000  sub_F0682  # CALL from E97D4 (+1 more)
+F0A5A  F000  sub_F0A5A  # CALL from F08EB
+F0CEF  F000  sub_F0CEF  # CALL from E54A6
+F13C2  F000  sub_F13C2  # CALL from E549F
+F508E  F500  sub_F508E  # CALL from F503C
+
+# --- pass 2: jumptab.py
+F50B7  F500  sub_F50B7  # jump-table entry, 1 table(s), first F50B2
+F50C5  F500  sub_F50C5  # jump-table entry, 1 table(s), first F50B2
+F50D0  F500  sub_F50D0  # jump-table entry, 1 table(s), first F50B2
+F50DB  F500  sub_F50DB  # jump-table entry, 1 table(s), first F50B2
+F50E6  F500  sub_F50E6  # jump-table entry, 1 table(s), first F50B2
+F50F1  F500  sub_F50F1  # jump-table entry, 1 table(s), first F50B2
+F50FC  F500  sub_F50FC  # jump-table entry, 1 table(s), first F50B2
+F5107  F500  sub_F5107  # jump-table entry, 1 table(s), first F50B2
+F5112  F500  sub_F5112  # jump-table entry, 1 table(s), first F50B2
+F5120  F500  sub_F5120  # jump-table entry, 1 table(s), first F50B2
+
+# --- pass 2: scanptr.py pushptr
+
+# --- round r3: 73 targets reached by CALL/JMP from already-decoded code
+E04B6  E000  sub_E04B6  # CALL from E08ED
+E0959  E000  sub_E0959  # CALL from E08DC
+E0974  E000  sub_E0974  # CALL from E08E1
+E0B00  E000  sub_E0B00  # CALL from E0929 (+1 more)
+E0B0D  E000  sub_E0B0D  # CALL from E093F
+E0D2D  E000  sub_E0D2D  # CALL from E0C10
+E0E3E  E000  sub_E0E3E  # CALL from E0E3A (+1 more)
+E57AD  E50E  sub_E57AD  # CALL from E5703
+E5E12  E50E  sub_E5E12  # CALL from EC5F4
+E6002  E50E  sub_E6002  # CALL from E5793
+E6223  E50E  sub_E6223  # CALL from E574D
+E722C  E50E  sub_E722C  # CALL from E557E
+E732A  E50E  sub_E732A  # CALL from E567A
+E744D  E50E  sub_E744D  # CALL from E5752
+E8420  E50E  sub_E8420  # CALL from E71C7 (+60 more)
+E849E  E50E  sub_E849E  # CALL from E71F9 (+7 more)
+E949A  E50E  sub_E949A  # CALL from E947B
+EA275  E9C7  sub_EA275  # CALL from E9F86 (+1 more)
+EA345  E9C7  sub_EA345  # CALL from E9F1F
+EB15B  E9C7  sub_EB15B  # CALL from E9F27
+EB6B7  E9C7  sub_EB6B7  # CALL from E9F37
+EB875  E9C7  sub_EB875  # CALL from E9F3F
+EBBB2  E9C7  sub_EBBB2  # CALL from E9F47
+EBCE7  E9C7  sub_EBCE7  # CALL from E9F17
+EBD2F  E9C7  sub_EBD2F  # CALL from E9FA1
+EBD7E  E9C7  sub_EBD7E  # CALL from E9FA8
+EBEDF  E9C7  sub_EBEDF  # CALL from E9FAF
+EBF03  E9C7  sub_EBF03  # CALL from E9F93
+EC00E  E9C7  sub_EC00E  # CALL from E9F2F
+EC0DF  E9C7  sub_EC0DF  # CALL from E9FD4
+EC29F  E9C7  sub_EC29F  # CALL from EC5EC
+EC2F2  E9C7  sub_EC2F2  # CALL from E9EF9
+EC4EE  E9C7  sub_EC4EE  # CALL from E9CB1
+EC523  E9C7  sub_EC523  # CALL from E575F
+ECAC5  E9C7  sub_ECAC5  # CALL from E570F
+ECBB7  E9C7  sub_ECBB7  # CALL from E9F6F (+1 more)
+ECBF7  E9C7  sub_ECBF7  # CALL from EC607 (+1 more)
+ECCD4  E9C7  sub_ECCD4  # CALL from EC602
+ECDF9  E9C7  sub_ECDF9  # CALL from E5549
+EE058  E9C7  sub_EE058  # CALL from E9E6F
+EE115  E9C7  sub_EE115  # CALL from E9E8E
+EE1D2  E9C7  sub_EE1D2  # CALL from E9E53
+EE242  E9C7  sub_EE242  # CALL from E9EDF
+EE4CF  E9C7  sub_EE4CF  # CALL from E9EE7
+F0108  F000  sub_F0108  # CALL from F0779 (+2 more)
+F0169  F000  sub_F0169  # CALL from F0788 (+2 more)
+F113A  F000  sub_F113A  # CALL from E7162 (+8 more)
+F1453  F000  sub_F1453  # CALL from EC6F1
+F149B  F000  sub_F149B  # CALL from E6F3B (+1 more)
+F16DC  F000  sub_F16DC  # CALL from E70B2 (+1 more)
+F1844  F000  sub_F1844  # CALL from E6C04 (+1 more)
+F188C  F000  sub_F188C  # CALL from E7085 (+1 more)
+F1ACC  F000  sub_F1ACC  # CALL from E71F4 (+1 more)
+F1D3E  F000  sub_F1D3E  # CALL from E6C4B (+1 more)
+F1E01  F000  sub_F1E01  # CALL from E6CBF (+1 more)
+F1EC4  F000  sub_F1EC4  # CALL from E6D33 (+1 more)
+F1F87  F000  sub_F1F87  # CALL from E6A83 (+1 more)
+F203C  F000  sub_F203C  # CALL from E6ABA (+1 more)
+F2187  F000  sub_F2187  # CALL from E712B (+8 more)
+F2244  F000  sub_F2244  # CALL from E6EFF (+7 more)
+F2331  F000  sub_F2331  # CALL from E6A4C (+1 more)
+F2461  F000  sub_F2461  # CALL from E9D3D (+7 more)
+F24F9  F000  sub_F24F9  # CALL from E71C0 (+4 more)
+F5144  F500  sub_F5144  # CALL from F50B7
+F536B  F500  sub_F536B  # CALL from F50C5
+F583C  F500  sub_F583C  # CALL from F5120
+F58CF  F500  sub_F58CF  # CALL from F50DB
+F5C1E  F500  sub_F5C1E  # CALL from F50D0
+F5C96  F500  sub_F5C96  # CALL from F50E6
+F5CE5  F500  sub_F5CE5  # CALL from F5107
+F5F0F  F500  sub_F5F0F  # CALL from F50F1
+F60F1  F500  sub_F60F1  # CALL from F50FC
+F7DB8  F500  sub_F7DB8  # CALL from F5112
+
+# --- pass 3: jumptab.py
+F5322  F500  sub_F5322  # jump-table entry, 1 table(s), first F521E
+F5331  F500  sub_F5331  # jump-table entry, 1 table(s), first F521E
+F5347  F500  sub_F5347  # jump-table entry, 1 table(s), first F521E
+F5880  F500  sub_F5880  # jump-table entry, 1 table(s), first F587B
+F5896  F500  sub_F5896  # jump-table entry, 1 table(s), first F587B
+F58A2  F500  sub_F58A2  # jump-table entry, 1 table(s), first F587B
+F58AE  F500  sub_F58AE  # jump-table entry, 1 table(s), first F587B
+F7DFC  F500  sub_F7DFC  # jump-table entry, 1 table(s), first F7DF7
+F7E27  F500  sub_F7E27  # jump-table entry, 1 table(s), first F7DF7
+F7E32  F500  sub_F7E32  # jump-table entry, 1 table(s), first F7DF7
+F7E3D  F500  sub_F7E3D  # jump-table entry, 1 table(s), first F7DF7
+
+# --- pass 3: scanptr.py pushptr
+
+# --- round r4: 74 targets reached by CALL/JMP from already-decoded code
+E04F7  E000  sub_E04F7  # CALL from F58A2 (+1 more)
+E0982  E000  sub_E0982  # CALL from F5854
+E09AC  E000  sub_E09AC  # CALL from F589B
+E09E3  E000  sub_E09E3  # CALL from F58A7
+E0A23  E000  sub_E0A23  # CALL from F58B3 (+1 more)
+E0D71  E000  sub_E0D71  # CALL from E0D38
+E625F  E50E  sub_E625F  # CALL from E604B
+E770B  E50E  sub_E770B  # CALL from E57B3
+E8086  E50E  sub_E8086  # CALL from E5BA0
+E83F1  E50E  sub_E83F1  # CALL from EE397 (+1 more)
+E8510  E50E  sub_E8510  # CALL from E6096
+E869D  E50E  sub_E869D  # CALL from E60D4
+E87C5  E50E  sub_E87C5  # CALL from E6112
+E8888  E50E  sub_E8888  # CALL from E612F
+E8DF6  E50E  sub_E8DF6  # CALL from EC52E
+E8F73  E50E  sub_E8F73  # CALL from EC5AA
+E90F2  E50E  sub_E90F2  # CALL from E61F6
+EA2CF  E9C7  sub_EA2CF  # CALL from EC02C (+8 more)
+EC1FA  E9C7  sub_EC1FA  # CALL from EC0FE
+EC709  E9C7  sub_EC709  # CALL from EBF80
+ECC49  E9C7  sub_ECC49  # CALL from EBDF8 (+4 more)
+ECC98  E9C7  sub_ECC98  # CALL from EBAF1 (+3 more)
+ECEC9  E9C7  sub_ECEC9  # CALL from EBF58
+ED399  E9C7  sub_ED399  # CALL from E610C (+2 more)
+ED73C  E9C7  sub_ED73C  # CALL from EC026 (+8 more)
+ED7E1  E9C7  sub_ED7E1  # CALL from EAD80
+ED85B  E9C7  sub_ED85B  # CALL from EAE33
+ED8D7  E9C7  sub_ED8D7  # CALL from EAE38
+ED932  E9C7  sub_ED932  # CALL from EC15E
+ED98B  E9C7  sub_ED98B  # CALL from EBAF6 (+5 more)
+ED9E6  E9C7  sub_ED9E6  # CALL from EAAA3
+EDA41  E9C7  sub_EDA41  # CALL from EBA8C
+EDA9C  E9C7  sub_EDA9C  # CALL from EBDFD (+4 more)
+EDAF2  E9C7  sub_EDAF2  # CALL from EBC74
+EDB48  E9C7  sub_EDB48  # CALL from EBCAA
+EDB9E  E9C7  sub_EDB9E  # CALL from EB458
+EDC0F  E9C7  sub_EDC0F  # CALL from EB520
+EDC80  E9C7  sub_EDC80  # CALL from EB5D6
+EDCF1  E9C7  sub_EDCF1  # CALL from EB29B
+EDD62  E9C7  sub_EDD62  # CALL from EB339
+EDDD3  E9C7  sub_EDDD3  # CALL from EB0E2 (+1 more)
+EDE3B  E9C7  sub_EDE3B  # CALL from EBCBC
+EDFEC  E9C7  sub_EDFEC  # CALL from EBC36
+EE3EA  E9C7  sub_EE3EA  # CALL from EC0BC
+EE50E  E9C7  sub_EE50E  # CALL from EC514
+F0079  F000  sub_F0079  # CALL from F2188
+F0296  F000  sub_F0296  # CALL from F219E
+F0501  F000  sub_F0501  # CALL from F627C (+14 more)
+F0EF1  F000  sub_F0EF1  # CALL from EACA7
+F1182  F000  sub_F1182  # CALL from EC487
+F24AD  F000  sub_F24AD  # CALL from EC352 (+1 more)
+F2CA3  F000  sub_F2CA3  # CALL from F2507 (+2 more)
+F2E73  F000  sub_F2E73  # CALL from E7345
+F6350  F500  sub_F6350  # CALL from F7E3E (+15 more)
+F6362  F500  sub_F6362  # CALL from F5D39
+F63C4  F500  sub_F63C4  # CALL from F57A4 (+15 more)
+F66E3  F500  sub_F66E3  # CALL from F565A (+3 more)
+F6B85  F500  sub_F6B85  # CALL from F57DA (+3 more)
+F7015  F500  sub_F7015  # CALL from F5CA6
+F7058  F500  sub_F7058  # CALL from F62DC (+2 more)
+F71A1  F500  sub_F71A1  # CALL from F5327
+F726A  F500  sub_F726A  # CALL from F7E04 (+9 more)
+F72BF  F500  sub_F72BF  # CALL from F5CD6 (+2 more)
+F72FF  F500  sub_F72FF  # CALL from F7DD9 (+6 more)
+F74C1  F500  sub_F74C1  # CALL from F612F (+6 more)
+F7710  F500  sub_F7710  # CALL from F5C5C (+2 more)
+F7B10  F500  sub_F7B10  # CALL from F630F (+3 more)
+F7B4D  F500  sub_F7B4D  # CALL from EE18E (+1 more)
+F7BAE  F500  sub_F7BAE  # CALL from EE0D1 (+1 more)
+F7C8E  F500  sub_F7C8E  # CALL from EE238
+F7E50  F500  sub_F7E50  # CALL from F7DD0
+F7FE2  F500  sub_F7FE2  # CALL from F7E2B
+F86E4  F500  sub_F86E4  # CALL from F7E36
+F8DF3  F500  sub_F8DF3  # CALL from F7DC7
+
+# --- round r5: 43 targets reached by CALL/JMP from already-decoded code
+E0943  E000  sub_E0943  # CALL from F7043
+E0A47  E000  sub_E0A47  # CALL from E0A1E (+3 more)
+E0AB4  E000  sub_E0AB4  # CALL from E0A19 (+2 more)
+E7C08  E50E  sub_E7C08  # CALL from E7774
+E8B51  E50E  sub_E8B51  # CALL from E8960
+E8C7F  E50E  sub_E8C7F  # CALL from E8B42
+EA0CD  E9C7  sub_EA0CD  # CALL from EDE0B (+1 more)
+EC191  E9C7  sub_EC191  # CALL from EC25E (+1 more)
+EE703  E9C7  sub_EE703  # CALL from EE6DC (+3 more)
+EE843  EE79  sub_EE843  # CALL from EDF1C (+10 more)
+F009B  F000  sub_F009B  # CALL from ED3C1 (+7 more)
+F0130  F000  sub_F0130  # CALL from F2F52
+F046C  F000  sub_F046C  # CALL from F0527
+F0492  F000  sub_F0492  # CALL from ED26D (+1 more)
+F0F28  F000  sub_F0F28  # CALL from ED89B (+1 more)
+F12A2  F000  sub_F12A2  # CALL from EDDF8
+F14E3  F000  sub_F14E3  # CALL from EE4B4 (+7 more)
+F152B  F000  sub_F152B  # CALL from EDA66
+F15BB  F000  sub_F15BB  # CALL from EDA0B
+F1693  F000  sub_F1693  # CALL from ECFAF
+F1724  F000  sub_F1724  # CALL from ED3AF
+F18D4  F000  sub_F18D4  # CALL from EE01E
+F191C  F000  sub_F191C  # CALL from ED778
+F1964  F000  sub_F1964  # CALL from ED793
+F19AC  F000  sub_F19AC  # CALL from EE410
+F237D  F000  sub_F237D  # CALL from EDAC1
+F23C9  F000  sub_F23C9  # CALL from EDEE1 (+1 more)
+F2415  F000  sub_F2415  # CALL from EDEB7 (+1 more)
+F269F  F000  sub_F269F  # CALL from ECF10
+F26EB  F000  sub_F26EB  # CALL from EC751
+F2783  F000  sub_F2783  # CALL from EDD2C
+F281B  F000  sub_F281B  # CALL from EDD9D
+F28B3  F000  sub_F28B3  # CALL from EDBD9
+F294B  F000  sub_F294B  # CALL from EDC4A
+F29E3  F000  sub_F29E3  # CALL from EDCBB
+F2A8F  F000  sub_F2A8F  # CALL from ED8FC
+F2D21  F000  sub_F2D21  # CALL from EDFBE (+6 more)
+F2F69  F000  sub_F2F69  # CALL from ECFB4
+F2F8E  F000  sub_F2F8E  # CALL from ED1BE
+F2FEB  F000  sub_F2FEB  # CALL from ED1DC
+F3048  F000  sub_F3048  # CALL from ED142
+F306B  F000  sub_F306B  # CALL from ED1F6 (+1 more)
+F7D41  F500  sub_F7D41  # CALL from F8D82 (+11 more)
+
+# --- round r6: 3 targets reached by CALL/JMP from already-decoded code
+E0AE2  E000  sub_E0AE2  # CALL from E0ADE (+10 more)
+E8EDC  E50E  sub_E8EDC  # CALL from E8C8F (+1 more)
+F30BF  F000  sub_F30BF  # CALL from E8C89 (+1 more)
+
+# --- round r7: 1 targets reached by CALL/JMP from already-decoded code
+F2653  F000  sub_F2653  # CALL from F30D4
+
+# --- round r1: 1 targets reached by CALL/JMP from already-decoded code
+F5000  F500  sub_F5000  # CALL from E9FF9
+
+# --- pass 1: scanptr.py pushptr
+
+# --- pass 2: scanptr.py pushptr
+
+# --- pass 3: scanptr.py pushptr
+
+# --- pass 4: scanptr.py pushptr
+
+# --- pass 5: scanptr.py pushptr
+
+# --- pass 6: scanptr.py pushptr
+
+# --- pass 7: scanptr.py pushptr
+
+# --- pass 8: scanptr.py pushptr
+
+# --- pass 9: scanptr.py pushptr
+
+# --- pass 10: scanptr.py pushptr
+
+# --- pass 11: scanptr.py pushptr
+
+# --- pass 12: scanptr.py pushptr
+
+# --- pass 13: scanptr.py pushptr
+
+# --- pass 14: scanptr.py pushptr
+
+# --- pass 15: scanptr.py pushptr
+
+# --- pass 16: scanptr.py pushptr
+
+# --- pass 17: scanptr.py pushptr
+
+# --- pass 18: scanptr.py pushptr
+
+# --- pass 19: scanptr.py pushptr
+
+# --- pass 20: scanptr.py pushptr
+
+# --- pass 21: scanptr.py pushptr
+
+# --- pass 22: scanptr.py pushptr
+
+# --- pass 23: scanptr.py pushptr
+
+# --- pass 24: scanptr.py pushptr
+
+# --- pass 25: scanptr.py pushptr
+
+# --- pass 1: scanptr.py pushptr
+
+# --- pass 2: scanptr.py pushptr
+
+# --- pass 3: scanptr.py pushptr
+
+# --- pass 4: scanptr.py pushptr
+
+# --- pass 5: scanptr.py pushptr
+
+# --- pass 6: scanptr.py pushptr
+
+# --- pass 7: scanptr.py pushptr
+
+# --- pass 8: scanptr.py pushptr
+
+# --- pass 9: scanptr.py pushptr
+
+# --- pass 10: scanptr.py pushptr
+
+# --- pass 11: scanptr.py pushptr
+
+# --- pass 12: scanptr.py pushptr
+
+# --- pass 13: scanptr.py pushptr
+
+# --- pass 14: scanptr.py pushptr
+
+# --- pass 15: scanptr.py pushptr
+
+# --- pass 16: scanptr.py pushptr
+
+# --- pass 17: scanptr.py pushptr
+
+# --- pass 18: scanptr.py pushptr
+
+# --- pass 19: scanptr.py pushptr
+
+# --- pass 20: scanptr.py pushptr
+
+# --- pass 21: scanptr.py pushptr
+
+# --- pass 22: scanptr.py pushptr
+
+# --- pass 23: scanptr.py pushptr
+
+# --- pass 24: scanptr.py pushptr
+
+# --- pass 25: scanptr.py pushptr
+F3C8E  F000  sub_F3C8E  # pushptr, 1 site(s), first F6284
+F3D1E  F000  sub_F3D1E  # pushptr, 4 site(s), first E9663
+F3D2B  F000  sub_F3D2B  # pushptr, 4 site(s), first E9678
+F3D3A  F000  sub_F3D3A  # pushptr, 3 site(s), first E969E
+F3D43  F000  sub_F3D43  # pushptr, 1 site(s), first EC1A1
+F3D4C  F000  sub_F3D4C  # pushptr, 1 site(s), first EC1D2
+F3D56  F000  sub_F3D56  # pushptr, 1 site(s), first EC1C7
+F3D61  F000  sub_F3D61  # pushptr, 1 site(s), first F7B7B
+F3D71  F000  sub_F3D71  # pushptr, 1 site(s), first E9411
+F3D7E  F000  sub_F3D7E  # pushptr, 1 site(s), first E9443
+F3D8C  F000  sub_F3D8C  # pushptr, 1 site(s), first E9455
+F3D9C  F000  sub_F3D9C  # pushptr, 1 site(s), first E9468
+F3ECB  F000  sub_F3ECB  # pushptr, 1 site(s), first F7B60
+F3EDB  F000  sub_F3EDB  # pushptr, 1 site(s), first F7B68
+F3FB5  F000  sub_F3FB5  # pushptr, 2 site(s), first F7BBB
+F3FC2  F000  sub_F3FC2  # pushptr, 1 site(s), first F7D16
+F3FCB  F000  sub_F3FCB  # pushptr, 3 site(s), first E93FE
+F3FDC  F000  sub_F3FDC  # pushptr, 1 site(s), first F7C36
+F4115  F000  sub_F4115  # pushptr, 1 site(s), first E9784
+F4122  F000  sub_F4122  # pushptr, 1 site(s), first E97B6
+F412C  F000  sub_F412C  # pushptr, 1 site(s), first E97C9

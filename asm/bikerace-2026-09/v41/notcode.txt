@@ -1,0 +1,21 @@
+F3C8E  # inside the 5897-byte all-glyph text block F38F8-F5000 (every byte <= 0x2F)
+F3D1E  # DMD string, 2 draw site(s), first EE280
+F3D2B  # DMD string, 2 draw site(s), first E9678
+F3D3A  # DMD string, 3 draw site(s), first E969E
+F3D43  # DMD string, 1 draw site(s), first EC1A1
+F3D4C  # DMD string, 1 draw site(s), first EC1D2
+F3D56  # inside the 5897-byte all-glyph text block F38F8-F5000 (every byte <= 0x2F)
+F3D61  # DMD string, 1 draw site(s), first F7B7B
+F3D71  # DMD string, 1 draw site(s), first E9411
+F3D7E  # DMD string, 1 draw site(s), first E9443
+F3D8C  # DMD string, 1 draw site(s), first E9455
+F3D9C  # DMD string, 1 draw site(s), first E9468
+F3ECB  # inside the 5897-byte all-glyph text block F38F8-F5000 (every byte <= 0x2F)
+F3EDB  # DMD string, 1 draw site(s), first F7B68
+F3FB5  # DMD string, 2 draw site(s), first F7BBB
+F3FC2  # DMD string, 1 draw site(s), first F7D16
+F3FCB  # DMD string, 3 draw site(s), first E93FE
+F3FDC  # DMD string, 1 draw site(s), first F7C36
+F4115  # DMD string, 1 draw site(s), first E9784
+F4122  # DMD string, 1 draw site(s), first E97B6
+F412C  # DMD string, 1 draw site(s), first E97C9
