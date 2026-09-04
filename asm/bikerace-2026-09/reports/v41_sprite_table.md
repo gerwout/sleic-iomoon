@@ -155,38 +155,87 @@ that are not already in the 1992 chip, at `0x002E-0x002F`. Everything else is
 recycled, and the recycling is at a 0x200 page granularity that no build tool
 produces.
 
-## What it is *not*, and what is still open
+## Traced at runtime: the exact byte, and the exact instruction
 
-It is **not** a stuck address line, which is what an earlier reading of this
-suggested and which the block map above rules out. `A9` held permanently high
-would displace every 0x200 block whose address has bit 9 clear; `0x0030-0x00FF`
-and `0x1105-0x11FF` have bit 9 clear and are *correct*, and the boundary at
-`0x1104` falls in the middle of a 0x200 block, where no address line can change
-behaviour. It is also not a uniform shift, since the intervening blocks are right.
+Instrumenting the driver's ROM 06 window with a logging read handler and running
+both sets headless for 400 frames settles the mechanism without inference. The
+two traces are identical for their first 120 reads -- both fetch the 18x18 record
+at `0x20366`, byte for byte -- and then diverge on one read:
 
-What produced a page-granular mix-up over roughly `0x0100-0x1104` and nowhere
-else in the chip's 128 KB is **not established here**. Two candidates fit and the
-bytes cannot separate them:
+```
+        bikerace (works)                bikerac3 (V4.1)
+  2001E  08  pc=F01DC             2001E  18  pc=F0199
+  2001F  00  pc=F01DC             2001F  06  pc=F0199
+  20020  01  pc=F01E4             20020  26  pc=F01A1
+  20021  00  pc=F01E4             20021  26  pc=F01A1
+  20022  08  pc=F01EC             20022  3C  pc=F01A9
+  20023  00  pc=F01EC             20023  3C  pc=F01A9
+```
 
-- the **read** was faulty — a marginal contact or a paged reader that fetched some
-  pages from one page too far along, in which case the physical chip is fine;
-- the **chip** was programmed from an image that already had this defect, in which
-  case the dump is faithful and the machine it came from has a bad ROM 06 fitted.
+Same code, same address, different byte. The parent reads
+`08 00 01 00 08 00` -- an 8x8 record -- and draws it. V4.1 reads
+`18 06 26 26 3C 3C`, i.e. a width of `0x0618` = 1560 pixels, and runs away: 3514
+reads reaching `0x20D5F` against the parent's 180 reaching `0x203A1`.
 
-## Two tests that separate them
+`0x1E` is the second record of the table, and `bk06[0x001E]` is
+`bkcpu06[0x021E]` -- the +0x200 displacement, confirmed at the point of use.
 
-Neither needs more reverse engineering:
+## No arrangement of the given ROMs works
 
-1. **Does the machine display text correctly?** If it does, the chip is good and
-   the read was faulty. If its text is garbled or missing the way the emulation's
-   is, the chip carries this data and the dump is faithful.
-2. **Read the chip a second time and compare.** Byte-identical to the existing
-   dump means the chip contains this; any difference means the first read was
-   unreliable.
+Three driver-side alternatives were built and run, 600 frames each, counting
+distinct DMD frames (the set as dumped gives 2; a working set gives 7):
 
-If the read turns out to be the problem, the likely outcome is that ROM 06 reads
-back as `bkcpu06` (CRC `9db436d4`), leaving V4.1 a three-chip clone —
-`bk03`/`bk04`/`bk07` over the 1992 set — that works. The substitution run above is already that machine, and it renders
-correctly. The machine photographed in
-[`../../../docs/bikerace_boards.md`](../../../docs/bikerace_boards.md) is wearing
-a `BIKE RACE BK06.V4.1` sticker and is the obvious candidate.
+| candidate loaded in the ROM 06 slot | distinct frames | result |
+|---|---:|---|
+| `bkcpu05` -- i.e. the 05/06 order swapped for this set | 2 | no change |
+| `bk06` rotated so chip offset `0x200` lands at `0x20000` | 8 | garbage, in more variety |
+| `bk06` rotated the other way | 2 | no change |
+
+The emulation is reading the byte the file contains. No mapping, ordering or
+offset can turn `18 06 26 26` into a sprite header, so nothing on the driver side
+can make this ROM set render.
+
+## What it is *not*, and what the owner's machine settles
+
+It is **not** a stuck address line, which an earlier reading of this suggested and
+which the block map rules out. `A9` held permanently high would displace every
+0x200 block whose address has bit 9 clear; `0x0030-0x00FF` and `0x1105-0x11FF`
+have bit 9 clear and are *correct*, and the boundary at `0x1104` falls in the
+middle of a 0x200 block, where no address line can change behaviour. It is also
+not a uniform shift, since the intervening blocks are right.
+
+**The machine this set came from runs correctly**, which its owner confirms. That
+is what closes the question the bytes could not. For the machine to work, the
+byte its 80188 reads at flat `0x2001E` must be `0x08`; the file says `0x18`.
+Both cannot be true of the same chip, so the file is not what the chip holds:
+**the read is at fault, and the physical ROM 06 is fine.**
+
+It also explains why the damage stops after 4 KB rather than following any
+address line: a marginal contact or a reader that fetched the opening pages twice
+would corrupt the beginning of a read and then settle, which is exactly the shape
+here.
+
+## How to check and re-read
+
+The file condemns itself without reference to any other ROM. Three of its 0x200
+pages are simply the previous page again:
+
+```
+  bk06[0x0400:0x0600] == bk06[0x0600:0x0800]
+  bk06[0x0800:0x0A00] == bk06[0x0A00:0x0C00]
+  bk06[0x0C00:0x0E00] == bk06[0x0E00:0x1000]
+```
+
+A sprite table on a 0x1E record stride cannot look like that, and `bkcpu06` does
+not.
+
+So: **re-read ROM 06, and check offset `0x001E` first.** It must be
+`08 00 01 00 08 00`; anything else and the read went wrong again. Re-seat the
+chip, and confirm the reader is set to a 27C010. A good read makes the whole set
+work, since ROMs 03, 04 and 07 are already sound.
+
+Whether the corrected ROM 06 turns out to be byte-identical to `bkcpu06` is a
+separate question this cannot answer. The substitution run above shows only that
+*a* valid table at those offsets fixes the set, not that V4.1's table is the 1992
+one. If the re-read does come back as `bkcpu06` (CRC `9db436d4`), V4.1 is a
+three-chip clone -- `bk03`, `bk04` and `bk07` over the 1992 set.

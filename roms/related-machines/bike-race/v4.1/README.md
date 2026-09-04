@@ -109,23 +109,42 @@ exact. A revised sprite table would contain revised sprites; this one contains
 two bytes that are not already in the 1992 chip, and a 0x200-page granularity no
 build tool produces.
 
-**What produced it is open.** It is not a stuck address line -- `0x0030-0x00FF`
-and `0x1105-0x11FF` have bit 9 clear and are correct, and the boundary at
-`0x1104` sits mid-block, where no address line can change behaviour. Two
-candidates fit and the bytes cannot separate them: the read was faulty (a
-marginal contact, or a paged reader fetching some pages one page late), in which
-case the physical chip is fine; or the chip was programmed from an image that
-already had the defect, in which case the dump is faithful and the machine has a
-bad ROM 06 fitted.
+**The machine this set came from runs correctly**, which its owner confirms, and
+that closes the question the bytes could not. Traced at runtime -- the driver's
+ROM 06 window instrumented with a logging read handler -- the two sets read
+identically for 120 accesses and then diverge on one: at flat `0x2001E`, the
+second record of the table, the 1992 set reads `08 00 01 00 08 00` and draws an
+8x8 sprite, while V4.1 reads `18 06 26 26 3C 3C`, a width of `0x0618` = 1560
+pixels, and runs away (3514 reads reaching `0x20D5F` against 180 reaching
+`0x203A1`). For the machine to work that byte must be `0x08`. The file says
+`0x18`. Both cannot be true of the same chip, so **the read is at fault and the
+physical ROM 06 is fine.**
 
-Two tests separate them, neither needing more reverse engineering: **does the
-machine display text correctly**, and **does a second read of the chip reproduce
-this dump byte for byte**. If the read is at fault, ROM 06 will very likely come
-back as `bkcpu06`, CRC `9db436d4`, leaving V4.1 a three-chip clone --
-`bk03`, `bk04` and `bk07` over the 1992 set -- that works; the substitution run
-described above is exactly that machine. The board photographed in
-[`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md)
-carries a `BIKE RACE BK06.V4.1` sticker.
+That also explains why the damage stops after 4 KB instead of following an
+address line: a marginal contact, or a reader that fetched the opening pages
+twice, corrupts the start of a read and then settles.
+
+Nothing on the driver side can compensate. Three alternatives were built and run
+-- ROM 05 in the 06 slot, and `bk06` rotated `0x200` each way -- and none renders;
+the emulation is faithfully reading the byte the file contains.
+
+### Re-reading it
+
+The file condemns itself without reference to any other ROM: three of its 0x200
+pages are the previous page again --
+`bk06[0x0400:0x0600] == bk06[0x0600:0x0800]`, and the same at `0x0800`/`0x0A00`
+and `0x0C00`/`0x0E00`. A sprite table on a 0x1E record stride cannot look like
+that, and `bkcpu06` does not.
+
+**So re-read ROM 06 and check offset `0x001E` first**: it must be
+`08 00 01 00 08 00`. Re-seat the chip and confirm the reader is set to a 27C010.
+A good read makes the whole set work -- `bk03`, `bk04` and `bk07` are sound.
+
+Whether the corrected ROM 06 is byte-identical to `bkcpu06` is a separate
+question. The substitution run above shows only that *a* valid table at those
+offsets fixes the set, not that V4.1's table is the 1992 one. If the re-read does
+come back as `bkcpu06`, CRC `9db436d4`, then V4.1 is a three-chip clone --
+`bk03`, `bk04` and `bk07` over the 1992 set.
 
 ## Version labelling — one unresolved conflict
 
