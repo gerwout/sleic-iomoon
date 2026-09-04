@@ -82,31 +82,50 @@ The full evidence, with the pointer-slot table and the frame counts, is in
 [`../../../../asm/bikerace-2026-09/reports/v41_sprite_table.md`](../../../../asm/bikerace-2026-09/reports/v41_sprite_table.md),
 alongside the cross-verified disassemblies of both code ROMs it rests on.
 
-### `bk06` is a defective image
+### `bk06` contains no new artwork
 
-Not a judgement call: the differing 4356 bytes are the 1992 chip's own data
-misread. Every 0x200-byte block in `0x0100-0x1103` whose address has bit 9 clear
-holds the contents of its bit-9-set neighbour, and every block whose address has
-bit 9 set is correct -- `bk06[i] == bkcpu06[i | 0x200]` for all 4102 bytes from
-`0x00FF` to `0x1103`. That is address line **A9 read as a constant 1**, the
-signature of an address line not connected during the read.
+The differing 4356 bytes are not a revised sprite table. Classifying every byte
+of `bk06[0x0000:0x1200]` as either the 1992 chip's byte at the same address or
+its byte 0x200 further on accounts for all but two of them:
 
-It is visible in `bk06` alone, without reference to the 1992 chip: three
-0x200-byte half-blocks are duplicated back to back --
-`bk06[0x0400:0x0600] == bk06[0x0600:0x0800]`, the same at `0x0800`/`0x0A00` and
-`0x0C00`/`0x0E00` -- duplications `bkcpu06` does not have. No build tool stamps a
-sprite table's records twice; a reader with a floating address line does.
+| range in `bk06` | bytes | origin in `bkcpu06` |
+|---|---:|---|
+| `0x0000-0x002D` | 46 | displaced **+0x200** |
+| `0x002E-0x002F` | **2** | **matches neither** |
+| `0x0030-0x00FF` | 208 | same address |
+| `0x0100-0x01FF` | 256 | displaced **+0x200** |
+| `0x0200-0x03FF` | 512 | same address |
+| `0x0400-0x05FF` | 512 | displaced **+0x200** |
+| `0x0600-0x07FF` | 512 | same address |
+| `0x0800-0x09FF` | 512 | displaced **+0x200** |
+| `0x0A00-0x0BFF` | 512 | same address |
+| `0x0C00-0x0DFF` | 512 | displaced **+0x200** |
+| `0x0E00-0x0FFF` | 512 | same address |
+| `0x1000-0x1104` | 261 | displaced **+0x200** |
+| `0x1105-0x11FF` | 251 | same address |
 
-So "V4.1 changed the first 4 KB of ROM 06" is not what happened. V4.1 did not
-change it; the dump misread it. The one part genuinely unaccounted for is
-`0x0000-0x00FF`, 256 bytes matching the 1992 chip at no offset.
+2099 bytes displaced, 2507 correct, **2 bytes** unaccounted for. Every run is
+exact. A revised sprite table would contain revised sprites; this one contains
+two bytes that are not already in the 1992 chip, and a 0x200-page granularity no
+build tool produces.
 
-**This predicts something cheap to test: re-dump ROM 06 from a V4.1 machine and
-it will very likely read back as `bkcpu06`, CRC `9db436d4`.** If it does, V4.1 is
-a three-chip clone -- `bk03`, `bk04` and `bk07` over the 1992 set -- and it
-works; the substitution run described above is exactly that machine. The board
-photographed in [`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md)
-carries a `BIKE RACE BK06.V4.1` sticker and is the obvious candidate.
+**What produced it is open.** It is not a stuck address line -- `0x0030-0x00FF`
+and `0x1105-0x11FF` have bit 9 clear and are correct, and the boundary at
+`0x1104` sits mid-block, where no address line can change behaviour. Two
+candidates fit and the bytes cannot separate them: the read was faulty (a
+marginal contact, or a paged reader fetching some pages one page late), in which
+case the physical chip is fine; or the chip was programmed from an image that
+already had the defect, in which case the dump is faithful and the machine has a
+bad ROM 06 fitted.
+
+Two tests separate them, neither needing more reverse engineering: **does the
+machine display text correctly**, and **does a second read of the chip reproduce
+this dump byte for byte**. If the read is at fault, ROM 06 will very likely come
+back as `bkcpu06`, CRC `9db436d4`, leaving V4.1 a three-chip clone --
+`bk03`, `bk04` and `bk07` over the 1992 set -- that works; the substitution run
+described above is exactly that machine. The board photographed in
+[`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md)
+carries a `BIKE RACE BK06.V4.1` sticker.
 
 ## Version labelling — one unresolved conflict
 
