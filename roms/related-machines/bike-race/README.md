@@ -27,6 +27,18 @@ this set valuable here: it is the live oracle for the shared SLEIC hardware mode
 > [`../../../docs/sleic_board_family.md`](../../../docs/sleic_board_family.md)
 > ("Graphics ROM mapping").
 
+## The V4.1 chip set
+
+[`v4.1/`](v4.1/) holds the six socketed chips of a **second Bike Race machine**,
+one running V4.1: `BK02`–`BK06` off its 16-bit board and `BK07` off its Z80 board.
+Four of them are the `bikerac3` clone chips; the other two, `bk02` and `bk05`, are
+byte-identical to this directory's `bksnd02.bin` and `bkcpu05.bin` — which is the
+first direct confirmation that V4.1 leaves those two chips alone rather than an
+inheritance assumed by the clone set. `BK01` was not part of that pull.
+
+Both of that machine's boards are photographed at full resolution in
+[`../../../docs/bikerace_boards.md`](../../../docs/bikerace_boards.md).
+
 ## What this set is used for in this repository
 
 - [`../../../research/bikerace_disasm/`](../../../research/bikerace_disasm/) —

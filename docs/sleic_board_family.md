@@ -15,13 +15,17 @@ where they diverge, and what is still missing.
 |---------|------|----------------|--------------------|-------------|
 | Sleic Pin-Ball | 1993 | `SLEIC1` | [`roms/related-machines/sleic-pin-ball/`](../roms/related-machines/sleic-pin-ball/) | complete (4) |
 | IO Moon | 1996 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
-| Bike Race | 1992 | `SLEIC3` | [`roms/related-machines/bike-race/`](../roms/related-machines/bike-race/) | complete (7) |
+| Bike Race | 1992 | `SLEIC3` | [`roms/related-machines/bike-race/`](../roms/related-machines/bike-race/), [`.../v4.1/`](../roms/related-machines/bike-race/v4.1/) | complete (7), plus a six-chip V4.1 set |
 | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | **partial — Z80 I/O ROM only** |
 
 The PinMAME family numbers are driver-registration order, not chronology: Bike
 Race (`SLEIC3`) is the oldest machine of the three that PinMAME knows about.
 No PinMAME driver for Doña Elvira 2 is known to us — one ROM is not enough to run
 it in any case.
+
+Bike Race is the only sibling whose boards are photographed here:
+[`bikerace_boards.md`](bikerace_boards.md) has the 16-bit and Z80 boards at full
+resolution, and the IC complement they establish.
 
 ## The shared architecture
 
@@ -34,7 +38,7 @@ Every machine here is built the same way:
 | Display coprocessor | Intel 8039 (`SLEIC1`, `SLEIC3`) or PIC16C57 (IO Moon) | Free-running rasterizer over the staged frame buffer; sends the 80188 nothing |
 | FM music | Yamaha YM3812 (OPL2) | Driven by the 80188; IO Moon pairs it with a YM3014B DAC (IC61) |
 | Speech / FX | OKI MSM6376 | ADPCM samples in dedicated ROMs |
-| NVRAM | EEPROM (28C64A on IO Moon and Bike Race) | Config + audits, validated against a ROM template at boot |
+| NVRAM | EEPROM (28C64A on IO Moon and Bike Race) | Config + audits, validated against a ROM template at boot — Bike Race's is `IC20`, a Microchip `28C64A-20/P` ([`bikerace_boards.md`](bikerace_boards.md)) |
 
 The 80188 peripheral block sits at `0xA0000` (`PACS`) on IO Moon and Bike Race
 alike — byte-identical configuration — as does the timer-0 setup that yields the

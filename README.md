@@ -120,6 +120,7 @@ sleic-io-moon/
 │   ├── game_software.md               # Game state machine & boot sequence
 │   ├── iomoon_language_and_service_menu.md   # Language, country DIP, service-menu tree
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
+│   ├── bikerace_boards.md             # Bike Race board photographs and IC complement
 │   └── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
 ├── datasheets/                        # Offline PDF datasheets for every board IC
 │   ├── README.md                      # Datasheet catalogue (part → file → source)
@@ -215,6 +216,9 @@ sleic-io-moon/
 │       │   └── sp04-1_1.rom           # Z80 I/O CPU ROM
 │       ├── bike-race/                 # Bike Race (SLEIC3, 1992) — complete, 7 ROMs
 │       │   ├── README.md
+│       │   ├── v4.1/                  # V4.1 chip set — six chips off one machine
+│       │   │   ├── README.md
+│       │   │   └── bk02.bin … bk07.bin
 │       │   ├── bkdsp01.bin            # I8039 display coprocessor
 │       │   ├── bksnd02.bin            # OKI sample ROM 1
 │       │   ├── bksnd03.bin            # OKI sample ROM 2
@@ -237,7 +241,9 @@ sleic-io-moon/
 │   ├── 80188_board_011_029A.jpg               # 16-bit board photo
 │   ├── z80-sleic-011-030A.jpg                 # Z80 board photo
 │   ├── driver_board_sleic_011-027A.jpg        # Drivers board photo
-│   └── sound_amplifier_board_sleic_011-024.jpg # Audio amplifier board photo
+│   ├── sound_amplifier_board_sleic_011-024.jpg # Audio amplifier board photo
+│   ├── bikerace_80188_board.jpg               # Bike Race 16-bit board photo
+│   └── bikerace_z80_board.jpg                 # Bike Race Z80 board photo
 │   # Each board JPG also has a smaller *_thumb.jpg companion used for inline previews.
 ├── manuals/
 │   ├── README.md
@@ -315,6 +321,7 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit byte-port between the 80188 and Z80 (no shared RAM) |
 | [Game Software Architecture](docs/game_software.md) | Boot sequence, main loop, state machine, text encoding, configuration system |
 | [The SLEIC Board Family](docs/sleic_board_family.md) | How IO Moon, Sleic Pin-Ball, Bike Race and Doña Elvira 2 relate: shared architecture, Z80 firmware lineage, where they diverge |
+| [Bike Race Boards](docs/bikerace_boards.md) | Photographs of the Bike Race 16-bit and Z80 boards, with the IC complement they establish |
 
 ---
 

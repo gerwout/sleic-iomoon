@@ -4,11 +4,11 @@ Ready-to-load PinMAME `.zip` sets for the four SLEIC machines whose ROMs are
 archived in this repository, packed under the member names the PinMAME driver asks
 for. Most members are just a repackaging of an image already stored loose elsewhere
 under [`../`](../) — the loose per-machine directories stay the archival copy and
-this directory is the emulator-facing packaging of them. The exception is the two
-Bike Race clone sets: the six chips that make `bikerac2` and `bikerac3` distinct
-(`04`/`07` and `bk03`/`bk04`/`bk06`/`bk07`) are held **only** here, since the loose
-[`../related-machines/bike-race/`](../related-machines/bike-race/) directory
-archives the parent set alone.
+this directory is the emulator-facing packaging of them. The exception is
+`bikerac2`: its two distinguishing chips (`04`/`07`) are held **only** here.
+`bikerac3`'s four (`bk03`/`bk04`/`bk06`/`bk07`) are also archived loose, inside the
+complete six-chip V4.1 pull at
+[`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/).
 
 Drop the whole directory on PinMAME's ROM path:
 
@@ -71,8 +71,15 @@ Chips 01/02/03/05/06 are the parent's.
 | `bk06.bin` | `ad48a30a` | Graphics ROM (MCS1) |
 | `bk07.bin` | `200ff3fc` | Z80 I/O CPU ROM |
 
-Chips 01/02/05 are the parent's. ROM 01 of this revision was never dumped, which is
-part of why the set is flagged `GAME_NOT_WORKING` in the driver.
+Chips 01/02/05 are the parent's — and for `02` and `05` that is now verified rather
+than assumed, against the complete six-chip V4.1 pull at
+[`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/). ROM 01
+of this revision has still never been dumped.
+
+The set is flagged `GAME_NOT_WORKING` in the driver because its artwork renders as
+garbage. A missing graphics ROM was the leading explanation; the V4.1 board
+photograph in [`../../docs/bikerace_boards.md`](../../docs/bikerace_boards.md)
+rules that out by showing three ROM positions and three ROMs.
 
 ### `sleicpin.zip` — 4 chips
 

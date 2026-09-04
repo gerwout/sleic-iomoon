@@ -16,7 +16,7 @@ the four machines relate.
 | Directory | Machine | Year | PinMAME family | Dump status |
 |-----------|---------|------|----------------|-------------|
 | [`sleic-pin-ball/`](sleic-pin-ball/) | Sleic Pin-Ball | 1994 | `SLEIC1` | complete (4 ROMs) |
-| [`bike-race/`](bike-race/) | Bike Race | 1992 | `SLEIC3` | complete (7 ROMs) |
+| [`bike-race/`](bike-race/) | Bike Race | 1992 | `SLEIC3` | complete (7 ROMs), plus a six-chip [V4.1 set](bike-race/v4.1/) |
 | [`dona-elvira-2/`](dona-elvira-2/) | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | **partial — Z80 CPU ROM only** |
 
 IO Moon itself is `SLEIC2`; its ROM sets live one level up in
@@ -28,6 +28,10 @@ IO Moon itself is `SLEIC2`; its ROM sets live one level up in
 - **Bike Race** and **Sleic Pin-Ball** — filenames follow the PinMAME set naming
   convention (`bkcpu04.bin`, `sp03-1_1.rom`, …). These are the images every Bike
   Race and Sleic Pin-Ball statement in this repository was verified against.
+- **Bike Race V4.1** ([`bike-race/v4.1/`](bike-race/v4.1/)) — the six socketed
+  chips of one V4.1 machine, pulled together off its two backbox boards, which are
+  photographed in [`../../docs/bikerace_boards.md`](../../docs/bikerace_boards.md).
+  Filenames are the chips' own (`bk02.bin` … `bk07.bin`), not PinMAME's.
 - **Doña Elvira 2** — read off the Z80 CPU board's 27C256 EPROM (an ST27C256,
   hence the filename). No public dump of this machine was known to us when it was
   archived here, which is also why it cannot be cross-checked against a second
