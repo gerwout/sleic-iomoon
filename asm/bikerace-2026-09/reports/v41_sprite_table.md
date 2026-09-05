@@ -259,9 +259,11 @@ knocked out, and exactly the records in the intact pages preserved. The first
 seven survivors, at `0x3C` through `0xF0`, are precisely the run that falls in
 the correctly-read `0x0030-0x00FF`.
 
-Taken with the owner's machine working, that makes the prediction a good deal
-firmer than "a valid table would fix it": **a clean re-read of ROM 06 should come
-back as `bkcpu06`, CRC `9db436d4`.**
+Taken with the owner's machine working, that made the prediction firm — **a clean
+re-read of ROM 06 should come back as `bkcpu06`, CRC `9db436d4`** — and a re-read
+of the same machine then confirmed exactly that: CRC `9db436d4`, byte-identical to
+`bkcpu06`, offset `0x1E` = `08 00 01 00 08 00`, no duplicated pages, 12 well-formed
+records. V4.1's ROM 06 is the 1992 ROM 06.
 
 ## How to check and re-read
 

@@ -18,23 +18,25 @@ part of this dump. The parent set's `BK01`
 | `bk03.bin` | 524,288 bytes (512 KB) | `8f49bf919392f32fc0366d0ec6c92ada` | `74c10536` | OKI MSM6376 | ADPCM sample ROM 2 |
 | `bk04.bin` | 131,072 bytes (128 KB) | `0ef6759ea3e87afd6b883d8052e8b2f3` | `33fd212e` | 80188 | Game + sound code, linear `0xE0000–0xFFFFF` |
 | `bk05.bin` | 131,072 bytes (128 KB) | `6367b9028b7470fc6dbad37a229bc761` | `072ce879` | 80188 | Graphics ROM, MCS2 `0x40000` — **same bytes as the parent set** |
-| `bk06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | `9db436d4` | 80188 | Graphics ROM, MCS1 `0x20000` — **NOT a V4.1 dump; a copy of the parent's `bkcpu06.bin`**, see below |
+| `bk06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | `9db436d4` | 80188 | Graphics ROM, MCS1 `0x20000` — V4.1's ROM 06, **confirmed by a re-dump**; byte-identical to the parent's `bkcpu06.bin`, see below |
 | **`bk06.baddump.bin`** | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | **`ad48a30a`** | 80188 | **BAD DUMP — do not use.** The ROM 06 as read off the machine. Its first `0x1104` bytes are unusable. |
 | `bk07.bin` | 32,768 bytes (32 KB) | `244271a47eb206f3c3fc30c1f7d8fb17` | `200ff3fc` | Z80 | I/O CPU ROM (switch matrix, lamps, coils) |
 
-## `ad48a30a` is a bad dump — do not use it
+## ROM 06 — a first read failed, a re-read confirmed it
 
-**CRC32 `ad48a30a` / MD5 `c42b2e81b987cbe63145eefda647da93` is a defective read of
-Bike Race V4.1's ROM 06.** It is kept here as `bk06.baddump.bin` because it is
-what came off the machine and the diagnosis rests on it, but it must not be used
-to run the game, redistributed as a dump, or listed in an emulator's ROM set. If
-you have a V4.1 image with that hash, it is this one.
+**The first `bk06` dump, CRC32 `ad48a30a` / MD5 `c42b2e81b987cbe63145eefda647da93`,
+was defective.** It is kept here as `bk06.baddump.bin` because the diagnosis below
+rests on it, but it must not be used to run the game, redistributed as a dump, or
+listed in an emulator's ROM set. If you have a V4.1 image with that hash, it is
+this bad read.
 
-`bk06.bin` in this directory is **a copy of the parent set's `bkcpu06.bin`**
-(CRC `9db436d4`), placed here so the set is complete and runnable. It is
-*inferred* to be V4.1's ROM 06 on the evidence below, not dumped from a V4.1
-machine. **No good V4.1 ROM 06 dump exists.** If one is ever made and differs,
-this file and PinMAME's `bikerac3` both need updating.
+**A re-read of the same machine's ROM 06 confirmed the correct contents: CRC
+`9db436d4`, byte-identical to the parent set's `bkcpu06.bin`.** It passes every
+check the bad read failed — offset `0x1E` is `08 00 01 00 08 00`, there are no
+duplicated `0x200` pages, and the sprite-record chain from `0x0000` yields 12
+well-formed records. That is `bk06.bin` in this directory. So V4.1's ROM 06 is the
+1992 ROM 06, and the "inference" the evidence below builds is now a confirmed fact,
+not a prediction.
 
 The other five chips are byte-identical to chips PinMAME already knows: `bk03`,
 `bk04` and `bk07` are the three members of the `bikerac3` clone set, and `bk02`
@@ -164,26 +166,26 @@ known Bike Race set, CRC `072ce879` in the parent, in `bikerac2` and here.
    table -- it is the 1992 table with precisely the records that fell in the
    damaged pages knocked out.
 
-Together with the machine running correctly, that makes the expected outcome
-firm: a clean re-read should give `bkcpu06`, CRC `9db436d4`.
+Together with the machine running correctly, that made the outcome firm, and the
+re-read below bore it out: a clean read gives `bkcpu06`, CRC `9db436d4`.
 
-### Re-reading it
+> Throughout this analysis section "`bk06`" means the **bad read**, now archived
+> as `bk06.baddump.bin`. The good `bk06.bin` beside it is the re-read.
 
-The file condemns itself without reference to any other ROM: three of its 0x200
-pages are the previous page again --
+### The re-read
+
+The bad read condemned itself without reference to any other ROM: three of its
+0x200 pages were the previous page again --
 `bk06[0x0400:0x0600] == bk06[0x0600:0x0800]`, and the same at `0x0800`/`0x0A00`
 and `0x0C00`/`0x0E00`. A sprite table on a 0x1E record stride cannot look like
 that, and `bkcpu06` does not.
 
-**So re-read ROM 06 and check offset `0x001E` first**: it must be
-`08 00 01 00 08 00`. Re-seat the chip and confirm the reader is set to a 27C010.
-A good read makes the whole set work -- `bk03`, `bk04` and `bk07` are sound.
-
-Whether the corrected ROM 06 is byte-identical to `bkcpu06` is a separate
-question. The substitution run above shows only that *a* valid table at those
-offsets fixes the set, not that V4.1's table is the 1992 one. If the re-read does
-come back as `bkcpu06`, CRC `9db436d4`, then V4.1 is a three-chip clone --
-`bk03`, `bk04` and `bk07` over the 1992 set.
+ROM 06 was re-read from the same machine, with `0x001E` checked first: it came
+back `08 00 01 00 08 00`, no duplicated pages, 12 well-formed records from
+`0x0000` -- and byte-identical to `bkcpu06`, CRC `9db436d4`. So V4.1's ROM 06 **is**
+the 1992 ROM 06, and V4.1 is a three-chip clone -- `bk03`, `bk04` and `bk07` over
+the 1992 set. `bk03`, `bk04` and `bk07` were already sound; with the confirmed ROM
+06 the whole set is.
 
 ## Version labelling — one unresolved conflict
 

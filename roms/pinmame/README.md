@@ -75,10 +75,11 @@ assumed, against the complete six-chip V4.1 pull at
 [`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/). ROM
 01 of this revision has never been dumped.
 
-**ROM 06 is inherited because the only V4.1 dump of it, CRC `ad48a30a`, is a bad
-read** — it used to be a member of this zip, which is why the set was flagged
-`GAME_NOT_WORKING`. With `bkcpu06.bin` inherited from the parent the set works and
-the flag is gone. The evidence is in
+**ROM 06 is inherited because a re-dump confirmed it is the parent's.** The first
+V4.1 read of ROM 06, CRC `ad48a30a`, was defective; it used to be a member of this
+zip, which is why the set was flagged `GAME_NOT_WORKING`. A re-read of the same
+machine came back CRC `9db436d4` — byte-identical to `bkcpu06.bin` — so ROM 06 is
+inherited from the parent, the set works, and the flag is gone. The evidence is in
 [`../../asm/bikerace-2026-09/reports/v41_sprite_table.md`](../../asm/bikerace-2026-09/reports/v41_sprite_table.md);
 the bad image is archived as `bk06.baddump.bin` alongside the loose chips.
 
