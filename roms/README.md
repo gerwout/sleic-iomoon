@@ -57,7 +57,7 @@ together with its MD5 checksum for quick integrity verification.
 | `related-machines/bike-race/v4.1/bk06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | 80188 graphics ROM, MCS1 `0x20000` — V4.1's ROM 06, **confirmed by a re-dump**; CRC `9db436d4`, byte-identical to `bkcpu06.bin` |
 | `related-machines/bike-race/v4.1/bk06.baddump.bin` | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | **BAD DUMP** of V4.1's ROM 06 (CRC32 `ad48a30a`) — archived as evidence, do not use |
 | `related-machines/bike-race/v4.1/bk07.bin` | 32,768 bytes (32 KB) | `244271a47eb206f3c3fc30c1f7d8fb17` | Z80 I/O CPU ROM (V4.1) |
-| `related-machines/dona-elvira-2/ST27C256-z80.bin` | 32,768 bytes (32 KB) | `358bd508dd8232bbfe9d8d14465015d3` | Z80 I/O CPU ROM (**only ROM dumped**) |
+| `related-machines/dona-elvira-2/ST27C256-z80.bin` | 32,768 bytes (32 KB) | `358bd508dd8232bbfe9d8d14465015d3` | Z80 game CPU ROM (**only ROM dumped**) |
 
 ### Notes
 
@@ -71,7 +71,8 @@ together with its MD5 checksum for quick integrity verification.
 - A second, physically distinct IO Moon board was dumped in August 2026; all five
   images came out **byte-identical to the `1.3 IPDB latest` set**, so that set is
   confirmed by two independent boards and the duplicate dump was not archived.
-- The Doña Elvira 2 dump is **partial** — the Z80 I/O ROM only. See its
+- The Doña Elvira 2 dump is **partial** — its Z80 game CPU ROM only; the sound
+  board's five EPROMs and the display board's three PROMs are undumped. See its
   [README](related-machines/dona-elvira-2/README.md).
 
 To regenerate these checksums for every ROM image in this directory:

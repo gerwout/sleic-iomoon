@@ -190,6 +190,8 @@ Pin assignments read directly from the IC8 symbol:
 - The 16L8 is purely combinational: no clock pin, no registered outputs.
 - Note the input strobes `/PWR`/`/PRD` (the raw Z80 write/read) are **distinct nets** from the outputs `/WR`/`/RD` (gated peripheral strobes IC8 generates) — despite the similar names there is no same-net output→input wire.
 
+The Doña Elvira 2 service manual carries an independent copy of sheet `011-030-01` (REV 3, 10 August 1995) at [`../manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf`](../manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf) — that machine's CPU board is clave `011-030`, the same drawing family. Its IC8 symbol carries the identical pin assignment, all ten inputs and all eight outputs, so the list above is confirmed by two separate manuals. The surrounding devices agree too: IC1 Z80A, IC5 27C256 on `/ROM1`, IC7 a 6116 on `/CRAM`, address buffers at IC2/IC3 and a 74LS245 at IC4.
+
 **The one non-chip-select output is `/RI` (pin 14).** It drives a logic gate that produces `/INT`, and `/INT` goes to the Z80's interrupt input — it does **not** return to any IC8 pin. This is the loop the hardware analysis flagged for IC8, and the read is correct: it is a **system-level** loop that closes only through Z80 execution (interrupt → ISR → different bus cycles → different IC8 inputs), not an electrical feedback into the PAL. Its consequences for dumping are discussed under Path B.
 
 ### Important — bipolar PAL with bidirectional I/O pins

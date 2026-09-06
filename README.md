@@ -249,7 +249,8 @@ sleic-io-moon/
 │   ├── README.md
 │   ├── sleic_io_moon_manual_es.pdf    # Original Spanish service manual (159 pp)
 │   ├── SLEIC_1992_Bike_Race_…pdf      # Bike Race service manual (125 pp, parts list + schematics)
-│   └── SLEIC_1994_Sleic_Pin_Ball_…pdf # Sleic Pin-Ball service manual (93 pp, no schematics)
+│   ├── SLEIC_1994_Sleic_Pin_Ball_…pdf # Sleic Pin-Ball service manual (93 pp, no schematics)
+│   └── SLEIC_1996_Dona_Elvira_2_…pdf  # Doña Elvira 2 service manual (142 pp, schematics)
 └── research/                          # Investigative notes that informed the docs
     ├── board_inventory.md             # Original photo-by-photo IC inventory
     ├── 80188_to_z80_mailbox.md        # The 80188→Z80 command queue at 4000:1158
@@ -386,7 +387,7 @@ by cross-checking against them. Their ROM images are archived under
 |---------|------|----------------|-------------|
 | [Sleic Pin-Ball](roms/related-machines/sleic-pin-ball/) | 1993 | `SLEIC1` | complete (4 ROMs) |
 | [Bike Race](roms/related-machines/bike-race/) | 1992 | `SLEIC3` | complete (7 ROMs) |
-| [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | **partial — Z80 I/O ROM only** |
+| [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | **partial — Z80 game CPU ROM only** |
 
 Bike Race matters most: it runs the same 80188 firmware family as IO Moon, with
 the same PACS peripheral base and a byte-identical timer-0 setup, so it is a live
@@ -396,9 +397,12 @@ one-way rasterizers.
 
 The Doña Elvira 2 Z80 ROM is a rare partial dump of a machine with no publicly
 available ROM images that we know of. It self-identifies as `SLEIC-PETACO DONA
-ELVIRA 2 / (C) SLEIC 1996`, and code-window analysis places its I/O firmware
-firmly in the IO Moon / Bike Race Z80 lineage rather than the older Sleic Pin-Ball
-one.
+ELVIRA 2 / (C) SLEIC 1996`, and code-window analysis places its firmware firmly in
+the IO Moon / Bike Race Z80 lineage rather than the older Sleic Pin-Ball one. Its
+[service manual](manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
+is archived here, and shows that this Z80 board is the machine's *game* CPU: Doña
+Elvira 2 has no 16-bit board at all, a second Z80 for sound, and a 7-segment display
+rather than a DMD.
 
 See [The SLEIC Board Family](docs/sleic_board_family.md) for the full comparison.
 
@@ -409,6 +413,7 @@ See [The SLEIC Board Family](docs/sleic_board_family.md) for the full comparison
 - [IO Moon — Original Spanish Service Manual](manuals/sleic_io_moon_manual_es.pdf) — 159 pages, ~30 of them schematics
 - [Bike Race — 1992 Spanish Service Manual](manuals/SLEIC_1992_Bike_Race_Spanish_Service_Manual_with_parts_list_and_paginated_schematics.pdf) — 125 pages, with parts list and paginated schematics
 - [Sleic Pin-Ball — 1994 Spanish Service Manual](manuals/SLEIC_1994_Sleic_Pin_Ball_Service_Manual_no_schematics.pdf) — 93 pages, no schematics
+- [Doña Elvira 2 — 1996 Spanish Service Manual](manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf) — 142 pages, with schematics for all seven boards
 
 ---
 

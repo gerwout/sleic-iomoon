@@ -16,7 +16,7 @@ where they diverge, and what is still missing.
 | Sleic Pin-Ball | 1993 | `SLEIC1` | [`roms/related-machines/sleic-pin-ball/`](../roms/related-machines/sleic-pin-ball/) | complete (4) |
 | IO Moon | 1996 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
 | Bike Race | 1992 | `SLEIC3` | [`roms/related-machines/bike-race/`](../roms/related-machines/bike-race/), [`.../v4.1/`](../roms/related-machines/bike-race/v4.1/) | complete (7), plus a six-chip V4.1 set |
-| Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | **partial — Z80 I/O ROM only** |
+| Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | **partial — Z80 game CPU ROM only** |
 
 The PinMAME family numbers are driver-registration order, not chronology: Bike
 Race (`SLEIC3`) is the oldest machine of the three that PinMAME knows about.
@@ -46,7 +46,7 @@ alike — byte-identical configuration — as does the timer-0 setup that yields
 
 ## Z80 lineage — where Doña Elvira 2 fits
 
-The four dumped Z80 I/O ROMs fall into two clearly separated generations. Counting
+The four dumped Z80 ROMs fall into two clearly separated generations. Counting
 *distinct 16-byte code windows* shared between each pair (trailing pad bytes
 removed, near-constant windows excluded so that runs of table data don't inflate
 the count):
@@ -61,10 +61,17 @@ the count):
 | IO Moon ↔ Sleic Pin-Ball | 21 | 0.3 % |
 
 Two orders of magnitude separate the three later machines from Sleic Pin-Ball.
-**Doña Elvira 2's I/O firmware is a sibling of the IO Moon and Bike Race code**,
+**Doña Elvira 2's Z80 firmware is a sibling of the IO Moon and Bike Race code**,
 i.e. it runs the same later Z80 board generation (IO Moon's is the `011-030A`,
 inventoried in [`board_011-030A_ics.md`](board_011-030A_ics.md)), and shares
-essentially nothing with the 1993 Sleic Pin-Ball I/O code.
+essentially nothing with the 1993 Sleic Pin-Ball I/O code. Doña Elvira 2's
+[service manual](../manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
+confirms the board from the other side: its *C.P.U. 8 BITS* is clave `011-030`,
+drawn on sheet `011-030-01` — the same sheet number as IO Moon's copy, with the
+same IC8 PAL16L8 pin assignment ([`chips_to_dump.md`](chips_to_dump.md)). What
+differs is the job: Doña Elvira 2 has no 16-bit board, so there the Z80 is the game
+CPU and a second Z80 on `011-065` does sound, where IO Moon's `011-030A` is the I/O
+half of an 80188 pair.
 
 Code volume agrees with that grouping:
 
@@ -150,9 +157,12 @@ ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
 - **The two PALs on the IO Moon boards** — IC7 (80188 chip-select glue) and IC8
   (Z80 decode), both with the security fuse blown. Neither blocks emulation; see
   [`chips_to_dump.md`](chips_to_dump.md) for exactly what each would settle.
-- **Doña Elvira 2's 80188, graphics, sound and display ROMs** — only the Z80 I/O
-  ROM exists here. Without the 80188 code the machine can be neither emulated nor
-  meaningfully documented beyond its I/O layer.
+- **Doña Elvira 2's sound and display ROMs** — its
+  [service manual](../manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
+  settles what a complete set is, and it is not the IO Moon shape: the machine has
+  no 16-bit board, so the archived Z80 image is its whole game program. What is
+  missing is the sound board's five EPROMs (`011-065`: IC5 `27C10`, IC42–IC45
+  `27C40`) and the display board's three 6331 PROMs (`011-064`).
 - **Doña Elvira 2 disassembly** — not started. Given the 15–18 % code overlap with
   IO Moon and Bike Race, the documented switch/lamp/coil port maps
   ([`z80_io_ports.md`](z80_io_ports.md),

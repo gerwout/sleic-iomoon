@@ -17,7 +17,7 @@ the four machines relate.
 |-----------|---------|------|----------------|-------------|
 | [`sleic-pin-ball/`](sleic-pin-ball/) | Sleic Pin-Ball | 1994 | `SLEIC1` | complete (4 ROMs) |
 | [`bike-race/`](bike-race/) | Bike Race | 1992 | `SLEIC3` | complete (7 ROMs), plus a six-chip [V4.1 set](bike-race/v4.1/) |
-| [`dona-elvira-2/`](dona-elvira-2/) | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | **partial — Z80 CPU ROM only** |
+| [`dona-elvira-2/`](dona-elvira-2/) | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | **partial — Z80 game CPU ROM only** |
 
 IO Moon itself is `SLEIC2`; its ROM sets live one level up in
 [`../1.3 IPDB latest/`](../1.3%20IPDB%20latest/) and
@@ -35,7 +35,9 @@ IO Moon itself is `SLEIC2`; its ROM sets live one level up in
 - **Doña Elvira 2** — read off the Z80 CPU board's 27C256 EPROM (an ST27C256,
   hence the filename). No public dump of this machine was known to us when it was
   archived here, which is also why it cannot be cross-checked against a second
-  source the way the IO Moon set could.
+  source the way the IO Moon set could. Its service manual is archived in
+  [`../../manuals/`](../../manuals/), and is what the board complement in that
+  machine's README is read from.
 
 ## Checksums
 
