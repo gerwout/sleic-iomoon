@@ -1739,10 +1739,15 @@ of the ROM (`v1_3_01.bin`, file offset `0x577C7 + 2*(code-0x0E)`, since
 UMCS's flat `0xC0000-0xFFFFF` is file `0x40000-0x7FFFF` — F1): code `0x21`'s
 word is `0x050E`, landing at flat `D72A0+050E = D77AE`, an unconditional
 `CALL sub_D9CAB` — **not** `D7723` as this addendum first said (that word,
-`0x0483` at code `0x25`, is Bumper 3's own entry). `sub_D9CAB` is gated on a
-one-byte counter `413C:0026`: `> 0` does nothing (`XOR AX,AX`); otherwise it
-plays one OKI cue (`sub_D0B70(0x18)`) and sets `413C:0027 = 1`. **Neither
-branch calls `qout_push`**, so no Z80 command and no coil can result — the
+`0x0483` at code `0x25`, is Bumper 3's own entry). `sub_D9CAB` loads
+`DS = 4134` and never loads `ES` at all, and neither of its two byte
+accesses carries an ES-override prefix (`80 3E 26 00 00`, `C6 06 27 00 01` —
+no leading `26`), so they are **`4134:0026`** and **`4134:0027`**, a
+different segment from `413C` (fix round 2 — this addendum first mis-cited
+both as `413C`). Gated on the one-byte counter `4134:0026`: `> 0` does
+nothing (`XOR AX,AX`); otherwise it plays one OKI cue (`sub_D0B70(0x18)`)
+and sets `4134:0027 = 1`. **Neither branch calls `qout_push`**, so no Z80
+command and no coil can result — the
 "no kicker" conclusion holds, now resting on the address that is actually
 Hole 2's. The manual's 2.3.1 coil list still independently agrees: it names
 "Bobina Tragabolas 1" (coil 8) and has no counterpart for Tragabolas 2, and
@@ -1756,53 +1761,81 @@ routing a ball to Hole 2 delivers code `0x21` to the switch-code shadow
 
 **Hole 1 (Tragabolas 1, code `0x22`, C23) — traced to its real handler, and
 the mechanism corrected.** Its table word, one earlier, is `0x04F8`, flat
-`D7798` — **gated at the dispatch level itself** on `413C:00F4 == 9` (any
-other value: no action at all) before it calls `sub_D9B91`. That routine is
+`D7798` — **gated at the dispatch level itself**, but the other way round
+from what this addendum first said (fix round 2): the bytes are
+`CMP ES:000F4,009 / JNE D77A7` (`D779D`-`D77A3`), so `413C:00F4 == 9` is the
+value that falls through to `JMP D77C3` and does **nothing**, and any other
+value is what takes the branch into `CALL sub_D9B91`. That routine is
 modal, not Hole 2's scoring twin: a one-shot debounce (`sub_D9B76`, latch
-`0028`) admits only the first call per visit; it then branches on `0026`
-(`> 0` fires coil 8 alone, via `sub_D9B49`, and stops) and otherwise on
-`413C:00F4` again (`7` awards Star Ride points with no coil — `0x989680` or
-`0xE4E1C0`, 10,000,000 or 15,000,000, selected by `0027`, matching the
-manual's 3.3.8 Star Ride figures for the two holes; anything else — neither
-`7` nor `0` — scores 150,000 and calls `sub_D9B49` alone, no Taca; `0` is
-the value that falls into `sub_D97D1`). `sub_D97D1`
-branches on `413C:010E` (`1`: score 150,000, call `sub_D9B49`, done;
-otherwise: bump two audit counters and dispatch a 10-state stepper at
-`0002E`, `CS:02895` — verified directly against the ROM's own ten words at
-flat `D9B35`, e.g. word 0 is `0x25A7`, landing at `D72A0+25A7 = D9847`).
-**State 0** of that stepper compares a counter `00EE` against a threshold
-`413C:0101`: at or past the threshold, it skips straight to an audit bump;
-below it, it also plays an OKI cue (`0x83`), waits for it to finish
-(`4000:1304`), and additionally calls `sub_D823B`, which does
-`qout_push(0xE7)` — the Z80's own 256-entry table at `$2000` (read directly
-from `V1 3_05.bin`, entry for `0xE7`) is `0x2A36` → `sub_2A36` →
-`CALL sub_076C` = **coil 13, Taca** — before an NVRAM increment and the same
-audit bump. **Both outcomes of that threshold check converge** on
-`JMP D9B2F`, which falls into `D9814` → `CALL sub_D9B49` — `qout_push(0xDC)`
-(Z80 table entry `0x29E1`, likewise read directly from the ROM) → arms a
-300-tick timer → `CALL sub_07E0` = **coil 8** — so on this branch coil 8
-fires every time, and Taca fires only while `00EE` is below `413C:0101`, a
-separate, narrower gate than the branch selection itself. Measured: two
-separate fresh games both took this exact branch with the counter still
-below threshold, coil 13 firing about 3.2 s after the contact and coil 8
-about 3.75 s after that — real intervening work (the OKI cue and its
-busy-wait, the NVRAM increment) accounts for the gap.
+`4134:0028`) admits only the first call per visit; it then branches on
+`4134:0026` (`> 0` fires coil 8 alone, via `sub_D9B49`, and stops — same
+segment as Hole 2's own gate above, confirmed the same way: no ES prefix on
+either access) and otherwise on `413C:00F4` again (`7` awards Star Ride
+points with no coil — `0x989680` or `0xE4E1C0`, 10,000,000 or 15,000,000,
+selected by `4134:0027`, matching the manual's 3.3.8 Star Ride figures for
+the two holes; anything else — neither `7` nor `0` — scores 150,000 and
+calls `sub_D9B49` alone, no Taca; `0` is the value that reaches `D9C61`).
+`D9C61` is itself a further, three-way split on `413C:010F` and
+`4134:0027`, not a plain call to `sub_D97D1`: `010F == 1` or `010F == 2`
+calls `sub_D97D1`; `010F` anything else **and** `0027 != 0` also calls
+`sub_D97D1`; but `010F` anything else **and** `0027 == 0` takes a
+**different, untraced branch at `D9C8A`** — `qout_push(0xF2)`, then
+`sub_DB503`, then `qout_push(0xF1)` — which never touches `sub_D97D1`, the
+stepper, or coil 13 at all. `sub_D97D1` (reached on the first two of those
+three arms) branches on `413C:010E` (`1`: score 150,000, call `sub_D9B49`,
+done; otherwise: bump two audit counters and dispatch a 10-state stepper at
+`4134:0002E`, `CS:02895` — verified directly against the ROM's own ten
+words at flat `D9B35`, e.g. word 0 is `0x25A7`, landing at
+`D72A0+25A7 = D9847`). **State 0** of that stepper compares a counter
+`413C:00EE` against a threshold `413C:0101`: at or past the threshold, it
+skips straight to an audit bump; below it, it also plays an OKI cue
+(`0x83`), waits for it to finish (`4000:1304`), and additionally calls
+`sub_D823B`, which does `qout_push(0xE7)` — the Z80's own 256-entry table
+at `$2000` (read directly from `V1 3_05.bin`, entry for `0xE7`) is `0x2A36`
+→ `sub_2A36` → `CALL sub_076C` = **coil 13, Taca** — before an NVRAM
+increment and the same audit bump. **Both outcomes of that threshold check
+converge** on `JMP D9B2F`, which falls into `D9814` → `CALL sub_D9B49` —
+`qout_push(0xDC)` (Z80 table entry `0x29E1`, likewise read directly from
+the ROM) → arms a 300-tick timer → `CALL sub_07E0` = **coil 8** — so on this
+branch coil 8 fires every time, and Taca fires only while `413C:00EE` is below
+`413C:0101`, a separate, narrower gate than the branch selection itself.
+Measured: two separate fresh games both took this exact branch with the
+counter still below threshold, coil 13 firing about 3.2 s after the contact
+and coil 8 about 3.75 s after that — real intervening work (the OKI cue and
+its busy-wait, the NVRAM increment) accounts for the gap.
 
 **This is one reachable branch of several, not the routine's only
 behaviour — restated as conditional.** Other branches fire coil 8 alone
-(`0026 > 0`, or `413C:00F4` anything but `0` or `7`), and the
-`413C:00F4 == 7` branch fires no coil at all. Two fresh, freshly-reset games
-taking the same branch is
-consistent with every gating cell (`0026`, `0027`, `0028`, `413C:00F4`,
-`:010E`, `:010F`, `0002E`, `00EE`) starting at its boot-time default both
-times, not with the mechanism being unconditional. What `413C:00F4`,
-`:010E`, `:010F`, the stepper `0002E`, and the `00EE`/`:0101` counter mean
-in player-visible terms (game mode, a hit count, a specific lock state) is
-**not decoded here and is recorded as open**. What this does settle: "Bobina
-de Taca" is not a stray
-name for Tragabolas 2's missing coil — on the branch measured here it fires
-from Tragabolas 1's own handler, immediately ahead of that same handler's
-own coil 8, and Hole 2's handler (`sub_D9CAB`) never reaches it.
+(`4134:0026 > 0`, or `413C:00F4` anything but `0` or `7`), the
+`413C:00F4 == 7` branch fires no coil at all, and the untraced `D9C8A`
+branch above sends two commands (`0xF2`, `0xF1`) that are neither coil.
+Two fresh, freshly-reset games taking the same branch is consistent with
+every gating cell (`4134:0026/0027/0028/002E`, `413C:00F4`, `:010E`,
+`:010F`, `413C:00EE`) starting at its boot-time default both times, not
+with the mechanism being unconditional. What `413C:00F4`, `:010E`, `:010F`,
+the stepper `4134:002E`, the `413C:00EE`/`:0101` counter, and the `D9C8A`
+branch's two commands mean in player-visible terms is **not decoded here
+and is recorded as open**. What this does settle: "Bobina de Taca" is not a
+stray name for Tragabolas 2's missing coil — on the branch measured here it
+fires from Tragabolas 1's own handler, immediately ahead of that same
+handler's own coil 8, and Hole 2's handler (`sub_D9CAB`) never reaches it.
+
+**The two holes share a flag, and that is established, not guessed.**
+`sub_D9CAB` (Hole 2) sets `4134:0027 = 1` on its OKI-cue branch;
+`sub_D9B91` (Hole 1) reads that same cell to pick the Star Ride award,
+`0x989680` (10,000,000) when it is set, `0xE4E1C0` (15,000,000) when it is
+clear — the manual's own two different Tragabolas Star Ride figures (3.3.8)
+are produced by **one code path, Hole 1's, selected by a flag Hole 2's own
+contact sets.** Both halves of that are read directly out of the two
+routines above; the connection between them is the new fact.
+
+**Hypothesis, not established, from that shared flag:** the two scoops may
+share a physical ball-return path, with `4134:0027` recording which of the
+two most recently fed it — which would bear directly on this document's own
+open question of what frees a ball sitting in Hole 2. Nothing traced here
+shows a physical mechanism, only a shared software flag; a real machine or
+a look at the two holes' own ball paths (manual figura, if one exists, or a
+teardown) would settle it.
 
 **A second correction: `413C:00F0`/`00F2` is the running score, not "a
 bonus."** Three handlers writing the same dword settle it against the
@@ -1847,22 +1880,32 @@ ball never does. What would settle it: the MAME debugger on 80188 command
 
 **Confidence:** confirmed for the dispatch-table read, done directly against
 the ROM (`D77AE` → `sub_D9CAB` for Hole 2, no `qout_push`; `D7798` →
-`sub_D9B91` for Hole 1, which reaches `sub_D823B` → coil 13 and `sub_D9B49`
-→ coil 8 on one traced branch of several), for the score-not-bonus
-correction (three handlers, three manual-matching values), and for
-`sub_2CFB`'s ten calls and their identities; confirmed by live measurement
-for Hole 2's silence, Hole 1's coil 13/coil 8 sequence on the branch two
-fresh games both took, and the sweep's live order. Open: which player-visible
-condition selects Hole 1's branch (named cells: `0026`, `0027`, `0028`,
-`413C:00F4`, `:010E`, `:010F`, `0002E`, `00EE`/`:0101`); what, if anything,
-ever frees a ball sitting in Hole 2; and coil 16 outside single-ball play.
+`sub_D9B91` for Hole 1 — gated on `413C:00F4 != 9`, verified byte for byte —
+which reaches `sub_D823B` → coil 13 and `sub_D9B49` → coil 8 on one traced
+branch of several), for the segment on every `4134:` cell (`0026`, `0027`,
+`0028`, `002E` — each checked for the absence of an ES-override prefix, not
+assumed), for the shared-flag fact (`4134:0027`, read directly out of both
+routines), for the score-not-bonus correction (three handlers, three
+manual-matching values), and for `sub_2CFB`'s ten calls and their
+identities; confirmed by live measurement for Hole 2's silence, Hole 1's
+coil 13/coil 8 sequence on the branch two fresh games both took, and the
+sweep's live order. Open: which player-visible condition selects Hole 1's
+branch (named cells: `4134:0026/0027/0028/002E`, `413C:00F4`, `:010E`,
+`:010F`, `413C:00EE`/`:0101`); what the untraced `D9C8A` branch's two
+commands (`0xF2`, `0xF1`) do; whether the two holes share a physical return
+path (a hypothesis, not established); what, if anything, ever frees a ball
+sitting in Hole 2; and coil 16 outside single-ball play.
 
 **Disposition:** hypothesis **answered** for Hole 2 (no coil, on two
-independent kinds of evidence, now at the correct address) and for the
-sweep's coil list (confirmed, not merely named); **corrected** for Hole 1
-(Taca-then-coil-8 is real, but conditional, on the address and mechanism
-now traced end to end rather than assumed); **open** for the gating cells'
-meaning and for coil 16 outside the cases measured here.
+independent kinds of evidence, now at the correct address and segment) and
+for the sweep's coil list (confirmed, not merely named); **corrected** for
+Hole 1 (Taca-then-coil-8 is real, but conditional, and its dispatch gate is
+the opposite polarity from this addendum's first round, on the address,
+segment and mechanism now traced end to end rather than assumed); **new**
+for the shared `4134:0027` flag explaining the manual's two Star Ride
+figures; **open** for the gating cells' player-visible meaning, the
+`D9C8A` branch, the shared-return-path hypothesis, and coil 16 outside the
+cases measured here.
 
 ---
 
