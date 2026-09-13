@@ -1728,6 +1728,145 @@ driver-latch count and the three complementary pairs without naming the
 coils; this pins all 16 to the manual's own numbering and confirms the split
 with the manual's own circuit description.
 
+### Addendum (2026-09-13, Task 13): Tragabolas 2, the ball-search sweep, and coil 16
+
+**Hole 2 (Tragabolas 2, code `0x21`, C31) has no coil.** The manual's 2.3.1
+coil list runs 01-21 and names "Bobina Tragabolas 1" (coil 8), with no
+counterpart for Tragabolas 2 anywhere in it; "Bobina de Taca" (coil 13) is a
+separate line, and Tragabolas 2 appears in the manual only as a contact
+(2.1.1), a lamp (2.2.2 — LC17, LC37, LC50) and a scoring rule (3.3.8), never
+as a coil. The 80188's own in-play dispatch agrees: code `0x21`'s entry in
+the `CS:0527` jump table (`D7723`) loads a byte from `413C:0127` and calls
+`sub_D9739` — a pure scoring routine (an OKI cue via `sub_D0B70(0x14)`, a
+bonus add into `413C:00F0/00F2`) with **no `qout_push` call anywhere in it**,
+so no Z80 command and therefore no coil can result. Measured in emulation:
+routing a ball to Hole 2 delivers code `0x21` to the switch-code shadow
+`413C:00D6`, confirming the contact reaches the 80188, and
+`coreGlobals.solenoids` stays `0` for the following 900+ frames (15 s at
+60 Hz — three times the 300-frame window checked), reproduced on two runs.
+
+Hole 1 (Tragabolas 1, code `0x22`, C23) dispatches through the identical
+pattern one entry later (`D772E` → `sub_D9739`, same routine, the data byte
+at `413C:0128` instead) — so entering either hole scores through the same
+generic path. But Hole 1 alone is followed by real coil activity: coil 13
+(Taca) fires about 3.2 s after the contact and coil 8 (Tragabolas 1) about
+3.75 s after that, reproduced identically on two separate runs. So "Bobina
+de Taca" is not a stray name for Tragabolas 2's missing coil — it is tied to
+Tragabolas 1's own ball return, not to Hole 2, which triggers neither coil.
+
+**The ball-search sweep (`sub_2CFB`, F15's "run the ball-search coil
+sequence, wait, repeat") pulses eight coils, and neither Taca nor the
+Jupiter release.** Its ten calls, each separated by the `sub_2D3B`/`sub_2D41`
+delay, are `sub_0957`, `sub_08FF` (both clear a bit of the J1 state byte
+`$C008` and send it — F6, not a coil port), then `sub_06DB`(7), `sub_06F8`(9),
+`sub_0715`(10), `sub_0732`(11), `sub_074F`(12), `sub_07E0`(8), `sub_0789`(14),
+`sub_07A6`(15) — coils 7, 9, 10, 11, 12, 8, 14 and 15 in that call order.
+Neither `sub_076C` (13, Taca) nor `sub_07C3` (16, Sueltabolas de Jupiter) is
+called anywhere in `sub_2CFB`. Re-measured in emulation at a fresh ball start
+(plain `iomoon`): the live solenoid trace shows exactly this order once,
+`0x0040, 0x0100, 0x0200, 0x0400, 0x0800, 0x0080, 0x2000, 0x4000`, with no
+`0x1000` (13) or `0x8000` (16) anywhere in it.
+
+This is a positive datum for Hole 2 having no kicker — the firmware's own
+ball-recovery sweep does not treat Taca as a ball-freeing device either —
+but it is not proof by itself: the sweep recovers *missing trough balls*, so
+skipping 13 and 16 only shows neither is wired into *that* recovery. It says
+nothing about what frees a ball already captured in Hole 2 or in Jupiter.
+Jupiter's own release is coil 16, fired by a different routine entirely
+(`sub_2C41`, which calls `sub_07C3` at both `2C54` and `2C5C` — i.e.
+regardless of which way its own three-Jupiter-contact test comes out).
+
+**Coil 16 was not observed firing in about 46 s of normal single-ball play**
+(plain `iomoon`: coin, START, plunge, 2700 frames), and the one-time
+ball-search sweep above does not touch it either. That is an observation,
+not proof it never fires: `sub_2C41` exists and calls `sub_07C3`
+unconditionally on both outcomes of its own test, and the project's own ball
+simulator already models "a legitimate Jupiter lock… released by the game
+through coil 16" (`pinmame/src/wpc/sims/sleic/iomoon.c`) — a genuine
+two-ball Jupiter lock or a multiball might reach it where a single default
+ball never does. What would settle it: the MAME debugger on 80188 command
+`0xEB`'s handler (`2AB0`) and the coil-16 wrapper, or a real machine.
+
+**Confidence:** confirmed for the dispatch-table read (`D7723`/`D772E` →
+`sub_D9739`, no `qout_push`) and for `sub_2CFB`'s ten calls and their
+identities; confirmed by live measurement for Hole 2's silence, Hole 1's
+coil 13/coil 8 sequence, and the sweep's live order; open for what, if
+anything, ever frees a ball sitting in Hole 2, and for coil 16 outside
+single-ball play.
+
+**Disposition:** hypothesis **answered** for Hole 2 (no coil, on two
+independent kinds of evidence) and for the sweep's coil list (confirmed,
+not merely named); **open** for coil 16 outside the cases measured here.
+
+---
+
+## F18 — The lamp matrix
+
+**Statement.** The service manual's figure 7-7 gives (column,row) -> LC
+number, but its OCR is damaged in places, so the table below is **measured**
+from the firmware's own sequential lamp test rather than transcribed: the
+service menu's TEST LUCES 1 walks the controlled lamps LC1..LC64 one at a
+time, in the order the manual's 2.2.2 lists them, so the *N*th single-lamp
+step is LC*N*.
+
+Reached, per F14's tree, at the country default (4, Netherlands — English;
+country 5 selects Spanish, see F11): TEST (`0x3F`) -> root (record 0), scroll
+twice, select -> record 3 (TECHNICAL — F14's own tree; TECNICO in the
+manual/Spanish) -> select at once -> record 22 (BOARD TEST / the manual's
+TEST TABLERO) -> scroll once, select -> record 25 (LIGHTS / LUCES) -> select
+at once -> record 35, the walk itself, on-screen "- LIGHT TEST -". F14
+already shows record 0's own three items rendering identically in English
+and Spanish (just relabelled), so records 3/22/25/35 are expected, not
+verified here, to be the same positions in the Spanish table at `0x0D08`.
+Captured with `scripts/keyscripts/iomoon-lamptest.keys` and a temporary probe
+in `SLEIC_interface_update` printing `coreGlobals.lampMatrix` on every
+column change (removed before commit — nothing in the driver carries it).
+
+**The walk is monotonic and single-lamp — verified, not assumed.** Over the
+full 64 steps plus the wrap back to LC1: every non-zero value logged is a
+power of two (one bit at a time), the 64 (column,bit) pairs are pairwise
+distinct (no repeats within the 64), and step 65 reproduces step 1 exactly
+(column 7, bit 7) — a complete, non-skipping, non-repeating cycle of 64.
+Reproduced down to the millisecond on two independent runs: the `iomoont`
+tournament-mod set navigated per the path above, and the plain `iomoon` set
+as a cross-check (chip 01 is the only ROM these two sets do not share, and it
+carries no part of the menu tree or the lamp test).
+
+**The 64-lamp table**, Z80 lamp column (0-7) x row/bit (0-7) -> LC:
+
+| col \ row | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|---|
+| 0 | LC20 | LC21 | LC22 | LC23 | LC24 | LC25 | LC26 | LC27 |
+| 1 | LC28 | LC29 | LC55 | LC54 | LC53 | LC56 | LC52 | LC51 |
+| 2 | LC38 | LC41 | LC44 | LC46 | LC48 | LC49 | LC37 | LC36 |
+| 3 | LC2 | LC3 | LC4 | LC5 | LC6 | LC7 | LC8 | LC9 |
+| 4 | LC10 | LC11 | LC12 | LC13 | LC17 | LC16 | LC15 | LC14 |
+| 5 | LC61 | LC62 | LC63 | LC64 | LC57 | LC58 | LC59 | LC60 |
+| 6 | LC30 | LC31 | LC32 | LC33 | LC34 | LC35 | LC50 | LC39 |
+| 7 | LC40 | LC43 | LC47 | LC45 | LC42 | LC18 | LC19 | LC1 |
+
+**Agrees with figure 7-7 everywhere it is legible — no disagreement found.**
+30 of the 64 cells are individually readable in the manual's own OCR text
+(`sleic_io_moon_manual_es.md`, "figura 7-7"): all of column 0 (LC20-27, read
+as a run against the sequential `(0,1)..(0,7)` labels), all of column 2
+(LC38, 41, 44, 46, 48, 49, 37, 36), (1,0)=28, (3,0)=2, (4,0)=10, (4,1)=11,
+(4,3)=13, (4,4)=17, (4,5)=16, (4,6)=15, (4,7)=14, (5,0)=61, (6,0)=30,
+(6,4)=34, (7,0)=40 and (7,7)=1. Every one of the 30 agrees with the
+measured table above. The rest of the figure's OCR is too garbled — merged
+color codes, dropped digits, coordinates and values out of registration — to
+read a value from with confidence, so it is not transcribed.
+
+**Confidence:** confirmed — the walk's own single-lamp, non-repeating
+structure over a full 64-step cycle is the primary evidence, reproduced on
+two independent ROM sets; the legible fraction of figure 7-7 is independent
+corroboration, with zero disagreements across 30 cross-checked cells.
+
+**Disposition:** hypothesis **answered** — F7 established the 64-lamp,
+8-column x 8-bit matrix and its two-bank blink model without naming which
+physical lamp sits at which (column,bit); there was no full LC map committed
+before this. It is now measured rather than transcribed, closing that gap
+the same way F16 closed the switch-matrix one.
+
 ---
 
 ## What changed

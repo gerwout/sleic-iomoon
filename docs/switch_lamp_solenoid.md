@@ -4,7 +4,7 @@
 
 The ports and codes below are read out of the Z80 ROM (`V1 3_05.bin`) in
 [`../asm/baseline-2026-09/`](../asm/baseline-2026-09/); findings **F5**, **F7**,
-**F15**, **F16** and **F17** of
+**F15**, **F16**, **F17** and **F18** of
 [`findings.md`](../asm/baseline-2026-09/findings.md) cover the switch-code map,
 the port roles, ball handling, the firmware's own switch-code-to-contact table
 and the driver-latch coil map, respectively. The switch and driver C-numbers
@@ -198,6 +198,26 @@ goes to port `0x84` (active high), then the one-hot column strobe to port `0x83`
 (`0x01`–`0x80`), one column per Z80 interrupt. Each lamp has two bank bits — bank 1
 at `C0FF`–`C106` and bank 2 at `C107`–`C10E` — which together give steady-on,
 blinking and off; see [`z80_io_ports.md`](z80_io_ports.md).
+
+### The (column,row) matrix, measured (F18)
+
+The service manual's figure 7-7 gives (column,row) → LC number but its OCR is
+damaged in places, so the table below is **measured** from the firmware's own
+sequential lamp test (service menu TEST LUCES 1, walking LC1..LC64 in order)
+rather than transcribed, and verified monotonic and single-lamp over the full
+64-step cycle before being trusted. It agrees with every one of the 30 cells
+of figure 7-7 legible enough to read, with no disagreement found.
+
+| col \ row | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|---|
+| 0 | LC20 | LC21 | LC22 | LC23 | LC24 | LC25 | LC26 | LC27 |
+| 1 | LC28 | LC29 | LC55 | LC54 | LC53 | LC56 | LC52 | LC51 |
+| 2 | LC38 | LC41 | LC44 | LC46 | LC48 | LC49 | LC37 | LC36 |
+| 3 | LC2 | LC3 | LC4 | LC5 | LC6 | LC7 | LC8 | LC9 |
+| 4 | LC10 | LC11 | LC12 | LC13 | LC17 | LC16 | LC15 | LC14 |
+| 5 | LC61 | LC62 | LC63 | LC64 | LC57 | LC58 | LC59 | LC60 |
+| 6 | LC30 | LC31 | LC32 | LC33 | LC34 | LC35 | LC50 | LC39 |
+| 7 | LC40 | LC43 | LC47 | LC45 | LC42 | LC18 | LC19 | LC1 |
 
 ---
 
