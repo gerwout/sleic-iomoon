@@ -1601,15 +1601,22 @@ resolves independently to C3 COINS INPUT / MONEDERO — the code the coin
 mechanism sends while test mode is open (F5, F11), which is exactly where
 the CONTACTOS test screen reads it.
 
-**Two discrepancies, recorded not resolved.**
+**Three discrepancies, recorded not resolved.**
 - The ROM pairs C10 with R.C.FLIPPER and C11 with L.C.FLIPPER; the manual's
   own 2.1.1 table has C10 as "Contacto de corte de flipper izquierdo" and
   C11 as "...derecho" — the opposite way round.
 - `docs/switch_lamp_solenoid.md`'s C39-C50 rows disagree with both the ROM
   and the manual's 2.1.1 table, which agree with each other over that range
-  (e.g. C44 = Planeta 1 / JUPITER 1 in the manual and the ROM, "Rampa 1" in
-  the docs; C47 = Salida Rampa 2 in the manual and the ROM, "Entrada Rampa 1"
-  in the docs).
+  (e.g. C47 = Salida Rampa 2 in the manual and the ROM, "Entrada Rampa 1" in
+  the docs; C50 = Entrada en Jupiter in the manual and the ROM, "Contacto de
+  Servicio" in the docs).
+- Codes `0x2A`-`0x2C` (C44/C45/C46) are JUPITER 1/2/3 in the ROM, in both
+  languages, where the manual's 2.1.1 contact list names the same three
+  C-numbers Planeta 1/2/3 — the ROM is what runs. The manual's own lamp
+  list agrees with the ROM here (LC51 *Planeta 5*, LC61 *Planeta 1*, LC62
+  *Planeta 2* are lamps, not contacts), and these three codes are already
+  the second ball device Z80 command `0xEB` (handler `2AB0`) counts above:
+  the manual's Júpiter two-ball lock.
 
 **Confidence:** confirmed — table location, record layout and pool decode
 are mechanical and self-tested; the C-numbers and names are cross-checked
