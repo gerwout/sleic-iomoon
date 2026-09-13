@@ -128,6 +128,16 @@ table records with no resolvable name and do not exist; `0x32` duplicates
 
 ## Lamps (64 positions)
 
+<p align="center">
+  <a href="../images/iomoon-playfield.jpeg" target="_blank" rel="noopener">
+    <img src="../images/iomoon-playfield_thumb.jpg" alt="IO Moon playfield, unpopulated, insert legends readable" width="640">
+  </a>
+  <br>
+  <em>The unpopulated lower playfield. The insert legends are readable, which is what the
+  light names in this table are checked against.</em>
+</p>
+
+
 ### Fixed Lamps (General Illumination)
 
 General illumination is controlled by RELE2 on the power board. These are not individually addressable.

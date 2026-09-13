@@ -56,6 +56,21 @@ both are given throughout.
 
 ---
 
+<p align="center">
+  <a href="../images/iomoon-playfield.jpeg" target="_blank" rel="noopener">
+    <img src="../images/iomoon-playfield_thumb.jpg" alt="IO Moon playfield, unpopulated, insert legends readable" width="700">
+  </a>
+  <br>
+  <em>The lower playfield with nothing mounted on it, which is the clearest record of the
+  insert legends this page names.</em>
+</p>
+
+Every light named below is readable on that photograph, including the three fixed-award
+inserts `3 MILLIONS`, `6 MILLIONS` and `9 MILLIONS` down the right of the monolith, which
+the manual's own light list does not name.
+
+---
+
 ## The playfield, contact by contact
 
 Every scoring device, with the manual's contact number (**C*n***, §2.1.1), the

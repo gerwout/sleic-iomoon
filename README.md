@@ -14,6 +14,7 @@ This repository documents the results of an extensive reverse engineering effort
 
 ## Table of Contents
 
+- [The Machine](#the-machine)
 - [Hardware Overview](#hardware-overview)
 - [Repository Structure](#repository-structure)
 - [Scripts & Tools](#scripts--tools)
@@ -24,6 +25,72 @@ This repository documents the results of an extensive reverse engineering effort
 - [Manuals](#manuals)
 - [Related Work](#related-work)
 - [License](#license)
+
+---
+
+## The Machine
+
+<p align="center">
+  <a href="images/iomoon-full-view-rare-sideart.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-full-view-rare-sideart_thumb.jpg" alt="IO Moon, complete machine" width="420">
+  </a>
+  <a href="images/iomoon-side-art-rare.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-side-art-rare_thumb.jpg" alt="IO Moon cabinet side art with the red IO lettering" width="420">
+  </a>
+  <br>
+  <em>Left: the complete machine, backbox lit, the DMD showing <code>Partida&nbsp;150.000.000</code>.
+  Right: the cabinet side art. Click either for the full photograph.</em>
+</p>
+
+**The side art here carries a large red `IO` that is not on every machine.** The artwork
+underneath — the cratered moon, the comet streaks, the black slab and the space station — is
+the usual IO Moon cabinet decoration, and it is normally seen with no lettering over it. Whether
+the lettered version is a factory variant, a run for one market, or something applied to this
+cabinet later is **not established**. A second lettered machine, or SLEIC or Petaco sales
+material showing one, would settle it.
+
+<p align="center">
+  <a href="images/iomoon-cabinet.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-cabinet_thumb.jpg" alt="IO Moon backbox side art" width="270">
+  </a>
+  <a href="images/iomoon-coin-door.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-coin-door_thumb.jpg" alt="IO Moon coin door" width="405">
+  </a>
+  <br>
+  <em>The backbox side, which carries the starfield art without lettering, and the coin door —
+  one coin slot, with the START button on the door rather than on the lockdown bar.</em>
+</p>
+
+<p align="center">
+  <a href="images/iomoon-playfield.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-playfield_thumb.jpg" alt="IO Moon playfield, unpopulated" width="700">
+  </a>
+  <br>
+  <em>The lower playfield, unpopulated, with the insert legends readable.</em>
+</p>
+
+The bare playfield is the clearest record of the insert legends, and they match the manual's own
+light names: `LITE ORBIT X2`, `LITE AUTODROP PROBE`, `LAGRANGE ESCAPE`, `SPECIAL DROP TARGET`,
+`STAR RIDE`, `IMPACT COUNT`, `ORBIT FLIP`, `LITTLE MULTIBALL`, `EXTRA BALL`, `MULTIBALL`,
+`LITE ORBITS SPELL`, the two outlane `SPECIAL`s, and three fixed-award inserts reading
+`3 MILLIONS`, `6 MILLIONS` and `9 MILLIONS`. What each of them does in play is in the
+[Complete Rule Set](docs/iomoon_game_rules.md). The screen-print legend along the bottom edge
+reads `TABLERO "iO" - 1º NEGRO` — the playfield board, first black pass.
+
+<p align="center">
+  <a href="images/iomoon-backglass-artwork.png" target="_blank" rel="noopener">
+    <img src="images/iomoon-backglass-artwork_thumb.jpg" alt="IO Moon backglass artwork" width="440">
+  </a>
+  <a href="images/iomoon-backglass-photo.png" target="_blank" rel="noopener">
+    <img src="images/iomoon-backglass-photo_thumb.jpg" alt="IO Moon translite, photographed" width="440">
+  </a>
+  <br>
+  <em>The backglass artwork, and the physical translite photographed at 7008 × 4672.
+  Both carry the SLEIC and Petaco marks.</em>
+</p>
+
+The monolith on the backglass is the one on the playfield, and the one the firmware calls the
+Monolito: the centre target bank the [rule set](docs/iomoon_game_rules.md) is built around.
 
 ---
 
