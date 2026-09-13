@@ -112,7 +112,7 @@ and doubles as the ball-over sensor, reporting code `0x43` instead of its own
 F16.** The ROM pairs C10 with R.C.FLIPPER and C11 with L.C.FLIPPER; 2.1.1 has
 it the opposite way round. C44–C46 read JUPITER 1/2/3 in the ROM, in both
 languages — the second ball device Z80 command `0xEB` counts (handler
-`2AB0`), what the manual elsewhere calls the Júpiter two-ball lock — where
+`2AB0`), what the manual elsewhere calls the Jupiter two-ball lock — where
 2.1.1's own contact list names the same three C-numbers *Planeta 1/2/3*
 instead. The manual's own lamp list uses *Planeta* for a different set of
 items (LC51/LC61/LC62, lamps rather than contacts), so 2.1.1's naming for

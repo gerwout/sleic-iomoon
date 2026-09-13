@@ -178,51 +178,84 @@ def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
     return scenes
 
 
-def decode_text(rows, glyphs, cell_w=8):
-    """The on-screen text in a decoded frame's rows, read by exact bitmap match.
+def _scan_face(rows, bits_to_label, height, cell_w):
+    """[(y, text), ...] for one glyph face, read by exact bitmap match.
 
-    `glyphs` is a glyph code -> row-bit-string table from
-    iomoon_strings.glyph_bitmaps() (all one height; degenerate/uniform
-    entries, including the space glyph, are already dropped there).  Every
-    (x, y) window of that height is tried; a match emits the glyph's
-    character and advances x by the full cell width, a miss advances by one
-    pixel, so text is found at any x rather than only multiples of the cell
-    width.  Since the space glyph is not in `glyphs`, a run of misses
-    between two matches on the same line becomes exactly one space, rather
-    than the naive "WAITINGFOR" (no gap) or a space per missed column.
-    Lines are read top to bottom and joined with ' / '.
+    `bits_to_label` maps a tuple of `height` row-bit-strings (each `cell_w`
+    wide) to the string to emit -- usually one character, but the score
+    face's digit+period glyphs stand for two.  Every (x, y) window of that
+    height is tried; a match emits its label and advances x by the full
+    cell width, a miss advances by one pixel, so text is found at any x
+    rather than only multiples of the cell width.
+
+    A run of misses between two matches on the same line becomes exactly
+    one space (rather than the naive "WAITINGFOR" with no gap, or a space
+    per missed column) -- this relies on the space glyph itself never being
+    in `bits_to_label` (iomoon_strings.glyph_bitmaps drops it, being a
+    uniform, all-zero bitmap that would match any blank window).
+
+    A line of exactly one matched glyph is dropped, not reported: a glyph
+    sparse enough to be mostly blank (the period is 7 blank rows and 2 lit
+    ones) can exact-match a fragment of a different, taller glyph sitting
+    over enough blank canvas -- e.g. the top half of a colon a few rows
+    above its own baseline reproduces the period's bitmap exactly. Such a
+    fragment is never adjacent to a second matched glyph on its own line,
+    while every genuine use of a sparse glyph here (a decimal point inside
+    a run of digits, a colon between two words) is. Requiring at least two
+    keeps every real line and drops exactly this class of noise.
     """
-    if not rows or not glyphs:
-        return ''
-    heights = {len(bits) for bits in glyphs.values()}
-    if len(heights) != 1:
-        return ''
-    h = heights.pop()
+    if not rows or not bits_to_label or len(rows) < height:
+        return []
     width = len(rows[0])
-    if width < cell_w or len(rows) < h:
-        return ''
-    bits_to_code = {tuple(bits): code for code, bits in glyphs.items()}
+    if width < cell_w:
+        return []
     binrows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
 
     lines = []
-    for y in range(len(rows) - h + 1):
-        window = binrows[y:y + h]
+    for y in range(len(rows) - height + 1):
+        window = binrows[y:y + height]
         chars, x, gap = [], 0, False
         while x <= width - cell_w:
-            code = bits_to_code.get(tuple(r[x:x + cell_w] for r in window))
-            if code is not None:
+            label = bits_to_label.get(tuple(r[x:x + cell_w] for r in window))
+            if label is not None:
                 if chars and gap:
                     chars.append(' ')
-                chars.append(iomoon_strings.GLYPHS.get(code, '?'))
+                chars.append(label)
                 gap = False
                 x += cell_w
             else:
                 if chars:
                     gap = True
                 x += 1
-        if chars:
-            lines.append(''.join(chars))
-    return ' / '.join(lines)
+        if len(chars) > 1:
+            lines.append((y, ''.join(chars)))
+    return lines
+
+
+def decode_text(rows, glyphs, score_glyphs=None, cell_w=8, score_cell_w=16):
+    """The on-screen text in a decoded frame's rows, read by exact bitmap match.
+
+    `glyphs` is the h=9 glyph code -> row-bit-string table from
+    iomoon_strings.glyph_bitmaps(); `score_glyphs`, if given, is the h=23
+    score/price label -> row-bit-string table from
+    iomoon_strings.score_glyph_bitmaps() (unverified against a captured
+    frame -- see that function).  Both faces are scanned independently over
+    the whole frame and their lines merged top to bottom, then joined with
+    ' / '.  See _scan_face for the matching and space/noise rules.
+    """
+    lines = []
+    for table, glyph_cell_w in ((glyphs, cell_w), (score_glyphs, score_cell_w)):
+        if not table:
+            continue
+        heights = {len(bits) for bits in table.values()}
+        if len(heights) != 1:
+            continue
+        is_score = table is score_glyphs
+        bits_to_label = {tuple(bits): (key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
+                          for key, bits in table.items()}
+        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w)
+    lines.sort(key=lambda yt: yt[0])
+    return ' / '.join(text for _, text in lines)
 
 
 def slug(text):
@@ -248,12 +281,18 @@ def main():
                           'font from for the text column; omitted, text is written empty')
     args = ap.parse_args()
 
-    glyphs = {}
+    glyphs, score_glyphs = {}, {}
     if args.rom:
         try:
-            glyphs = iomoon_strings.glyph_bitmaps(open(args.rom, 'rb').read())
+            rom_data = open(args.rom, 'rb').read()
         except OSError as e:
             print('%s: %s -- text column will be empty' % (args.rom, e), file=sys.stderr)
+        else:
+            try:
+                glyphs = iomoon_strings.glyph_bitmaps(rom_data)
+            except ValueError as e:
+                sys.exit('%s: malformed ROM (%s)' % (args.rom, e))
+            score_glyphs = iomoon_strings.score_glyph_bitmaps(rom_data)
 
     try:
         frames = parse_dump(args.dump)
@@ -281,7 +320,7 @@ def main():
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
                          'frames': len(scene),
-                         'text': decode_text(scene[-1][1], glyphs)})
+                         'text': decode_text(scene[-1][1], glyphs, score_glyphs)})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms', 'frames', 'text'])

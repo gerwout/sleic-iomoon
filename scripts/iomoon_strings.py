@@ -11,13 +11,19 @@ import struct
 import sys
 
 # Glyph indices, from the DMD font order: digits, space, then A..Z with N-tilde
-# wedged in after N.  Punctuation from the strings the service menu draws.
+# wedged in after N.  Punctuation (0x26-0x2f) is read off the h=9 face's own
+# bitmaps (glyph_bitmaps, table entry = code + 23), not guessed from context:
+# 0x28/0x29 by which way each paren bulges, 0x2c/0x2e/0x2f by counting and
+# spacing their lit blocks, 0x2b/0x2d by the comma-style tail on '.' and ';'.
+# 0x27 is left out: its bitmap is not a question mark (no gap between the
+# bowl and the tail, which one requires) and nothing else pins it -- an
+# unmapped code falls back to decode_string's own '{xx}' marker.
 GLYPHS = {i: str(i) for i in range(10)}
 GLYPHS[0x0A] = ' '
 for _i, _ch in enumerate('ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'):
     GLYPHS[0x0B + _i] = _ch
-GLYPHS.update({0x26: '!', 0x27: '?', 0x28: '(', 0x29: ')', 0x2a: '/',
-               0x2b: ':', 0x2c: '.', 0x2d: '-', 0x2e: ':', 0x2f: '*'})
+GLYPHS.update({0x26: '+', 0x28: '(', 0x29: ')', 0x2a: '/',
+               0x2b: ',', 0x2c: '.', 0x2d: ';', 0x2e: ':', 0x2f: '-'})
 
 CONTACT_TABLE_BASE = 0x0830   # record = base + code*5: Cnum | off16 | seg16, pointer into ENGLISH_POOL
 SPANISH_TABLE_BASE = 0x1438   # same layout, same code axis, pointer into SPANISH_POOL
@@ -36,19 +42,34 @@ FONT_BASE = 0x20000
 FONT_FACE_HEIGHT = 9
 FONT_CODE_OFFSET = 23
 
+# The large score/price face, past the initial one-byte-wide run (docs/
+# dmd_graphics.md): 21 entries of h=23, W=2 (16 px).  Its index is the glyph
+# directly, not code + an offset -- table index 0 renders a 16x23 '0'.
+SCORE_FACE_HEIGHT = 23
+SCORE_FACE_WIDTH = 2
+# 0-9 plain digits, 10-19 the same digits with an attached decimal point (a
+# plain 2x2 dot at bottom right, not a comma's tail -- a Spanish-market
+# machine's peseta-style NNN.NNN pricing), 20 a colon (two stacked blocks,
+# matching the h=9 face's ':' shape scaled up).  Unverified against a
+# captured frame: no dump on disk shows an in-play score.
+SCORE_FACE_LABELS = [str(d) for d in range(10)] + ['%d.' % d for d in range(10)] + [':']
+
 
 def _font_entries(data, base=FONT_BASE):
     """[(offset, height, width_bytes), ...], walking the glyph table from `base`.
 
     Stops at the first header whose byte 4 cannot hold height*width (over
     255, as for a glyph larger than the on-screen face) -- walking this
-    reading of the header has not been verified past that point.
+    reading of the header has not been verified past that point -- or whose
+    body would run past the end of `data`, as for a truncated ROM image.
     """
     out = []
     off = base
     while off + 6 <= len(data):
         h, w, hw = data[off], data[off + 2], data[off + 4]
         if h == 0 or w == 0 or hw != h * w:
+            break
+        if off + 6 + 3 * h * w > len(data):
             break
         out.append((off, h, w))
         off += 6 + 3 * h * w
@@ -62,6 +83,9 @@ def glyph_bitmaps(data):
     bitmap) is dropped: it would match any blank or solid window on the
     panel rather than one particular glyph, so a caller wanting a space
     between words has to notice the gap itself rather than match one.
+
+    Raises ValueError if no matchable glyph is found at all -- a truncated
+    or otherwise wrong ROM image, not a valid one with an empty face.
     """
     entries = _font_entries(data)
     out = {}
@@ -72,9 +96,35 @@ def glyph_bitmaps(data):
         off, h, w = entries[idx]
         if h != FONT_FACE_HEIGHT or w != 1:
             continue
-        rows = [format(data[off + 6 + r], '08b') for r in range(h)]
+        row_bytes = data[off + 6:off + 6 + h]
+        if len(row_bytes) < h:
+            continue
+        rows = [format(b, '08b') for b in row_bytes]
         if len(set(rows)) > 1:
             out[code] = rows
+    if not out:
+        raise ValueError('no matchable glyphs in the h=%d face at 0x%x -- '
+                          'truncated or wrong ROM image?' % (FONT_FACE_HEIGHT, FONT_BASE))
+    return out
+
+
+def score_glyph_bitmaps(data):
+    """Label ('0'-'9', '0.'-'9.', ':') -> list of row bit strings, for the h=23 score face.
+
+    Unlike glyph_bitmaps, an empty result is not an error: this face is
+    unverified against any captured frame (see SCORE_FACE_LABELS), so a ROM
+    image that has the on-screen h=9 face but not this one is not
+    necessarily malformed.
+    """
+    entries = [e for e in _font_entries(data) if e[1] == SCORE_FACE_HEIGHT and e[2] == SCORE_FACE_WIDTH]
+    out = {}
+    for label, (off, h, w) in zip(SCORE_FACE_LABELS, entries):
+        row_bytes = data[off + 6:off + 6 + h * w]
+        if len(row_bytes) < h * w:
+            continue
+        rows = [''.join(format(b, '08b') for b in row_bytes[r * w:r * w + w]) for r in range(h)]
+        if len(set(rows)) > 1:
+            out[label] = rows
     return out
 
 
@@ -168,8 +218,38 @@ def _self_test(data):
     w_bits = ('00000000', '10000010', '11010110', '11010110', '11111110',
               '01111100', '01101100', '01000100', '00000000')
     assert tuple(glyphs[0x22]) == w_bits, 'glyph 0x22 (W) bitmap does not match the boot frame'
-    assert len(glyphs) == 47, 'expected 47 non-space codes in the h=9 face, got %d' % len(glyphs)
+    # 47 defined codes (48 minus space) minus 0x27, left unmapped -- see GLYPHS.
+    assert len(glyphs) == 46, 'expected 46 non-space codes in the h=9 face, got %d' % len(glyphs)
     print('font self-test OK: %d matchable glyphs in the h=9 face' % len(glyphs))
+
+    # A truncated ROM (a plausible partial chip dump) must fail cleanly, not
+    # crash: cut right after entry 23's 6-byte header (off 0x202B2), with
+    # none of its body present.
+    try:
+        glyph_bitmaps(data[:0x202B8])
+        raise AssertionError('glyph_bitmaps should reject a font table truncated mid-entry')
+    except ValueError:
+        pass
+    print('truncated-ROM self-test OK: glyph_bitmaps raises ValueError instead of crashing')
+
+    score = score_glyph_bitmaps(data)
+    assert len(score) == 21, 'expected 21 score-face labels, got %d' % len(score)
+    for d in range(10):
+        digit, dotted = score[str(d)], score['%d.' % d]
+        # the '.' variant is the plain digit plus a small square mark at bottom
+        # right (rows 19-20, cols 13-14); a plain dot, not a comma's tail --
+        # nothing outside that 2x2 box ever differs, confirmed against all ten
+        for i in range(SCORE_FACE_HEIGHT):
+            if digit[i] == dotted[i]:
+                continue
+            assert i in (19, 20), 'digit %d.: mark row %d outside rows 19-20' % (d, i)
+            assert digit[i][:13] == dotted[i][:13] and digit[i][15:] == dotted[i][15:], (
+                'digit %d.: mark spread outside cols 13-14' % d)
+    # the colon is two identical same-width blocks, one above the other, nothing else lit
+    lit = [i for i, r in enumerate(score[':']) if r.count('1')]
+    assert len(lit) == 8 and lit == [7, 8, 9, 10, 14, 15, 16, 17], lit
+    assert len({score[':'][i] for i in lit}) == 1, 'colon: both blocks must be the same shape'
+    print('score-face self-test OK: %d labels, digit/period pairs and colon shape check out' % len(score))
 
 
 if __name__ == '__main__':

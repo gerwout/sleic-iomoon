@@ -271,6 +271,18 @@ one is real. An untested offset in that range can select a uniform (blank or
 solid) bitmap that then matches large blank or lit regions of an unrelated
 screen rather than one glyph, so guessing it is unsafe, not just unproven.
 
+Past the initial one-byte-wide run, at file offset `0x218B4`, sit 62 further
+entries of mixed shape: 21 of `height=23, width=2` (16 px), 21 of `(12, 1)`,
+20 of `(16, 1)`. The `(23, 2)` set is the large score/price digits, and it
+needs no offset pinned: its entry index is the glyph directly. Entry 0 of
+that set renders a 16x23 `0`, entry 1 a `1`, entry 2 a `2`. Entries 10-19 are
+the same ten digits with one small square mark added at bottom right (rows
+19-20 of 23, columns 13-14 of 16) — a plain dot, not a comma's tail, so a
+decimal point, consistent with a Spanish-market machine's peseta-style
+`NNN.NNN` pricing. Entry 20 is a colon: two of the h=9 face's own colon
+blocks, scaled to this face's width. This face is not verified against any
+captured frame — no dump on disk shows an in-play score.
+
 ### Custom Text Encoding
 
 The 80188 game code uses a **custom character encoding** for DMD text, not standard ASCII:
@@ -282,8 +294,41 @@ The 80188 game code uses a **custom character encoding** for DMD text, not stand
 0x19 = 'Ñ'      0x1A = 'O'    0x1B = 'P'    0x1C = 'Q'    0x1D = 'R'
 0x1E = 'S'      0x1F = 'T'    0x20 = 'U'    0x21 = 'V'    0x22 = 'W'
 0x23 = 'X'      0x24 = 'Y'    0x25 = 'Z'
-0x2C = ','      0x2E = '.'    0x2F = newline  0x00 = terminator
+0x26 = '+'      0x28 = '('    0x29 = ')'    0x2A = '/'
+0x2B = ','      0x2C = '.'    0x2D = ';'    0x2E = ':'    0x2F = '-'
+0x00 = terminator
 ```
+
+`0x26`-`0x2F` are read off the h=9 face's own bitmaps (`glyph_bitmaps`, table
+entry = code + 23), the same way entry 57 pinned the face itself against a
+captured `W` — not inherited from either this table's own prior text or from
+`iomoon_strings.py`'s `GLYPHS`, both of which disagreed with the bitmaps and
+with each other. Read by eye: `0x26` is a vertical bar crossed by a
+horizontal one -- a plus sign, not `!`. `0x28`/`0x29` bulge toward the
+opening they curve around, confirming them as `(` and `)`. `0x2A` is a
+single diagonal stroke, upper right to lower left -- `/`. `0x2B` is a 2x2
+block with a tail trailing down-left -- a comma, not a colon. `0x2C` is that
+same 2x2 block alone, on the baseline -- a period. `0x2D` is two of that
+block stacked with a gap, plus a comma's tail below the lower one -- a
+semicolon, not a hyphen. `0x2E` is the same two stacked blocks with no
+tail -- a colon. `0x2F` is a single one-row horizontal bar -- a hyphen, which
+rules out both this table's former "newline" claim (a control code has no
+bitmap to have measured) and `GLYPHS`' former `'*'`.
+
+`0x27`'s bitmap is left open. `GLYPHS` used to say `?`, but there is no gap
+between the bowl and the tail, which a question mark requires — the shape
+is continuous through the middle rows where a real `?` has a break before
+the dot. What it actually is isn't settled from the bitmap alone; it would
+take a captured frame that shows this code in use, or a string-pool entry
+that resolves to it, the way `W` pinned the h=9 face itself.
+`iomoon_strings.py`'s `GLYPHS` leaves this code unmapped rather than guess.
+
+None of this touches any decoded string: scanning both `ENGLISH_POOL` and
+`SPANISH_POOL` (and so F16's contact table, which is drawn from the same
+pools), the only code `>= 0x26` either pool ever uses is `0x2C`, 17 times —
+one of the codes that was already right. The four wrong mappings only
+affected the DMD frame decoder, and only for a screen that actually draws
+one of these marks (on the captures examined so far, none does).
 
 A **character mapping table** at ROM offset `0x809B0` (96 bytes) maps ASCII codes `0x20`–`0x7F` to glyph indices.
 

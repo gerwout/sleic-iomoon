@@ -40,7 +40,7 @@ both are given throughout.
 | *Fondo Bancada* | inner bank | the target behind the bank |
 | *Tragabolas* | scoop / hole | one of the two ball-swallowing holes |
 | *Expulsor* | shooter / kicker | one of the two side kickers |
-| *Sueltabolas* | ball release | the Júpiter release coil |
+| *Sueltabolas* | ball release | the Jupiter release coil |
 | *Taca* | — (no English name) | part of Tragabolas 1's return (F17) |
 | *Bola Extra* | extra ball | |
 | *Especial* | Special | |
@@ -147,7 +147,7 @@ C-number order (F16).
 
 The bank's reset coil is 18 (*Bancada de dianas*), on the expansion board.
 
-### Scoops, shooters and Júpiter
+### Scoops, shooters and Jupiter
 
 | Device | C# | Code | col.bit | Firmware name (EN / ES) | Coil |
 |---|---|---|---|---|---|
@@ -155,10 +155,10 @@ The bank's reset coil is 18 (*Bancada de dianas*), on the expansion board.
 | Scoop 2 | C31 | `0x21` | c2.7 | HOLE 2 / TRAGABOLAS 2 | **none** |
 | Left shooter | C15 | `0x16` | c1.4 | LEFT SHOOTER / EXPULSOR IZQ. | 14 (*Expulsor 1*) |
 | Right shooter | C16 | `0x15` | c1.3 | RIGHT SHOOTER / EXPULSOR DERECHO | 15 (*Expulsor 2*) |
-| Júpiter entry | C50 | `0x31` | c4.7 | ENTRADA JUPITER | — |
-| Júpiter 1 | C44 | `0x2A` | c4.0 | JUPITER 1 | — |
-| Júpiter 2 | C45 | `0x2B` | c4.1 | JUPITER 2 | — |
-| Júpiter 3 | C46 | `0x2C` | c4.2 | JUPITER 3 | — |
+| Jupiter entry | C50 | `0x31` | c4.7 | ENTRADA JUPITER | — |
+| Jupiter 1 | C44 | `0x2A` | c4.0 | JUPITER 1 | — |
+| Jupiter 2 | C45 | `0x2B` | c4.1 | JUPITER 2 | — |
+| Jupiter 3 | C46 | `0x2C` | c4.2 | JUPITER 3 | — |
 
 > **Scoop 1 is kicked out, scoop 2 is not** (F17 addendum). Scoop 1 fires coil
 > 13 (*Taca*) and then coil 8 (*Tragabolas 1*), measured reproducibly — *Taca*
@@ -172,7 +172,7 @@ The bank's reset coil is 18 (*Bancada de dianas*), on the expansion board.
 > **C44–C46: the ROM says JUPITER, the manual says *Planeta*.** §2.1.1 names
 > these three contacts *Planeta 1/2/3*; the firmware names them JUPITER 1/2/3
 > in both languages, and they are the ball device the 80188 counts with command
-> `0xEB` — the Júpiter lock §3.3.7 describes (F16). The ROM is what runs. The
+> `0xEB` — the Jupiter lock §3.3.7 describes (F16). The ROM is what runs. The
 > manual's own lamp list uses *Planeta* for three different items (LC51, LC61,
 > LC62 — lamps, not contacts), so §2.1.1's naming here is corroborated nowhere
 > else in the manual.
@@ -319,7 +319,7 @@ matrix positions in spelling order:
 
 Letters are lit at bull's-eye 1 while LD1 is on (§3.3.5), and the firmware keeps
 the count in a single byte, `[413C:0102]`, hard-capped at 6. Completing the word
-gates three things: Júpiter holds balls at all (§3.3.7), the Monolith offers
+gates three things: Jupiter holds balls at all (§3.3.7), the Monolith offers
 LPA3 / Little Multiball (§3.3.3), and lane 10 pays its larger award (§3.3.1).
 Those are the three places the firmware tests the count against 6.
 
@@ -370,7 +370,7 @@ ports whose every bit is already accounted for (F17).
 | 9–12 | Bumper 2–5 | `$86` b0–b3 | |
 | 13 | Taca | `$86` b4 | fires before coil 8 on a scoop-1 entry (F17) |
 | 14 / 15 | Expulsor 1 / 2 | `$86` b5/b6 | left / right shooter |
-| 16 | Sueltabolas de Júpiter | `$86` b7 | the Júpiter ball release |
+| 16 | Sueltabolas de Júpiter | `$86` b7 | the Jupiter ball release |
 | 17 | Salida de bolas | expansion TA/TB/TC 1 | trough kicker |
 | 18 | Bancada de dianas | expansion 5 | **the drop-bank reset** |
 | 19 | Diverter de Rampa | expansion 2 | Ramp 1's diverter (Lagrange) |
@@ -379,7 +379,7 @@ ports whose every bit is already accounted for (F17).
 
 Ball recovery uses coils 7, 9, 10, 11, 12, 8, 14 and 15, in that order, and
 **skips 13 and 16** (F17 addendum) — the search shakes the bumpers, scoop 1 and
-both shooters, and neither *Taca* nor the Júpiter release takes part.
+both shooters, and neither *Taca* nor the Jupiter release takes part.
 
 ---
 
@@ -420,11 +420,11 @@ All of §3.3.1. Every lane scores **100,000** unlit. Lit, each does its own thin
 | 9 | C43 `0x35` | **Bonus ×10** | 100,000 |
 | 10 | C48 `0x2F` | *with* all six ORBITS lights: **5,000,000** first time, **3,000,000** after | *without* them: **2,000,000** first time, **1,000,000** after |
 | 11 | C22 `0x12` | **Autodrop** | **Drop Shuttle** |
-| Júpiter entry | C50 `0x31` | lights LTB11 **and** LTB2 (Monolith message at both scoops) | |
+| Jupiter entry | C50 `0x31` | lights LTB11 **and** LTB2 (Monolith message at both scoops) | |
 
 Three points the table cannot carry:
 
-- **Lane 6 and the Júpiter entry are the Monolith's only arming shots.** Each
+- **Lane 6 and the Jupiter entry are the Monolith's only arming shots.** Each
   lights *both* scoop lamps at once, so either scoop can then cash the Monolith
   message. That is why §3.3.8 lists "LTB11 or LTB2" at both scoops rather than
   one lamp each — the pair is lit and cleared together.
@@ -499,7 +499,7 @@ Ramp 2 pays whatever its lit lamp says. It has three.
 |---|---|
 | LR22 (LC53, Extra Ball) | **Extra Ball** |
 | LBH (LC60, Black Hole Power), **without** Wonderful Thing | lights one of the **upper lanes'** lights — LP7 (Special), LP8 (Extra Ball) or LP9 (Bonus ×10) |
-| LBH, **with** Wonderful Thing running | lights lane 8's Extra Ball lamp (LP8) and releases the Júpiter balls slowly, one after another |
+| LBH, **with** Wonderful Thing running | lights lane 8's Extra Ball lamp (LP8) and releases the Jupiter balls slowly, one after another |
 | LR21 (LC56, Superjackpot) **and** Multiball running | **Superjackpot** — double the Jackpot value |
 
 Superjackpot requires both the lamp and Multiball: LR21 is lit when Multiball
@@ -536,14 +536,14 @@ position along LPA1…LPA10, and pays for itself:
 diverter (§3.3.4). They are not part of the ten-position cycle and are never an
 award.
 
-**The scoops cash it.** With LTB11 or LTB2 lit — armed at lane 6 or the Júpiter
+**The scoops cash it.** With LTB11 or LTB2 lit — armed at lane 6 or the Jupiter
 entry — entering either scoop collects whatever the Monolith currently shows:
 
 | Position | Lamp | What the position **is** (§3.3.3) | What cashing it **awards** (§3.3.8) |
 |---|---|---|---|
 | LPA1 | LC2 | Extra Ball | **Extra Ball** |
 | LPA2 | LC3 | 3,000,000 | **3,000,000** |
-| LPA3 | LC4 | Little Multiball available — *only while the ORBITS lights are lit* | the award is given **at Júpiter**, not at the scoop |
+| LPA3 | LC4 | Little Multiball available — *only while the ORBITS lights are lit* | the award is given **at Jupiter**, not at the scoop |
 | LPA4 | LC5 | 6,000,000 | **6,000,000** |
 | LPA5 | LC6 | Special at lane 1 or 5 | lights **LP5** (lane 5) if LPA11 (Lagrange Scape) is lit; lights **LP1** (lane 1) if LPA12 (Lagrange Orbit) is lit |
 | LPA6 | LC7 | 9,000,000 | **9,000,000** |
@@ -554,7 +554,7 @@ entry — entering either scoop collects whatever the Monolith currently shows:
 
 So the Monolith is the machine's mode selector: five of its ten positions are
 straight awards, four start a timed mode, and one (LPA3) is not collected at the
-scoop at all — it arms Little Multiball for the next ball held at Júpiter.
+scoop at all — it arms Little Multiball for the next ball held at Jupiter.
 
 **LPA5's award depends on the Lagrange pair**, which the shooters control. Since
 the shooters also swap LP1 and LP5 directly (§3.3.4), a lit Special can be moved
@@ -647,14 +647,14 @@ not refer to them.
 
 ---
 
-## Júpiter (§3.3.7)
+## Jupiter (§3.3.7)
 
-Júpiter is the ball lock, and the gate to all three multiball modes. It is
+Jupiter is the ball lock, and the gate to all three multiball modes. It is
 sensed by three contacts, C44/C45/C46 (codes `0x2A`–`0x2C`), which is how the
 80188 counts how many balls it holds; the entry lane is C50.
 
 > **Nothing is held unless the ORBITS lights are all lit.** §3.3.7 is explicit:
-> without the full ORBITS spelling, Júpiter does not retain balls at all — the
+> without the full ORBITS spelling, Jupiter does not retain balls at all — the
 > ball simply passes through. Completing ORBITS at bull's-eye 1 (with LD1 lit
 > from lane 4) is the prerequisite for the entire branch below.
 
@@ -672,7 +672,7 @@ So the drop bank is the switch between the two two-ball-lock modes: clear it
 before locking the second ball for Wonderful Thing, leave it standing for
 Multiball.
 
-The release coil is 16 (*Sueltabolas de Júpiter*); the Júpiter diverter is coil
+The release coil is 16 (*Sueltabolas de Júpiter*); the Jupiter diverter is coil
 21, on the expansion board. Whether coil 16 fires in normal play is
 [open](#open-questions).
 
@@ -706,17 +706,17 @@ Scoop 1 is kicked out by coil 13 (*Taca*) then coil 8; scoop 2 has no coil
 
 ## The three multiball modes
 
-All three need the ORBITS spelling complete, because all three start at Júpiter.
+All three need the ORBITS spelling complete, because all three start at Jupiter.
 
 ### Multiball (§3.2.1, §3.3.7)
 
-**Starts** when the **second** ball is locked in Júpiter **and the five bank
+**Starts** when the **second** ball is locked in Jupiter **and the five bank
 targets are not down**.
 
 1. A further ball is served.
 2. **LD2** (Jackpot, at bull's-eye 2) and **LR21** (Superjackpot, at Ramp 2)
    light.
-3. As soon as that served ball hits any contact, **both Júpiter balls are
+3. As soon as that served ball hits any contact, **both Jupiter balls are
    released** — three balls in play.
 
 **Ends** when only one ball is left. LD2 and LR21 go out, so the Jackpot and
@@ -724,7 +724,7 @@ Superjackpot are Multiball-only awards.
 
 ### Wonderful Thing (§3.2.2)
 
-**Starts** when the **second** ball is locked in Júpiter **and all five bank
+**Starts** when the **second** ball is locked in Jupiter **and all five bank
 targets are down**.
 
 1. **LBH** (Black Hole Power) lights.
@@ -738,17 +738,17 @@ and the staged, rather than simultaneous, ball release.
 
 ### Little Multiball (§3.2.6, §3.3.7, §3.3.8)
 
-**Starts** from **one** ball locked in Júpiter with **LPA3** lit on the Monolith
+**Starts** from **one** ball locked in Jupiter with **LPA3** lit on the Monolith
 — and LPA3 itself is only meaningful while the ORBITS lights are on (§3.3.3).
 
 1. **LTB12** (Little Multiball) lights at scoop 1.
 2. A ball is served so play continues.
-3. Putting that ball into **scoop 1** releases the Júpiter ball — **two balls in
+3. Putting that ball into **scoop 1** releases the Jupiter ball — **two balls in
    play**.
 
 §3.3.8 describes the same sequence from the scoop's end and adds that the
 release happens once the new ball hits a contact, releasing everything held in
-Júpiter and in the scoop — the same delayed release Multiball uses. The two
+Jupiter and in the scoop — the same delayed release Multiball uses. The two
 passages agree on the outcome (two balls) and differ only in where they start
 counting.
 
@@ -971,7 +971,7 @@ the fourth changes a rule, and the page follows the firmware.
 | Item | Manual | ROM (F16) |
 |---|---|---|
 | C10 / C11 | C10 left flipper cut-out, C11 right (§2.1.1) | C10 R.C.FLIPPER, C11 L.C.FLIPPER |
-| C44 / C45 / C46 | *Planeta 1 / 2 / 3* (§2.1.1) | JUPITER 1 / 2 / 3, in both languages — the Júpiter lock of §3.3.7 |
+| C44 / C45 / C46 | *Planeta 1 / 2 / 3* (§2.1.1) | JUPITER 1 / 2 / 3, in both languages — the Jupiter lock of §3.3.7 |
 | C21 | *Sin conectar* (§2.1.1) | named RAMP 1 EXIT, dispatcher a bare `RET` — both agree it does nothing |
 | **Lane 10's award** | 2,000,000 / 1,000,000 *with* the ORBITS lights and 5,000,000 / 3,000,000 *without* (§3.3.1) | the other way round — the larger award is paid **with** the lights lit (`sub_D878B`) |
 
@@ -1009,7 +1009,7 @@ Stated as open rather than guessed. Each line says what would settle it.
   caps them per game, but neither says what one gives. Elsewhere SLEIC uses
   *partida* for a free game (§3.5, §5.14). *Settled by:* the credit path in the
   80188 for the three lane codes, or a real machine.
-- **Whether Júpiter's release coil fires in normal play** — coil 16
+- **Whether Jupiter's release coil fires in normal play** — coil 16
   (*Sueltabolas de Júpiter*) was not observed firing in about 46 s of
   single-ball play, and the ball-search sweep skips it (F17 addendum). Its fire
   routine `sub_07C3` is called from `sub_2C41` on both outcomes of that
