@@ -20,7 +20,7 @@ instruction — `dasmx86` against capstone and ndisasm for the 80188, `dasmz80`
 against unidasm for the Z80 — with the disagreement resolutions written down in
 [`baseline-2026-09/reports/`](baseline-2026-09/reports/). Its numbered
 conclusions live in [`baseline-2026-09/findings.md`](baseline-2026-09/findings.md)
-(F1–F15), which is the contract the PinMAME `SLEIC2` driver implements. Cite
+(F1 onward), which is the contract the PinMAME `SLEIC2` driver implements. Cite
 findings by number, and cite listing addresses out of
 `baseline-2026-09/iomoon_80188.lst` / `iomoon_z80.lst`.
 

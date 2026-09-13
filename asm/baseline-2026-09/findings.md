@@ -1497,6 +1497,487 @@ are now closed, from the ROM alone.
 
 ---
 
+## F16 — The switch-code to contact table
+
+**Statement.** The firmware carries its own **switch-code -> contact-name
+table, in two languages**, which closes most of F5's open item. Two 5-byte
+record tables — one per language — sit in the LMCS window (F1), so their
+pointers are flat: **English at file offset `0x0830`**, **Spanish at
+`0x1438`**. Both are indexed the same way, `record = base + code*5`, each
+record `Cnum | off16 | seg16` pointing into that language's own name pool of
+length-prefixed glyph strings (`0x0A` = space, `0x0B`-`0x25` = A-Z with Ñ at
+`0x19`): the **English pool at `0x1c5f`**, the **Spanish pool at `0x250e`**.
+
+**The two tables are not one shared pool read by ordinal position — each
+language has its own code-indexed table.** A code resolves through each
+table separately into that table's own pool, and the pools hold the same
+entries in a different order: code `0x14`'s English name `U.C.FLIPPER` sits
+at file offset `0x1dc7` in the English pool, while its Spanish name
+`C.FLIPPER SUP.` sits at a different ordinal position in the Spanish pool.
+Pairing the two pools by position does not work; only the shared `code` axis
+lines a name up with its translation.
+
+Extracted mechanically by `scripts/iomoon_strings.py`'s `contact_table()`,
+which self-tests against F15's four ball-handling contacts, the SW40 tilt
+code and the two Jupiter/lane pairs before printing:
+
+```
+$ python3 scripts/iomoon_strings.py roms/iomoon/v1_3_01.bin
+self-test OK: 51 named codes, 44 of them matrix positions
+```
+
+The full table, with `col.bit` from F5's map (`code = 0x0A + 8c + b` for
+c = 0..4, `0x34 + b` for c = 5; cabinet codes carry no column/bit):
+
+| code | col.bit | C# | English | Spanish |
+|---|---|---|---|---|
+| `0x0A` | c0.0 | C6 | OUTHOLE 1 | SALIDA BOLAS 1 |
+| `0x0B` | c0.1 | C7 | OUTHOLE 2 | SALIDA BOLAS 2 |
+| `0x0C` | c0.2 | C8 | OUTHOLE 3 | SALIDA BOLAS 3 |
+| `0x0D` | c0.3 | C9 | BALL OUT | BOLA FUERA |
+| `0x0E` | c0.4 | C18 | LANE 5 | PASILLO 5 |
+| `0x0F` | c0.5 | C17 | LANE 4 | PASILLO 4 |
+| `0x10` | c0.6 | C11 | L.C.FLIPPER | C. FLIPPER IZQ. |
+| `0x11` | c0.7 | C10 | R.C.FLIPPER | C. FLIPPER DER. |
+| `0x12` | c1.0 | C22 | LANE 11 | PASILLO 11 |
+| `0x13` | c1.1 | C21 | RAMP 1 EXIT | SALIDA RAMPA 1 |
+| `0x14` | c1.2 | C19 | U.C.FLIPPER | C.FLIPPER SUP. |
+| `0x15` | c1.3 | C16 | RIGHT SHOOTER | EXPULSOR DERECHO |
+| `0x16` | c1.4 | C15 | LEFT SHOOTER | EXPULSOR IZQ. |
+| `0x17` | c1.5 | C14 | LANE 3 | PASILLO 3 |
+| `0x18` | c1.6 | C13 | LANE 2 | PASILLO 2 |
+| `0x19` | c1.7 | C12 | LANE 1 | PASILLO 1 |
+| `0x1A` | c2.0 | C24 | LANE 6 | PASILLO 6 |
+| `0x1B` | c2.1 | C25 | BANK A | DIANA BANCADA A |
+| `0x1C` | c2.2 | C26 | BANK B | DIANA BANCADA B |
+| `0x1D` | c2.3 | C27 | BANK C | DIANA BANCADA C |
+| `0x1E` | c2.4 | C28 | BANK D | DIANA BANCADA D |
+| `0x1F` | c2.5 | C29 | BANK E | DIANA BANCADA E |
+| `0x20` | c2.6 | C30 | INNER BANK | FONDO BANCADA |
+| `0x21` | c2.7 | C31 | HOLE 2 | TRAGABOLAS 2 |
+| `0x22` | c3.0 | C23 | HOLE 1 | TRAGABOLAS 1 |
+| `0x23` | c3.1 | C33 | BUMPER 1 | BUMPER 1 |
+| `0x24` | c3.2 | C32 | BULL EYE 1 | DIANA 1 |
+| `0x25` | c3.3 | C35 | BUMPER 3 | BUMPER 3 |
+| `0x26` | c3.4 | C34 | BUMPER 2 | BUMPER 2 |
+| `0x27` | c3.5 | C37 | BUMPER 5 | BUMPER 5 |
+| `0x28` | c3.6 | C36 | BUMPER 4 | BUMPER 4 |
+| `0x29` | c3.7 | C40 | RAMP 1 ENTRANCE | ENTRADA RAMPA 1 |
+| `0x2A` | c4.0 | C44 | JUPITER 1 | JUPITER 1 |
+| `0x2B` | c4.1 | C45 | JUPITER 2 | JUPITER 2 |
+| `0x2C` | c4.2 | C46 | JUPITER 3 | JUPITER 3 |
+| `0x2D` | c4.3 | C39 | RAMP 2 ENTRANCE | ENTRADA RAMPA 2 |
+| `0x2E` | c4.4 | C38 | BULL EYE 2 | DIANA 2 |
+| `0x2F` | c4.5 | C48 | LANE 10 | PASILLO 10 |
+| `0x30` | c4.6 | C49 | RAMP 1 MIDDLE | MEDIA RAMPA 1 |
+| `0x31` | c4.7 | C50 | ENTRADA JUPITER | ENTRADA JUPITER |
+| `0x32` | — | C50 | ENTRADA JUPITER | ENTRADA JUPITER |
+| `0x33` | — | C3 | COINS INPUT | MONEDERO |
+| `0x34` | c5.0 | C47 | RAMP 2 EXIT | SALIDA RAMPA 2 |
+| `0x35` | c5.1 | C43 | LANE 9 | PASILLO 9 |
+| `0x36` | c5.2 | C42 | LANE 8 | PASILLO 8 |
+| `0x37` | c5.3 | C41 | LANE 7 | PASILLO 7 |
+| `0x3E` | — | C20 | PLUMB TILT | PENDULO DE FALTA |
+| `0x3F` | — | C4 | TEST BUTTON | PULSADOR TEST |
+| `0x40` | — | C2 | START BUTTON | PULSADOR START |
+| `0x41` | — | C1 | L. FLIPPER | FLIPPER IZQ. |
+| `0x42` | — | C5 | R. FLIPPER | FLIPPER DER. |
+
+**What it closes.** F5's open item — "44 of the 48 switch-matrix positions
+have exact codes but no established physical contact" — is closed: every one
+of the 44, plus all 6 cabinet inputs (already named in F5) plus the coin's
+test-mode code, now carries the firmware's own C-number and name in both
+languages. **Column 4's second ball device (F15's command `0xEB`, Z80
+handler `2AB0`) is Júpiter** — codes `0x2A`-`0x2C` are JUPITER 1/2/3,
+C44-C46.
+
+**What is dead.** Codes `0x38`-`0x3B` — four more column-5 positions — have
+table records with no resolvable name pointer, so those four positions do
+not exist. `0x13` has a name (RAMP 1 EXIT, C21) but its per-bit dispatcher is
+a bare `RET`, and the service manual's own contact list (2.1.1) lists C21 as
+*Sin conectar* — named in the ROM, wired to nothing. The record at `0x32`
+duplicates `0x31`'s exactly (both C50 ENTRADA JUPITER) and is stale; `0x33`
+resolves independently to C3 COINS INPUT / MONEDERO — the code the coin
+mechanism sends while test mode is open (F5, F11), which is exactly where
+the CONTACTOS test screen reads it.
+
+**Three discrepancies, recorded not resolved.**
+- The ROM pairs C10 with R.C.FLIPPER and C11 with L.C.FLIPPER; the manual's
+  own 2.1.1 table has C10 as "Contacto de corte de flipper izquierdo" and
+  C11 as "...derecho" — the opposite way round.
+- `docs/switch_lamp_solenoid.md`'s C40 and C44-C50 rows disagree with the
+  ROM (C39, C41-C43 agree); e.g. C47 = Salida Rampa 2 in the ROM and the
+  manual, "Entrada Rampa 1" in the docs. The ROM and the manual's 2.1.1
+  table agree with each other there too, except C44-C46 — the next bullet.
+- Codes `0x2A`-`0x2C` (C44/C45/C46) are JUPITER 1/2/3 in the ROM, in both
+  languages, where the manual's 2.1.1 contact list names the same three
+  C-numbers Planeta 1/2/3 — the ROM is what runs. The manual's own lamp
+  list agrees with the ROM here (LC51 *Planeta 5*, LC61 *Planeta 1*, LC62
+  *Planeta 2* are lamps, not contacts), and these three codes are already
+  the second ball device Z80 command `0xEB` (handler `2AB0`) counts above:
+  the manual's Júpiter two-ball lock.
+
+**Confidence:** confirmed — table location, record layout and pool decode
+are mechanical and self-tested; the C-numbers and names are cross-checked
+against the Spanish service manual's own 2.1.1 table for all 51 codes.
+
+**Disposition:** hypothesis **answered**. F5's per-fact gap table (#3)
+narrowed the open item to "the physical switch behind each code" for 44
+matrix positions once F15 closed the ball-handling four; this closes those
+44, from the ROM's own contact names, cross-checked against the manual.
+
+---
+
+## F17 — The Z80 driver latches carry coils 1-16
+
+**Statement.** Z80 ports `$85`/`$86` — F7's two 8-bit, active-low driver
+latches — map onto the service manual's coil numbers 1-16 in the simplest
+possible way: **`$85` bit *b* = coil *b*+1, `$86` bit *b* = coil *b*+9.**
+
+| port | bit | coil | manual name (2.3.1) | fires at |
+|---|---|---|---|---|
+| `$85` | 0 | 1 | Flipper izquierdo fuerza | `05C7` |
+| `$85` | 1 | 2 | Flipper izquierdo mantenimiento | `0613` |
+| `$85` | 2 | 3 | Flipper derecho fuerza | `05ED` |
+| `$85` | 3 | 4 | Flipper derecho mantenimiento | `0630` |
+| `$85` | 4 | 5 | Flipper superior fuerza | `067F` |
+| `$85` | 5 | 6 | Flipper superior mantenimiento | `06A5` |
+| `$85` | 6 | 7 | Bumper 1 | `06DB` |
+| `$85` | 7 | 8 | Tragabolas 1 | `07E0` |
+| `$86` | 0 | 9 | Bumper 2 | `06F8` |
+| `$86` | 1 | 10 | Bumper 3 | `0715` |
+| `$86` | 2 | 11 | Bumper 4 | `0732` |
+| `$86` | 3 | 12 | Bumper 5 | `074F` |
+| `$86` | 4 | 13 | Taca | `076C` |
+| `$86` | 5 | 14 | Expulsor 1 | `0789` |
+| `$86` | 6 | 15 | Expulsor 2 | `07A6` |
+| `$86` | 7 | 16 | Sueltabolas de Jupiter | `07C3` |
+
+**Three independent sources agree.**
+
+Z80-side, each bit has its own fire routine: DI, arm a per-channel on-timer
+byte to `0xFF`, flip the port shadow under `OR`/`AND` masks, `OUT`, EI —
+e.g.
+```
+05C7:  LD A,#$FF / LD (C009),A / A=(C005) OR #$02 AND #$FE / OUT ($85),A   ; fire 1, release 2
+0613:  LD A,#$FF / LD (C00C),A / A=(C005) OR #$01 AND #$FD / OUT ($85),A   ; fire 2, release 1
+06DB:  LD A,#$FF / LD (C00F),A / A=(C005) AND #$BF          / OUT ($85),A   ; fire 7 (lone bit)
+06F8:  LD A,#$FF / LD (C010),A / A=(C006) AND #$FE          / OUT ($86),A   ; fire 9 (lone bit)
+07E0:  LD A,#$FF / LD (C019),A / A=(C005) AND #$7F          / OUT ($85),A   ; fire 8 (lone bit)
+```
+All sixteen fire routines (`05C7`, `05ED`, `0613`, `0630`, `067F`, `06A5`,
+`06DB`, `07E0` on `$85`, then `06F8`-`07D1` on `$86`) follow this shape, each
+arming its own on-timer byte — 16 bytes spanning `C009`-`C019` (skipping
+`C014`) for the 16 channels — and each reached from the 80188 command table
+`$2000` through a wrapper that gates on `C068` (test mode) first, e.g.
+`sub_2895 -> 289A: CALL 05C7`, `sub_2919 -> 291E: CALL 0613` (F7).
+
+Second, the service manual's own coil table, **2.3.1 DESCRIPCION DE
+BOBINAS**: "el aparato dispone de 18 bobinas (en los flippers hay doble
+bobinado lo que supone un total de 21)", numbered 01-21 in exactly the order
+above for 1-16, then 17 Salida de bolas, 18 Bancada de dianas, 19 Diverter de
+Rampa, 20 Black Hole Power (No conectada), 21 Diverter de Jupiter.
+
+Third, the manual's own split of those 21 coils into two drive circuits,
+**7.2.4.3 CIRCUITOS DE ATAQUE A BOBINAS**: the *potencia* circuit (figura
+7-11) drives Flipper Izquierdo/Derecho/Superior Fuerza, Bumper 1-5 and the
+five expansion-board coils; the *mediana potencia* circuit (figura 7-12)
+drives Flipper Izquierdo/Derecho/Superior Mantenimiento, Tragabolas 1, Taca,
+Expulsor 1/2 and Sueltabolas de Jupiter. Landed on the bit map above, that is
+**`$85` bits 0/2/4/6 potencia, 1/3/5/7 mediana potencia**, and **`$86` bits
+0-3 potencia, 4-7 mediana potencia** — exactly the fuerza/mantenimiento split
+the fire routines already show.
+
+**F7's "three complementary pairs on `$85`" are the three dual-wound
+flippers.** `05C7`/`0613` are coils 1/2 (left), `05ED`/`0630` are coils 3/4
+(right), `067F`/`06A5` are coils 5/6 (upper); each pair's release routine
+(`064D`, `0666`, `06C2`) sets both bits high together.
+
+**What is open.** Coils 17-21 — *Salida de Bolas*, *Bancada de Dianas*,
+*Diverter de Rampa*, *Black Hole Power* (marked *no conectada* in both the
+coil table and the circuit list) and *Diverter de Jupiter* — plus the three
+flash lamps are on the driver expansion board 011-033A, whose own connector
+(figura 7-10) carries them as channels TA/TB/TC 1-8. **No Z80 port drives
+them.** Enumerating every `OUT` in `iomoon_z80.lst` (105 instructions) finds
+exactly eight distinct ports and nothing else:
+```
+$ grep -oE 'OUT[[:space:]]+\([^)]*\)' iomoon_z80.lst | sort | uniq -c | sort -rn
+     25 OUT      ($86)
+     22 OUT      ($81)
+     16 OUT      ($85)
+     13 OUT      ($82)
+      9 OUT      ($84)
+      9 OUT      ($83)
+      7 OUT      ($87)
+      4 OUT      ($80)
+```
+and every bit of those eight is accounted for: `$80`/`$81` J1 (F6), `$82`
+the switch-column strobe, `$83`/`$84` the lamp matrix (F7), `$85`/`$86` the
+16 channels above, `$87` the direct-input index plus bits 4 and 5 set and
+cleared individually (`port87_bit5_clear`/`port87_bit5_set` at `27B3`/`27C0`,
+and the bit-4 pair at `2831`/`2851`). Dumping IC7 (the 80188-side PAL) and
+IC8 (the Z80 decode PAL) would settle whether the expansion board's channels
+are addressed some other way this ROM never exercises.
+
+**Confidence:** confirmed for the bit map, the fire-routine shape and the
+manual cross-reference; the expansion-board wiring rests on the manual alone
+(7.2.4.1/7.2.4.3), since no Z80 code touches it.
+
+**Disposition:** hypothesis **answered** — F7 established the 16-bit
+driver-latch count and the three complementary pairs without naming the
+coils; this pins all 16 to the manual's own numbering and confirms the split
+with the manual's own circuit description.
+
+### Addendum (2026-09-13, Task 13): Tragabolas 2, the ball-search sweep, and coil 16
+
+**Hole 2 (Tragabolas 2, code `0x21`, C31) has no coil — corrected to the
+right dispatch address (2026-09-13, fix round 1).** `sub_D7636`'s jump table
+(`JMP CS:W[BX+00527]`) executes with `CS = D72A` (visible a few lines above
+it, in a far `CALL 0D72A:02020` from the same routine), so the table itself
+is at flat `D72A0+0527 = D77C7`, indexed by `code-0x0E`. Read directly out
+of the ROM (`v1_3_01.bin`, file offset `0x577C7 + 2*(code-0x0E)`, since
+UMCS's flat `0xC0000-0xFFFFF` is file `0x40000-0x7FFFF` — F1): code `0x21`'s
+word is `0x050E`, landing at flat `D72A0+050E = D77AE`, an unconditional
+`CALL sub_D9CAB` — **not** `D7723` as this addendum first said (that word,
+`0x0483` at code `0x25`, is Bumper 3's own entry). `sub_D9CAB` loads
+`DS = 4134` and never loads `ES` at all, and neither of its two byte
+accesses carries an ES-override prefix (`80 3E 26 00 00`, `C6 06 27 00 01` —
+no leading `26`), so they are **`4134:0026`** and **`4134:0027`**, a
+different segment from `413C` (fix round 2 — this addendum first mis-cited
+both as `413C`). Gated on the one-byte counter `4134:0026`: `> 0` does
+nothing (`XOR AX,AX`); otherwise it plays one OKI cue (`sub_D0B70(0x18)`)
+and sets `4134:0027 = 1`. **Neither branch calls `qout_push`**, so no Z80
+command and no coil can result — the
+"no kicker" conclusion holds, now resting on the address that is actually
+Hole 2's. The manual's 2.3.1 coil list still independently agrees: it names
+"Bobina Tragabolas 1" (coil 8) and has no counterpart for Tragabolas 2, and
+"Bobina de Taca" (coil 13) is a separate line; Tragabolas 2 appears in the
+manual only as a contact (2.1.1), a lamp (2.2.2 — LC17, LC37, LC50) and a
+scoring rule (3.3.8), never as a coil. Measured in emulation, unchanged:
+routing a ball to Hole 2 delivers code `0x21` to the switch-code shadow
+`413C:00D6`, confirming the contact reaches the 80188, and
+`coreGlobals.solenoids` stays `0` for the following 900+ frames (15 s at
+60 Hz — three times the 300-frame window checked), reproduced on two runs.
+
+**Hole 1 (Tragabolas 1, code `0x22`, C23) — traced to its real handler, and
+the mechanism corrected.** Its table word, one earlier, is `0x04F8`, flat
+`D7798` — **gated at the dispatch level itself**, but the other way round
+from what this addendum first said (fix round 2): the bytes are
+`CMP ES:000F4,009 / JNE D77A7` (`D779D`-`D77A3`), so `413C:00F4 == 9` is the
+value that falls through to `JMP D77C3` and does **nothing**, and any other
+value is what takes the branch into `CALL sub_D9B91`. That routine is
+modal, not Hole 2's scoring twin: a one-shot debounce (`sub_D9B76`, latch
+`4134:0028`) admits only the first call per visit; it then branches on
+`4134:0026` (`> 0` fires coil 8 alone, via `sub_D9B49`, and stops — same
+segment as Hole 2's own gate above, confirmed the same way: no ES prefix on
+either access) and otherwise on `413C:00F4` again (`7` awards Star Ride
+points with no coil — `0xE4E1C0` (15,000,000) when `4134:0027 != 0` and
+`0x989680` (10,000,000) when it is `0` — matching the manual's 3.3.8 Star Ride figures for
+the two holes; anything else — neither `7` nor `0` — scores 150,000 and
+calls `sub_D9B49` alone, no Taca; `0` is the value that reaches `D9C61`).
+`D9C61` is itself a further, three-way split on `413C:010F` and
+`4134:0027`, not a plain call to `sub_D97D1`: `010F == 1` or `010F == 2`
+calls `sub_D97D1`; `010F` anything else **and** `0027 != 0` also calls
+`sub_D97D1`; but `010F` anything else **and** `0027 == 0` takes a
+**different, untraced branch at `D9C8A`** — `qout_push(0xF2)`, then
+`sub_DB503`, then `qout_push(0xF1)` — which never touches `sub_D97D1`, the
+stepper, or coil 13 at all. `sub_D97D1` (reached on the first two of those
+three arms) branches on `413C:010E` (`1`: score 150,000, call `sub_D9B49`,
+done; otherwise: bump two audit counters and dispatch a 10-state stepper at
+`4134:0002E`, `CS:02895` — verified directly against the ROM's own ten
+words at flat `D9B35`, e.g. word 0 is `0x25A7`, landing at
+`D72A0+25A7 = D9847`). **State 0** of that stepper compares a counter
+`413C:00EE` against a threshold `413C:0101`: at or past the threshold, it
+skips straight to an audit bump; below it, it also plays an OKI cue
+(`0x83`), waits for it to finish (`4000:1304`), and additionally calls
+`sub_D823B`, which does `qout_push(0xE7)` — the Z80's own 256-entry table
+at `$2000` (read directly from `V1 3_05.bin`, entry for `0xE7`) is `0x2A36`
+→ `sub_2A36` → `CALL sub_076C` = **coil 13, Taca** — before an NVRAM
+increment and the same audit bump. **Both outcomes of that threshold check
+converge** on `JMP D9B2F`, which falls into `D9814` → `CALL sub_D9B49` —
+`qout_push(0xDC)` (Z80 table entry `0x29E1`, likewise read directly from
+the ROM) → arms a 300-tick timer → `CALL sub_07E0` = **coil 8** — so on this
+branch coil 8 fires every time, and Taca fires only while `413C:00EE` is below
+`413C:0101`, a separate, narrower gate than the branch selection itself.
+Measured: two separate fresh games both took this exact branch with the
+counter still below threshold, coil 13 firing about 3.2 s after the contact
+and coil 8 about 3.75 s after that — real intervening work (the OKI cue and
+its busy-wait, the NVRAM increment) accounts for the gap.
+
+**This is one reachable branch of several, not the routine's only
+behaviour — restated as conditional.** Other branches fire coil 8 alone
+(`4134:0026 > 0`, or `413C:00F4` anything but `0` or `7`), the
+`413C:00F4 == 7` branch fires no coil at all, and the untraced `D9C8A`
+branch above sends two commands (`0xF2`, `0xF1`) that are neither coil.
+Two fresh, freshly-reset games taking the same branch is consistent with
+every gating cell (`4134:0026/0027/0028/002E`, `413C:00F4`, `:010E`,
+`:010F`, `413C:00EE`) starting at its boot-time default both times, not
+with the mechanism being unconditional. What `413C:00F4`, `:010E`, `:010F`,
+the stepper `4134:002E`, the `413C:00EE`/`:0101` counter, and the `D9C8A`
+branch's two commands mean in player-visible terms is **not decoded here
+and is recorded as open**. What this does settle: "Bobina de Taca" is not a
+stray name for Tragabolas 2's missing coil — on the branch measured here it
+fires from Tragabolas 1's own handler, immediately ahead of that same
+handler's own coil 8, and Hole 2's handler (`sub_D9CAB`) never reaches it.
+
+**The two holes share a flag, and that is established, not guessed.**
+`sub_D9CAB` (Hole 2) sets `4134:0027 = 1` on its OKI-cue branch;
+`sub_D9B91` (Hole 1) reads that same cell to pick the Star Ride award,
+`0xE4E1C0` (15,000,000) when it is set, `0x989680` (10,000,000) when it is
+clear — the manual's own two different Tragabolas Star Ride figures (3.3.8)
+are produced by **one code path, Hole 1's, selected by a flag Hole 2's own
+contact sets.** Both halves of that are read directly out of the two
+routines above; the connection between them is the new fact.
+
+**Hypothesis, not established, from that shared flag:** the two scoops may
+share a physical ball-return path, with `4134:0027` recording which of the
+two most recently fed it — which would bear directly on this document's own
+open question of what frees a ball sitting in Hole 2. Nothing traced here
+shows a physical mechanism, only a shared software flag; a real machine or
+a look at the two holes' own ball paths (manual figura, if one exists, or a
+teardown) would settle it.
+
+**A second correction: `413C:00F0`/`00F2` is the running score, not "a
+bonus."** Three handlers writing the same dword settle it against the
+manual's own numbers: Lane 6 (`sub_D8590`) adds `0x186A0` = 100,000; Diana 1
+/ bull's-eye 1 (`sub_D8B30`) adds `0xC351` = 50,001, or `0x186A0` = 100,000
+when `413C:00F4 == 5` (Special Drop Target) — both read directly from the
+ROM and both the manual's own score values for those contacts, verbatim.
+Every place above that was called "a bonus add" is a score add.
+
+**The ball-search sweep (`sub_2CFB`, F15's "run the ball-search coil
+sequence, wait, repeat") pulses eight coils, and neither Taca nor the
+Jupiter release.** Its ten calls, each separated by the `sub_2D3B`/`sub_2D41`
+delay, are `sub_0957`, `sub_08FF` (both clear a bit of the J1 state byte
+`$C008` and send it — F6, not a coil port), then `sub_06DB`(7), `sub_06F8`(9),
+`sub_0715`(10), `sub_0732`(11), `sub_074F`(12), `sub_07E0`(8), `sub_0789`(14),
+`sub_07A6`(15) — coils 7, 9, 10, 11, 12, 8, 14 and 15 in that call order.
+Neither `sub_076C` (13, Taca) nor `sub_07C3` (16, Sueltabolas de Jupiter) is
+called anywhere in `sub_2CFB`. Re-measured in emulation at a fresh ball start
+(plain `iomoon`): the live solenoid trace shows exactly this order once,
+`0x0040, 0x0100, 0x0200, 0x0400, 0x0800, 0x0080, 0x2000, 0x4000`, with no
+`0x1000` (13) or `0x8000` (16) anywhere in it.
+
+This is a positive datum for Hole 2 having no kicker — the firmware's own
+ball-recovery sweep does not treat Taca as a ball-freeing device either —
+but it is not proof by itself: the sweep recovers *missing trough balls*, so
+skipping 13 and 16 only shows neither is wired into *that* recovery. It says
+nothing about what frees a ball already captured in Hole 2 or in Jupiter.
+Jupiter's own release is coil 16, fired by a different routine entirely
+(`sub_2C41`, which calls `sub_07C3` at both `2C54` and `2C5C` — i.e.
+regardless of which way its own three-Jupiter-contact test comes out).
+
+**Coil 16 was not observed firing in about 46 s of normal single-ball play**
+(plain `iomoon`: coin, START, plunge, 2700 frames), and the one-time
+ball-search sweep above does not touch it either. That is an observation,
+not proof it never fires: `sub_2C41` exists and calls `sub_07C3`
+unconditionally on both outcomes of its own test, and the project's own ball
+simulator already models "a legitimate Jupiter lock… released by the game
+through coil 16" (`pinmame/src/wpc/sims/sleic/iomoon.c`) — a genuine
+two-ball Jupiter lock or a multiball might reach it where a single default
+ball never does. What would settle it: the MAME debugger on 80188 command
+`0xEB`'s handler (`2AB0`) and the coil-16 wrapper, or a real machine.
+
+**Confidence:** confirmed for the dispatch-table read, done directly against
+the ROM (`D77AE` → `sub_D9CAB` for Hole 2, no `qout_push`; `D7798` →
+`sub_D9B91` for Hole 1 — gated on `413C:00F4 != 9`, verified byte for byte —
+which reaches `sub_D823B` → coil 13 and `sub_D9B49` → coil 8 on one traced
+branch of several), for the segment on every `4134:` cell (`0026`, `0027`,
+`0028`, `002E` — each checked for the absence of an ES-override prefix, not
+assumed), for the shared-flag fact (`4134:0027`, read directly out of both
+routines), for the score-not-bonus correction (three handlers, three
+manual-matching values), and for `sub_2CFB`'s ten calls and their
+identities; confirmed by live measurement for Hole 2's silence, Hole 1's
+coil 13/coil 8 sequence on the branch two fresh games both took, and the
+sweep's live order. Open: which player-visible condition selects Hole 1's
+branch (named cells: `4134:0026/0027/0028/002E`, `413C:00F4`, `:010E`,
+`:010F`, `413C:00EE`/`:0101`); what the untraced `D9C8A` branch's two
+commands (`0xF2`, `0xF1`) do; whether the two holes share a physical return
+path (a hypothesis, not established); what, if anything, ever frees a ball
+sitting in Hole 2; and coil 16 outside single-ball play.
+
+**Disposition:** hypothesis **answered** for Hole 2 (no coil, on two
+independent kinds of evidence, now at the correct address and segment) and
+for the sweep's coil list (confirmed, not merely named); **corrected** for
+Hole 1 (Taca-then-coil-8 is real, but conditional, and its dispatch gate is
+the opposite polarity from this addendum's first round, on the address,
+segment and mechanism now traced end to end rather than assumed); **new**
+for the shared `4134:0027` flag explaining the manual's two Star Ride
+figures; **open** for the gating cells' player-visible meaning, the
+`D9C8A` branch, the shared-return-path hypothesis, and coil 16 outside the
+cases measured here.
+
+---
+
+## F18 — The lamp matrix
+
+**Statement.** The service manual's figure 7-7 gives (column,row) -> LC
+number, but its OCR is damaged in places, so the table below is **measured**
+from the firmware's own sequential lamp test rather than transcribed: the
+service menu's TEST LUCES 1 walks the controlled lamps LC1..LC64 one at a
+time, in the order the manual's 2.2.2 lists them, so the *N*th single-lamp
+step is LC*N*.
+
+Reached, per F14's tree, at the country default (4, Netherlands — English;
+country 5 selects Spanish, see F11): TEST (`0x3F`) -> root (record 0), scroll
+twice, select -> record 3 (TECHNICAL — F14's own tree; TECNICO in the
+manual/Spanish) -> select at once -> record 22 (BOARD TEST / the manual's
+TEST TABLERO) -> scroll once, select -> record 25 (LIGHTS / LUCES) -> select
+at once -> record 35, the walk itself, on-screen "- LIGHT TEST -". F14
+already shows record 0's own three items rendering identically in English
+and Spanish (just relabelled), so records 3/22/25/35 are expected, not
+verified here, to be the same positions in the Spanish table at `0x0D08`.
+Captured with `scripts/keyscripts/iomoon-lamptest.keys` and a temporary probe
+in `SLEIC_interface_update` printing `coreGlobals.lampMatrix` on every
+column change (removed before commit — nothing in the driver carries it).
+
+**The walk is monotonic and single-lamp — verified, not assumed.** Over the
+full 64 steps plus the wrap back to LC1: every non-zero value logged is a
+power of two (one bit at a time), the 64 (column,bit) pairs are pairwise
+distinct (no repeats within the 64), and step 65 reproduces step 1 exactly
+(column 7, bit 7) — a complete, non-skipping, non-repeating cycle of 64.
+Reproduced down to the millisecond on two independent runs: the `iomoont`
+tournament-mod set navigated per the path above, and the plain `iomoon` set
+as a cross-check (chip 01 is the only ROM these two sets do not share, and it
+carries no part of the menu tree or the lamp test).
+
+**The 64-lamp table**, Z80 lamp column (0-7) x row/bit (0-7) -> LC:
+
+| col \ row | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|---|
+| 0 | LC20 | LC21 | LC22 | LC23 | LC24 | LC25 | LC26 | LC27 |
+| 1 | LC28 | LC29 | LC55 | LC54 | LC53 | LC56 | LC52 | LC51 |
+| 2 | LC38 | LC41 | LC44 | LC46 | LC48 | LC49 | LC37 | LC36 |
+| 3 | LC2 | LC3 | LC4 | LC5 | LC6 | LC7 | LC8 | LC9 |
+| 4 | LC10 | LC11 | LC12 | LC13 | LC17 | LC16 | LC15 | LC14 |
+| 5 | LC61 | LC62 | LC63 | LC64 | LC57 | LC58 | LC59 | LC60 |
+| 6 | LC30 | LC31 | LC32 | LC33 | LC34 | LC35 | LC50 | LC39 |
+| 7 | LC40 | LC43 | LC47 | LC45 | LC42 | LC18 | LC19 | LC1 |
+
+**Agrees with figure 7-7 everywhere it is legible — no disagreement found.**
+30 of the 64 cells are individually readable in the manual's own OCR text
+(`sleic_io_moon_manual_es.md`, "figura 7-7"): all of column 0 (LC20-27, read
+as a run against the sequential `(0,1)..(0,7)` labels), all of column 2
+(LC38, 41, 44, 46, 48, 49, 37, 36), (1,0)=28, (3,0)=2, (4,0)=10, (4,1)=11,
+(4,3)=13, (4,4)=17, (4,5)=16, (4,6)=15, (4,7)=14, (5,0)=61, (6,0)=30,
+(6,4)=34, (7,0)=40 and (7,7)=1. Every one of the 30 agrees with the
+measured table above. The rest of the figure's OCR is too garbled — merged
+color codes, dropped digits, coordinates and values out of registration — to
+read a value from with confidence, so it is not transcribed.
+
+**Confidence:** confirmed — the walk's own single-lamp, non-repeating
+structure over a full 64-step cycle is the primary evidence, reproduced on
+two independent ROM sets; the legible fraction of figure 7-7 is independent
+corroboration, with zero disagreements across 30 cross-checked cells.
+
+**Disposition:** hypothesis **answered** — F7 established the 64-lamp,
+8-column x 8-bit matrix and its two-bank blink model without naming which
+physical lamp sits at which (column,bit); there was no full LC map committed
+before this. It is now measured rather than transcribed, closing that gap
+the same way F16 closed the switch-matrix one.
+
+---
+
 ## What changed
 
 **Counting basis.** Three facts — F2, F13 and F14 — have **split

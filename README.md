@@ -14,6 +14,7 @@ This repository documents the results of an extensive reverse engineering effort
 
 ## Table of Contents
 
+- [The Machine](#the-machine)
 - [Hardware Overview](#hardware-overview)
 - [Repository Structure](#repository-structure)
 - [Scripts & Tools](#scripts--tools)
@@ -24,6 +25,72 @@ This repository documents the results of an extensive reverse engineering effort
 - [Manuals](#manuals)
 - [Related Work](#related-work)
 - [License](#license)
+
+---
+
+## The Machine
+
+<p align="center">
+  <a href="images/iomoon-full-view-rare-sideart.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-full-view-rare-sideart_thumb.jpg" alt="IO Moon, complete machine" width="420">
+  </a>
+  <a href="images/iomoon-side-art-rare.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-side-art-rare_thumb.jpg" alt="IO Moon cabinet side art with the red IO lettering" width="420">
+  </a>
+  <br>
+  <em>Left: the complete machine, backbox lit, the DMD showing <code>Partida&nbsp;150.000.000</code>.
+  Right: the cabinet side art. Click either for the full photograph.</em>
+</p>
+
+**The side art here carries a large red `IO` that is not on every machine.** The artwork
+underneath — the cratered moon, the comet streaks, the black slab and the space station — is
+the usual IO Moon cabinet decoration, and it is normally seen with no lettering over it. Whether
+the lettered version is a factory variant, a run for one market, or something applied to this
+cabinet later is **not established**. A second lettered machine, or SLEIC or Petaco sales
+material showing one, would settle it.
+
+<p align="center">
+  <a href="images/iomoon-cabinet.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-cabinet_thumb.jpg" alt="IO Moon backbox side art" width="270">
+  </a>
+  <a href="images/iomoon-coin-door.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-coin-door_thumb.jpg" alt="IO Moon coin door" width="405">
+  </a>
+  <br>
+  <em>The backbox side, which carries the starfield art without lettering, and the coin door —
+  one coin slot, with the START button on the door rather than on the lockdown bar.</em>
+</p>
+
+<p align="center">
+  <a href="images/iomoon-playfield.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-playfield_thumb.jpg" alt="IO Moon playfield, unpopulated" width="700">
+  </a>
+  <br>
+  <em>The lower playfield, unpopulated, with the insert legends readable.</em>
+</p>
+
+The bare playfield is the clearest record of the insert legends, and they match the manual's own
+light names: `LITE ORBIT X2`, `LITE AUTODROP PROBE`, `LAGRANGE ESCAPE`, `SPECIAL DROP TARGET`,
+`STAR RIDE`, `IMPACT COUNT`, `ORBIT FLIP`, `LITTLE MULTIBALL`, `EXTRA BALL`, `MULTIBALL`,
+`LITE ORBITS SPELL`, the two outlane `SPECIAL`s, and three fixed-award inserts reading
+`3 MILLIONS`, `6 MILLIONS` and `9 MILLIONS`. What each of them does in play is in the
+[Complete Rule Set](docs/iomoon_game_rules.md). The screen-print legend along the bottom edge
+reads `TABLERO "iO" - 1º NEGRO` — the playfield board, first black pass.
+
+<p align="center">
+  <a href="images/iomoon-backglass-artwork.png" target="_blank" rel="noopener">
+    <img src="images/iomoon-backglass-artwork_thumb.jpg" alt="IO Moon backglass artwork" width="440">
+  </a>
+  <a href="images/iomoon-backglass-photo.png" target="_blank" rel="noopener">
+    <img src="images/iomoon-backglass-photo_thumb.jpg" alt="IO Moon translite, photographed" width="440">
+  </a>
+  <br>
+  <em>The backglass artwork, and the physical translite photographed at 7008 × 4672.
+  Both carry the SLEIC and Petaco marks.</em>
+</p>
+
+The monolith on the backglass is the one on the playfield, and the one the firmware calls the
+Monolito: the centre target bank the [rule set](docs/iomoon_game_rules.md) is built around.
 
 ---
 
@@ -79,11 +146,12 @@ For a detailed breakdown of the hardware architecture, see:
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
 - [Chips Worth Dumping](docs/chips_to_dump.md) — The three programmable parts, their state, and the dumping procedures for each
 - [Component Datasheets](datasheets/README.md) — Offline PDF datasheets for every IC on the boards, linked from the board IC inventories
-- [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — The service manual's contact list against the codes and ports the ROM uses
+- [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — The firmware's own switch-code contact table and driver-latch coil map (F16, F17), cross-checked against the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
 - [Inter-CPU Communication](docs/inter_cpu_communication.md) — J1 8-bit byte-port protocol between the 80188 and Z80
 - [Language Model & Service-Menu Navigation](docs/iomoon_language_and_service_menu.md) — `[1001]` language polarity (DMD-verified), the country DIP that drives both coinage and language, the switch codes, and the 38-record menu tree
+- [Complete Rule Set](docs/iomoon_game_rules.md) — What each contact, lamp and mode does in play, with the rules section's `LPA`/`LP`/`LR`/`LD`/`LTB` light names reconciled to the manual's own `LC1`–`LC64` list
 
 ---
 
@@ -119,6 +187,7 @@ sleic-io-moon/
 │   ├── inter_cpu_communication.md     # J1 byte-port inter-CPU link
 │   ├── game_software.md               # Game state machine & boot sequence
 │   ├── iomoon_language_and_service_menu.md   # Language, country DIP, service-menu tree
+│   ├── iomoon_game_rules.md           # Complete rule set (play, lights, modes, adjustables)
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
 │   ├── bikerace_boards.md             # Bike Race board photographs and IC complement
 │   └── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
@@ -171,7 +240,7 @@ sleic-io-moon/
 ├── asm/
 │   ├── README.md                      # Index: which listing is authoritative and why
 │   ├── baseline-2026-09/              # AUTHORITATIVE cross-verified 80188 + Z80 disassembly
-│   │   ├── findings.md                #   F1-F15, the driver contract
+│   │   ├── findings.md                #   F1 onward, the driver contract
 │   │   ├── README.md                  #   method, entry points, agreement with older material
 │   │   ├── iomoon_80188.lst           #   the 80188 listing (83 regions, 29,810 instructions)
 │   │   ├── iomoon_z80.lst             #   the Z80 listing (12 regions, 4,760 instructions)
@@ -321,6 +390,7 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [80188 Peripheral Configuration](docs/80188_config.md) | Chip selects (UMCS, LMCS, PACS, MMCS, MPCS), wait states |
 | [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit byte-port between the 80188 and Z80 (no shared RAM) |
 | [Game Software Architecture](docs/game_software.md) | Boot sequence, main loop, state machine, text encoding, configuration system |
+| [Complete Rule Set](docs/iomoon_game_rules.md) | How the machine plays: every contact's award, the rules section's lights reconciled to the manual's own LC numbers, the modes and their durations, and the adjustables that change them |
 | [The SLEIC Board Family](docs/sleic_board_family.md) | How IO Moon, Sleic Pin-Ball, Bike Race and Doña Elvira 2 relate: shared architecture, Z80 firmware lineage, where they diverge |
 | [Bike Race Boards](docs/bikerace_boards.md) | Photographs of the Bike Race 16-bit and Z80 boards, with the IC complement they establish |
 
@@ -336,7 +406,7 @@ listings are:
   (`dasmx86` vs capstone vs ndisasm for the 80188's 29 810 instructions;
   `dasmz80` vs unidasm for the Z80's 4 760). Its
   [`findings.md`](asm/baseline-2026-09/findings.md) states the machine's
-  behaviour as fifteen numbered facts, F1–F15, which are the contract the
+  behaviour as numbered facts, F1 onward, which are the contract the
   PinMAME `SLEIC2` driver implements.
 - **[`asm/pic16c57_annotated.asm`](asm/pic16c57_annotated.asm)** — the IC23 DMD
   raster program, 150 words, agreed on by three independent disassemblers.

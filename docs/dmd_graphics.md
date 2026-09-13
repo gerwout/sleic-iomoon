@@ -220,39 +220,56 @@ The credits screens identify the development team:
 
 ## Font System
 
-The ROM contains **131 font glyphs** stored in the range `0xA0000`–`0xB0000`. Glyphs come in multiple sizes:
-
-| Size | Pixel Height | Usage |
-|------|-------------|-------|
-| 9 px | 9 pixels | Small text (labels, status) |
-| 10 px | 10 pixels | Extra large characters |
-| 12 px | 12 pixels | Large text (scores, headings) |
-| 12 px | 12 pixels | 7-segment style digits |
+The DMD font table starts at ROM1 file offset `0x20000` (combined-image
+`0xA0000`), inside the LMCS-resident low 256 KB (F1). It is a table of
+variable-size entries with no fixed stride; a reader has to walk it.
 
 ### Font Entry Structure
 
-Each glyph has a 6-byte header followed by 2 copies of the bitmap data:
+Each entry is a 6-byte header followed by **three** bitmap blocks, not two:
 
 ```
-Header: [height, 0x00, 0x01, 0x00, height, 0x00]
-Data:   [height bytes] × 2 (two copies of the glyph bitmap)
+Header: [height, 0x00, width, 0x00, height*width, 0x00]
+Data:   [height*width bytes] plane 0
+        [height*width bytes] plane 1
+        [height*width bytes] mask
 ```
 
-All glyphs are **8 pixels wide**. Each byte in the glyph data represents one row of 8 pixels.
+`width` is bytes per row, not pixels wide: the on-screen text face is one
+byte (8 px) wide, but the table also holds two-byte-wide entries, so glyphs
+are not uniformly 8 px wide. Entry stride is `6 + 3*height*width` and varies
+entry to entry — there is no fixed stride to index by.
+
+The third block is a mask, not a second copy of the bitmap: F13's DMD
+composite is `(background AND mask) OR sprite`, and a glyph's mask reads as
+the complement of its own cell (`0x07` for a left-aligned glyph, `0xE0` for a
+right-aligned one).
+
+Walking from `0x20000` with one byte per row (`width == 1`), 162 consecutive
+entries decode before the first two-byte-wide entry, at file offset
+`0x218B4` (combined-image `0xA18B4`); the table continues past that point but
+has not been walked further here. Heights seen in that run: 12 px (53
+entries), 9 px (52), 8 px (34), 18 px (21), 15 px (2). There is no 10 px size
+and no 7-segment-style face at this offset.
 
 ### Character Mapping
 
-The font entries map to characters as follows:
+The table's entry index is **not** the glyph code: entry 0 renders a
+different, narrower (8 px tall) face, not the digit `0`.
 
-- Entries 0–9 (9px): Digits `0`–`9`
-- Entry 10 (9px): Space
-- Entries 11–37 (9px): Letters `A`–`Z` and `Ñ`
-- Entries 38–51 (9px): Punctuation and symbols
-- Entries 52–61 (12px): Digits `0`–`9` (large)
-- Entry 62 (12px): Space
-- Entries 63–89 (12px): Letters `A`–`Z` and `Ñ` (large)
-- Entries 90–104 (12px): Punctuation and symbols
-- Entries 105–125 (12px): 7-segment style digits
+The on-screen text is the `height=9`, one-byte-wide face. Its entries begin
+at table index 23 — pinned by matching a captured frame's `W` byte-for-byte
+against table entry 57, and `W` is glyph code `0x22` (34): `table index =
+glyph code + 23`.
+
+A second complete face exists at `height=12`, plausibly large digits for
+scores, but its index offset is not pinned: table indices 23-37 are all
+self-consistent for the `height=9` face and 76-90 are all self-consistent for
+the `height=12` face, and only a frame independently known to show large text
+— not merely a bitmap that happens to look letter-shaped — can settle which
+one is real. An untested offset in that range can select a uniform (blank or
+solid) bitmap that then matches large blank or lit regions of an unrelated
+screen rather than one glyph, so guessing it is unsafe, not just unproven.
 
 ### Custom Text Encoding
 
@@ -289,7 +306,8 @@ for the three windows the CPU actually sees.
 0x808D4 – 0x809AF : ROM1: further tables in the LMCS window
 0x809B0 – 0x80A0F : Character mapping table (ASCII -> glyph index)
 0x82000 – 0xA0000 : Static screens (bilingual pairs)
-0xA0000 – 0xA1100 : Font glyphs (131 entries)
+0xA0000 – 0xA18B4+: Font glyph table, variable-stride entries (see Font System);
+                    walked this far, continues beyond
 0xA9D00 – 0xAC000 : Scrolling credits animation data
 0xC0000 – 0xFFFFF : ROM1: 80188 program code (segments D000/E000/F000 + boot stub)
 ```

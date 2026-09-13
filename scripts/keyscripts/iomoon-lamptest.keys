@@ -1,0 +1,37 @@
+# Walks the service menu down to the sequential lamp test and holds there long
+# enough to capture the full LC1..LC64 single-lamp walk (F18).
+#
+# Navigation (F14): TEST/KEYCODE_7 opens and exits the menu, the left flipper
+# (KEYCODE_LSHIFT) scrolls, the right flipper (KEYCODE_RSHIFT) selects, START
+# goes back.  The path is TEST -> record 0 (root) -> record 3 (TECNICO, the
+# root's 3rd item, cursor 2) -> record 22 (TEST TABLERO, TECNICO's 1st item,
+# cursor 0, no scroll needed) -> record 25 (LUCES, TEST TABLERO's 2nd item,
+# cursor 1) -> record 35 (TEST LUCES 1, LUCES' 1st item, cursor 0, no scroll).
+# The record numbers are the ones already established in F14's menu tree. A
+# fresh boot with no DIP override renders them in English (TECHNICAL / BOARD
+# TEST / LIGHTS / "- LIGHT TEST -") rather than the manual's Spanish TECNICO /
+# TEST TABLERO / LUCES, since country 5 (Spain) is not the default (F11);
+# F14 shows the root's own items render identically placed in both languages,
+# so the same is expected, not separately verified here, for these records.
+#
+# An early START (frame 40) clears iomoon's first-run NVRAM "PRESS START"
+# seed screen -- without it no later key reaches the menu.
+  40 tap 8 KEYCODE_1
+  60 mark boot
+ 400 mark attract
+ 600 tap 8 KEYCODE_7
+ 700 mark menu-root
+ 800 tap 8 KEYCODE_LSHIFT
+ 900 tap 8 KEYCODE_LSHIFT
+1000 mark menu-root-cursor-technical
+1100 tap 8 KEYCODE_RSHIFT
+1200 mark menu-technical
+1300 tap 8 KEYCODE_RSHIFT
+1400 mark menu-board-test
+1500 tap 8 KEYCODE_LSHIFT
+1600 mark menu-board-test-cursor-lights
+1700 tap 8 KEYCODE_RSHIFT
+1800 mark menu-lights
+1900 tap 8 KEYCODE_RSHIFT
+2000 mark lamp-test-1-running
+6500 quit
