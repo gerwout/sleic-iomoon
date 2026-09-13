@@ -7,6 +7,10 @@ __pycache__/
 # Output directories from scripts
 output/
 
+# Per-frame DMD dump splits (regenerable with scripts/dmd_dump_split.py from
+# the committed raw dump; only the per-scene repr.txt is committed)
+dmd/*/screens/*/frame-*.txt
+
 # Local gameplay capture videos (not for commit)
 video/
 
