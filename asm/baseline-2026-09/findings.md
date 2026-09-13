@@ -1497,6 +1497,233 @@ are now closed, from the ROM alone.
 
 ---
 
+## F16 — The switch-code to contact table
+
+**Statement.** The firmware carries its own **switch-code -> contact-name
+table, in two languages**, which closes most of F5's open item. Two 5-byte
+record tables — one per language — sit in the LMCS window (F1), so their
+pointers are flat: **English at file offset `0x0830`**, **Spanish at
+`0x1438`**. Both are indexed the same way, `record = base + code*5`, each
+record `Cnum | off16 | seg16` pointing into that language's own name pool of
+length-prefixed glyph strings (`0x0A` = space, `0x0B`-`0x25` = A-Z with Ñ at
+`0x19`): the **English pool at `0x1c5f`**, the **Spanish pool at `0x250e`**.
+
+**The two tables are not one shared pool read by ordinal position — each
+language has its own code-indexed table.** A code resolves through each
+table separately into that table's own pool, and the pools hold the same
+entries in a different order: code `0x14`'s English name `U.C.FLIPPER` sits
+at file offset `0x1dc7` in the English pool, while its Spanish name
+`C.FLIPPER SUP.` sits at a different ordinal position in the Spanish pool.
+Pairing the two pools by position does not work; only the shared `code` axis
+lines a name up with its translation.
+
+Extracted mechanically by `scripts/iomoon_strings.py`'s `contact_table()`,
+which self-tests against F15's four ball-handling contacts, the SW40 tilt
+code and the two Jupiter/lane pairs before printing:
+
+```
+$ python3 scripts/iomoon_strings.py roms/iomoon/v1_3_01.bin
+self-test OK: 51 named codes, 44 of them matrix positions
+```
+
+The full table, with `col.bit` from F5's map (`code = 0x0A + 8c + b` for
+c = 0..4, `0x34 + b` for c = 5; cabinet codes carry no column/bit):
+
+| code | col.bit | C# | English | Spanish |
+|---|---|---|---|---|
+| `0x0A` | c0.0 | C6 | OUTHOLE 1 | SALIDA BOLAS 1 |
+| `0x0B` | c0.1 | C7 | OUTHOLE 2 | SALIDA BOLAS 2 |
+| `0x0C` | c0.2 | C8 | OUTHOLE 3 | SALIDA BOLAS 3 |
+| `0x0D` | c0.3 | C9 | BALL OUT | BOLA FUERA |
+| `0x0E` | c0.4 | C18 | LANE 5 | PASILLO 5 |
+| `0x0F` | c0.5 | C17 | LANE 4 | PASILLO 4 |
+| `0x10` | c0.6 | C11 | L.C.FLIPPER | C. FLIPPER IZQ. |
+| `0x11` | c0.7 | C10 | R.C.FLIPPER | C. FLIPPER DER. |
+| `0x12` | c1.0 | C22 | LANE 11 | PASILLO 11 |
+| `0x13` | c1.1 | C21 | RAMP 1 EXIT | SALIDA RAMPA 1 |
+| `0x14` | c1.2 | C19 | U.C.FLIPPER | C.FLIPPER SUP. |
+| `0x15` | c1.3 | C16 | RIGHT SHOOTER | EXPULSOR DERECHO |
+| `0x16` | c1.4 | C15 | LEFT SHOOTER | EXPULSOR IZQ. |
+| `0x17` | c1.5 | C14 | LANE 3 | PASILLO 3 |
+| `0x18` | c1.6 | C13 | LANE 2 | PASILLO 2 |
+| `0x19` | c1.7 | C12 | LANE 1 | PASILLO 1 |
+| `0x1A` | c2.0 | C24 | LANE 6 | PASILLO 6 |
+| `0x1B` | c2.1 | C25 | BANK A | DIANA BANCADA A |
+| `0x1C` | c2.2 | C26 | BANK B | DIANA BANCADA B |
+| `0x1D` | c2.3 | C27 | BANK C | DIANA BANCADA C |
+| `0x1E` | c2.4 | C28 | BANK D | DIANA BANCADA D |
+| `0x1F` | c2.5 | C29 | BANK E | DIANA BANCADA E |
+| `0x20` | c2.6 | C30 | INNER BANK | FONDO BANCADA |
+| `0x21` | c2.7 | C31 | HOLE 2 | TRAGABOLAS 2 |
+| `0x22` | c3.0 | C23 | HOLE 1 | TRAGABOLAS 1 |
+| `0x23` | c3.1 | C33 | BUMPER 1 | BUMPER 1 |
+| `0x24` | c3.2 | C32 | BULL EYE 1 | DIANA 1 |
+| `0x25` | c3.3 | C35 | BUMPER 3 | BUMPER 3 |
+| `0x26` | c3.4 | C34 | BUMPER 2 | BUMPER 2 |
+| `0x27` | c3.5 | C37 | BUMPER 5 | BUMPER 5 |
+| `0x28` | c3.6 | C36 | BUMPER 4 | BUMPER 4 |
+| `0x29` | c3.7 | C40 | RAMP 1 ENTRANCE | ENTRADA RAMPA 1 |
+| `0x2A` | c4.0 | C44 | JUPITER 1 | JUPITER 1 |
+| `0x2B` | c4.1 | C45 | JUPITER 2 | JUPITER 2 |
+| `0x2C` | c4.2 | C46 | JUPITER 3 | JUPITER 3 |
+| `0x2D` | c4.3 | C39 | RAMP 2 ENTRANCE | ENTRADA RAMPA 2 |
+| `0x2E` | c4.4 | C38 | BULL EYE 2 | DIANA 2 |
+| `0x2F` | c4.5 | C48 | LANE 10 | PASILLO 10 |
+| `0x30` | c4.6 | C49 | RAMP 1 MIDDLE | MEDIA RAMPA 1 |
+| `0x31` | c4.7 | C50 | ENTRADA JUPITER | ENTRADA JUPITER |
+| `0x32` | — | C50 | ENTRADA JUPITER | ENTRADA JUPITER |
+| `0x33` | — | C3 | COINS INPUT | MONEDERO |
+| `0x34` | c5.0 | C47 | RAMP 2 EXIT | SALIDA RAMPA 2 |
+| `0x35` | c5.1 | C43 | LANE 9 | PASILLO 9 |
+| `0x36` | c5.2 | C42 | LANE 8 | PASILLO 8 |
+| `0x37` | c5.3 | C41 | LANE 7 | PASILLO 7 |
+| `0x3E` | — | C20 | PLUMB TILT | PENDULO DE FALTA |
+| `0x3F` | — | C4 | TEST BUTTON | PULSADOR TEST |
+| `0x40` | — | C2 | START BUTTON | PULSADOR START |
+| `0x41` | — | C1 | L. FLIPPER | FLIPPER IZQ. |
+| `0x42` | — | C5 | R. FLIPPER | FLIPPER DER. |
+
+**What it closes.** F5's open item — "44 of the 48 switch-matrix positions
+have exact codes but no established physical contact" — is closed: every one
+of the 44, plus all 6 cabinet inputs (already named in F5) plus the coin's
+test-mode code, now carries the firmware's own C-number and name in both
+languages. **Column 4's second ball device (F15's command `0xEB`, Z80
+handler `2AB0`) is Júpiter** — codes `0x2A`-`0x2C` are JUPITER 1/2/3,
+C44-C46.
+
+**What is dead.** Codes `0x38`-`0x3B` — four more column-5 positions — have
+table records with no resolvable name pointer, so those four positions do
+not exist. `0x13` has a name (RAMP 1 EXIT, C21) but its per-bit dispatcher is
+a bare `RET`, and the service manual's own contact list (2.1.1) lists C21 as
+*Sin conectar* — named in the ROM, wired to nothing. The record at `0x32`
+duplicates `0x31`'s exactly (both C50 ENTRADA JUPITER) and is stale; `0x33`
+resolves independently to C3 COINS INPUT / MONEDERO — the code the coin
+mechanism sends while test mode is open (F5, F11), which is exactly where
+the CONTACTOS test screen reads it.
+
+**Two discrepancies, recorded not resolved.**
+- The ROM pairs C10 with R.C.FLIPPER and C11 with L.C.FLIPPER; the manual's
+  own 2.1.1 table has C10 as "Contacto de corte de flipper izquierdo" and
+  C11 as "...derecho" — the opposite way round.
+- `docs/switch_lamp_solenoid.md`'s C39-C50 rows disagree with both the ROM
+  and the manual's 2.1.1 table, which agree with each other over that range
+  (e.g. C44 = Planeta 1 / JUPITER 1 in the manual and the ROM, "Rampa 1" in
+  the docs; C47 = Salida Rampa 2 in the manual and the ROM, "Entrada Rampa 1"
+  in the docs).
+
+**Confidence:** confirmed — table location, record layout and pool decode
+are mechanical and self-tested; the C-numbers and names are cross-checked
+against the Spanish service manual's own 2.1.1 table for all 51 codes.
+
+**Disposition:** hypothesis **answered**. F5's per-fact gap table (#3)
+narrowed the open item to "the physical switch behind each code" for 44
+matrix positions once F15 closed the ball-handling four; this closes those
+44, from the ROM's own contact names, cross-checked against the manual.
+
+---
+
+## F17 — The Z80 driver latches carry coils 1-16
+
+**Statement.** Z80 ports `$85`/`$86` — F7's two 8-bit, active-low driver
+latches — map onto the service manual's coil numbers 1-16 in the simplest
+possible way: **`$85` bit *b* = coil *b*+1, `$86` bit *b* = coil *b*+9.**
+
+| port | bit | coil | manual name (2.3.1) | fires at |
+|---|---|---|---|---|
+| `$85` | 0 | 1 | Flipper izquierdo fuerza | `05C7` |
+| `$85` | 1 | 2 | Flipper izquierdo mantenimiento | `0613` |
+| `$85` | 2 | 3 | Flipper derecho fuerza | `05ED` |
+| `$85` | 3 | 4 | Flipper derecho mantenimiento | `0630` |
+| `$85` | 4 | 5 | Flipper superior fuerza | `067F` |
+| `$85` | 5 | 6 | Flipper superior mantenimiento | `06A5` |
+| `$85` | 6 | 7 | Bumper 1 | `06DB` |
+| `$85` | 7 | 8 | Tragabolas 1 | `07E0` |
+| `$86` | 0 | 9 | Bumper 2 | `06F8` |
+| `$86` | 1 | 10 | Bumper 3 | `0715` |
+| `$86` | 2 | 11 | Bumper 4 | `0732` |
+| `$86` | 3 | 12 | Bumper 5 | `074F` |
+| `$86` | 4 | 13 | Taca | `076C` |
+| `$86` | 5 | 14 | Expulsor 1 | `0789` |
+| `$86` | 6 | 15 | Expulsor 2 | `07A6` |
+| `$86` | 7 | 16 | Sueltabolas de Jupiter | `07C3` |
+
+**Three independent sources agree.**
+
+Z80-side, each bit has its own fire routine: DI, arm a per-channel on-timer
+byte to `0xFF`, flip the port shadow under `OR`/`AND` masks, `OUT`, EI —
+e.g.
+```
+05C7:  LD A,#$FF / LD (C009),A / A=(C005) OR #$02 AND #$FE / OUT ($85),A   ; fire 1, release 2
+0613:  LD A,#$FF / LD (C00C),A / A=(C005) OR #$01 AND #$FD / OUT ($85),A   ; fire 2, release 1
+06DB:  LD A,#$FF / LD (C00F),A / A=(C005) AND #$BF          / OUT ($85),A   ; fire 7 (lone bit)
+06F8:  LD A,#$FF / LD (C010),A / A=(C006) AND #$FE          / OUT ($86),A   ; fire 9 (lone bit)
+07E0:  LD A,#$FF / LD (C019),A / A=(C005) AND #$7F          / OUT ($85),A   ; fire 8 (lone bit)
+```
+All sixteen fire routines (`05C7`, `05ED`, `0613`, `0630`, `067F`, `06A5`,
+`06DB`, `07E0` on `$85`, then `06F8`-`07D1` on `$86`) follow this shape, each
+arming its own on-timer byte — 16 bytes spanning `C009`-`C019` (skipping
+`C014`) for the 16 channels — and each reached from the 80188 command table
+`$2000` through a wrapper that gates on `C068` (test mode) first, e.g.
+`sub_2895 -> 289A: CALL 05C7`, `sub_2919 -> 291E: CALL 0613` (F7).
+
+Second, the service manual's own coil table, **2.3.1 DESCRIPCION DE
+BOBINAS**: "el aparato dispone de 18 bobinas (en los flippers hay doble
+bobinado lo que supone un total de 21)", numbered 01-21 in exactly the order
+above for 1-16, then 17 Salida de bolas, 18 Bancada de dianas, 19 Diverter de
+Rampa, 20 Black Hole Power (No conectada), 21 Diverter de Jupiter.
+
+Third, the manual's own split of those 21 coils into two drive circuits,
+**7.2.4.3 CIRCUITOS DE ATAQUE A BOBINAS**: the *potencia* circuit (figura
+7-11) drives Flipper Izquierdo/Derecho/Superior Fuerza, Bumper 1-5 and the
+five expansion-board coils; the *mediana potencia* circuit (figura 7-12)
+drives Flipper Izquierdo/Derecho/Superior Mantenimiento, Tragabolas 1, Taca,
+Expulsor 1/2 and Sueltabolas de Jupiter. Landed on the bit map above, that is
+**`$85` bits 0/2/4/6 potencia, 1/3/5/7 mediana potencia**, and **`$86` bits
+0-3 potencia, 4-7 mediana potencia** — exactly the fuerza/mantenimiento split
+the fire routines already show.
+
+**F7's "three complementary pairs on `$85`" are the three dual-wound
+flippers.** `05C7`/`0613` are coils 1/2 (left), `05ED`/`0630` are coils 3/4
+(right), `067F`/`06A5` are coils 5/6 (upper); each pair's release routine
+(`064D`, `0666`, `06C2`) sets both bits high together.
+
+**What is open.** Coils 17-21 — *Salida de Bolas*, *Bancada de Dianas*,
+*Diverter de Rampa*, *Black Hole Power* (marked *no conectada* in both the
+coil table and the circuit list) and *Diverter de Jupiter* — plus the three
+flash lamps are on the driver expansion board 011-033A, whose own connector
+(figura 7-10) carries them as channels TA/TB/TC 1-8. **No Z80 port drives
+them.** Enumerating every `OUT` in `iomoon_z80.lst` (105 instructions) finds
+exactly eight distinct ports and nothing else:
+```
+$ grep -oE 'OUT[[:space:]]+\([^)]*\)' iomoon_z80.lst | sort | uniq -c | sort -rn
+     25 OUT      ($86)
+     22 OUT      ($81)
+     16 OUT      ($85)
+     13 OUT      ($82)
+      9 OUT      ($84)
+      9 OUT      ($83)
+      7 OUT      ($87)
+      4 OUT      ($80)
+```
+and every bit of those eight is accounted for: `$80`/`$81` J1 (F6), `$82`
+the switch-column strobe, `$83`/`$84` the lamp matrix (F7), `$85`/`$86` the
+16 channels above, `$87` the direct-input index plus bits 4 and 5 set and
+cleared individually (`port87_bit5_clear`/`port87_bit5_set` at `27B3`/`27C0`,
+and the bit-4 pair at `2831`/`2851`). Dumping IC7 (the 80188-side PAL) and
+IC8 (the Z80 decode PAL) would settle whether the expansion board's channels
+are addressed some other way this ROM never exercises.
+
+**Confidence:** confirmed for the bit map, the fire-routine shape and the
+manual cross-reference; the expansion-board wiring rests on the manual alone
+(7.2.4.1/7.2.4.3), since no Z80 code touches it.
+
+**Disposition:** hypothesis **answered** — F7 established the 16-bit
+driver-latch count and the three complementary pairs without naming the
+coils; this pins all 16 to the manual's own numbering and confirms the split
+with the manual's own circuit description.
+
+---
+
 ## What changed
 
 **Counting basis.** Three facts — F2, F13 and F14 — have **split
