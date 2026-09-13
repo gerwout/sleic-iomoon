@@ -1730,29 +1730,87 @@ with the manual's own circuit description.
 
 ### Addendum (2026-09-13, Task 13): Tragabolas 2, the ball-search sweep, and coil 16
 
-**Hole 2 (Tragabolas 2, code `0x21`, C31) has no coil.** The manual's 2.3.1
-coil list runs 01-21 and names "Bobina Tragabolas 1" (coil 8), with no
-counterpart for Tragabolas 2 anywhere in it; "Bobina de Taca" (coil 13) is a
-separate line, and Tragabolas 2 appears in the manual only as a contact
-(2.1.1), a lamp (2.2.2 — LC17, LC37, LC50) and a scoring rule (3.3.8), never
-as a coil. The 80188's own in-play dispatch agrees: code `0x21`'s entry in
-the `CS:0527` jump table (`D7723`) loads a byte from `413C:0127` and calls
-`sub_D9739` — a pure scoring routine (an OKI cue via `sub_D0B70(0x14)`, a
-bonus add into `413C:00F0/00F2`) with **no `qout_push` call anywhere in it**,
-so no Z80 command and therefore no coil can result. Measured in emulation:
+**Hole 2 (Tragabolas 2, code `0x21`, C31) has no coil — corrected to the
+right dispatch address (2026-09-13, fix round 1).** `sub_D7636`'s jump table
+(`JMP CS:W[BX+00527]`) executes with `CS = D72A` (visible a few lines above
+it, in a far `CALL 0D72A:02020` from the same routine), so the table itself
+is at flat `D72A0+0527 = D77C7`, indexed by `code-0x0E`. Read directly out
+of the ROM (`v1_3_01.bin`, file offset `0x577C7 + 2*(code-0x0E)`, since
+UMCS's flat `0xC0000-0xFFFFF` is file `0x40000-0x7FFFF` — F1): code `0x21`'s
+word is `0x050E`, landing at flat `D72A0+050E = D77AE`, an unconditional
+`CALL sub_D9CAB` — **not** `D7723` as this addendum first said (that word,
+`0x0483` at code `0x25`, is Bumper 3's own entry). `sub_D9CAB` is gated on a
+one-byte counter `413C:0026`: `> 0` does nothing (`XOR AX,AX`); otherwise it
+plays one OKI cue (`sub_D0B70(0x18)`) and sets `413C:0027 = 1`. **Neither
+branch calls `qout_push`**, so no Z80 command and no coil can result — the
+"no kicker" conclusion holds, now resting on the address that is actually
+Hole 2's. The manual's 2.3.1 coil list still independently agrees: it names
+"Bobina Tragabolas 1" (coil 8) and has no counterpart for Tragabolas 2, and
+"Bobina de Taca" (coil 13) is a separate line; Tragabolas 2 appears in the
+manual only as a contact (2.1.1), a lamp (2.2.2 — LC17, LC37, LC50) and a
+scoring rule (3.3.8), never as a coil. Measured in emulation, unchanged:
 routing a ball to Hole 2 delivers code `0x21` to the switch-code shadow
 `413C:00D6`, confirming the contact reaches the 80188, and
 `coreGlobals.solenoids` stays `0` for the following 900+ frames (15 s at
 60 Hz — three times the 300-frame window checked), reproduced on two runs.
 
-Hole 1 (Tragabolas 1, code `0x22`, C23) dispatches through the identical
-pattern one entry later (`D772E` → `sub_D9739`, same routine, the data byte
-at `413C:0128` instead) — so entering either hole scores through the same
-generic path. But Hole 1 alone is followed by real coil activity: coil 13
-(Taca) fires about 3.2 s after the contact and coil 8 (Tragabolas 1) about
-3.75 s after that, reproduced identically on two separate runs. So "Bobina
-de Taca" is not a stray name for Tragabolas 2's missing coil — it is tied to
-Tragabolas 1's own ball return, not to Hole 2, which triggers neither coil.
+**Hole 1 (Tragabolas 1, code `0x22`, C23) — traced to its real handler, and
+the mechanism corrected.** Its table word, one earlier, is `0x04F8`, flat
+`D7798` — **gated at the dispatch level itself** on `413C:00F4 == 9` (any
+other value: no action at all) before it calls `sub_D9B91`. That routine is
+modal, not Hole 2's scoring twin: a one-shot debounce (`sub_D9B76`, latch
+`0028`) admits only the first call per visit; it then branches on `0026`
+(`> 0` fires coil 8 alone, via `sub_D9B49`, and stops) and otherwise on
+`413C:00F4` again (`7` awards Star Ride points with no coil — `0x989680` or
+`0xE4E1C0`, 10,000,000 or 15,000,000, selected by `0027`, matching the
+manual's 3.3.8 Star Ride figures for the two holes; anything else — neither
+`7` nor `0` — scores 150,000 and calls `sub_D9B49` alone, no Taca; `0` is
+the value that falls into `sub_D97D1`). `sub_D97D1`
+branches on `413C:010E` (`1`: score 150,000, call `sub_D9B49`, done;
+otherwise: bump two audit counters and dispatch a 10-state stepper at
+`0002E`, `CS:02895` — verified directly against the ROM's own ten words at
+flat `D9B35`, e.g. word 0 is `0x25A7`, landing at `D72A0+25A7 = D9847`).
+**State 0** of that stepper compares a counter `00EE` against a threshold
+`413C:0101`: at or past the threshold, it skips straight to an audit bump;
+below it, it also plays an OKI cue (`0x83`), waits for it to finish
+(`4000:1304`), and additionally calls `sub_D823B`, which does
+`qout_push(0xE7)` — the Z80's own 256-entry table at `$2000` (read directly
+from `V1 3_05.bin`, entry for `0xE7`) is `0x2A36` → `sub_2A36` →
+`CALL sub_076C` = **coil 13, Taca** — before an NVRAM increment and the same
+audit bump. **Both outcomes of that threshold check converge** on
+`JMP D9B2F`, which falls into `D9814` → `CALL sub_D9B49` — `qout_push(0xDC)`
+(Z80 table entry `0x29E1`, likewise read directly from the ROM) → arms a
+300-tick timer → `CALL sub_07E0` = **coil 8** — so on this branch coil 8
+fires every time, and Taca fires only while `00EE` is below `413C:0101`, a
+separate, narrower gate than the branch selection itself. Measured: two
+separate fresh games both took this exact branch with the counter still
+below threshold, coil 13 firing about 3.2 s after the contact and coil 8
+about 3.75 s after that — real intervening work (the OKI cue and its
+busy-wait, the NVRAM increment) accounts for the gap.
+
+**This is one reachable branch of several, not the routine's only
+behaviour — restated as conditional.** Other branches fire coil 8 alone
+(`0026 > 0`, or `413C:00F4` anything but `0` or `7`), and the
+`413C:00F4 == 7` branch fires no coil at all. Two fresh, freshly-reset games
+taking the same branch is
+consistent with every gating cell (`0026`, `0027`, `0028`, `413C:00F4`,
+`:010E`, `:010F`, `0002E`, `00EE`) starting at its boot-time default both
+times, not with the mechanism being unconditional. What `413C:00F4`,
+`:010E`, `:010F`, the stepper `0002E`, and the `00EE`/`:0101` counter mean
+in player-visible terms (game mode, a hit count, a specific lock state) is
+**not decoded here and is recorded as open**. What this does settle: "Bobina
+de Taca" is not a stray
+name for Tragabolas 2's missing coil — on the branch measured here it fires
+from Tragabolas 1's own handler, immediately ahead of that same handler's
+own coil 8, and Hole 2's handler (`sub_D9CAB`) never reaches it.
+
+**A second correction: `413C:00F0`/`00F2` is the running score, not "a
+bonus."** Three handlers writing the same dword settle it against the
+manual's own numbers: Lane 6 (`sub_D8590`) adds `0x186A0` = 100,000; Diana 1
+/ bull's-eye 1 (`sub_D8B30`) adds `0xC351` = 50,001, or `0x186A0` = 100,000
+when `413C:00F4 == 5` (Special Drop Target) — both read directly from the
+ROM and both the manual's own score values for those contacts, verbatim.
+Every place above that was called "a bonus add" is a score add.
 
 **The ball-search sweep (`sub_2CFB`, F15's "run the ball-search coil
 sequence, wait, repeat") pulses eight coils, and neither Taca nor the
@@ -1787,16 +1845,24 @@ two-ball Jupiter lock or a multiball might reach it where a single default
 ball never does. What would settle it: the MAME debugger on 80188 command
 `0xEB`'s handler (`2AB0`) and the coil-16 wrapper, or a real machine.
 
-**Confidence:** confirmed for the dispatch-table read (`D7723`/`D772E` →
-`sub_D9739`, no `qout_push`) and for `sub_2CFB`'s ten calls and their
-identities; confirmed by live measurement for Hole 2's silence, Hole 1's
-coil 13/coil 8 sequence, and the sweep's live order; open for what, if
-anything, ever frees a ball sitting in Hole 2, and for coil 16 outside
-single-ball play.
+**Confidence:** confirmed for the dispatch-table read, done directly against
+the ROM (`D77AE` → `sub_D9CAB` for Hole 2, no `qout_push`; `D7798` →
+`sub_D9B91` for Hole 1, which reaches `sub_D823B` → coil 13 and `sub_D9B49`
+→ coil 8 on one traced branch of several), for the score-not-bonus
+correction (three handlers, three manual-matching values), and for
+`sub_2CFB`'s ten calls and their identities; confirmed by live measurement
+for Hole 2's silence, Hole 1's coil 13/coil 8 sequence on the branch two
+fresh games both took, and the sweep's live order. Open: which player-visible
+condition selects Hole 1's branch (named cells: `0026`, `0027`, `0028`,
+`413C:00F4`, `:010E`, `:010F`, `0002E`, `00EE`/`:0101`); what, if anything,
+ever frees a ball sitting in Hole 2; and coil 16 outside single-ball play.
 
 **Disposition:** hypothesis **answered** for Hole 2 (no coil, on two
-independent kinds of evidence) and for the sweep's coil list (confirmed,
-not merely named); **open** for coil 16 outside the cases measured here.
+independent kinds of evidence, now at the correct address) and for the
+sweep's coil list (confirmed, not merely named); **corrected** for Hole 1
+(Taca-then-coil-8 is real, but conditional, on the address and mechanism
+now traced end to end rather than assumed); **open** for the gating cells'
+meaning and for coil 16 outside the cases measured here.
 
 ---
 
