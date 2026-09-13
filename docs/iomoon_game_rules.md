@@ -148,9 +148,9 @@ The bank's reset coil is 18 (*Bancada de dianas*), on the expansion board.
 > **Scoop 1 is kicked out, scoop 2 is not** (F17 addendum). Scoop 1 fires coil
 > 13 (*Taca*) and then coil 8 (*Tragabolas 1*), measured reproducibly — *Taca*
 > belongs to scoop 1's own ball return, not to scoop 2. Scoop 2 has **no coil
-> at all**: §2.3.1's list of 21 coils names none for it, the 80188's dispatch
-> for code `0x21` is pure scoring with no command pushed to the Z80, and no
-> solenoid fires for 900+ frames after the contact arrives. §3.3.8 nonetheless
+> at all**: §2.3.1's list of 21 coils names none for it, and no solenoid fires
+> for 900+ frames after the contact arrives, reproduced on two runs. §3.3.8
+> nonetheless
 > gives scoop 2 a full set of awards, so the ball does leave it — by gravity or
 > by a mechanical kick-out, not by a driven coil.
 
@@ -302,8 +302,11 @@ matrix positions in spelling order:
 | T | LC48 | 2.4 |
 | S | LC49 | 2.5 |
 
-Completing ORBITS is the gate on the whole Júpiter branch of the rules (§3.3.7).
-Letters are lit at bull's-eye 1 while LD1 is on (§3.3.5).
+Letters are lit at bull's-eye 1 while LD1 is on (§3.3.5), and the firmware keeps
+the count in a single byte, `[413C:0102]`, hard-capped at 6. Completing the word
+gates three things: Júpiter holds balls at all (§3.3.7), the Monolith offers
+LPA3 / Little Multiball (§3.3.3), and lane 10 pays its larger award (§3.3.1).
+Those are the three places the firmware tests the count against 6.
 
 ### Lamps the rules never mention
 
@@ -385,9 +388,9 @@ reset's timing changes how a mode plays.
 
 ---
 
-## The lanes — *Pasillos* (§3.3.1)
+## The lanes — *Pasillos*
 
-Every lane scores **100,000** unlit. Lit, each does its own thing.
+All of §3.3.1. Every lane scores **100,000** unlit. Lit, each does its own thing.
 
 | Lane | C# / code | Lit | Unlit |
 |---|---|---|---|
@@ -396,11 +399,11 @@ Every lane scores **100,000** unlit. Lit, each does its own thing.
 | 3 | C14 `0x17` | lights LP11 (Autodrop at lane 11) | 100,000 |
 | 4 | C17 `0x0F` | lights LD1 (Orbits spelling at bull's-eye 1) | 100,000 |
 | 5 | C18 `0x0E` | **Special** | 100,000 |
-| 6 | C24 `0x1A` | lights LTB11 **and** LTB2 (Monolith message at both scoops); 100,000 unless the ball arrives from a Skill Orbit | |
+| 6 | C24 `0x1A` | lights LTB11 **and** LTB2 (Monolith message at both scoops); 100,000 unless the ball arrives from a **Skill Orbit** — see below | |
 | 7 | C41 `0x37` | **Special** | 100,000 |
 | 8 | C42 `0x36` | **Extra Ball** | 100,000 |
 | 9 | C43 `0x35` | **Bonus ×10** | 100,000 |
-| 10 | C48 `0x2F` | *with* the ORBITS lights: 2,000,000 first time, 1,000,000 after | *without* them: 5,000,000 first time, 3,000,000 after |
+| 10 | C48 `0x2F` | *with* all six ORBITS lights: **5,000,000** first time, **3,000,000** after | *without* them: **2,000,000** first time, **1,000,000** after |
 | 11 | C22 `0x12` | **Autodrop** | **Drop Shuttle** |
 | Júpiter entry | C50 `0x31` | lights LTB11 **and** LTB2 (Monolith message at both scoops) | |
 
@@ -410,14 +413,40 @@ Three points the table cannot carry:
   lights *both* scoop lamps at once, so either scoop can then cash the Monolith
   message. That is why §3.3.8 lists "LTB11 or LTB2" at both scoops rather than
   one lamp each — the pair is lit and cleared together.
-- **Lane 10 pays more unlit than lit, as printed.** Both OCR copies of the
-  PASILLOS table agree on all four values and on which column each sits in, so
-  this is what the manual prints, not a scanning slip — but it inverts the
-  lit-beats-unlit convention every other row of the same table follows. It is
-  recorded here as printed and flagged as [open](#open-questions).
-- **"Skill Orbit", "Autodrop" and "Drop Shuttle" are undefined.** Each term
-  appears in the manual **only** in this table and nowhere else — no definition,
-  no cross-reference. See [Open](#open-questions).
+- **A "Skill Orbit" is lane 6 taken straight from lane 10.** §3.3.1 withholds
+  lane 6's 100,000 when the ball "comes from a Skill Orbit" without defining the
+  term anywhere in the manual; the firmware defines it. Lane 10's handler sets
+  the flag `[4134:0029]` as its first action (`D8799`), and lane 6's handler
+  (`sub_D8590`) is the only reader: with the flag clear it adds 100,000
+  (`D85BC`), and with it set it scores nothing and clears the flag (`D85E1`). So
+  running the orbit and continuing into lane 6 arms the Monolith without the
+  lane's own 100,000 — one flag, set in exactly one place and consumed in
+  exactly one place.
+- **Lane 10's two columns are the other way round in the manual.** §3.3.1
+  prints 2,000,000 / 1,000,000 under *Con Luces Orbita* and 5,000,000 /
+  3,000,000 under *Sin Luces Orbita*. The firmware pays the **larger** award
+  with the lights **lit**, and the table above follows the firmware. Lane 10's
+  handler is `sub_D878B`, reached from the in-play switch dispatcher `sub_D7636`
+  through its jump table (code `0x2F` → index `0x21`), and it has exactly four
+  score paths, each adding a 32-bit constant to the score at `413C:00F0`/`00F2`:
+
+  | Condition | Address | Constant | Award |
+  |---|---|---|---|
+  | ORBITS complete, first time | `D87BA` | `0x004C4B40` | 5,000,000 |
+  | ORBITS complete, thereafter | `D886E` | `0x002DC6C0` | 3,000,000 |
+  | ORBITS incomplete, first time | `D880C` | `0x001E8480` | 2,000,000 |
+  | ORBITS incomplete, thereafter | `D88B9` | `0x000F4240` | 1,000,000 |
+
+  The "complete" test is `CMP ES:[0102], 6`, and the first-time axis is the
+  sticky flag `[4134:002C]`, which `sub_D878B` sets on its first pass.
+  **`[413C:0102]` is the count of lit ORBITS letters**, 0–6: bull's-eye 1's
+  handler increments it, hard-capped at 6 (`D8C0D`/`D8C17`), which is §3.3.5's
+  "lights one ORBITS letter"; and the Monolith stepper `sub_D95B0` skips
+  position 2 unless it has reached 6 (`D95DA`), which is §3.3.3's "LPA3 only
+  while the ORBITS lights are lit". Six letters, a cap of six, and both gates —
+  so neither the meaning of the test nor the direction of lane 10 is in doubt.
+- **"Autodrop" and "Drop Shuttle" are undefined.** Both appear in the manual
+  **only** in this table and nowhere else. See [Open](#open-questions).
 
 ---
 
@@ -651,11 +680,12 @@ shot while the mode runs.
 Scoop 1 is kicked out by coil 13 (*Taca*) then coil 8; scoop 2 has no coil
 (F17 addendum).
 
-> The manual labels both scoops *Descuento de Bonos* — the bonus is counted
-> down and paid there. The 80188's shared scoop routine `sub_D9739` instead
-> **adds** into `413C:00F0`/`00F2` (F17 addendum). Whether those cells are the
-> bonus accumulator or a collected-bonus total is not established; see
-> [Open](#open-questions).
+> The manual labels both scoops *Descuento de Bonos* — the bonus is counted down
+> and paid there — but never says what that adds to the score, and never names an
+> end-of-ball bonus collect either. The dword at `413C:00F0`/`00F2` is the
+> **player's score**, not the bonus: bull's-eye 1's handler adds `0xC351` =
+> 50,001 to it, which is §3.3.5's own stated value for that target, and lane 6
+> adds 100,000 to it, which is §3.3.1's. See [Open](#open-questions).
 
 ---
 
@@ -920,18 +950,24 @@ covered in
 
 ## Where the ROM and the manual disagree
 
-The ROM is what runs. All three differences are naming, not behaviour, and none
-changes a rule.
+The ROM is what runs. The first three differences are naming and change no rule;
+the fourth changes a rule, and the page follows the firmware.
 
 | Item | Manual | ROM (F16) |
 |---|---|---|
 | C10 / C11 | C10 left flipper cut-out, C11 right (§2.1.1) | C10 R.C.FLIPPER, C11 L.C.FLIPPER |
 | C44 / C45 / C46 | *Planeta 1 / 2 / 3* (§2.1.1) | JUPITER 1 / 2 / 3, in both languages — the Júpiter lock of §3.3.7 |
 | C21 | *Sin conectar* (§2.1.1) | named RAMP 1 EXIT, dispatcher a bare `RET` — both agree it does nothing |
+| **Lane 10's award** | 2,000,000 / 1,000,000 *with* the ORBITS lights and 5,000,000 / 3,000,000 *without* (§3.3.1) | the other way round — the larger award is paid **with** the lights lit (`sub_D878B`) |
 
-One difference is about substance and is recorded as open: the scoops are
-*Descuento de Bonos* in §3.3.8 while the 80188's shared scoop routine adds into
-`413C:00F0`/`00F2` (F17 addendum).
+**The fourth is about substance, and the page follows the ROM.** §3.3.1's two
+lane-10 columns are swapped relative to the firmware, which pays 5,000,000 /
+3,000,000 with the ORBITS lights lit. Each of the manual's two cells carries its
+own *Con Luces Orbita* / *Sin Luces Orbita* label beside its own pair of values,
+and both OCR passes bind label to values identically, so the error is in the
+printed table rather than introduced by the scan — a column swap during scanning
+would have had to exchange the two labels while leaving the values in place. See
+[the lanes](#the-lanes--pasillos) for the four score paths.
 
 ---
 
@@ -939,22 +975,14 @@ One difference is about substance and is recorded as open: the scoops are
 
 Stated as open rather than guessed. Each line says what would settle it.
 
-- **Lane 10 pays more unlit than lit** — §3.3.1 prints 2,000,000 / 1,000,000
-  *with* the ORBITS lights and 5,000,000 / 3,000,000 *without* them, inverting
-  the convention every other row of the same table follows. Both OCR copies of
-  the table agree on the values and on which column each sits in, so this is not
-  a scanning slip. *Settled by:* reading the 80188's dispatch for code `0x2F`
-  (C48), or a real machine.
-- **"Skill Orbit"** — lane 6's award is 100,000 "if it does not come from a Skill
-  Orbit". The term appears nowhere else in the manual and is never defined.
-  *Settled by:* the 80188's dispatch for code `0x1A`, or a real machine.
 - **"Autodrop" and "Drop Shuttle"** — lane 11's lit and unlit awards. Neither is
   defined anywhere in the manual; both appear only in that one table row.
   *Autodrop* is at least named by its lamps (LP3 at lane 3 "lights Autodrop",
   LP11 at lane 11 "Autodrop") and the bank's reset coil 18 is the only candidate
   mechanism for dropping targets without shooting them, but the manual never
   connects the two. *Drop Shuttle* has no other occurrence at all. *Settled by:*
-  the 80188's dispatch for code `0x12`, or a real machine.
+  lane 11's handler `sub_D890F`, reached from `sub_D7636`'s table at index `0x04`,
+  or a real machine.
 - **What the "Black Hole Power" device was meant to do** — the lamp-level effect
   is established (it lights one of LP7 / LP8 / LP9 at lanes 7–9, §3.3.2 with
   §3.2.4), but the coil of that name, 20, is marked *no conectada* in both
@@ -982,11 +1010,13 @@ Stated as open rather than guessed. Each line says what would settle it.
   reset at ball start and not again during the ball — is the machine's, not
   something either ROM shows. *Settled by:* dumping IC7 and IC8, or a scope on
   the 011-033A connector at ball start.
-- **What the scoops do to the bonus** — the manual says *Descuento de Bonos*
-  (count down) and the shared scoop routine `sub_D9739` adds into
-  `413C:00F0`/`00F2` (F17 addendum). The manual also never names an end-of-ball
-  bonus collect, though §3.3.9 says a tilt loses the bonus, which implies one.
-  *Settled by:* tracing `413C:00F0`/`00F2` to the score adder.
+- **What the bonus is worth, and when it is paid** — §3.3.8 labels both scoops
+  *Descuento de Bonos* without saying what the count-down adds to the score, and
+  the manual names no end-of-ball bonus collect anywhere, though §3.3.9 says a
+  tilt loses the bonus, which implies one exists. The score accumulator is
+  `413C:00F0`/`00F2`; the bonus's own cell is not identified here.
+  *Settled by:* tracing either scoop's handler — `sub_D9B91` for scoop 1,
+  `sub_D9CAB` for scoop 2 — or a real machine.
 - **Whether bumper 1 has a lit state** — §2.2.2 names lamps for bumpers 2–5 and
   none for bumper 1, and F18 places those four plus the unconnected LC42 at five
   consecutive matrix positions. If LC42 is bumper 1's unpopulated position then
@@ -1052,9 +1082,11 @@ and F18 puts LC46 at the fourth of six consecutive matrix positions, which is
 where the I falls. §4.2's entry prompt scans as `RECORD JUGADOR (1,2,3 64)` —
 read as *(1,2,3 ó 4)*, the player number, `ó 4` having merged into `64`.
 
-**Individual values that look wrong are flagged, not fixed** — lane 10's
-lit-versus-unlit values and §5.11's `400000000` are both
-[recorded as open](#open-questions) rather than silently corrected.
+**Individual values that look wrong are checked or flagged, never quietly
+adjusted.** Lane 10's lit-versus-unlit values read the wrong way round in the
+manual and are **settled from the firmware** — the page prints the firmware's
+direction and says where the manual differs. §5.11's `400000000` is not settled
+and stays [recorded as open](#open-questions).
 
 **Figure 7-7, the lamp-matrix diagram, is too damaged to transcribe** — merged
 colour codes, dropped digits, coordinates out of registration. 30 of its 64
