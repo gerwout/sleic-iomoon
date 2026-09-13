@@ -271,6 +271,18 @@ one is real. An untested offset in that range can select a uniform (blank or
 solid) bitmap that then matches large blank or lit regions of an unrelated
 screen rather than one glyph, so guessing it is unsafe, not just unproven.
 
+Past the initial one-byte-wide run, at file offset `0x218B4`, sit 62 further
+entries of mixed shape: 21 of `height=23, width=2` (16 px), 21 of `(12, 1)`,
+20 of `(16, 1)`. The `(23, 2)` set is the large score/price digits, and it
+needs no offset pinned: its entry index is the glyph directly. Entry 0 of
+that set renders a 16x23 `0`, entry 1 a `1`, entry 2 a `2`. Entries 10-19 are
+the same ten digits with one small square mark added at bottom right (rows
+19-20 of 23, columns 13-14 of 16) — a plain dot, not a comma's tail, so a
+decimal point, consistent with a Spanish-market machine's peseta-style
+`NNN.NNN` pricing. Entry 20 is a colon: two of the h=9 face's own colon
+blocks, scaled to this face's width. This face is not verified against any
+captured frame — no dump on disk shows an in-play score.
+
 ### Custom Text Encoding
 
 The 80188 game code uses a **custom character encoding** for DMD text, not standard ASCII:
@@ -282,8 +294,20 @@ The 80188 game code uses a **custom character encoding** for DMD text, not stand
 0x19 = 'Ñ'      0x1A = 'O'    0x1B = 'P'    0x1C = 'Q'    0x1D = 'R'
 0x1E = 'S'      0x1F = 'T'    0x20 = 'U'    0x21 = 'V'    0x22 = 'W'
 0x23 = 'X'      0x24 = 'Y'    0x25 = 'Z'
-0x2C = ','      0x2E = '.'    0x2F = newline  0x00 = terminator
+0x2C = '.'      0x2E = ':'    0x00 = terminator
 ```
+
+`0x2C` and `0x2E` are corrected against the h=9 face's own bitmaps
+(`iomoon_strings.py`'s `GLYPHS`, which already had them right): code `0x2C`
+is a single 2x2 dot low in the cell -- a period, not a comma -- and `0x2E` is
+two of that same dot stacked with a gap -- a colon, not a second period.
+
+`0x2F`'s bitmap is a single one-row, 5px horizontal bar -- a printable
+glyph, which rules out "newline" (a control code has no bitmap to measure).
+It does not clearly read as `GLYPHS`' own `'*'` either; a lone flat bar
+looks more like a hyphen. Which it is is not settled here — it would take a
+captured frame that shows this code in a recognizable context, the way
+entry 57 pinned the h=9 face itself against a captured `W`.
 
 A **character mapping table** at ROM offset `0x809B0` (96 bytes) maps ASCII codes `0x20`–`0x7F` to glyph indices.
 
