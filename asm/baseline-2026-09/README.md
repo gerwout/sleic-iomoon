@@ -1031,9 +1031,12 @@ Old addresses and claims were used only as probes. Decoding fresh:
   matrix inputs (6x8) plus the 8 bits of port `0x03`; how many are populated
   is a question for the per-bit handlers in `sw_col0_changed..sw_col5_changed`
   (Task 7), not for this baseline.
-* **"18 solenoids"** is not confirmed either. Ports `0x85` and `0x86` are two
-  8-bit shadowed latches = 16 driver bits, with port `0x87`'s bits 4/5 as
-  further candidates. Again a Task 7 question.
+* **"18 solenoids"** is confirmed by F17 (`docs/switch_lamp_solenoid.md`).
+  Ports `0x85` and `0x86` are two 8-bit shadowed latches = 16 driver bits,
+  mapping 1:1 onto the manual's coils 1-16; the manual's coils 17-21 plus
+  three flash lamps are on the driver expansion board, driven by no Z80
+  port. Port `0x87`'s bits 4/5 are accounted for elsewhere (F17), not
+  solenoid candidates.
 * The claim that the Z80 has any path into 80188 memory is contradicted: the
   Z80 addresses only its own ROM and `C000-C7FF` RAM.
 

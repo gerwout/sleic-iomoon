@@ -105,11 +105,14 @@ and the 80188 also dispatches `0x45` through its ordinary switch-code path at
 five sites.
 
 Which physical contact sits behind each of the 48 matrix codes is established
-for four of them: **column 0 bits 0–3, codes `0x0A`–`0x0D`, are the ball-handling
+for all of them (finding **F16**, the firmware's own two-language switch-code
+table). **Column 0 bits 0–3, codes `0x0A`–`0x0D`, are the ball-handling
 contacts** — bits 0–2 the three trough contacts and bit 3 the ball-exit contact
 (finding F15). Contact 0 is the trough entry and doubles as the ball-over
-sensor, reporting code `0x43` rather than its own `0x0A` (`161E`). The other 44
-positions are exact as codes but not yet tied to named playfield switches.
+sensor, reporting code `0x43` rather than its own `0x0A` (`161E`). Column 4's
+second ball device, codes `0x2A`–`0x2C`, is the Júpiter two-ball lock (F16);
+the full 44-position table, in both languages, is in
+[`switch_lamp_solenoid.md`](switch_lamp_solenoid.md).
 
 ---
 
@@ -152,7 +155,10 @@ drives all eight bits independently (`AND #$FE`…`#$7F` to fire at `0706`–`07
 `OR #$01`…`#$80` to release at `081B`–`0892`, plus the timed auto-release inside
 the IRQ handler). Port `0x85` is mixed: bits 0/1, 2/3 and 4/5 are complementary
 pairs (a flipper's power and hold windings, `05D7`/`0623`, …) with bits 6 and 7
-individual. So the hardware is **16 driver bits = 13 addressable devices**.
+individual. The 16 bits map 1:1 onto the manual's coils 1–16 (**F17**): `0x85`
+bit *b* = coil *b*+1, `0x86` bit *b* = coil *b*+9. The manual's coils 17–21
+plus three flash lamps sit on the driver expansion board, driven by no Z80
+port at all.
 Command bytes `0xCB`–`0xE7` call into that family (`2895 → sub_05C7`,
 `28D7 → sub_05ED`, `2919 → sub_0613`, …), several arming a duration in
 `C04F`/`C051` first.

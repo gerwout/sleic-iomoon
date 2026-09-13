@@ -171,7 +171,7 @@ sleic-io-moon/
 ├── asm/
 │   ├── README.md                      # Index: which listing is authoritative and why
 │   ├── baseline-2026-09/              # AUTHORITATIVE cross-verified 80188 + Z80 disassembly
-│   │   ├── findings.md                #   F1-F15, the driver contract
+│   │   ├── findings.md                #   F1 onward, the driver contract
 │   │   ├── README.md                  #   method, entry points, agreement with older material
 │   │   ├── iomoon_80188.lst           #   the 80188 listing (83 regions, 29,810 instructions)
 │   │   ├── iomoon_z80.lst             #   the Z80 listing (12 regions, 4,760 instructions)
@@ -336,7 +336,7 @@ listings are:
   (`dasmx86` vs capstone vs ndisasm for the 80188's 29 810 instructions;
   `dasmz80` vs unidasm for the Z80's 4 760). Its
   [`findings.md`](asm/baseline-2026-09/findings.md) states the machine's
-  behaviour as fifteen numbered facts, F1–F15, which are the contract the
+  behaviour as numbered facts, F1 onward, which are the contract the
   PinMAME `SLEIC2` driver implements.
 - **[`asm/pic16c57_annotated.asm`](asm/pic16c57_annotated.asm)** — the IC23 DMD
   raster program, 150 words, agreed on by three independent disassemblers.
