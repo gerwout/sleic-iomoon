@@ -1605,11 +1605,10 @@ the CONTACTOS test screen reads it.
 - The ROM pairs C10 with R.C.FLIPPER and C11 with L.C.FLIPPER; the manual's
   own 2.1.1 table has C10 as "Contacto de corte de flipper izquierdo" and
   C11 as "...derecho" — the opposite way round.
-- `docs/switch_lamp_solenoid.md`'s C39-C50 rows disagree with both the ROM
-  and the manual's 2.1.1 table, which agree with each other over that range
-  (e.g. C47 = Salida Rampa 2 in the manual and the ROM, "Entrada Rampa 1" in
-  the docs; C50 = Entrada en Jupiter in the manual and the ROM, "Contacto de
-  Servicio" in the docs).
+- `docs/switch_lamp_solenoid.md`'s C40 and C44-C50 rows disagree with the
+  ROM (C39, C41-C43 agree); e.g. C47 = Salida Rampa 2 in the ROM and the
+  manual, "Entrada Rampa 1" in the docs. The ROM and the manual's 2.1.1
+  table agree with each other there too, except C44-C46 — the next bullet.
 - Codes `0x2A`-`0x2C` (C44/C45/C46) are JUPITER 1/2/3 in the ROM, in both
   languages, where the manual's 2.1.1 contact list names the same three
   C-numbers Planeta 1/2/3 — the ROM is what runs. The manual's own lamp
