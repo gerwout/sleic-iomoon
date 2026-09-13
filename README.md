@@ -84,6 +84,7 @@ For a detailed breakdown of the hardware architecture, see:
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
 - [Inter-CPU Communication](docs/inter_cpu_communication.md) — J1 8-bit byte-port protocol between the 80188 and Z80
 - [Language Model & Service-Menu Navigation](docs/iomoon_language_and_service_menu.md) — `[1001]` language polarity (DMD-verified), the country DIP that drives both coinage and language, the switch codes, and the 38-record menu tree
+- [Complete Rule Set](docs/iomoon_game_rules.md) — What each contact, lamp and mode does in play, with the rules section's `LPA`/`LP`/`LR`/`LD`/`LTB` light names reconciled to the manual's own `LC1`–`LC64` list
 
 ---
 
@@ -119,6 +120,7 @@ sleic-io-moon/
 │   ├── inter_cpu_communication.md     # J1 byte-port inter-CPU link
 │   ├── game_software.md               # Game state machine & boot sequence
 │   ├── iomoon_language_and_service_menu.md   # Language, country DIP, service-menu tree
+│   ├── iomoon_game_rules.md           # Complete rule set (play, lights, modes, adjustables)
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
 │   ├── bikerace_boards.md             # Bike Race board photographs and IC complement
 │   └── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
@@ -321,6 +323,7 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [80188 Peripheral Configuration](docs/80188_config.md) | Chip selects (UMCS, LMCS, PACS, MMCS, MPCS), wait states |
 | [Inter-CPU Communication](docs/inter_cpu_communication.md) | J1 8-bit byte-port between the 80188 and Z80 (no shared RAM) |
 | [Game Software Architecture](docs/game_software.md) | Boot sequence, main loop, state machine, text encoding, configuration system |
+| [Complete Rule Set](docs/iomoon_game_rules.md) | How the machine plays: every contact's award, the rules section's lights reconciled to the manual's own LC numbers, the modes and their durations, and the adjustables that change them |
 | [The SLEIC Board Family](docs/sleic_board_family.md) | How IO Moon, Sleic Pin-Ball, Bike Race and Doña Elvira 2 relate: shared architecture, Z80 firmware lineage, where they diverge |
 | [Bike Race Boards](docs/bikerace_boards.md) | Photographs of the Bike Race 16-bit and Z80 boards, with the IC complement they establish |
 
