@@ -43,6 +43,8 @@ import csv
 import os
 import sys
 
+import iomoon_strings
+
 
 def parse_dump(path):
     """[(ms, [row_string, ...]), ...] in file order.
@@ -176,6 +178,53 @@ def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
     return scenes
 
 
+def decode_text(rows, glyphs, cell_w=8):
+    """The on-screen text in a decoded frame's rows, read by exact bitmap match.
+
+    `glyphs` is a glyph code -> row-bit-string table from
+    iomoon_strings.glyph_bitmaps() (all one height; degenerate/uniform
+    entries, including the space glyph, are already dropped there).  Every
+    (x, y) window of that height is tried; a match emits the glyph's
+    character and advances x by the full cell width, a miss advances by one
+    pixel, so text is found at any x rather than only multiples of the cell
+    width.  Since the space glyph is not in `glyphs`, a run of misses
+    between two matches on the same line becomes exactly one space, rather
+    than the naive "WAITINGFOR" (no gap) or a space per missed column.
+    Lines are read top to bottom and joined with ' / '.
+    """
+    if not rows or not glyphs:
+        return ''
+    heights = {len(bits) for bits in glyphs.values()}
+    if len(heights) != 1:
+        return ''
+    h = heights.pop()
+    width = len(rows[0])
+    if width < cell_w or len(rows) < h:
+        return ''
+    bits_to_code = {tuple(bits): code for code, bits in glyphs.items()}
+    binrows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+
+    lines = []
+    for y in range(len(rows) - h + 1):
+        window = binrows[y:y + h]
+        chars, x, gap = [], 0, False
+        while x <= width - cell_w:
+            code = bits_to_code.get(tuple(r[x:x + cell_w] for r in window))
+            if code is not None:
+                if chars and gap:
+                    chars.append(' ')
+                chars.append(iomoon_strings.GLYPHS.get(code, '?'))
+                gap = False
+                x += cell_w
+            else:
+                if chars:
+                    gap = True
+                x += 1
+        if chars:
+            lines.append(''.join(chars))
+    return ' / '.join(lines)
+
+
 def slug(text):
     keep = [c.lower() if c.isalnum() else '-' for c in text]
     s = ''.join(keep)
@@ -194,7 +243,17 @@ def main():
                      help='all-pixel diff that starts a new scene (default 0.25)')
     ap.add_argument('--lit-threshold', type=float, default=0.8,
                      help='lit-union diff that starts a new scene (default 0.8)')
+    ap.add_argument('--rom', default=None,
+                     help='the 80188 ROM1 image (e.g. roms/iomoon/v1_3_01.bin) to read the DMD '
+                          'font from for the text column; omitted, text is written empty')
     args = ap.parse_args()
+
+    glyphs = {}
+    if args.rom:
+        try:
+            glyphs = iomoon_strings.glyph_bitmaps(open(args.rom, 'rb').read())
+        except OSError as e:
+            print('%s: %s -- text column will be empty' % (args.rom, e), file=sys.stderr)
 
     try:
         frames = parse_dump(args.dump)
@@ -221,10 +280,11 @@ def main():
             f.write('\n'.join(scene[-1][1]) + '\n')
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
-                         'frames': len(scene)})
+                         'frames': len(scene),
+                         'text': decode_text(scene[-1][1], glyphs)})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms', 'frames'])
+        w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms', 'frames', 'text'])
         w.writeheader()
         w.writerows(rows_out)
     print('%d frames -> %d scenes' % (len(frames), len(scenes)))

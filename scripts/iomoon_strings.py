@@ -24,6 +24,59 @@ SPANISH_TABLE_BASE = 0x1438   # same layout, same code axis, pointer into SPANIS
 ENGLISH_POOL = (0x1c5f, 0x1e4d)
 SPANISH_POOL = (0x250e, 0x2784)
 
+# The DMD glyph table (docs/dmd_graphics.md, "Font System"): ROM1 file offset
+# 0x20000, combined-image 0xA0000.  Its entries have no fixed stride -- each
+# is a 6-byte header [h, 00, W, 00, h*W, 00] followed by three h*W-byte
+# blocks (plane 0, plane 1, then a mask -- F13's composite is
+# (background AND mask) OR sprite) -- so the table must be walked.
+FONT_BASE = 0x20000
+# The on-screen text is the h=9, W=1 (one byte, 8px) face.  Its table entry
+# is the glyph code plus this offset: entry 57 matches a captured frame's
+# 'W' byte-for-byte, and 'W' is glyph code 0x22 (34).
+FONT_FACE_HEIGHT = 9
+FONT_CODE_OFFSET = 23
+
+
+def _font_entries(data, base=FONT_BASE):
+    """[(offset, height, width_bytes), ...], walking the glyph table from `base`.
+
+    Stops at the first header whose byte 4 cannot hold height*width (over
+    255, as for a glyph larger than the on-screen face) -- walking this
+    reading of the header has not been verified past that point.
+    """
+    out = []
+    off = base
+    while off + 6 <= len(data):
+        h, w, hw = data[off], data[off + 2], data[off + 4]
+        if h == 0 or w == 0 or hw != h * w:
+            break
+        out.append((off, h, w))
+        off += 6 + 3 * h * w
+    return out
+
+
+def glyph_bitmaps(data):
+    """Glyph code -> list of row bit strings, for the on-screen h=9 face.
+
+    A uniform entry (every row identical, as for the space glyph's all-zero
+    bitmap) is dropped: it would match any blank or solid window on the
+    panel rather than one particular glyph, so a caller wanting a space
+    between words has to notice the gap itself rather than match one.
+    """
+    entries = _font_entries(data)
+    out = {}
+    for code in GLYPHS:
+        idx = code + FONT_CODE_OFFSET
+        if idx >= len(entries):
+            continue
+        off, h, w = entries[idx]
+        if h != FONT_FACE_HEIGHT or w != 1:
+            continue
+        rows = [format(data[off + 6 + r], '08b') for r in range(h)]
+        if len(set(rows)) > 1:
+            out[code] = rows
+    return out
+
 
 def decode_string(data, off):
     """A length-prefixed glyph string at file offset `off`, or None."""
@@ -109,6 +162,14 @@ def _self_test(data):
     matrix = [c for c in t if 0x0A <= c <= 0x37 and c not in (0x32, 0x33)]
     assert len(matrix) == 44, 'expected 44 named matrix positions, got %d' % len(matrix)
     print('self-test OK: %d named codes, %d of them matrix positions' % (len(t), len(matrix)))
+
+    glyphs = glyph_bitmaps(data)
+    assert 0x0A not in glyphs, 'space is a uniform (all-zero) bitmap and must be dropped'
+    w_bits = ('00000000', '10000010', '11010110', '11010110', '11111110',
+              '01111100', '01101100', '01000100', '00000000')
+    assert tuple(glyphs[0x22]) == w_bits, 'glyph 0x22 (W) bitmap does not match the boot frame'
+    assert len(glyphs) == 47, 'expected 47 non-space codes in the h=9 face, got %d' % len(glyphs)
+    print('font self-test OK: %d matchable glyphs in the h=9 face' % len(glyphs))
 
 
 if __name__ == '__main__':
