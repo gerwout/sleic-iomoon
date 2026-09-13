@@ -18,8 +18,24 @@
 # plunges; Down follows the next ball after a drain (src/wpc/sims/sleic/
 # iomoon.c).  1/5/7/T are START/COIN/TEST/TILT (sleic.h SLEIC_CABPORT); in
 # the service menu, the left/right flipper keys (LShift/RShift) scroll and
-# select, START backs up one level, and TEST opens or fully closes the menu
-# regardless of depth (confirmed empirically, not stated in F14 as such).
+# select, and BOTH START and TEST back up exactly one level from wherever
+# the cursor is (F14's "redraw, return 1" for TEST and "sub_DF829" for
+# START are the same one-pop action, not two different ones) -- "exit the
+# whole menu, reboot the Z80" is not a separate action, it is just what
+# backing up from record 0 (root) necessarily does, since root has no
+# parent. One case does not fit this: backing out of an auto-cycling test
+# (SOLENOIDS, the three LIGHT TESTs, the three CONTACTOS-adjacent tests)
+# with TEST can land straight at record 0 with the menu still open rather
+# than at its immediate parent -- confirmed on this exact script (the
+# capture's raw dump ran out of new frames for the last ~91s of a first
+# attempt because of exactly this: sitting on the still-open, unchanging
+# root list with nothing left in the script to close it). The walk below
+# always follows a leaf back up with as many single pops as its own depth
+# (ordinary records) or, for an auto-cycling test, treats whatever TEST
+# lands on next as unknown and re-settles from there rather than assuming
+# one pop -- and a final, explicit TEST-from-root closes the menu for real
+# at the very end, checked by confirming the tail of the dump is live
+# attract animation, not a static frame.
 #
 # Two things earned from running this against the real binary, not guessed:
 #
@@ -48,404 +64,418 @@
 # SPECIAL trampoline (D5077, the match-win path) by chaining several quick
 # games, ran into the same kind of post-game unresponsiveness before it was
 # diagnosed and is not included here; only the normal end-of-game hook
-# (D5123) is deliberately exercised. See the task report for what was tried.
+# (D5123) is deliberately exercised.
+#
+# Fix round 1 also tried, separately (not in this script, to keep it from
+# risking the corpus run), forcing a big enough score to reach both the
+# lowest high-score preset (50,000,000) and the SPECIAL path: every score
+# tried at or above roughly 48-52,000,000 also earns an EXTRA BALL, and the
+# ball simulator's fixed three-ball trough then has no further ball to
+# serve -- the display sticks on "EXTRA BALL" with the score frozen, for as
+# long as tried (multiple plunge+drain attempts, waits past 20,000 frames),
+# never reaching PRESS START. So neither the high-score wheel nor the
+# SPECIAL path could be reached this way either. See dmd/README.md and the
+# task report for the numbers.
     40 mark boot
     40 tap 8 KEYCODE_1
+    80 mark boot-setting-country
    640 mark attract
-  1240 mark credit
-  1240 tap 8 KEYCODE_5
-  1360 mark ball-1-start
-  1360 tap 8 KEYCODE_1
-  1510 mark ball-1-in-play
-  1510 tap 40 KEYCODE_SPACE
-  1630 tap 10 KEYCODE_LCONTROL,KEYCODE_R
-  1700 tap 10 KEYCODE_RCONTROL,KEYCODE_R
-  1770 tap 10 KEYCODE_O
-  1840 tap 10 KEYCODE_LCONTROL,KEYCODE_H
-  1910 tap 10 KEYCODE_RCONTROL,KEYCODE_H
-  1980 tap 10 KEYCODE_LCONTROL,KEYCODE_B
-  2050 tap 10 KEYCODE_RCONTROL,KEYCODE_B
-  2120 tap 10 KEYCODE_W
-  2190 tap 10 KEYCODE_E
-  2260 tap 10 KEYCODE_D
-  2330 tap 10 KEYCODE_F
-  2400 tap 10 KEYCODE_G
-  2470 tap 10 KEYCODE_W
-  2540 tap 10 KEYCODE_E
-  2610 tap 10 KEYCODE_D
-  2680 tap 10 KEYCODE_F
-  2750 tap 10 KEYCODE_G
-  2820 tap 10 KEYCODE_J
-  2890 tap 10 KEYCODE_J
-  2960 tap 10 KEYCODE_I
-  3030 tap 10 KEYCODE_K
-  3450 mark ball-1-drained
-  3450 tap 10 KEYCODE_Q
-  3510 tap 10 KEYCODE_DOWN
-  3860 mark ball-2-in-play
-  3860 tap 40 KEYCODE_SPACE
-  3980 tap 10 KEYCODE_Z
-  4050 tap 10 KEYCODE_X
-  4180 mark drop-bank-2-down
-  4240 tap 10 KEYCODE_C
-  4310 tap 10 KEYCODE_V
-  4440 mark drop-bank-4-down
-  4500 tap 10 KEYCODE_N
-  4630 mark drop-bank-5-down
-  4880 tap 10 KEYCODE_T
-  5140 tap 10 KEYCODE_T
-  5440 mark full-tilt
-  6640 mark ball-2-drained
-  6640 tap 10 KEYCODE_Q
-  6700 tap 10 KEYCODE_DOWN
-  7050 mark ball-3-in-play
-  7050 tap 40 KEYCODE_SPACE
-  7170 tap 10 KEYCODE_Y
-  7240 tap 10 KEYCODE_U
-  7310 tap 10 KEYCODE_A
-  7380 tap 10 KEYCODE_S
-  7450 tap 10 KEYCODE_M
-  7520 tap 10 KEYCODE_L
-  7590 tap 10 KEYCODE_COMMA
-  7660 tap 10 KEYCODE_STOP
-  7730 tap 10 KEYCODE_SLASH
-  7800 tap 10 KEYCODE_LCONTROL,KEYCODE_B
-  7870 tap 10 KEYCODE_RCONTROL,KEYCODE_B
-  7940 tap 10 KEYCODE_W
-  8010 tap 10 KEYCODE_E
-  8080 tap 10 KEYCODE_D
-  8150 tap 10 KEYCODE_F
-  8220 tap 10 KEYCODE_G
-  8290 tap 10 KEYCODE_Y
-  8360 tap 10 KEYCODE_U
-  8430 tap 10 KEYCODE_A
-  8500 tap 10 KEYCODE_S
-  9070 mark ball-3-drained-gameover
-  9070 tap 10 KEYCODE_Q
-  9130 tap 10 KEYCODE_DOWN
-  9830 mark press-start-normal
- 10130 tap 10 KEYCODE_1
- 10730 mark high-score-entry
- 11330 mark lottery
- 11930 mark attract-again
- 18530 mark svc-0
- 18530 tap 10 KEYCODE_7
- 18650 mark svc-1
- 18650 tap 10 KEYCODE_RSHIFT
- 18770 mark svc-4
- 18770 tap 10 KEYCODE_RSHIFT
- 18890 mark back-to-1
- 18890 tap 10 KEYCODE_1
- 19010 tap 10 KEYCODE_LSHIFT
- 19130 mark svc-5
- 19130 tap 10 KEYCODE_RSHIFT
- 19250 mark back-to-1
- 19250 tap 10 KEYCODE_1
- 19370 mark back-to-0
- 19370 tap 10 KEYCODE_1
- 19490 tap 10 KEYCODE_LSHIFT
- 19610 mark svc-2
- 19610 tap 10 KEYCODE_RSHIFT
- 19730 mark svc-31
- 19730 tap 10 KEYCODE_RSHIFT
- 19850 mark back-to-2
- 19850 tap 10 KEYCODE_1
- 19970 tap 10 KEYCODE_LSHIFT
- 20090 mark svc-6
- 20090 tap 10 KEYCODE_RSHIFT
- 20210 mark svc-27
- 20210 tap 10 KEYCODE_RSHIFT
- 20330 mark back-to-6
- 20330 tap 10 KEYCODE_1
- 20450 tap 10 KEYCODE_LSHIFT
- 20570 mark svc-28
- 20570 tap 10 KEYCODE_RSHIFT
- 20690 mark back-to-6
- 20690 tap 10 KEYCODE_1
- 20810 tap 10 KEYCODE_LSHIFT
- 20930 mark svc-29
- 20930 tap 10 KEYCODE_RSHIFT
- 21050 mark back-to-6
- 21050 tap 10 KEYCODE_1
- 21170 mark back-to-2
- 21170 tap 10 KEYCODE_1
- 21290 tap 10 KEYCODE_LSHIFT
- 21410 mark svc-7
- 21410 tap 10 KEYCODE_RSHIFT
- 21530 mark back-to-2
- 21530 tap 10 KEYCODE_1
- 21650 tap 10 KEYCODE_LSHIFT
- 21770 mark svc-8
- 21770 tap 10 KEYCODE_RSHIFT
- 21890 mark svc-9
- 21890 tap 10 KEYCODE_RSHIFT
- 22010 mark back-to-8
- 22010 tap 10 KEYCODE_1
- 22130 tap 10 KEYCODE_LSHIFT
- 22250 mark svc-10
- 22250 tap 10 KEYCODE_RSHIFT
- 22370 mark back-to-8
- 22370 tap 10 KEYCODE_1
- 22490 tap 10 KEYCODE_LSHIFT
- 22610 mark svc-11
- 22610 tap 10 KEYCODE_RSHIFT
- 22730 mark svc-12
- 22730 tap 10 KEYCODE_RSHIFT
- 22850 mark svc-13
- 22850 tap 10 KEYCODE_RSHIFT
- 22970 mark back-to-12
- 22970 tap 10 KEYCODE_1
- 23090 tap 10 KEYCODE_LSHIFT
- 23210 mark svc-14
- 23210 tap 10 KEYCODE_RSHIFT
- 23330 mark back-to-12
- 23330 tap 10 KEYCODE_1
- 23450 mark back-to-11
- 23450 tap 10 KEYCODE_1
- 23570 tap 10 KEYCODE_LSHIFT
- 23690 mark svc-15
- 23690 tap 10 KEYCODE_RSHIFT
- 23810 mark svc-16
- 23810 tap 10 KEYCODE_RSHIFT
- 23930 mark back-to-15
- 23930 tap 10 KEYCODE_1
- 24050 tap 10 KEYCODE_LSHIFT
- 24170 mark svc-17
+  6640 mark credit
+  6640 tap 8 KEYCODE_5
+  6760 mark ball-1-start
+  6760 tap 8 KEYCODE_1
+  6910 mark ball-1-in-play
+  6910 tap 40 KEYCODE_SPACE
+  7030 tap 10 KEYCODE_LCONTROL,KEYCODE_R
+  7100 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+  7170 tap 10 KEYCODE_O
+  7240 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+  7310 tap 10 KEYCODE_RCONTROL,KEYCODE_H
+  7380 tap 10 KEYCODE_LCONTROL,KEYCODE_B
+  7450 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+  7520 tap 10 KEYCODE_W
+  7590 tap 10 KEYCODE_E
+  7660 tap 10 KEYCODE_D
+  7730 tap 10 KEYCODE_F
+  7800 tap 10 KEYCODE_G
+  7870 tap 10 KEYCODE_W
+  7940 tap 10 KEYCODE_E
+  8010 tap 10 KEYCODE_D
+  8080 tap 10 KEYCODE_F
+  8150 tap 10 KEYCODE_G
+  8220 tap 10 KEYCODE_J
+  8290 tap 10 KEYCODE_J
+  8360 tap 10 KEYCODE_I
+  8430 tap 10 KEYCODE_K
+  8850 mark ball-1-drained
+  8850 tap 10 KEYCODE_Q
+  8910 tap 10 KEYCODE_DOWN
+  9260 mark ball-2-in-play
+  9260 tap 40 KEYCODE_SPACE
+  9380 tap 10 KEYCODE_Z
+  9450 tap 10 KEYCODE_X
+  9580 mark drop-bank-2-down
+  9640 tap 10 KEYCODE_C
+  9710 tap 10 KEYCODE_V
+  9840 mark drop-bank-4-down
+  9900 tap 10 KEYCODE_N
+ 10030 mark drop-bank-5-down
+ 10280 tap 10 KEYCODE_T
+ 10540 mark full-tilt
+ 10540 tap 10 KEYCODE_T
+ 12040 mark ball-2-drained
+ 12040 tap 10 KEYCODE_Q
+ 12100 tap 10 KEYCODE_DOWN
+ 12450 mark ball-3-in-play
+ 12450 tap 40 KEYCODE_SPACE
+ 12570 tap 10 KEYCODE_Y
+ 12640 tap 10 KEYCODE_U
+ 12710 tap 10 KEYCODE_A
+ 12780 tap 10 KEYCODE_S
+ 12850 tap 10 KEYCODE_M
+ 12920 tap 10 KEYCODE_L
+ 12990 tap 10 KEYCODE_COMMA
+ 13060 tap 10 KEYCODE_STOP
+ 13130 tap 10 KEYCODE_SLASH
+ 13200 tap 10 KEYCODE_LCONTROL,KEYCODE_B
+ 13270 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+ 13340 tap 10 KEYCODE_W
+ 13410 tap 10 KEYCODE_E
+ 13480 tap 10 KEYCODE_D
+ 13550 tap 10 KEYCODE_F
+ 13620 tap 10 KEYCODE_G
+ 13690 tap 10 KEYCODE_Y
+ 13760 tap 10 KEYCODE_U
+ 13830 tap 10 KEYCODE_A
+ 13900 tap 10 KEYCODE_S
+ 14470 mark ball-3-drained-gameover
+ 14470 tap 10 KEYCODE_Q
+ 14530 tap 10 KEYCODE_DOWN
+ 15230 mark press-start-normal
+ 15530 tap 10 KEYCODE_1
+ 16130 mark high-score-entry
+ 16730 mark lottery
+ 17330 mark attract-again
+ 23930 mark svc-0
+ 23930 tap 10 KEYCODE_7
+ 24050 mark svc-1
+ 24050 tap 10 KEYCODE_RSHIFT
+ 24170 mark svc-4
  24170 tap 10 KEYCODE_RSHIFT
- 24290 mark back-to-15
+ 24290 mark back-to-1
  24290 tap 10 KEYCODE_1
- 24410 mark back-to-11
- 24410 tap 10 KEYCODE_1
- 24530 tap 10 KEYCODE_LSHIFT
- 24650 mark svc-18
- 24650 tap 10 KEYCODE_RSHIFT
- 24770 mark svc-19
- 24770 tap 10 KEYCODE_RSHIFT
- 24890 mark back-to-18
- 24890 tap 10 KEYCODE_1
- 25010 tap 10 KEYCODE_LSHIFT
- 25130 mark svc-20
+ 24410 tap 10 KEYCODE_LSHIFT
+ 24530 mark svc-5
+ 24530 tap 10 KEYCODE_RSHIFT
+ 24650 mark back-to-1
+ 24650 tap 10 KEYCODE_1
+ 24770 mark back-to-0
+ 24770 tap 10 KEYCODE_1
+ 24890 tap 10 KEYCODE_LSHIFT
+ 25010 mark svc-2
+ 25010 tap 10 KEYCODE_RSHIFT
+ 25130 mark svc-31
  25130 tap 10 KEYCODE_RSHIFT
- 25250 mark back-to-18
+ 25250 mark back-to-2
  25250 tap 10 KEYCODE_1
  25370 tap 10 KEYCODE_LSHIFT
- 25490 mark svc-21
+ 25490 mark svc-6
  25490 tap 10 KEYCODE_RSHIFT
- 25610 mark back-to-18
- 25610 tap 10 KEYCODE_1
- 25730 mark back-to-11
+ 25610 mark svc-27
+ 25610 tap 10 KEYCODE_RSHIFT
+ 25730 mark back-to-6
  25730 tap 10 KEYCODE_1
- 25850 mark back-to-8
- 25850 tap 10 KEYCODE_1
- 25970 mark back-to-2
- 25970 tap 10 KEYCODE_1
- 26090 mark back-to-0
+ 25850 tap 10 KEYCODE_LSHIFT
+ 25970 mark svc-28
+ 25970 tap 10 KEYCODE_RSHIFT
+ 26090 mark back-to-6
  26090 tap 10 KEYCODE_1
  26210 tap 10 KEYCODE_LSHIFT
- 26330 mark svc-3
+ 26330 mark svc-29
  26330 tap 10 KEYCODE_RSHIFT
- 26450 mark svc-22
- 26450 tap 10 KEYCODE_RSHIFT
- 26570 tap 10 KEYCODE_LSHIFT
- 26690 mark svc-25
- 26690 tap 10 KEYCODE_RSHIFT
- 26810 mark back-to-22
- 26810 tap 10 KEYCODE_1
- 26930 tap 10 KEYCODE_LSHIFT
- 27050 mark svc-26
- 27050 tap 10 KEYCODE_RSHIFT
- 27170 mark back-to-22
- 27170 tap 10 KEYCODE_1
- 27290 mark back-to-3
- 27290 tap 10 KEYCODE_1
- 27410 tap 10 KEYCODE_LSHIFT
- 27530 mark svc-23
- 27530 tap 10 KEYCODE_RSHIFT
- 27650 mark back-to-3
- 27650 tap 10 KEYCODE_1
- 27770 tap 10 KEYCODE_LSHIFT
- 27890 mark svc-30
- 27890 tap 10 KEYCODE_RSHIFT
- 28010 mark back-to-3
- 28010 tap 10 KEYCODE_1
- 28130 mark back-to-0
- 28130 tap 10 KEYCODE_1
- 28250 mark svc-root-exit
- 28250 tap 10 KEYCODE_7
- 28370 mark reopen-for-svc-35
- 28370 tap 10 KEYCODE_7
+ 26450 mark back-to-6
+ 26450 tap 10 KEYCODE_1
+ 26570 mark back-to-2
+ 26570 tap 10 KEYCODE_1
+ 26690 tap 10 KEYCODE_LSHIFT
+ 26810 mark svc-7
+ 26810 tap 10 KEYCODE_RSHIFT
+ 26930 mark back-to-2
+ 26930 tap 10 KEYCODE_1
+ 27050 tap 10 KEYCODE_LSHIFT
+ 27170 mark svc-8
+ 27170 tap 10 KEYCODE_RSHIFT
+ 27290 mark svc-9
+ 27290 tap 10 KEYCODE_RSHIFT
+ 27410 mark back-to-8
+ 27410 tap 10 KEYCODE_1
+ 27530 tap 10 KEYCODE_LSHIFT
+ 27650 mark svc-10
+ 27650 tap 10 KEYCODE_RSHIFT
+ 27770 mark back-to-8
+ 27770 tap 10 KEYCODE_1
+ 27890 tap 10 KEYCODE_LSHIFT
+ 28010 mark svc-11
+ 28010 tap 10 KEYCODE_RSHIFT
+ 28130 mark svc-12
+ 28130 tap 10 KEYCODE_RSHIFT
+ 28250 mark svc-13
+ 28250 tap 10 KEYCODE_RSHIFT
+ 28370 mark back-to-12
+ 28370 tap 10 KEYCODE_1
  28490 tap 10 KEYCODE_LSHIFT
- 28610 tap 10 KEYCODE_LSHIFT
- 28730 tap 10 KEYCODE_RSHIFT
- 28850 tap 10 KEYCODE_RSHIFT
+ 28610 mark svc-14
+ 28610 tap 10 KEYCODE_RSHIFT
+ 28730 mark back-to-12
+ 28730 tap 10 KEYCODE_1
+ 28850 mark back-to-11
+ 28850 tap 10 KEYCODE_1
  28970 tap 10 KEYCODE_LSHIFT
+ 29090 mark svc-15
  29090 tap 10 KEYCODE_RSHIFT
- 29210 mark svc-35
+ 29210 mark svc-16
  29210 tap 10 KEYCODE_RSHIFT
- 29360 mark svc-35
- 29390 mark svc-35
- 29420 mark svc-35
- 29450 mark svc-35
- 29480 mark svc-35
- 29510 mark svc-35
- 29540 mark svc-35
- 29570 mark svc-35
- 29600 mark svc-35
- 29630 mark svc-35
- 29660 mark svc-35
- 29690 mark svc-35
- 29690 mark svc-35-close
- 29690 tap 10 KEYCODE_7
- 34890 mark reopen-for-svc-36
- 34890 tap 10 KEYCODE_7
- 35010 tap 10 KEYCODE_LSHIFT
- 35130 tap 10 KEYCODE_LSHIFT
- 35250 tap 10 KEYCODE_RSHIFT
- 35370 tap 10 KEYCODE_RSHIFT
- 35490 tap 10 KEYCODE_LSHIFT
- 35610 tap 10 KEYCODE_RSHIFT
- 35730 tap 10 KEYCODE_LSHIFT
- 35850 mark svc-36
- 35850 tap 10 KEYCODE_RSHIFT
- 36000 mark svc-36
- 36030 mark svc-36
- 36060 mark svc-36
- 36090 mark svc-36
- 36120 mark svc-36
- 36150 mark svc-36
- 36180 mark svc-36
- 36210 mark svc-36
- 36240 mark svc-36
- 36270 mark svc-36
- 36300 mark svc-36
- 36330 mark svc-36
- 36330 mark svc-36-close
- 36330 tap 10 KEYCODE_7
- 41530 mark reopen-for-svc-37
- 41530 tap 10 KEYCODE_7
- 41650 tap 10 KEYCODE_LSHIFT
- 41770 tap 10 KEYCODE_LSHIFT
- 41890 tap 10 KEYCODE_RSHIFT
- 42010 tap 10 KEYCODE_RSHIFT
- 42130 tap 10 KEYCODE_LSHIFT
- 42250 tap 10 KEYCODE_RSHIFT
- 42370 tap 10 KEYCODE_LSHIFT
- 42490 tap 10 KEYCODE_LSHIFT
- 42610 mark svc-37
- 42610 tap 10 KEYCODE_RSHIFT
- 42760 mark svc-37
- 42790 mark svc-37
- 42820 mark svc-37
- 42850 mark svc-37
- 42880 mark svc-37
- 42910 mark svc-37
- 42940 mark svc-37
- 42970 mark svc-37
- 43000 mark svc-37
- 43030 mark svc-37
- 43060 mark svc-37
- 43090 mark svc-37
- 43090 mark svc-37-close
- 43090 tap 10 KEYCODE_7
- 48290 mark reopen-for-svc-24
- 48290 tap 10 KEYCODE_7
- 48410 tap 10 KEYCODE_LSHIFT
- 48530 tap 10 KEYCODE_LSHIFT
- 48650 tap 10 KEYCODE_RSHIFT
- 48770 tap 10 KEYCODE_RSHIFT
- 48890 mark svc-24
- 48890 tap 10 KEYCODE_RSHIFT
- 49040 mark svc-24
- 49070 mark svc-24
- 49100 mark svc-24
- 49130 mark svc-24
- 49160 mark svc-24
- 49190 mark svc-24
- 49220 mark svc-24
- 49250 mark svc-24
- 49280 mark svc-24
- 49310 mark svc-24
- 49340 mark svc-24
- 49370 mark svc-24
- 49370 mark svc-24-close
- 49370 tap 10 KEYCODE_7
- 54570 mark reopen-for-svc-32
- 54570 tap 10 KEYCODE_7
- 54690 tap 10 KEYCODE_LSHIFT
- 54810 tap 10 KEYCODE_LSHIFT
- 54930 tap 10 KEYCODE_RSHIFT
- 55050 tap 10 KEYCODE_RSHIFT
- 55170 tap 10 KEYCODE_LSHIFT
- 55290 tap 10 KEYCODE_LSHIFT
- 55410 tap 10 KEYCODE_RSHIFT
- 55530 mark svc-32
- 55530 tap 10 KEYCODE_RSHIFT
- 55680 mark svc-32
- 55710 mark svc-32
- 55740 mark svc-32
- 55770 mark svc-32
- 55800 mark svc-32
- 55830 mark svc-32
- 55860 mark svc-32
- 55890 mark svc-32
- 55920 mark svc-32
- 55950 mark svc-32
- 55980 mark svc-32
- 56010 mark svc-32
- 56010 mark svc-32-close
- 56010 tap 10 KEYCODE_7
- 61210 mark reopen-for-svc-33
- 61210 tap 10 KEYCODE_7
- 61330 tap 10 KEYCODE_LSHIFT
- 61450 tap 10 KEYCODE_LSHIFT
- 61570 tap 10 KEYCODE_RSHIFT
- 61690 tap 10 KEYCODE_RSHIFT
- 61810 tap 10 KEYCODE_LSHIFT
- 61930 tap 10 KEYCODE_LSHIFT
- 62050 tap 10 KEYCODE_RSHIFT
- 62170 tap 10 KEYCODE_LSHIFT
- 62290 mark svc-33
- 62290 tap 10 KEYCODE_RSHIFT
- 62440 mark svc-33
- 62470 mark svc-33
- 62500 mark svc-33
- 62530 mark svc-33
- 62560 mark svc-33
- 62590 mark svc-33
- 62620 mark svc-33
- 62650 mark svc-33
- 62680 mark svc-33
- 62710 mark svc-33
- 62740 mark svc-33
- 62770 mark svc-33
- 62770 mark svc-33-close
- 62770 tap 10 KEYCODE_7
- 67970 mark reopen-for-svc-34
- 67970 tap 10 KEYCODE_7
- 68090 tap 10 KEYCODE_LSHIFT
- 68210 tap 10 KEYCODE_LSHIFT
- 68330 tap 10 KEYCODE_RSHIFT
- 68450 tap 10 KEYCODE_RSHIFT
- 68570 tap 10 KEYCODE_LSHIFT
- 68690 tap 10 KEYCODE_LSHIFT
- 68810 tap 10 KEYCODE_RSHIFT
- 68930 tap 10 KEYCODE_LSHIFT
- 69050 tap 10 KEYCODE_LSHIFT
- 69170 mark svc-34
- 69170 tap 10 KEYCODE_RSHIFT
- 69320 mark svc-34
- 69350 mark svc-34
- 69380 mark svc-34
- 69410 mark svc-34
- 69440 mark svc-34
- 69470 mark svc-34
- 69500 mark svc-34
- 69530 mark svc-34
- 69560 mark svc-34
- 69590 mark svc-34
- 69620 mark svc-34
- 69650 mark svc-34
- 69650 mark svc-34-close
- 69650 tap 10 KEYCODE_7
- 74850 mark svc-menu-done
-75150 quit
+ 29330 mark back-to-15
+ 29330 tap 10 KEYCODE_1
+ 29450 tap 10 KEYCODE_LSHIFT
+ 29570 mark svc-17
+ 29570 tap 10 KEYCODE_RSHIFT
+ 29690 mark back-to-15
+ 29690 tap 10 KEYCODE_1
+ 29810 mark back-to-11
+ 29810 tap 10 KEYCODE_1
+ 29930 tap 10 KEYCODE_LSHIFT
+ 30050 mark svc-18
+ 30050 tap 10 KEYCODE_RSHIFT
+ 30170 mark svc-19
+ 30170 tap 10 KEYCODE_RSHIFT
+ 30290 mark back-to-18
+ 30290 tap 10 KEYCODE_1
+ 30410 tap 10 KEYCODE_LSHIFT
+ 30530 mark svc-20
+ 30530 tap 10 KEYCODE_RSHIFT
+ 30650 mark back-to-18
+ 30650 tap 10 KEYCODE_1
+ 30770 tap 10 KEYCODE_LSHIFT
+ 30890 mark svc-21
+ 30890 tap 10 KEYCODE_RSHIFT
+ 31010 mark back-to-18
+ 31010 tap 10 KEYCODE_1
+ 31130 mark back-to-11
+ 31130 tap 10 KEYCODE_1
+ 31250 mark back-to-8
+ 31250 tap 10 KEYCODE_1
+ 31370 mark back-to-2
+ 31370 tap 10 KEYCODE_1
+ 31490 mark back-to-0
+ 31490 tap 10 KEYCODE_1
+ 31610 tap 10 KEYCODE_LSHIFT
+ 31730 mark svc-3
+ 31730 tap 10 KEYCODE_RSHIFT
+ 31850 mark svc-22
+ 31850 tap 10 KEYCODE_RSHIFT
+ 31970 tap 10 KEYCODE_LSHIFT
+ 32090 mark svc-25
+ 32090 tap 10 KEYCODE_RSHIFT
+ 32210 mark back-to-22
+ 32210 tap 10 KEYCODE_1
+ 32330 tap 10 KEYCODE_LSHIFT
+ 32450 mark svc-26
+ 32450 tap 10 KEYCODE_RSHIFT
+ 32570 mark back-to-22
+ 32570 tap 10 KEYCODE_1
+ 32690 mark back-to-3
+ 32690 tap 10 KEYCODE_1
+ 32810 tap 10 KEYCODE_LSHIFT
+ 32930 mark svc-23
+ 32930 tap 10 KEYCODE_RSHIFT
+ 33050 mark back-to-3
+ 33050 tap 10 KEYCODE_1
+ 33170 tap 10 KEYCODE_LSHIFT
+ 33290 mark svc-30
+ 33290 tap 10 KEYCODE_RSHIFT
+ 33410 mark back-to-3
+ 33410 tap 10 KEYCODE_1
+ 33530 mark back-to-0
+ 33530 tap 10 KEYCODE_1
+ 33650 mark svc-root-exit
+ 33650 tap 10 KEYCODE_7
+ 33770 mark reopen-for-svc-35
+ 33770 tap 10 KEYCODE_7
+ 33890 tap 10 KEYCODE_LSHIFT
+ 34010 tap 10 KEYCODE_LSHIFT
+ 34130 tap 10 KEYCODE_RSHIFT
+ 34250 tap 10 KEYCODE_RSHIFT
+ 34370 tap 10 KEYCODE_LSHIFT
+ 34490 tap 10 KEYCODE_RSHIFT
+ 34610 mark svc-35
+ 34610 tap 10 KEYCODE_RSHIFT
+ 34760 mark svc-35
+ 34790 mark svc-35
+ 34820 mark svc-35
+ 34850 mark svc-35
+ 34880 mark svc-35
+ 34910 mark svc-35
+ 34940 mark svc-35
+ 34970 mark svc-35
+ 35000 mark svc-35
+ 35030 mark svc-35
+ 35060 mark svc-35
+ 35090 mark svc-35
+ 35090 mark svc-35-close
+ 35090 tap 10 KEYCODE_7
+ 40290 mark reopen-for-svc-36
+ 40290 tap 10 KEYCODE_7
+ 40410 tap 10 KEYCODE_LSHIFT
+ 40530 tap 10 KEYCODE_LSHIFT
+ 40650 tap 10 KEYCODE_RSHIFT
+ 40770 tap 10 KEYCODE_RSHIFT
+ 40890 tap 10 KEYCODE_LSHIFT
+ 41010 tap 10 KEYCODE_RSHIFT
+ 41130 tap 10 KEYCODE_LSHIFT
+ 41250 mark svc-36
+ 41250 tap 10 KEYCODE_RSHIFT
+ 41400 mark svc-36
+ 41430 mark svc-36
+ 41460 mark svc-36
+ 41490 mark svc-36
+ 41520 mark svc-36
+ 41550 mark svc-36
+ 41580 mark svc-36
+ 41610 mark svc-36
+ 41640 mark svc-36
+ 41670 mark svc-36
+ 41700 mark svc-36
+ 41730 mark svc-36
+ 41730 mark svc-36-close
+ 41730 tap 10 KEYCODE_7
+ 46930 mark reopen-for-svc-37
+ 46930 tap 10 KEYCODE_7
+ 47050 tap 10 KEYCODE_LSHIFT
+ 47170 tap 10 KEYCODE_LSHIFT
+ 47290 tap 10 KEYCODE_RSHIFT
+ 47410 tap 10 KEYCODE_RSHIFT
+ 47530 tap 10 KEYCODE_LSHIFT
+ 47650 tap 10 KEYCODE_RSHIFT
+ 47770 tap 10 KEYCODE_LSHIFT
+ 47890 tap 10 KEYCODE_LSHIFT
+ 48010 mark svc-37
+ 48010 tap 10 KEYCODE_RSHIFT
+ 48160 mark svc-37
+ 48190 mark svc-37
+ 48220 mark svc-37
+ 48250 mark svc-37
+ 48280 mark svc-37
+ 48310 mark svc-37
+ 48340 mark svc-37
+ 48370 mark svc-37
+ 48400 mark svc-37
+ 48430 mark svc-37
+ 48460 mark svc-37
+ 48490 mark svc-37
+ 48490 mark svc-37-close
+ 48490 tap 10 KEYCODE_7
+ 53690 mark reopen-for-svc-24
+ 53690 tap 10 KEYCODE_7
+ 53810 tap 10 KEYCODE_LSHIFT
+ 53930 tap 10 KEYCODE_LSHIFT
+ 54050 tap 10 KEYCODE_RSHIFT
+ 54170 tap 10 KEYCODE_RSHIFT
+ 54290 mark svc-24
+ 54290 tap 10 KEYCODE_RSHIFT
+ 54440 mark svc-24
+ 54470 mark svc-24
+ 54500 mark svc-24
+ 54530 mark svc-24
+ 54560 mark svc-24
+ 54590 mark svc-24
+ 54620 mark svc-24
+ 54650 mark svc-24
+ 54680 mark svc-24
+ 54710 mark svc-24
+ 54740 mark svc-24
+ 54770 mark svc-24
+ 54770 mark svc-24-close
+ 54770 tap 10 KEYCODE_7
+ 59970 mark reopen-for-svc-32
+ 59970 tap 10 KEYCODE_7
+ 60090 tap 10 KEYCODE_LSHIFT
+ 60210 tap 10 KEYCODE_LSHIFT
+ 60330 tap 10 KEYCODE_RSHIFT
+ 60450 tap 10 KEYCODE_RSHIFT
+ 60570 tap 10 KEYCODE_LSHIFT
+ 60690 tap 10 KEYCODE_LSHIFT
+ 60810 tap 10 KEYCODE_RSHIFT
+ 60930 mark svc-32
+ 60930 tap 10 KEYCODE_RSHIFT
+ 61080 mark svc-32
+ 61110 mark svc-32
+ 61140 mark svc-32
+ 61170 mark svc-32
+ 61200 mark svc-32
+ 61230 mark svc-32
+ 61260 mark svc-32
+ 61290 mark svc-32
+ 61320 mark svc-32
+ 61350 mark svc-32
+ 61380 mark svc-32
+ 61410 mark svc-32
+ 61410 mark svc-32-close
+ 61410 tap 10 KEYCODE_7
+ 66610 mark reopen-for-svc-33
+ 66610 tap 10 KEYCODE_7
+ 66730 tap 10 KEYCODE_LSHIFT
+ 66850 tap 10 KEYCODE_LSHIFT
+ 66970 tap 10 KEYCODE_RSHIFT
+ 67090 tap 10 KEYCODE_RSHIFT
+ 67210 tap 10 KEYCODE_LSHIFT
+ 67330 tap 10 KEYCODE_LSHIFT
+ 67450 tap 10 KEYCODE_RSHIFT
+ 67570 tap 10 KEYCODE_LSHIFT
+ 67690 mark svc-33
+ 67690 tap 10 KEYCODE_RSHIFT
+ 67840 mark svc-33
+ 67870 mark svc-33
+ 67900 mark svc-33
+ 67930 mark svc-33
+ 67960 mark svc-33
+ 67990 mark svc-33
+ 68020 mark svc-33
+ 68050 mark svc-33
+ 68080 mark svc-33
+ 68110 mark svc-33
+ 68140 mark svc-33
+ 68170 mark svc-33
+ 68170 mark svc-33-close
+ 68170 tap 10 KEYCODE_7
+ 73370 mark reopen-for-svc-34
+ 73370 tap 10 KEYCODE_7
+ 73490 tap 10 KEYCODE_LSHIFT
+ 73610 tap 10 KEYCODE_LSHIFT
+ 73730 tap 10 KEYCODE_RSHIFT
+ 73850 tap 10 KEYCODE_RSHIFT
+ 73970 tap 10 KEYCODE_LSHIFT
+ 74090 tap 10 KEYCODE_LSHIFT
+ 74210 tap 10 KEYCODE_RSHIFT
+ 74330 tap 10 KEYCODE_LSHIFT
+ 74450 tap 10 KEYCODE_LSHIFT
+ 74570 mark svc-34
+ 74570 tap 10 KEYCODE_RSHIFT
+ 74720 mark svc-34
+ 74750 mark svc-34
+ 74780 mark svc-34
+ 74810 mark svc-34
+ 74840 mark svc-34
+ 74870 mark svc-34
+ 74900 mark svc-34
+ 74930 mark svc-34
+ 74960 mark svc-34
+ 74990 mark svc-34
+ 75020 mark svc-34
+ 75050 mark svc-34
+ 75050 mark svc-34-close
+ 75050 tap 10 KEYCODE_7
+ 80250 mark svc-menu-final-close
+ 80250 tap 10 KEYCODE_7
+ 85450 mark svc-menu-done
+85750 quit

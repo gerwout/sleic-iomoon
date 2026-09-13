@@ -35,38 +35,84 @@ The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game
 path only (four patched regions, two hook sites — see
 `docs/press_start_patch.md`), so the same key script run against the parent
 set should draw the same screens everywhere else. Run both, split both, and
-compare each scene's representative frame by hash:
+compare **per label**, not as one global unordered set: for every mod-only
+representative-frame hash, check whether that same content appears anywhere
+in the parent's own scenes carrying the *same* label. That is what actually
+tells "same screen, caught a frame apart" apart from "a screen the other
+side never draws at all" — an unordered global hash set cannot, since it
+would call a genuine divergence and a relabelled coincidence the same thing.
 
 ```bash
 python3 scripts/dmd_dump_split.py /tmp/parent/iomoon.txt --out /tmp/parent \
         --marks /tmp/parent/iomoon.marks --rom ../pinmame/roms/iomoon/v1_3_01.bin
-for d in /tmp/parent/screens/*/; do md5sum "$d/repr.txt"; done | awk '{print $1}' | sort > /tmp/parent.md5
-for d in dmd/en/screens/*/;   do md5sum "$d/repr.txt"; done | awk '{print $1}' | sort > /tmp/mod.md5
-comm -13 /tmp/mod.md5 /tmp/parent.md5 | wc -l   # parent-only
-comm -23 /tmp/mod.md5 /tmp/parent.md5 | wc -l   # mod-only
+# per label: for each label both sides share, diff the hash sets within it
+# (see the fix-round report for the exact script used)
 ```
 
-Measured on the committed `en/` corpus: **81 parent-only** representative
-frames and **34 mod-only** ones, out of several hundred scenes each side.
-Both counts are timing drift, not a content difference: every service-menu
-record on both sides ends up on the same list of items, and the differing
-frames are of two kinds —
+Measured on the committed `en/` corpus: **every label that appears on one
+side appears on the other** (zero labels unique to either side). Within the
+shared labels, **80 mod-only** and **124 parent-only** representative-frame
+hashes never recur under that same label on the other side, out of 857
+(mod) / 898 (parent) scenes total — close to the plain global-hash count
+(81 / 122), which confirms the two methods agree here and neither is hiding
+a mislabelled divergence. All of it is timing drift, not a content
+difference, and falls into the same two kinds as before:
 
-- the mod's `PRESS START` screen and the frames immediately around it
+- the mod's `PRESS START` screen and the frames around it
   (`press-start-normal`, `ball-3-drained-gameover`, `high-score-entry`,
-  `attract-again`, `credit`) — the parent has no such gate, so it is already
-  further into (or a full cycle further round) its own attract loop by the
-  time the same absolute key-script frame numbers fire, landing on a
+  `lottery`, `attract-again`) — the parent has no such gate, so it is
+  already further into (or a full cycle further round) its own attract loop
+  by the time the same absolute key-script frame numbers fire, landing on a
   different attract sub-screen than the mod; and
-- the three auto-cycling TECNICO tests (SOLENOIDS, LIGHT TEST 1-3, and the
-  CONTACTOS-adjacent tests), which free-run their own lamp/relay counters
-  independently of the key script — the two sides are simply at a different
-  point in the same walk when each side's identical fixed-frame checkpoint
-  lands, the same way two stopwatches started a frame apart never agree
-  again. Spot-checked (`svc-35`, both a blank frame at the same checkpoint):
-  same content, different instant.
+- the auto-cycling TECNICO tests and the menu's own `back-to-N` transitions,
+  which are each other's nearest neighbours in time and so pick up a
+  different single frame of the same still-changing content (a lamp/relay
+  counter tick, a redraw settling) depending on which side happens to reach
+  that exact checkpoint a frame earlier or later.
 
-No difference falls anywhere else in the tree — no GAME or SOUND/VIDEO
-adjustment page, no attract feature-ad screen, no boot text differs between
-the two runs — which is the expected result given the patch touches only the
-end-of-game path.
+No `svc-N` record differs in content on either side, and no GAME or
+SOUND/VIDEO adjustment page, attract feature-ad screen, or boot text differs
+between the two runs — which is the expected result given the patch touches
+only the end-of-game path.
+
+## Open items
+
+- **`full-tilt` produces zero scenes.** The tilt sequence itself runs (ball
+  2 correctly proceeds to ball 3 afterward), but no DMD frame is captured
+  between the second tilt press and the ball's drain — not a handful of
+  near-duplicate frames, *none* at all, confirmed by checking the raw dump
+  directly (no frame between the two timestamps). F17's own account of full
+  tilt (stop the music, clear both DMD planes, play the tilt sound, disable
+  the drivers) says the screen should go blank right on that press; whether
+  the panel genuinely stops redrawing until the next real input (the drain)
+  or a frame is being produced and silently dropped somewhere upstream of
+  the dump is not settled. What would settle it: a `-debug` build with the
+  `SLEIC_TRACE_PW` probe enabled, watching for a PCS0/PCS4 write in the gap.
+- **The mod's SPECIAL trampoline (`D5077`) is not exercised.** `PRESS START`
+  appears twice (the boot seed screen, then the normal end-of-game hook at
+  `D5123`); a real match win, which is what reaches `D5077`, needs neither
+  score nor time forced deliberately by this walk. Tried directly: a score
+  large enough to also clear the lowest high-score preset (50,000,000) was
+  forced by hand (lanes plus a tuned run of bull's-eye hits), but every
+  score tried at or above roughly 48-52,000,000 also earns an **EXTRA
+  BALL**, and the ball simulator's fixed three-ball trough then has no
+  further ball to serve — the display sticks on "EXTRA BALL" with the score
+  frozen (checked: the panel keeps animating its own dithered background
+  the whole time, so the machine is not wedged, it simply never has a ball
+  to give back), for as long as tried (three separate plunge+drain attempts
+  per run, waits past 20,000 frames). The high-score wheel-walk (Important
+  3 of fix round 1) could not be exercised for the same reason: no run that
+  reaches the qualifying score also reaches a genuine game-over to enter it
+  at. What would settle it: either a `iomoont`/`iomoon` NVRAM edit that
+  raises the lowest high-score preset above the extra-ball threshold before
+  the run (so a qualifying score no longer also earns an extra ball), or a
+  simulator with more than three balls in its trough so an awarded extra
+  ball actually has one to serve.
+- **The pre-credit `attract` section and the post-game `attract-again`
+  section are the same content, at different lengths.** `attract-again` (the
+  post-game return to idle) already runs long enough to show the attract
+  cycle's own feature-ad screens (`S.MOONLIGHT`, `J.SUNSHINE`,
+  `B.STARWAY`, ...); `attract` itself was lengthened in fix round 1 to
+  approximate a fuller cycle rather than the ~10s the brief's literal
+  ordering first produced, but a single continuous "one full loop, start to
+  repeat" boundary is not identified either place.
