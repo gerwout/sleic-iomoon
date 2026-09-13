@@ -79,7 +79,7 @@ For a detailed breakdown of the hardware architecture, see:
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
 - [Chips Worth Dumping](docs/chips_to_dump.md) — The three programmable parts, their state, and the dumping procedures for each
 - [Component Datasheets](datasheets/README.md) — Offline PDF datasheets for every IC on the boards, linked from the board IC inventories
-- [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — The service manual's contact list against the codes and ports the ROM uses
+- [Switch, Lamp & Solenoid Tables](docs/switch_lamp_solenoid.md) — The firmware's own switch-code contact table and driver-latch coil map (F16, F17), cross-checked against the service manual
 - [Z80 I/O Port Map](docs/z80_io_ports.md) — Port assignments and switch matrix scan routine
 - [80188 Peripheral Configuration](docs/80188_config.md) — Chip select registers and memory mapping
 - [Inter-CPU Communication](docs/inter_cpu_communication.md) — J1 8-bit byte-port protocol between the 80188 and Z80
