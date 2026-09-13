@@ -1588,7 +1588,7 @@ have exact codes but no established physical contact" — is closed: every one
 of the 44, plus all 6 cabinet inputs (already named in F5) plus the coin's
 test-mode code, now carries the firmware's own C-number and name in both
 languages. **Column 4's second ball device (F15's command `0xEB`, Z80
-handler `2AB0`) is Júpiter** — codes `0x2A`-`0x2C` are JUPITER 1/2/3,
+handler `2AB0`) is Jupiter** — codes `0x2A`-`0x2C` are JUPITER 1/2/3,
 C44-C46.
 
 **What is dead.** Codes `0x38`-`0x3B` — four more column-5 positions — have
@@ -1615,7 +1615,7 @@ the CONTACTOS test screen reads it.
   list agrees with the ROM here (LC51 *Planeta 5*, LC61 *Planeta 1*, LC62
   *Planeta 2* are lamps, not contacts), and these three codes are already
   the second ball device Z80 command `0xEB` (handler `2AB0`) counts above:
-  the manual's Júpiter two-ball lock.
+  the manual's Jupiter two-ball lock.
 
 **Confidence:** confirmed — table location, record layout and pool decode
 are mechanical and self-tested; the C-numbers and names are cross-checked

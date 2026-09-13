@@ -110,7 +110,7 @@ table). **Column 0 bits 0–3, codes `0x0A`–`0x0D`, are the ball-handling
 contacts** — bits 0–2 the three trough contacts and bit 3 the ball-exit contact
 (finding F15). Contact 0 is the trough entry and doubles as the ball-over
 sensor, reporting code `0x43` rather than its own `0x0A` (`161E`). Column 4's
-second ball device, codes `0x2A`–`0x2C`, is the Júpiter two-ball lock (F16);
+second ball device, codes `0x2A`–`0x2C`, is the Jupiter two-ball lock (F16);
 the full 44-position table, in both languages, is in
 [`switch_lamp_solenoid.md`](switch_lamp_solenoid.md).
 
