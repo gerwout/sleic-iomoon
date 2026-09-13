@@ -6,17 +6,35 @@ core_dmd_capture_frame writes: per frame a "0x%08x" millisecond timestamp, then 
 line per DMD row of one hex nibble per pixel, then a blank line.  Consecutive
 identical frames are already dropped by the emulator.
 
-A scene cuts where more than a quarter of the pixels change between consecutive
-frames (--threshold 0.25).  No single threshold is clean on a captured game: the
-attract scroll never exceeds a 0.065 frame-to-frame diff and a bumper-hit graphic
-never exceeds 0.19, so 0.25 keeps both as one scene each and still cuts cleanly at
-a page change (attract to credit measures 0.43-0.51) -- but Io Moon's own
-full-frame dithered background, playing behind the static "ball start" text,
-produces diffs of 0.2-0.5 between its own frames, the same range as a genuine new
-screen, and is over-split at every threshold from 0.10 to 0.40.  0.10 additionally
-shatters the bumper-hit case alone (57 of its 86 own frame-to-frame diffs land
-above 0.10, against 2 above 0.25); 0.25 is the least-bad value measured, not a
-value that separates "same screen" from "new screen" in general.
+A scene cuts on any of three independent signals: a mark boundary (a key
+script's marks are exact, so a new one always starts a new scene, regardless of
+what the pixels do), the all-pixel diff exceeding --threshold (default 0.25), or
+the lit-union diff exceeding --lit-threshold (default 0.8).  No single metric is
+clean, which is why there are two plus the marks rather than one tuned value.
+
+The all-pixel diff (differing pixels over all 4096) is the metric a full-frame
+animation dominates: the attract scroll never exceeds 0.065 and a bumper-hit
+graphic never exceeds 0.19 frame to frame, so 0.25 keeps both as one scene each
+and still cuts cleanly at a page change (attract to credit measures 0.43-0.51).
+But it is the wrong metric for this machine's dominant screen class: a service
+record or a fault screen lights only 400-900 of 4096 pixels, so a *complete*
+change of text can measure well under 0.25 of all pixels -- measured on the boot
+dump, "WAITING FOR / 8 BITS CPU" changing to "SETTING / DEFAUL" (nothing in
+common) is only 0.2097 all-pixel, comfortably merged by threshold alone.
+
+The lit-union diff (differing pixels over pixels lit in *either* frame; 0 if
+neither lights any) catches that case -- the same pair measures 0.945 lit-union,
+decisively over 0.8 -- but is the wrong metric for the full-frame animations
+the first metric already handles cleanly, and neither metric is clean on Io
+Moon's own full-frame dithered background (playing behind the static "ball
+start" text), which produces diffs in the same range as a genuine new screen on
+both measures and is over-split by both.  Cutting on either exceeding its own
+threshold -- so more cuts than either metric alone, and more than marks alone --
+errs toward over-splitting on purpose: a human merges scenes afterward, but a
+missed cut loses a screen from the corpus with no trace at all.  This still does
+not add up to a value or a pair of values that separates "same screen" from "new
+screen" in general; it only shrinks the case where both metrics miss and no mark
+covers it.
 
     python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt --out dmd/en
 """
@@ -89,6 +107,28 @@ def frame_distance(a, b):
     return diff / total if total else 0.0
 
 
+def lit_union_distance(a, b):
+    """Differing pixels over pixels lit ('0' is unlit) in either frame; 0 if neither lights any.
+
+    A sparse text screen -- a service record, a fault screen, a high-score page
+    -- lights a few hundred of the panel's 4096 pixels, so a complete change of
+    text can measure well under frame_distance's own threshold of all pixels.
+    This is the metric that catches that case; the same geometry-mismatch
+    convention as frame_distance applies.
+    """
+    if len(a) != len(b) or any(len(ra) != len(rb) for ra, rb in zip(a, b)):
+        return 1.0
+    union = diff = 0
+    for ra, rb in zip(a, b):
+        for x, y in zip(ra, rb):
+            if x == '0' and y == '0':
+                continue
+            union += 1
+            if x != y:
+                diff += 1
+    return diff / union if union else 0.0
+
+
 def load_marks(path):
     """[(frame, ms, label), ...] from a key script's .marks sidecar."""
     out = []
@@ -112,13 +152,27 @@ def label_for(ms, marks):
     return label
 
 
-def split_scenes(frames, threshold=0.25):
-    """Group frames into scenes, cutting where the picture changes wholesale."""
+def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
+    """Group frames into scenes, cutting at a mark boundary or either diff metric.
+
+    `marks` (a key script's .marks sidecar, already loaded by load_marks) cuts
+    unconditionally at the frame where label_for's result changes -- a mark is
+    exact, so a new one always starts a new scene regardless of what the
+    pixels do.  `marks=None` (or empty) cuts on the two diff metrics alone,
+    unchanged from a dump with no marks file.
+    """
+    marks = marks or []
     scenes = []
+    prev_label = None
     for i, (ms, rows) in enumerate(frames):
-        if i == 0 or frame_distance(frames[i - 1][1], rows) > threshold:
+        label = label_for(ms, marks)
+        cut = (i == 0 or label != prev_label
+               or frame_distance(frames[i - 1][1], rows) > threshold
+               or lit_union_distance(frames[i - 1][1], rows) > lit_threshold)
+        if cut:
             scenes.append([])
         scenes[-1].append((ms, rows))
+        prev_label = label
     return scenes
 
 
@@ -137,7 +191,9 @@ def main():
     ap.add_argument('--marks', default=None,
                      help='the key script\'s .marks sidecar (default: <dump without extension>.marks)')
     ap.add_argument('--threshold', type=float, default=0.25,
-                     help='fraction of pixels that must change to start a new scene (default 0.25)')
+                     help='all-pixel diff that starts a new scene (default 0.25)')
+    ap.add_argument('--lit-threshold', type=float, default=0.8,
+                     help='lit-union diff that starts a new scene (default 0.8)')
     args = ap.parse_args()
 
     try:
@@ -149,7 +205,7 @@ def main():
     if not frames:
         sys.exit('no frames in %s' % args.dump)
     marks = load_marks(args.marks or (os.path.splitext(args.dump)[0] + '.marks'))
-    scenes = split_scenes(frames, args.threshold)
+    scenes = split_scenes(frames, args.threshold, marks, args.lit_threshold)
 
     rows_out = []
     for n, scene in enumerate(scenes, 1):
