@@ -1771,8 +1771,8 @@ modal, not Hole 2's scoring twin: a one-shot debounce (`sub_D9B76`, latch
 `4134:0026` (`> 0` fires coil 8 alone, via `sub_D9B49`, and stops — same
 segment as Hole 2's own gate above, confirmed the same way: no ES prefix on
 either access) and otherwise on `413C:00F4` again (`7` awards Star Ride
-points with no coil — `0x989680` or `0xE4E1C0`, 10,000,000 or 15,000,000,
-selected by `4134:0027`, matching the manual's 3.3.8 Star Ride figures for
+points with no coil — `0xE4E1C0` (15,000,000) when `4134:0027 != 0` and
+`0x989680` (10,000,000) when it is `0` — matching the manual's 3.3.8 Star Ride figures for
 the two holes; anything else — neither `7` nor `0` — scores 150,000 and
 calls `sub_D9B49` alone, no Taca; `0` is the value that reaches `D9C61`).
 `D9C61` is itself a further, three-way split on `413C:010F` and
@@ -1823,7 +1823,7 @@ handler's own coil 8, and Hole 2's handler (`sub_D9CAB`) never reaches it.
 **The two holes share a flag, and that is established, not guessed.**
 `sub_D9CAB` (Hole 2) sets `4134:0027 = 1` on its OKI-cue branch;
 `sub_D9B91` (Hole 1) reads that same cell to pick the Star Ride award,
-`0x989680` (10,000,000) when it is set, `0xE4E1C0` (15,000,000) when it is
+`0xE4E1C0` (15,000,000) when it is set, `0x989680` (10,000,000) when it is
 clear — the manual's own two different Tragabolas Star Ride figures (3.3.8)
 are produced by **one code path, Hole 1's, selected by a flag Hole 2's own
 contact sets.** Both halves of that are read directly out of the two
