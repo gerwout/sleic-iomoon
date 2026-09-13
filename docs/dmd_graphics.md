@@ -294,20 +294,41 @@ The 80188 game code uses a **custom character encoding** for DMD text, not stand
 0x19 = 'Ñ'      0x1A = 'O'    0x1B = 'P'    0x1C = 'Q'    0x1D = 'R'
 0x1E = 'S'      0x1F = 'T'    0x20 = 'U'    0x21 = 'V'    0x22 = 'W'
 0x23 = 'X'      0x24 = 'Y'    0x25 = 'Z'
-0x2C = '.'      0x2E = ':'    0x00 = terminator
+0x26 = '+'      0x28 = '('    0x29 = ')'    0x2A = '/'
+0x2B = ','      0x2C = '.'    0x2D = ';'    0x2E = ':'    0x2F = '-'
+0x00 = terminator
 ```
 
-`0x2C` and `0x2E` are corrected against the h=9 face's own bitmaps
-(`iomoon_strings.py`'s `GLYPHS`, which already had them right): code `0x2C`
-is a single 2x2 dot low in the cell -- a period, not a comma -- and `0x2E` is
-two of that same dot stacked with a gap -- a colon, not a second period.
+`0x26`-`0x2F` are read off the h=9 face's own bitmaps (`glyph_bitmaps`, table
+entry = code + 23), the same way entry 57 pinned the face itself against a
+captured `W` — not inherited from either this table's own prior text or from
+`iomoon_strings.py`'s `GLYPHS`, both of which disagreed with the bitmaps and
+with each other. Read by eye: `0x26` is a vertical bar crossed by a
+horizontal one -- a plus sign, not `!`. `0x28`/`0x29` bulge toward the
+opening they curve around, confirming them as `(` and `)`. `0x2A` is a
+single diagonal stroke, upper right to lower left -- `/`. `0x2B` is a 2x2
+block with a tail trailing down-left -- a comma, not a colon. `0x2C` is that
+same 2x2 block alone, on the baseline -- a period. `0x2D` is two of that
+block stacked with a gap, plus a comma's tail below the lower one -- a
+semicolon, not a hyphen. `0x2E` is the same two stacked blocks with no
+tail -- a colon. `0x2F` is a single one-row horizontal bar -- a hyphen, which
+rules out both this table's former "newline" claim (a control code has no
+bitmap to have measured) and `GLYPHS`' former `'*'`.
 
-`0x2F`'s bitmap is a single one-row, 5px horizontal bar -- a printable
-glyph, which rules out "newline" (a control code has no bitmap to measure).
-It does not clearly read as `GLYPHS`' own `'*'` either; a lone flat bar
-looks more like a hyphen. Which it is is not settled here — it would take a
-captured frame that shows this code in a recognizable context, the way
-entry 57 pinned the h=9 face itself against a captured `W`.
+`0x27`'s bitmap is left open. `GLYPHS` used to say `?`, but there is no gap
+between the bowl and the tail, which a question mark requires — the shape
+is continuous through the middle rows where a real `?` has a break before
+the dot. What it actually is isn't settled from the bitmap alone; it would
+take a captured frame that shows this code in use, or a string-pool entry
+that resolves to it, the way `W` pinned the h=9 face itself.
+`iomoon_strings.py`'s `GLYPHS` leaves this code unmapped rather than guess.
+
+None of this touches any decoded string: scanning both `ENGLISH_POOL` and
+`SPANISH_POOL` (and so F16's contact table, which is drawn from the same
+pools), the only code `>= 0x26` either pool ever uses is `0x2C`, 17 times —
+one of the codes that was already right. The four wrong mappings only
+affected the DMD frame decoder, and only for a screen that actually draws
+one of these marks (on the captures examined so far, none does).
 
 A **character mapping table** at ROM offset `0x809B0` (96 bytes) maps ASCII codes `0x20`–`0x7F` to glyph indices.
 

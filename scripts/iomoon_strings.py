@@ -11,13 +11,19 @@ import struct
 import sys
 
 # Glyph indices, from the DMD font order: digits, space, then A..Z with N-tilde
-# wedged in after N.  Punctuation from the strings the service menu draws.
+# wedged in after N.  Punctuation (0x26-0x2f) is read off the h=9 face's own
+# bitmaps (glyph_bitmaps, table entry = code + 23), not guessed from context:
+# 0x28/0x29 by which way each paren bulges, 0x2c/0x2e/0x2f by counting and
+# spacing their lit blocks, 0x2b/0x2d by the comma-style tail on '.' and ';'.
+# 0x27 is left out: its bitmap is not a question mark (no gap between the
+# bowl and the tail, which one requires) and nothing else pins it -- an
+# unmapped code falls back to decode_string's own '{xx}' marker.
 GLYPHS = {i: str(i) for i in range(10)}
 GLYPHS[0x0A] = ' '
 for _i, _ch in enumerate('ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'):
     GLYPHS[0x0B + _i] = _ch
-GLYPHS.update({0x26: '!', 0x27: '?', 0x28: '(', 0x29: ')', 0x2a: '/',
-               0x2b: ':', 0x2c: '.', 0x2d: '-', 0x2e: ':', 0x2f: '*'})
+GLYPHS.update({0x26: '+', 0x28: '(', 0x29: ')', 0x2a: '/',
+               0x2b: ',', 0x2c: '.', 0x2d: ';', 0x2e: ':', 0x2f: '-'})
 
 CONTACT_TABLE_BASE = 0x0830   # record = base + code*5: Cnum | off16 | seg16, pointer into ENGLISH_POOL
 SPANISH_TABLE_BASE = 0x1438   # same layout, same code axis, pointer into SPANISH_POOL
@@ -212,7 +218,8 @@ def _self_test(data):
     w_bits = ('00000000', '10000010', '11010110', '11010110', '11111110',
               '01111100', '01101100', '01000100', '00000000')
     assert tuple(glyphs[0x22]) == w_bits, 'glyph 0x22 (W) bitmap does not match the boot frame'
-    assert len(glyphs) == 47, 'expected 47 non-space codes in the h=9 face, got %d' % len(glyphs)
+    # 47 defined codes (48 minus space) minus 0x27, left unmapped -- see GLYPHS.
+    assert len(glyphs) == 46, 'expected 46 non-space codes in the h=9 face, got %d' % len(glyphs)
     print('font self-test OK: %d matchable glyphs in the h=9 face' % len(glyphs))
 
     # A truncated ROM (a plausible partial chip dump) must fail cleanly, not
