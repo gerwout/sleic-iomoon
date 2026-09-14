@@ -123,6 +123,128 @@ SMALL_DIGIT_FACE_INDEX = 183   # immediately after the 21 SCORE_FACE entries
 # matching the h=9 face's ':' shape scaled up).
 SCORE_FACE_LABELS = [str(d) for d in range(10)] + ['%d.' % d for d in range(10)] + [':']
 
+# The in-play PLAYER/BALL HUD is not a walked-table code+offset face at all
+# -- it is five whole-word bitmaps (both languages) pulled by hard-coded far
+# pointers (offset, segment; little-endian) out of a much larger literal-
+# pointer pool that starts right after a RETF at flat 0xF5182 and runs 155
+# four-byte entries (CS:05183-CS:053EB) to a null terminator at CS:053EF,
+# then zero padding. Confirmed by grepping iomoon_80188.lst for every
+# CS:052xx/CS:053xx operand: dozens of `LES SI,CS:xxxx` sites, scattered
+# across many unrelated subroutines, address this one 620-byte span --
+# most of it resolves to unrelated assets (full-screen 32x16 attract/menu
+# pictures in F20's own format, the walked font table's own entries reached
+# a second way, work-RAM addresses) and is out of scope here. The five HUD
+# words sit in one tight run, CS:0522F-CS:0523F, each entry the walked
+# table's own [h,00,w,00,len16] header+3-plane format but holding a whole
+# rendered word rather than a per-character glyph -- confirmed by
+# segmenting each bitmap on blank columns and reading the letters directly
+# off the pixels, and independently by the LES SI,CS:xxxx operand at each
+# drawing routine's own call site:
+#
+#   CS:0522F  h=8  w=3  "BALL"           sub_F0D70 (single reference)
+#   CS:05233  h=8  w=5  "EXTRA BALL"     sub_F0DB2/F0DDA/F0E1A (flash pair)
+#   CS:05237  h=16 w=6  "INSERT/COIN"    sub_F0E60/F0E85/F0EAB
+#   CS:0523B  h=8  w=7  "PLAYERS"        sub_F0FFA/F1054, + a digit from
+#                                        PLAYER_NUM_BASE below
+#   CS:0523F  h=8  w=5  "PLAYER"         sub_F108E/F10E5, + a digit, same
+#                                        table
+#
+# Spanish counterparts sit in the same pool at country-switched sites
+# (CMP [4137:1001],5, F11) right next to each English LES -- but not all at
+# the same fixed offset: CS:05363/05367/0536B pair with the first three at
+# +0x134 (BOLA / BOLA EXTRA / INTRODUCIR-MONEDA), while CS:05373/05377 pair
+# with PLAYERS/PLAYER at +0x138, confirmed from the actual `LES SI,CS:05373`
+# / `CS:05377` operands inside sub_F0FFA/sub_F108E themselves (JUGADORES /
+# JUGADOR), not assumed from the first pair's offset.
+#
+# Every entry here is single-plane for legibility -- plane 0 alone renders
+# the word; plane 1 and the mask, both present (the format always carries
+# three planes), are unused, the same convention glyph_bitmaps already uses
+# for the h=9/h=12 faces -- confirmed by rendering plane 0 alone and reading
+# real words off it.
+HUD_MESSAGE_POINTERS = {
+    'BALL': 0x0522F, 'EXTRA BALL': 0x05233, 'INSERT COIN': 0x05237,
+    'PLAYERS': 0x0523B, 'PLAYER': 0x0523F,
+    'BOLA': 0x05363, 'BOLA EXTRA': 0x05367, 'INTRODUCIR MONEDA': 0x0536B,
+    'JUGADORES': 0x05373, 'JUGADOR': 0x05377,
+}
+
+# The player/ball number glyph drawn right after PLAYER or PLAYERS above:
+# work-RAM byte 413C:00D7 (PLAYERS' own routine) or 413C:00FE (PLAYER's) is
+# read, then multiplied by this table's own stride and added to
+# PLAYER_NUM_BASE (`MUL DX,0x1E` / `ADD SI,AX` at F103E/F10D3) -- a
+# code+offset digit face in the walked table's own header+3-plane format,
+# no different in kind from FONT_H12_CODE_OFFSET above, just at a table
+# this decoder had not walked from before. Not language-switched (digits
+# don't need to be).
+PLAYER_NUM_BASE = 0x0531B    # CS:0531B; h=8, w=1, stride 0x1E (one full entry)
+PLAYER_NUM_STRIDE = 0x1E
+
+# The in-play SCORE digit table (F13's DMD pipeline draws into the same
+# composite/blit path every other DMD content uses). Pointer at CS:052BB
+# resolves to flat 0x29154 and indexes by digit value with `MUL DX,0x6C`
+# (108) -- confirmed by reading sub_F0907's own draw loop in
+# iomoon_80188.lst, not assumed from the stride alone: byte value 1 is
+# intercepted as a decimal-point sentinel *before* the multiply (CS:052C3,
+# a separate, always-single-call pointer that happens to physically sit
+# where "digit 1" would fall under the stride formula but is never reached
+# that way), so the multiply only ever runs for byte values 0 and 2-9 --
+# digit 1 is not reached via this path and is left out below rather than
+# guessed.
+#
+# Each 108-byte digit slot is NOT the header+3-plane format the walked
+# table and HUD_MESSAGE_POINTERS above both use, and it is not "3 planes x
+# 12 rows x 3 bytes" either (a plausible guess from the byte count alone
+# that renders as noise, not digits, when tried) -- it has no header at
+# all. sub_F0C7B, the routine every mode-0 digit call site uses, draws a
+# fixed 18 rows (`MOV BP,0x12` / `MOV CX,0x12`, both hard-coded, not read
+# from any header) of one byte each -- three such 18-row/8px planes
+# (plane 0, plane 1, mask; 54 bytes) -- then the caller (sub_F0907,
+# F09D2-F09D6) calls it a SECOND time one byte-column to the left (`DEC
+# DI`) before drawing again. The second call's source is not the first
+# call's data replayed: sub_F0C7B advances SI by 54 internally, so the
+# second 54-byte half is distinct ROM data, not a repeated stamp -- the two
+# halves are the left and right 8px columns of one 16px-wide, 18-row glyph,
+# not a blurred duplicate. Read that way (both halves, level =
+# 2*plane0_bit + plane1_bit, F13's own weighting, mask unused -- see
+# below), digit 2's bitmap matches
+# `dmd/en/screens/5132-score-ball-3-in-play/repr.txt` byte-for-byte at
+# (row 0, column 8) -- the ROM's own data reproducing a real captured frame
+# exactly, not merely a plausible-looking render.
+#
+# The mask plane is not needed for legibility, matching glyph_bitmaps' and
+# score_glyph_bitmaps' own precedent (neither reads a mask either): every
+# digit, read as level = 2*plane0_bit + plane1_bit with no mask applied,
+# comes out as a clean, fully-formed shape using only level 0 and level 3 --
+# no level 1 or 2 appears anywhere in any digit, so there is no stored
+# "mid-tone interior" to recover by reading the mask. Whatever mid-tone
+# shading a captured frame shows around these digits is not stored in this
+# table; the mask bits that exist instead mark each digit's own margin and
+# its loop interior as "background passes through" (F13's sprite-mask
+# convention), a property of the DMD composite step, not of the glyph.
+#
+# Consecutive digits in a real number overlap in the drawn frame: the
+# confirmed digit "2" above sits at its full, unclipped 16px width because
+# it is the leftmost (most significant, last-drawn) digit in its own
+# number; a plain-overwrite draw order (right-to-left, most significant
+# digit drawn last, per sub_F0907's own scan direction) means an
+# earlier-drawn digit's own columns get overwritten by whatever draws after
+# it. An exact-bitmap matcher only recovers the digits that happen to
+# survive a given frame's own overwrite order, not every digit of a longer
+# number -- a real limitation of the mechanism, not a decoder bug; see
+# dmd/README.md for the measured effect on corpus recovery.
+#
+# A second, alternating drawing path exists (CS:052BF, `010CD`'s own
+# toggle in sub_F0907 selects it for a digit immediately following a
+# decimal point) using a different compositing primitive (sub_F0C49: OR
+# then AND, not plain overwrite) and, per the pointer pool above, its own
+# base 10 stride-slots after CS:052BB's -- not modelled here; only the
+# CS:052BB path this comment already confirms against a real frame is.
+SCORE_DIGIT_BASE = 0x052BB   # CS:052BB; a MUL DX,0x6C base, not a header
+SCORE_DIGIT_POINT = 0x052C3  # CS:052C3; decimal point, single 54-byte half
+SCORE_DIGIT_STRIDE = 0x6C
+SCORE_DIGIT_HEIGHT = 18
+
 
 def _font_entries(data, base=FONT_BASE):
     """[(offset, height, width_bytes), ...], walking the glyph table from `base`.
@@ -237,6 +359,114 @@ def score_glyph_bitmaps(data, height=SCORE_FACE_HEIGHT, width=SCORE_FACE_WIDTH, 
             rows.append(''.join(row))
         if len(set(rows)) > 1:
             out[label] = rows
+    return out
+
+
+def _far_cs(data, cs_offset):
+    """Resolve one CS:xxxx far pointer (offset, segment; little-endian),
+    stored at flat 0xF0000+cs_offset (file 0x70000+cs_offset), to the file
+    offset its target lives at. Every pointer HUD_MESSAGE_POINTERS,
+    PLAYER_NUM_BASE and SCORE_DIGIT_BASE/SCORE_DIGIT_POINT use resolves into
+    ROM1's LMCS-resident low half (F1, flat < 0x40000), so the result is
+    already a file offset -- unlike FONT_BASE's own CS:-based callers, no
+    further +0x80000 adjustment is needed.
+    """
+    file_off = 0x70000 + cs_offset
+    off = data[file_off] | (data[file_off + 1] << 8)
+    seg = data[file_off + 2] | (data[file_off + 3] << 8)
+    return (seg << 4) + off
+
+
+def hud_message_bitmaps(data):
+    """label -> (height, width_px, [row_bit_string, ...]), one entry per
+    in-play HUD word (both languages) -- see HUD_MESSAGE_POINTERS' own
+    comment for the pool this reads and what it does and does not cover.
+
+    Unlike glyph_bitmaps' output, entries here vary in both height (8 for
+    every word except the two-line 'INSERT COIN'/'INTRODUCIR MONEDA' pair,
+    which are 16) and width, because each is a whole rendered phrase, not a
+    character cell -- a caller matches each one as its own complete bitmap
+    rather than assembling a line glyph by glyph.
+    """
+    out = {}
+    for label, cs_off in HUD_MESSAGE_POINTERS.items():
+        off = _far_cs(data, cs_off)
+        h, _z1, w, _z2, l0, l1 = data[off:off + 6]
+        len16 = l0 | (l1 << 8)
+        assert len16 == h * w, (label, hex(off), h, w, len16)
+        plane0 = data[off + 6:off + 6 + len16]
+        rows = [''.join(format(b, '08b') for b in plane0[r * w:(r + 1) * w])
+                for r in range(h)]
+        out[label] = (h, w * 8, rows)
+    return out
+
+
+def player_number_bitmaps(data, base=PLAYER_NUM_BASE, stride=PLAYER_NUM_STRIDE):
+    """'0'-'9' -> row-bit-string list, for the player/ball number glyph
+    drawn beside PLAYER/PLAYERS -- see PLAYER_NUM_BASE's own comment. Same
+    walked-table entry format as the h=9/h=12 faces (single-plane, plane 0
+    only), just reached by a direct base+digit*stride rather than
+    code+offset into FONT_BASE.
+    """
+    start = _far_cs(data, base)
+    out = {}
+    for d in range(10):
+        off = start + d * stride
+        h, _z1, w, _z2, l0, l1 = data[off:off + 6]
+        len16 = l0 | (l1 << 8)
+        if len16 != h * w:
+            continue
+        plane0 = data[off + 6:off + 6 + len16]
+        rows = [''.join(format(b, '08b') for b in plane0[r * w:(r + 1) * w])
+                for r in range(h)]
+        if len(set(rows)) > 1:
+            out[str(d)] = rows
+    return out
+
+
+def _score_digit_block(data, off, height=SCORE_DIGIT_HEIGHT):
+    """One 54-byte half (height rows x 1 byte, 3 planes: plane0/plane1/mask
+    -- see SCORE_DIGIT_BASE's own comment; the mask is read here but never
+    used, kept only so a caller could inspect it."""
+    plane0 = data[off:off + height]
+    plane1 = data[off + height:off + 2 * height]
+    mask = data[off + 2 * height:off + 3 * height]
+    return plane0, plane1, mask
+
+
+def _score_digit_levels(plane0, plane1):
+    """height rows of an 8-pixel-wide level string ('0'-'3'); mask unused,
+    see SCORE_DIGIT_BASE's own comment for why."""
+    return [''.join(str(((b0 >> bit) & 1) * 2 + ((b1 >> bit) & 1)) for bit in range(7, -1, -1))
+            for b0, b1 in zip(plane0, plane1)]
+
+
+def score_digit_bitmaps(data, base=SCORE_DIGIT_BASE, point=SCORE_DIGIT_POINT,
+                         stride=SCORE_DIGIT_STRIDE, height=SCORE_DIGIT_HEIGHT):
+    """'0', '2'-'9' and '.' -> level-string rows, for the in-play score
+    digit table (SCORE_DIGIT_BASE) -- see that constant's own comment for
+    the layout this reads and what it does and does not recover. Digits are
+    `height` rows x 16 px (two adjacent 8px halves, left then right, per
+    sub_F0907's own draw order -- DEC DI shifts the *second* call left of
+    the first); the decimal point is `height` rows x 8 px (one half only,
+    matching how sub_F0907 draws it: a single call, never doubled). '1' is
+    not returned -- see SCORE_DIGIT_BASE's own comment for why it is not
+    reachable via this table at all.
+    """
+    out = {}
+    start = _far_cs(data, base)
+    for d in range(10):
+        if d == 1:
+            continue
+        slot = start + d * stride
+        p0_right, p1_right, _m = _score_digit_block(data, slot, height)
+        p0_left, p1_left, _m = _score_digit_block(data, slot + 3 * height, height)
+        left = _score_digit_levels(p0_left, p1_left)
+        right = _score_digit_levels(p0_right, p1_right)
+        out[str(d)] = [l + r for l, r in zip(left, right)]
+    point_off = _far_cs(data, point)
+    p0, p1, _m = _score_digit_block(data, point_off, height)
+    out['.'] = _score_digit_levels(p0, p1)
     return out
 
 
@@ -442,6 +672,45 @@ def _self_test(data):
     # unlike the large score face, this one is never shaded -- every pixel is level 0 or 3
     assert set(''.join(small['8'])) <= set('03'), 'small-digit-face should use only levels 0/3'
     print('small-digit-face self-test OK: %d labels' % len(small))
+
+    hud = hud_message_bitmaps(data)
+    assert set(hud) == {
+        'BALL', 'EXTRA BALL', 'INSERT COIN', 'PLAYERS', 'PLAYER',
+        'BOLA', 'BOLA EXTRA', 'INTRODUCIR MONEDA', 'JUGADORES', 'JUGADOR',
+    }, sorted(hud)
+    ball_h, ball_w, ball_rows = hud['BALL']
+    assert (ball_h, ball_w) == (8, 24), (ball_h, ball_w)
+    # segmenting BALL's own bitmap on blank columns and reading the letters
+    # directly off the pixels is how this table was found in the first
+    # place -- pin one full row here so a future ROM swap that silently
+    # shuffles the pointer pool is caught by a shape mismatch, not missed.
+    assert ball_rows[1] == '001110001100100001000000', ball_rows[1]
+    insert_h, insert_w, _insert_rows = hud['INSERT COIN']
+    assert (insert_h, insert_w) == (16, 48), (insert_h, insert_w)
+    print('hud-message self-test OK: %d words, both languages' % len(hud))
+
+    pnum = player_number_bitmaps(data)
+    assert len(pnum) == 10, 'expected 10 player-number digits, got %d' % len(pnum)
+    zero_bits = ('00000000', '00011000', '00100100', '00100100',
+                 '00100100', '00100100', '00011000', '00000000')
+    assert tuple(pnum['0']) == zero_bits, 'player-number digit 0 is not a closed-loop 0'
+    print('player-number self-test OK: %d digits' % len(pnum))
+
+    sdig = score_digit_bitmaps(data)
+    assert set(sdig) == {'0', '2', '3', '4', '5', '6', '7', '8', '9', '.'}, sorted(sdig)
+    # digit 2's stored bitmap reproduces a real captured frame byte-for-byte
+    # (dmd/en/screens/5132-score-ball-3-in-play/repr.txt, rows 0-17,
+    # columns 8-23) -- the strongest evidence this table's layout is right,
+    # so pin it here rather than just a shape check.
+    two_bits = (
+        '0000000000000000', '0000000033333000', '0000000333333300', '0000003330003330',
+        '0000003300000330', '0000003300000330', '0000000000000330', '0000000000000330',
+        '0000000000003300', '0000000000003300', '0000000000033000', '0000000000330000',
+        '0000000003300000', '0000000033000000', '0000000330000000', '0000003333333330',
+        '0000033333333330', '0000000000000000',
+    )
+    assert tuple(sdig['2']) == two_bits, 'score digit 2 does not match the captured frame'
+    print('score-digit self-test OK: %d labels' % len(sdig))
 
 
 if __name__ == '__main__':

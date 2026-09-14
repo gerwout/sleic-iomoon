@@ -119,8 +119,8 @@
   9840 mark drop-bank-4-down
   9900 tap 10 KEYCODE_N
  10030 mark drop-bank-5-down
+ 10280 mark full-tilt
  10280 tap 10 KEYCODE_T
- 10540 mark full-tilt
  10540 tap 10 KEYCODE_T
  12040 mark ball-2-drained
  12040 tap 10 KEYCODE_Q

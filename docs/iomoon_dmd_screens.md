@@ -119,19 +119,23 @@ one example of decoded text where any exists. Numbered families (`ball-1-*`,
 
 | Label | Occ (en/es) | Distinct (en/es) | Example text |
 |---|---|---|---|
-| `ball-N-start` (N=1-3) | 45/45 | 45/45 | empty |
-| `score-start` (the second game's own START-to-ball-1 transition, following `score-credit`) | 46/46 | 46/46 | empty |
-| `ball-N-in-play` | 67/67 | 42/42 | `3. 8.743` (the small `h=12` digit face; F13, `docs/dmd_graphics.md`) |
-| `ball-N-drained` | 92/92 | 92/92 | empty |
-| `drop-bank-N-down` | 12/12 | 12/12 | `3. 5. 8` |
-| `score-ball-N-in-play` | 4480/4478 | 341/337 | empty — the second, high-score-qualifying game's own play, same mechanics |
-| `score-ball-N-drained` | 90/90 | 90/90 | empty |
-| `score-recover-*` (4 labels: `drained`, `hits`, `plunge`, `wait` — the awarded extra ball) | 25/24 | 23/22 | `N N` (recovery-ball hit counter, `h=12`) |
+| `ball-N-start` (N=1-3) | 45/45 | 45/45 | `PLAYER BALL` (`en`) / `JUGADOR BOLA` (`es`) — the in-play HUD, most but not all occurrences (42/45) |
+| `score-start` (the second game's own START-to-ball-1 transition, following `score-credit`) | 46/46 | 46/46 | `1 1 / PLAYER BALL` |
+| `ball-N-in-play` | 67/67 | 42/42 | `PLAYER BALL` — the small `h=12` digit face's own `3. 8.743` (F13, `docs/dmd_graphics.md`) still decodes too, on the scenes that show it |
+| `ball-N-drained` | 92/92 | 92/92 | `1 2 / PLAYER BALL` |
+| `drop-bank-N-down` | 10/10 | 10/10 | `PLAYER BALL` (was 12/12 before the `full-tilt` mark fix below moved 2 `drop-bank-5-down` occurrences to the `full-tilt` label instead) |
+| `full-tilt` | 2/2 | 2/2 | empty — large drop-shadowed `TILT` text (2265 lit pixels, `dmd/en/screens/0303-full-tilt/repr.txt`), legible by eye but not matched by any walked face; whether it is font-composed or a picture is not established (`dmd/README.md`, item 4). Faults' own `tilt` capture separately has the small `h=9`-face `ONE TILT`/`TWO TILTS` warning strings |
+| `score-ball-N-in-play` | 4480/4478 | 341/337 | `PLAYER BALL` (`en`) / `JUGADOR BOLA` (`es`) — the second, high-score-qualifying game's own play, same mechanics |
+| `score-ball-N-drained` | 90/90 | 90/90 | `PLAYER BALL` |
+| `score-recover-*` (4 labels: `drained`, `hits`, `plunge`, `wait` — the awarded extra ball) | 25/24 | 23/22 | `2 6.515 / PLAYER BALL` (recovery-ball hit counter, `h=12`, beside the in-play HUD) |
 
 Every `ball-N-in-play`/`ball-N-drained`/`ball-N-start` scene shows `PLAYER 1` and `BALL 1`
-on screen in a small, single-pixel-stroke face; that font is not in the walked glyph
-table (`docs/dmd_graphics.md`, "Open items"), so these
-labels' `text` is empty or partial by construction, not because the screen is missing.
+on screen in a small, single-pixel-stroke face; that font is now decoded
+(`docs/dmd_graphics.md`, "The in-play PLAYER/BALL HUD..."), and these labels'
+`Example text` above reflects it. What is still empty on some of these labels is the
+gameplay-only feature text beside the HUD words (orbit/target progress hints, feature
+awards) — see Coverage, "Gameplay feature-progress hints" — not the HUD words
+themselves.
 
 ### End of game
 
@@ -247,8 +251,11 @@ and conflating them overstates the capture gap:
    reached it, or reached it too briefly.
 2. **Captured, but in a font this decoder cannot read** — the screen is on the panel,
    `repr.txt` holds it, a human reading the pixels can see the words, and no walked font
-   table entry matches the bitmap. The in-play `PLAYER`/`BALL` font is the standing
-   example (`docs/dmd_graphics.md`, "Open items").
+   table entry matches the bitmap. The in-play `PLAYER`/`BALL` font was the standing
+   example for this case; it is now decoded (`docs/dmd_graphics.md`, "The in-play
+   PLAYER/BALL HUD..."). The gameplay feature-progress hints below (orbit/target
+   progress, feature awards) are the current standing example: a different, still
+   unlocated font or table, not the same one.
 3. **Captured, but drawn as a picture, not text** — the screen is on the panel and
    `repr.txt` holds it, but the content is a complete pre-rendered image baked into ROM1
    at build time (F20; `docs/dmd_graphics.md`, "Full-screen images outside the walked
@@ -267,12 +274,17 @@ still contribute nothing to a text-match count, for either reason 2 or reason 3.
 | | Count |
 |---|---|
 | Strings named (tier 1 / tier 2 / tier 3) | 275 / 0 / 166 = 441 |
-| Present (whole-field match, any of the three corpora) | 36 |
-| Missing | 405 |
+| Present (whole-field match, any of the three corpora) | 37 |
+| Missing | 404 |
 
-Recomputed against `dmd/en`'s current recapture (`8d2c0f5`, 5716 scene occurrences, 922
-distinct screens — see the top of this document); `dmd/es` and `dmd/faults` are
-unchanged, so only `dmd/en`'s own rows could move the count, and 9 did (see below).
+Recomputed against `dmd/en` and `dmd/es` as committed after the HUD/score decoder work
+(`dmd/README.md`'s own items on the in-play `PLAYER`/`BALL` HUD and the in-play score;
+5716/5411 scene occurrences, 922/824 distinct screens — see the top of this document);
+`dmd/faults` is unchanged, so only `dmd/en`/`dmd/es`'s own rows could move the count,
+and one did (see below) — the new HUD/score-digit decoding adds hundreds of
+`PLAYER`/`BALL`/digit fields to both corpora, but almost none of them are a whole-field
+match for a *named* ROM string (most named strings are multi-word menu/fault prose; a
+bare `BALL` or a digit rarely equals one outright).
 
 Tier 2 contributes zero *additional* strings once tier 1 is already counted — every
 `ENGLISH_POOL`/`SPANISH_POOL` entry is also reachable through `contact_table()` or
@@ -289,7 +301,7 @@ string, grouped, with a citation and a disposition.
 
 ### What is captured and decoded
 
-36 strings match cleanly:
+37 strings match cleanly:
 
 - **Menu chrome (tier 1, English only):** the root record's three items
   (`SOUND/VIDEO`, `GAME`, `TECHNICAL`) and its first child's two
@@ -308,6 +320,12 @@ string, grouped, with a citation and a disposition.
   looked at `svc-N` scenes specifically, and none of those three changed.
 - **One contact name (tier 1):** `L.C.FLIPPER` — not from the CONTACTOS test screen, but
   from the `flipper-broken` fault screen, which happens to show the same name.
+- **One menu item, matched from an unrelated screen (tier 1, new):** `EXTRA BALL` — the
+  named string is record 11's own item line (`- STATISTICS -` submenu), never itself
+  captured under a `svc-N` label; the whole-field match instead comes from the in-play
+  HUD's own flashing `EXTRA BALL` indicator (`dmd/README.md`, the `PLAYER`/`BALL` item),
+  which happens to render the identical text. A coincidence of two unrelated ROM
+  strings sharing the same words, not a decode of the STATISTICS record.
 - **21 tier-3 strings**, all from `dmd/faults/` plus `dmd/en/`'s own boot scenes:
   `GROUP: T17-18-19`, `FUSE F4` (the one coil group and fuse the `solenoid-cut` probe
   exercises), `BALL OUT ERROR`, `BALL MISSING`, `BALLS OK`, `WARNING`, `ONE TILT`,
@@ -333,7 +351,7 @@ it now demonstrably is.
 
 ### Every missing string, grouped and explained
 
-**Tier 1 — 260 missing.** No individual disposition per string; two source groups
+**Tier 1 — 259 missing.** No individual disposition per string; two source groups
 account for all of them, and item 2 splits into four distinct outcomes below.
 
 1. **F16 switch/cabinet names, 90 missing (`contact_table()`, English + Spanish, shared
@@ -346,9 +364,10 @@ account for all of them, and item 2 splits into four distinct outcomes below.
    `SLEIC_INJECT_BIT`) to trigger a few matrix switches while `svc-32` is open. Spanish
    names are additionally gated by F19 (below).
 
-2. **The 38-record menu tree's own item/title prose, 170 missing (`menu_records()`,
-   English + Spanish; 9 moved to present, see "What is
-   captured and decoded" above).** Commit `8d2c0f5` stretches every
+2. **The 38-record menu tree's own item/title prose, 169 missing (`menu_records()`,
+   English + Spanish; 10 moved to present — the 9 from the earlier recapture plus
+   `EXTRA BALL`, matched coincidentally from the in-play HUD rather than from its own
+   record, see "What is captured and decoded" above).** Commit `8d2c0f5` stretches every
    plain record-to-record transition roughly 25x (120 to 3000 frames), testing directly
    whether a deeper record simply needs more dwell.
    Measured against `svc-N`-labeled scenes specifically (the record's own settled page,
@@ -414,7 +433,7 @@ exactly one.
 | Per-country CREDITS denominations (English) | 20 | `OF 1OF CRED:`, `OF 5DM CRED:`, `OF 2ML CRED:`, `OF 20K CRED:`, `OF 50F CRED:`, `OF 200 CRED:`, `OF 50E CRED:`, … (every English denomination row except the Netherlands' own `OF 10`/`OF 50`/`OF 1PD CRED:`, which are tier 1 and also missing — see above) | **Unreachable under this corpus, not dead code.** F11: `sub_D69CC` applies a country's coin preset from a seven-way table (`D5D01`); this is that same per-country selection surfacing in the CREDITS page's own label text. The corpus runs exactly two countries (4, Netherlands; 5, Spain — the latter using `DE X CRED:` labels via `menu_records()`, itself missing, tier 1). **What would settle it:** capturing `svc-23` under each of the other five country DIP settings (F11's own table: 0 United Kingdom, 1 France, 2 Germany, 3 Italy, 6 Belgium, 7 Portugal — the corpus already covers 4 Netherlands and 5 Spain) — undertaken only if a reason to trust the per-country coin presets specifically (not general coverage) calls for it. |
 | Spanish fault/boot messages | 17 | `FALLO MEM. CPU8`, `ERROR SAL. BOLAS`, `FALTAN BOLAS`, `ATENCION`, `UNA FALTA`, `DOS FALTAS`, `SEPARADO O ROTO`, `FALLO EEPROM`, `ESTABLECIENDO`, `VALORES FABRICA`, `PULSE START`, `FALLO BOBINA`, `EN CORTO`, `IMPOSIBLE SEGUIR`, `CORTADOS O`, `ESPERANDO`, `CPU 8 BITS` | **Capture gap.** These are the Spanish-language counterparts of the twelve strings `dmd/faults/README.md` already captures in English; every fault probe in that corpus ran under the default (English) country. Extending each `SLEIC_FORCE_FAULT` capture with the Spanish `iomoont-spain.cfg` (`dmd/README.md`'s own Spanish-corpus method) would recover these, exactly the way `dmd/es/` reused `dmd/en/`'s own game section under Spain's cfg. |
 | Trough/ball-serve status | 8 | `SACA BOLA 1`, `SACA BOLA 2`, `SACA BOLA 3`, `UNA BOLA`, `DOS BOLAS`, `TRES BOLAS`, `SALIDA BOLAS`, `JUPITER` | **Unreachable under this corpus's simulator setup, not dead code.** This is F15's ball-serve/search status text (commands `0xE9`/`0xEF`), shown while balls are actively being ejected from the trough one at a time. `iomoont`'s registered simulator seeds a full trough by default (`SLEIC2_SIM_INPUT_PORTS_START`), so the multi-ball serve sequence this text narrates never runs during an ordinary boot. **What would settle it:** a probe holding the trough short by one or more balls at boot (the same technique `dmd/faults/ball-missing` already uses, extended to a *partial* rather than fully-empty trough) and capturing the resulting serve sequence. |
-| Gameplay feature-progress hints (English + Spanish) | 6 | `ORBITS LEFT TO`, `TARGETS LEFT TO`, `LIT EXTRA BALL`; `ORBITAS PARA`, `DIANAS PARA`, `LUZ BOLA EXTRA` | **Decoder limit, not a capture gap.** `dmd/en/`'s own walk exercises both the orbit lane and the drop-target bank (`dmd/README.md`'s English-corpus description), so these progress messages plausibly did render during the captured game. They are gameplay-only text, the same screen class documented as unreadable in `docs/dmd_graphics.md`'s "Open items" — the in-play `PLAYER`/`BALL` font is not in the walked glyph table, and this message class is drawn during the same gameplay state. Not independently confirmed frame-by-frame the way `svc-2` was above; still the same open item. |
+| Gameplay feature-progress hints (English + Spanish) | 6 | `ORBITS LEFT TO`, `TARGETS LEFT TO`, `LIT EXTRA BALL`; `ORBITAS PARA`, `DIANAS PARA`, `LUZ BOLA EXTRA` | **Decoder limit, not a capture gap.** `dmd/en/`'s own walk exercises both the orbit lane and the drop-target bank (`dmd/README.md`'s English-corpus description), so these progress messages plausibly did render during the captured game. They are gameplay-only text, drawn during the same in-play state the HUD `PLAYER`/`BALL` words are — but not the same font or table: the HUD words are now decoded (`docs/dmd_graphics.md`, "The in-play PLAYER/BALL HUD..."), and these six strings are not among its entries, so they sit in a still-unlocated font or table of their own. Not independently confirmed frame-by-frame the way `svc-2` was above; still open. |
 
 **`boot-setting-country` never shows
 text**, in either language (3 scenes each, all empty; `dmd/en/screens.csv` ids 5-7). Its
@@ -435,15 +454,20 @@ not through `boot-setting-country`'s own mark.
 
 ### Related open items
 
-- **The in-play `PLAYER`/`BALL` font is not in the walked font table** — confirmed by
-  three search forms across both ROMs, none finding it. Every `ball-N-*` scene's `text`
-  is empty or partial as a direct result; this is why so many tier-3 gameplay strings
-  above read as "missing" when the screen itself is captured. `docs/dmd_graphics.md`,
-  "Open items," has the full account and what would settle it.
-- **Which face draws the main in-play score is open**, and the `(h=23, W=2)` face is
-  ruled out for it (zero exact matches across 27,712 raw frames). Not a coverage
-  question directly (no ROM *string* names the score), but the same open item. F20 adds
-  a third possibility alongside "which walked face" — that the in-play score
-  is not glyph-composed at all, the way three service-menu records are now confirmed not
-  to be — but this is not established either way and should not be assumed from F20
-  alone; see `docs/dmd_graphics.md`.
+- ~~The in-play `PLAYER`/`BALL` font is not in the walked font table~~ **— found and
+  decoded.** `BALL`/`EXTRA BALL`/`INSERT COIN`/`PLAYERS`/`PLAYER` (both languages) are
+  whole-word bitmaps in a pointer pool at `CS:0522F`-`CS:0523F`, matched on their own lit
+  pixels against full brightness rather than by exact bitmap (`docs/dmd_graphics.md`,
+  "The in-play PLAYER/BALL HUD..."; `scripts/dmd_dump_split.py`'s `_scan_words`). Every
+  `ball-N-*`/`score-ball-N-*` scene's `text` now carries these words where they are
+  genuinely on screen; the tier-3 gameplay strings above that were attributed to this
+  gap have been re-checked against the fixed decoder (see "Every missing string, grouped
+  and explained").
+- **Which face draws the main in-play score is found too**: a headerless digit table at
+  `CS:052BB`, not the walked `(h=23, W=2)` face (still ruled out, unchanged — zero exact
+  matches across 27,712 raw frames). See `docs/dmd_graphics.md`, "The in-play score
+  digit table is headerless...". Consecutive digits overlap on screen (a plain-overwrite
+  draw order), so only some digits of a longer number are recovered — see the Numbers
+  section for the measured effect. Digit `1` (a decimal-point sentinel occupies its
+  table slot) and a second, alternating drawing path (`CS:052BF`) remain open; what
+  would settle each is in `docs/dmd_graphics.md`'s own Open items.

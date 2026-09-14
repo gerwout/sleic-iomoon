@@ -1,7 +1,7 @@
-# IO Moon — driver contract, F1..F20
+# IO Moon — driver contract, F1..F21
 
-Twenty numbered facts extracted from the **2026-09 fresh baselines** in this
-directory. Later driver tasks reference them by number.
+Twenty-one numbered facts extracted from the **2026-09 fresh baselines** in
+this directory. Later driver tasks reference them by number.
 
 **Sources, and only these sources.** Every address citation below was read out
 of one of:
@@ -2145,6 +2145,58 @@ be a picture rather than composed text; this one does, with one directly
 confirmed instance and a documented method (byte-search a candidate frame
 against both ROM images, then verify the header arithmetic independently)
 for checking any other suspected instance.
+
+---
+
+## F21 — The service-menu depth bar is drawn procedurally, not read from a table
+
+**Statement.** The tile-bar/level indicator that renders on several deep
+service-menu leaf records (`svc-N`, `back-to-N`) is not glyph-composed: it is
+a run of identical solid columns plus one partial column, both stamped
+directly from a loop counter with no bitmap ever read. No font-table matcher
+can recover text from it, by construction, because there is no stored shape
+to match against.
+
+**The mechanism, read directly out of the ROM.** `sub_D0AF8` (`D0AF8`) stamps
+one 6-row-tall column at `DI` with a caller-supplied fill byte in `AL`
+(`MOV B[DI],AL` / `ADD DI,0x10`, unrolled six times — no table read of any
+kind). `sub_D0ACA` (`D0ACA`) reads a column count from work-RAM `4000:014A`
+and calls `sub_D0AF8` with `AL=0xFF` that many times, decrementing `DI` by
+one byte column each time — i.e. it draws N solid, full-height columns side
+by side, purely from a loop counter. A dispatch table immediately above it,
+`sub_D0A5D` (`D0A5D`, entries at `D0A94`-`D0AC9`), supplies one of nine
+partial-fill bytes (`0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF`)
+keyed by a second work-RAM cell, `4000:014B` (0-8), giving the bar's leading
+edge sub-column precision instead of only whole-column steps — the standard
+technique for a smooth level/progress gauge. Both destination cells are the
+background plane (`DI = 0x600 + 0x101 + count`, inside F13's `4000:0600-09FF`
+window), not the sprite plane text is normally composed into.
+
+Two callers drive the whole mechanism, sharing the same pair of state cells:
+`sub_D09BC` (`D09BC`) increments the column count (capped at 100, work-RAM
+`4000:0149`) and calls `sub_D0A5D`/`sub_D0ACA` to redraw one notch longer;
+`sub_D0A33`'s neighbour at `D09F3`/`D0A02` decrements it and redraws one
+notch shorter. This is a general-purpose level-gauge primitive, not a
+routine written for one specific menu record — consistent with it recurring
+across multiple different `svc-N` pages rather than belonging to just one.
+
+**What this means for the DMD text decoder.** A font matcher finds real
+bitmap matches on these pages (the columns this loop stamps collide, at some
+fill levels, with real `h=12` glyph shapes in the walked font table) purely
+by coincidence: nothing here indexes the font table, or any table, for
+shape — the shape is the loop itself. This is a third class of "undecoded,"
+distinct from F20's stored-picture case and from an unlocated font: here
+there is no stored shape to find in the first place.
+
+**Confidence:** confirmed — both routines and the partial-fill dispatch
+table are read directly from the listing, with no inference involved. Open:
+which specific service-menu quantity (volume, a lamp-test brightness level,
+a solenoid-test intensity, ...) any one `svc-N` record's bar is showing is
+not established from this trace alone — only the drawing mechanism is.
+
+**Disposition:** new. No prior finding addressed the service-menu depth bar;
+`dmd/README.md`'s own Open items previously described it only as an
+unexplained "growing letter run" coincidentally matching real glyph bitmaps.
 
 ---
 

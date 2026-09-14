@@ -309,6 +309,107 @@ checked). What would settle the first question: the same row-by-row
 byte comparison used here, run against a captured frame from each of the
 remaining leaf records in turn.
 
+### The in-play PLAYER/BALL HUD is a pointer pool of whole words, not a walked table
+
+The small, single-pixel-stroke font `PLAYER 1`/`BALL 1` render in during
+gameplay is not in the walked table above and is not reached by code+offset
+the way every other face here is. It is five whole-word bitmaps, one
+language pair each, pulled by hard-coded far pointers out of a 620-byte
+literal-pointer pool at flat `0xF5183`-`0xF53EB` (620 bytes, 155 four-byte
+entries, terminated by a null entry at `0xF53EF` then zero padding) — most
+of the pool resolves to unrelated assets (further full-screen pictures in
+F20's own format, the walked table's own entries reached a second way,
+work-RAM addresses) and only a five-entry English run plus its Spanish
+counterparts matter here:
+
+| pointer | shape | renders as | drawn by |
+|---|---|---|---|
+| `CS:0522F` | h=8, w=3 | `BALL` | `sub_F0D70` |
+| `CS:05233` | h=8, w=5 | `EXTRA BALL` | `sub_F0DB2`/`F0DDA`/`F0E1A` (flash pair) |
+| `CS:05237` | h=16, w=6 | `INSERT` / `COIN` | `sub_F0E60`/`F0E85`/`F0EAB` |
+| `CS:0523B` | h=8, w=7 | `PLAYERS` | `sub_F0FFA`/`F1054` |
+| `CS:0523F` | h=8, w=5 | `PLAYER` | `sub_F108E`/`F10E5` |
+
+Each entry is the walked table's own `[h,0x00,w,0x00,len16]` header+3-plane
+format, just holding a whole rendered phrase instead of one character —
+confirmed by segmenting each bitmap on its own blank columns and reading the
+letters directly off the pixels (plane 0 alone, the same single-plane
+convention `glyph_bitmaps` already uses; plane 1 and the mask, present in
+every entry, carry nothing legible). `PLAYER`/`PLAYERS` are each followed by
+a player/ball-number digit from a **third**, independent digit table
+(`CS:0531B`, `h=8, w=1`, stride `0x1E`, the same code+offset convention as
+the walked table's own faces, just at a base this decoder had not walked
+from before) — work-RAM byte `413C:00D7` (after `PLAYERS`) or `413C:00FE`
+(after `PLAYER`) multiplied by the stride and added to the base.
+
+Spanish counterparts sit in the same pool at country-switched call sites
+(`CMP [4137:1001],5`, F11), confirmed from the actual `LES SI,CS:xxxx`
+operand at each site rather than assumed from a fixed offset: the first
+three pair at `+0x134` (`BOLA`, `BOLA EXTRA`, `INTRODUCIR`/`MONEDA`), but
+`PLAYERS`/`PLAYER` pair with `JUGADORES`/`JUGADOR` at `+0x138` instead — one
+entry further apart than the first three, not the same fixed offset applied
+uniformly.
+
+`scripts/iomoon_strings.py`'s `HUD_MESSAGE_POINTERS`/`hud_message_bitmaps()`
+and `PLAYER_NUM_BASE`/`player_number_bitmaps()` read this pool; the corpus
+splitter matches each whole-word bitmap directly (`scripts/
+dmd_dump_split.py`'s `_scan_words`), since these entries vary in both height
+and width and are not per-character cells.
+
+### The in-play score digit table is headerless, and each digit is drawn from two glyph halves
+
+The large, shaded in-play score (`2.452.230`-style numbers, legible by eye
+in a gameplay capture) is drawn from a table the walked table's own
+`_font_entries` never reaches, because it carries no header at all. Pointer
+`CS:052BB` resolves to flat `0x29154`; `sub_F0907` (the decimal-string
+renderer behind the in-play score, dispatched by work-RAM mode byte
+`413C:00EA`) indexes it by digit value with `MUL DX,0x6C` (108) — read
+directly from `sub_F0907`'s own draw loop, not assumed from the byte count:
+`108 = 3 planes x 12 rows x 3 bytes` is a plausible guess from the stride
+alone, and it is wrong (rendering it that way produces noise, not digits).
+
+Each 108-byte digit slot holds two adjacent 54-byte halves, and `sub_F0C7B`
+— the routine every digit call site uses — settles their shape directly: a
+fixed 18 rows (`MOV BP,0x12` / `MOV CX,0x12`, hard-coded in the routine, not
+read from any header) of one byte (8 px) each, three such planes (plane 0,
+plane 1, mask) per half. `sub_F0907` calls `sub_F0C7B` once at `DI`, then
+again one byte-column to the left (`DEC DI`) — and the second call's source
+is not the first call's data replayed (`sub_F0C7B` advances its own source
+pointer by 54 bytes internally), so the two halves are the left and right
+8 px columns of one 16 px-wide, 18-row glyph, not a blurred duplicate of the
+same image. Read that way (both halves, `level = 2*plane0_bit + plane1_bit`,
+F13's own weighting, the mask unused — every digit comes out using only
+level 0 and level 3, with no stored level-1 "interior" to recover by reading
+it), digit `2`'s bitmap reproduces
+`dmd/en/screens/5132-score-ball-3-in-play/repr.txt` byte-for-byte at
+row 0, column 8 — the ROM's own data matching a real captured frame exactly,
+not merely a plausible-looking render.
+
+Byte value `1` is intercepted as a decimal-point sentinel *before* the
+multiply (`CS:052C3`, a separate always-single-call pointer that happens to
+physically sit where "digit 1" would fall under the stride formula but is
+never reached that way), so digit `1` is not reachable through this table at
+all and is left undecoded rather than guessed at. A second, alternating
+drawing path exists (`CS:052BF`, toggled by work-RAM flag `413C:00CD` for a
+digit immediately following a decimal point, drawn by a different
+compositing primitive — `sub_F0C49`, OR then AND, not plain overwrite) and
+is not modelled by the decoder; only the `CS:052BB` path above is, since
+that is the one confirmed against a real frame.
+
+Consecutive digits in a real number overlap on screen: confirmed digit `2`
+sits at its full, unclipped 16 px width because it is the leftmost (most
+significant, last-drawn — `sub_F0907` scans its source right to left) digit
+in its own number; a plain-overwrite draw order means an earlier-drawn
+digit's own columns get overwritten by whatever draws after it. An
+exact-bitmap matcher only recovers the digits that happen to survive a given
+frame's own draw order, not every digit of a longer number — see
+`dmd/README.md` for the measured effect on corpus recovery, and its Open
+items for what is not yet resolved (digit `1`, the `CS:052BF` alternate
+path, and the overlap itself).
+
+`scripts/iomoon_strings.py`'s `SCORE_DIGIT_BASE`/`score_digit_bitmaps()`
+reads this table.
+
 ### Character Mapping
 
 The table's entry index is **not** the glyph code: entry 0 renders a
@@ -456,48 +557,30 @@ for the three windows the CPU actually sees.
 
 ## Open items
 
-### The in-play `PLAYER`/`BALL` font is not in the walked font table
+### The `CS:052BF` alternate score-digit path is not modelled
 
-Rendering any `ball-N-in-play` or `ball-N-drained` scene shows text reading
-`PLAYER 1` and `BALL 1` in a small, roughly 6-row-tall, single-pixel-stroke
-font at full brightness — nothing like the bold `height=9` face pinned
-above. It is not among the font table's 224 entries (`0x20000`-`0x22C2E`):
-searching both ROM images for its `P` bitmap finds no match in any of three
-forms tried — contiguous one byte per row, padded with blank rows to a
-taller cell, or at a 16-byte stride inside a 128-pixel-wide frame buffer.
-What would settle it: a disassembly trace of the routine that draws
-`PLAYER`/`BALL` (rather than more bitmap search), or a capture narrow enough
-to isolate just this text against a blank background.
+`sub_F0907` (the in-play score renderer) alternates a digit between two
+different table bases and drawing primitives depending on whether the
+previous character was a decimal point (work-RAM flag `413C:00CD`):
+`CS:052BB`, plain-overwrite, is the path "The in-play score digit table is
+headerless..." above confirms against a real frame; `CS:052BF`, drawn with
+an OR-then-AND compositing primitive (`sub_F0C49`) instead of a plain
+overwrite, is not traced. Digit `1` is also not reachable through either
+table by the normal digit-value multiply (it is intercepted earlier as the
+decimal-point sentinel) and is not decoded. What would settle both: tracing
+`sub_F0C49`'s own callers and the `413C:00CD` toggle, and finding where
+(if anywhere) a literal digit `1` is drawn from.
 
-### Which face draws the main player score is not settled
+### Consecutive in-play score digits overlap, limiting recovery
 
-Two different score displays exist. The attract-mode high-score table is
-the `height=12` face pinned above, and it decodes (`300.000.000` beside
-`S.MOONLIGHT`, etc.). The **in-play** score is a separate, larger display —
-legible by eye during a gameplay capture, e.g. `2.452.230`, `3.812.237`,
-`1.027.571` — and its face is not identified; this item is about that one.
-
-The large `height=23, width=2` face is shaded and its matcher now reads both
-bitplanes (see "Font Entry Structure" above), but no scene in the committed
-English corpus (`dmd/en/`) shows it decoding a real in-play number: scanning
-its 21 labels against all 27,712 raw frames of `dmd/en/iomoont.txt.gz` finds
-zero exact matches, and the closest approximate match in a gameplay-adjacent
-frame differs in 120 of the window's 368 pixels — no resemblance, not a near
-miss. The smaller `height=12` digit face immediately after it (table index
-183-203) does decode real digit runs from gameplay scenes (`3. 8.743`,
-`3. 5. 8`, `: 95` — see "Font Entry Structure" above), but each run
-decoded so far is short, and no captured scene identifies what quantity it
-shows — it may be a bonus count, a lane multiplier, or something else, not
-necessarily the main player score.
-
-A third possibility exists alongside "which walked face draws it": the
-in-play score screen might not be glyph-composed at all, the way three deep
-service-menu records are confirmed not to be (see "Full-screen images
-outside the walked table use the same entry format (F20)" above). This is
-not established either way — no in-play frame has been checked against a
-font-table-shaped full-screen image the way the service-menu ones were —
-and should not be assumed true just because the mechanism exists elsewhere
-in this ROM.
+`sub_F0907` draws digits right to left (least significant first), plain
+overwrite, and confirmed digit `2` sits at its full 16 px width only because
+it is the *last*-drawn (most significant, leftmost) digit of its own number
+— an earlier-drawn digit's own columns get overwritten by whatever the
+routine draws after it. An exact-bitmap matcher recovers only the digits
+that happen to survive a given frame's own draw order, which in practice is
+often just one digit of a longer score. See `dmd/README.md` for the
+measured effect on corpus recovery.
 
 Two further faces from the same font table are walked but not pinned to any
 code offset or confirmed against a captured frame: `height=16` (20 entries,

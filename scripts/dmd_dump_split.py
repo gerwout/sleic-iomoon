@@ -206,7 +206,7 @@ def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
     return scenes
 
 
-def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
+def _scan_face(rows, bits_to_label, height, cell_w, binarize=True, min_glyphs=2):
     """[(y, text), ...] for one glyph face, read by exact bitmap match.
 
     `bits_to_label` maps a tuple of `height` row strings (each `cell_w` wide)
@@ -240,6 +240,16 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
     while every genuine use of a sparse glyph here (a decimal point inside
     a run of digits, a colon between two words) is. Requiring at least two
     keeps every real line and drops exactly this class of noise.
+
+    `min_glyphs` overrides that "at least two" floor -- pass 1 for a face
+    whose glyphs are dense enough that a lone match carries negligible
+    false-positive risk (the in-play score digit table: 16x18 pixels of
+    real content per glyph, nothing like the period's 2-of-162-pixel
+    bitmap this rule was written to guard against), since overlapping
+    consecutive digits in a real score already leaves only one glyph
+    surviving intact in most captured frames (iomoon_strings.
+    SCORE_DIGIT_BASE's own comment) -- requiring two there would silently
+    discard almost every real recovery.
     """
     if not rows or not bits_to_label or len(rows) < height:
         return []
@@ -267,13 +277,101 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
                 if chars:
                     gap = True
                 x += 1
-        if len(chars) > 1:
+        if len(chars) >= min_glyphs:
             lines.append((y, ''.join(chars)))
     return lines
 
 
+def _scan_words(rows, messages, max_blank_lit_fraction=0.2):
+    """[(y, text), ...] for a table of whole-phrase bitmaps, matched on
+    their *lit* pixels only -- iomoon_strings.hud_message_bitmaps()'s own
+    entries (BALL, PLAYER, the two-line INSERT COIN, ...), not
+    per-character glyphs.
+
+    Unlike _scan_face, entries here vary in both height and width (each is
+    a complete rendered word), so there is no single cell size to advance
+    by on a match -- every (label, height, width, lit_rows) entry is tried
+    independently at every (x, y), and a match advances x by *that*
+    label's own width rather than a shared constant.
+
+    This is a masked match, not an exact one, and deliberately so: an
+    exact match (blank template pixels required to be blank on screen,
+    same as every other face here) finds these words nowhere in the
+    corpus even though they are plainly on screen, because the stored
+    word's blank margins fall over the panel's own dithered background on
+    a real frame -- confirmed by rendering a frame that shows PLAYER and
+    BALL directly while an exact matcher finds neither anywhere in either
+    committed corpus. `lit_rows` (the '0'/'1' plane-0 bitmap
+    hud_message_bitmaps() already returns) says only which pixels the
+    stored word actually lights; every other pixel in the cell is,
+    *within limits* (see below), a don't-care. To keep this looser rule
+    from over-matching against a dimmer dither level rather than the word
+    itself, a lit pixel must be at **full brightness** ('3') in the frame,
+    not merely nonzero -- `rows` is therefore the frame's own raw '0'-'3'
+    level rows, not binarized.
+
+    Ignoring blank pixels entirely over-matches a different way: a large,
+    solid, near-uniformly-bright graphic (a bonus-multiplier blob, an
+    animation frame) satisfies almost any sparse lit-pixel mask trivially,
+    since nearly every candidate pixel already reads level 3 regardless of
+    the word's own shape -- caught on a real scene (`score-recover-hits`,
+    a large bright graphic overlapping a score display), where a
+    lit-pixels-only match fired for both `BALL` and `BOLA` at three
+    positions with no real word anywhere near them, alongside a fourth,
+    genuine `BALL` match elsewhere on the same frame. Measured across
+    known-true and known-false matches, the discriminator is the
+    *fraction* of the template's own blank pixels that read level 3 in the
+    frame: 0-3% for confirmed real words (`PLAYER`/`BALL` on a genuine
+    HUD row), 73-77% for the false-positive graphic -- not a close call.
+    `max_blank_lit_fraction` (default 0.2, comfortably below every measured
+    false positive and above every measured true one) rejects a candidate
+    whose blank area is mostly full-brightness anyway, without reinstating
+    the blank-must-be-blank exact match this function exists to avoid.
+
+    A whole word's worth of *required* lit pixels (tens to several dozen,
+    all at one specific brightness) plus the blank-fraction check above is
+    still specific enough that no minimum-match-count filter is applied,
+    unlike _scan_face's sparse-glyph guard.
+    """
+    if not rows or not messages:
+        return []
+    H, W = len(rows), len(rows[0])
+    hits = []
+    for label, height, width, lit_rows in messages:
+        if height > H or width > W:
+            continue
+        lit = [(r, c) for r in range(height) for c in range(width) if lit_rows[r][c] == '1']
+        blank = [(r, c) for r in range(height) for c in range(width) if lit_rows[r][c] == '0']
+        if not lit or not blank:
+            continue
+        blank_limit = int(len(blank) * max_blank_lit_fraction)
+        y = 0
+        while y <= H - height:
+            x = 0
+            while x <= W - width:
+                if (all(rows[y + r][x + c] == '3' for r, c in lit)
+                        and sum(1 for r, c in blank if rows[y + r][x + c] == '3') <= blank_limit):
+                    hits.append((y, x, label))
+                    x += width
+                else:
+                    x += 1
+            y += 1
+    # merge same-row hits left to right, the same convention _scan_face's
+    # own lines use, so decode_text's final sort-and-join treats a word
+    # table's output the same way as every other face's.
+    hits.sort()
+    lines = []
+    for y, x, label in hits:
+        if lines and lines[-1][0] == y:
+            lines[-1] = (y, lines[-1][1] + ' ' + label)
+        else:
+            lines.append((y, label))
+    return lines
+
+
 def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=None,
-                 cell_w=8, score_cell_w=16):
+                 hud_messages=None, player_digits=None, score_digits=None,
+                 cell_w=8, score_cell_w=16, player_digit_cell_w=8, score_digit_cell_w=16):
     """The on-screen text in a decoded frame's rows, read by exact bitmap match.
 
     `glyphs` is the h=9 glyph code -> row-bit-string table from
@@ -283,11 +381,27 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
     two digit faces' label -> row-level-string tables from
     iomoon_strings.score_glyph_bitmaps() (the large, 16x23 face at its
     default parameters, and the small, 8x12 one respectively -- see that
-    function for both). All four faces are scanned independently over the
-    whole frame and their lines merged top to bottom, then joined with
-    ' / '. The two digit faces match on raw pixel levels ('0'-'3', not
-    binarized -- see _scan_face); the other two match on lit/unlit only.
-    See _scan_face for the matching and space/noise rules.
+    function for both). `hud_messages`, if given, is
+    iomoon_strings.hud_message_bitmaps()'s own label -> (height, width,
+    rows) table for the in-play PLAYER/BALL HUD words (both languages);
+    `player_digits`, if given, is iomoon_strings.player_number_bitmaps()'s
+    '0'-'9' table for the digit that follows PLAYER/PLAYERS; `score_digits`,
+    if given, is iomoon_strings.score_digit_bitmaps()'s own '0'/'2'-'9'/'.'
+    table for the in-play score (see that function's own comment for why
+    '1' is absent, and for the overlap that limits how many digits of a
+    real multi-digit score this table recovers).
+
+    Every face is scanned independently over the whole frame and their
+    lines merged top to bottom, then joined with ' / '. The two
+    iomoon_strings.score_glyph_bitmaps() faces and score_digits match on raw
+    pixel levels ('0'-'3', not binarized -- see _scan_face); glyphs,
+    glyphs12 and player_digits match on lit/unlit only; hud_messages
+    matches on its own lit pixels against full brightness specifically (not
+    merely nonzero) and does not require its blank margins to be blank on
+    screen -- see _scan_words for why an exact match, correct for every
+    other face here, finds these particular words nowhere in a real
+    capture. See _scan_face and _scan_words for the matching, space and
+    noise rules each uses.
 
     The h=12 face has one real ambiguity, not a bug: code 0 ('0') and code
     0x1A ('O') render the identical bitmap, so inverting code -> bitmap into
@@ -298,9 +412,21 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
     '0' instead; no pixel-level test can tell the two apart in this face.
     """
     lines = []
-    faces = [(glyphs, cell_w, False), (glyphs12, cell_w, False),
-             (score_glyphs, score_cell_w, True), (small_digits, cell_w, True)]
-    for table, glyph_cell_w, is_score in faces:
+    # (table, cell_w, binarize, label_is_key, min_glyphs) -- `binarize`
+    # picks the matching convention (lit/unlit vs raw '0'-'3' levels, see
+    # _scan_face); `label_is_key` is independent of it: the two score faces
+    # and the two new digit faces already key their table by the label to
+    # emit ('0'-'9', '0.'-'9.', ':', '.'), while glyphs/glyphs12/player_digits
+    # key by glyph code or digit and need iomoon_strings.GLYPHS to turn that
+    # into a character -- player_digits is the one face where these two
+    # choices disagree with each other (binarized like glyphs, but
+    # key-is-label like the score faces), which is exactly why they are two
+    # separate flags here and not the one `is_score` flag this used to be.
+    faces = [(glyphs, cell_w, True, False, 2), (glyphs12, cell_w, True, False, 2),
+             (score_glyphs, score_cell_w, False, True, 2), (small_digits, cell_w, False, True, 2),
+             (player_digits, player_digit_cell_w, True, True, 2),
+             (score_digits, score_digit_cell_w, False, True, 1)]
+    for table, glyph_cell_w, binarize, label_is_key, min_glyphs in faces:
         if not table:
             continue
         heights = {len(bits) for bits in table.values()}
@@ -308,8 +434,14 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
             continue
         bits_to_label = {}
         for key, bits in table.items():
-            bits_to_label.setdefault(tuple(bits), key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
-        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w, binarize=not is_score)
+            bits_to_label.setdefault(tuple(bits), key if label_is_key else iomoon_strings.GLYPHS.get(key, '?'))
+        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w,
+                             binarize=binarize, min_glyphs=min_glyphs)
+    if hud_messages:
+        # raw levels, not binarized -- _scan_words matches lit pixels
+        # against full brightness ('3') specifically, see its own comment.
+        messages = [(label, h, w, tuple(bits)) for label, (h, w, bits) in hud_messages.items()]
+        lines += _scan_words(rows, messages)
     lines.sort(key=lambda yt: yt[0])
     return ' / '.join(text for _, text in lines)
 
@@ -456,6 +588,7 @@ def main():
     args.dump = args.paths[0]
 
     glyphs, glyphs12, score_glyphs, small_digits = {}, {}, {}, {}
+    hud_messages, player_digits, score_digits = {}, {}, {}
     if args.rom:
         try:
             rom_data = open(args.rom, 'rb').read()
@@ -474,6 +607,9 @@ def main():
                 rom_data, height=iomoon_strings.SMALL_DIGIT_FACE_HEIGHT,
                 width=iomoon_strings.SMALL_DIGIT_FACE_WIDTH,
                 index=iomoon_strings.SMALL_DIGIT_FACE_INDEX)
+            hud_messages = iomoon_strings.hud_message_bitmaps(rom_data)
+            player_digits = iomoon_strings.player_number_bitmaps(rom_data)
+            score_digits = iomoon_strings.score_digit_bitmaps(rom_data)
 
     try:
         frames = parse_dump(args.dump)
@@ -521,7 +657,8 @@ def main():
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
                          'frames': len(scene),
-                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits),
+                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits,
+                                             hud_messages, player_digits, score_digits),
                          'repr_id': repr_id})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:
