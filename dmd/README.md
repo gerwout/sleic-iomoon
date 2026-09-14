@@ -312,6 +312,47 @@ own scenes under that label, per the method above.
   mark-placement bug, unfixed — its own `full-tilt` mark never has a frame
   attached at all in the committed `dmd/es/` corpus (zero rows in
   `screens.csv`), not just a misattributed one.
+- **The record-inscription (wheel-walk) screen decodes: `captured, not read`
+  is fixed for its header and player label, and confirmed against the ROM's
+  own stored strings, not just bitmap matching.** The header reads
+  `INSCRIPTION` (`INSCRIPCION` in Spanish); the label beside the entered
+  initials reads `PLAYER 1:` (`JUGADOR 1:`) — both found verbatim as
+  GLYPHS-encoded bytes in ROM1 at flat `0x10014`/`0x10021` (English) and
+  `0x30015`/`0x30021` (Spanish), a small table of `PLAYER 1:`/`PLAYER 2:`/
+  `PLAYER 3:`/`PLAYER 4:` label lines, not just inferred from partial glyph
+  matches. Both use the existing `h=9`/`h=12` faces; what was broken was the
+  matcher, not a missing font: it required every blank margin pixel to also
+  read blank on screen ("nonzero is lit"), which holds for a clean
+  service-menu screen (confirmed: `dmd/en/screens/5383-svc-1/repr.txt` has
+  no level-3 pixel anywhere, so that screen's own text genuinely needs
+  "nonzero is lit" to match) but not for this one, where the panel's
+  dithered background shows through the header's own blank margins at
+  level 1. `_scan_face` now tries "nonzero is lit" first and falls back to
+  "only level 3 is lit" on a miss, recovering both without ever replacing a
+  match the first rule already found — re-splitting both corpora with the
+  fix lost zero previously-decoded cells (checked directly, not assumed).
+
+  **Not fixed: the player-number digit's own last three letters
+  (`PLAYER`'s `Y`, `E`, `R`) render unreliably** — row 1 of each cell (the
+  glyph's own top row) is sometimes blank, sometimes lit but not matching
+  the stored glyph exactly, varying scene to scene with no pattern found
+  (not simply another binarization threshold: the missing pixels are
+  genuinely absent from the captured frame, not dimmed). The decoder
+  recovers `PLA` reliably and the rest inconsistently
+  (`PLAYE`/`PLAYER`/`PLA` depending on the scene); the full word is
+  confirmed from the ROM string above, not from any single frame's bitmap.
+  What would settle it: tracing the routine that draws this specific label
+  (not identified here) rather than more bitmap comparison.
+
+  **Also decoded, meaning not established:** the block beside the label
+  (`0I8M`-style, growing by one `h=12` character as the wheel is cycled)
+  matches the walked font table cleanly and exactly, character by
+  character, confirmed against the growing sequence across all 17
+  `wheel-c*` scenes — but what it represents (the entered initials
+  themselves, a candidate-history readout, something else) is not
+  established; the growth pattern does not cleanly map to three initial
+  slots (it reaches five characters), so it is reported as decoded rather
+  than interpreted.
 - **The mod's SPECIAL trampoline (`D5077`) is not exercised.** `PRESS START`
   appears three times in this corpus (the boot seed screen, the normal
   end-of-game hook at `D5123` twice — once per game below); reaching

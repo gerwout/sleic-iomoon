@@ -23,11 +23,11 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 22,attract,0022-attract,21499,21499,1,,3
 23,attract,0023-attract,21516,21533,2,,23
 24,attract,0024-attract,22383,22383,1,,3
-25,attract,0025-attract,22399,23599,16,5 0,25
+25,attract,0025-attract,22399,23599,16,50 00,25
 26,attract,0026-attract,24466,24466,1,,3
-27,attract,0027-attract,24499,25699,19,,27
+27,attract,0027-attract,24499,25699,19,00,27
 28,attract,0028-attract,26566,26566,1,,3
-29,attract,0029-attract,26599,26949,13,,29
+29,attract,0029-attract,26599,26949,13,00,29
 30,attract,0030-attract,27849,27849,1,,30
 31,attract,0031-attract,27866,36783,376,,8
 32,attract,0032-attract,36799,36799,1,,3
@@ -149,7 +149,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 148,ball-1-start,0148-ball-1-start,112633,112666,2,,148
 149,ball-1-start,0149-ball-1-start,112700,112700,1,,149
 150,ball-1-start,0150-ball-1-start,112716,112716,1,,3
-151,ball-1-start,0151-ball-1-start,112750,112750,1,JUGADOR BOLA,151
+151,ball-1-start,0151-ball-1-start,112750,112750,1,1 1 / JUGADOR BOLA,151
 152,ball-1-start,0152-ball-1-start,112800,112800,1,JUGADOR BOLA,152
 153,ball-1-start,0153-ball-1-start,112850,112916,3,JUGADOR BOLA,153
 154,ball-1-start,0154-ball-1-start,112966,112966,1,JUGADOR BOLA,154
@@ -198,7 +198,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 197,ball-1-in-play,0197-ball-1-in-play,115400,117683,46,,197
 198,ball-1-in-play,0198-ball-1-in-play,118216,118216,1,,3
 199,ball-1-in-play,0199-ball-1-in-play,118233,118733,2,,199
-200,ball-1-in-play,0200-ball-1-in-play,118766,119033,3,JUGADOR BOLA,200
+200,ball-1-in-play,0200-ball-1-in-play,118766,119033,3,1 1 / JUGADOR BOLA,200
 201,ball-1-in-play,0201-ball-1-in-play,119066,119066,1,,3
 202,ball-1-in-play,0202-ball-1-in-play,119083,119083,1,,202
 203,ball-1-in-play,0203-ball-1-in-play,119150,119533,8,,203
@@ -223,26 +223,26 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 222,ball-1-in-play,0222-ball-1-in-play,120550,120550,1,,13
 223,ball-1-in-play,0223-ball-1-in-play,120616,120616,1,,208
 224,ball-1-in-play,0224-ball-1-in-play,120666,120716,2,1 1 / JUGADOR BOLA,224
-225,ball-1-in-play,0225-ball-1-in-play,120750,127716,47,JUGADOR BOLA,225
+225,ball-1-in-play,0225-ball-1-in-play,120750,127716,47,1 1 / JUGADOR BOLA,225
 226,ball-1-in-play,0226-ball-1-in-play,127733,127733,1,,3
 227,ball-1-in-play,0227-ball-1-in-play,127750,129583,28,,227
 228,ball-1-in-play,0228-ball-1-in-play,129599,129599,1,,228
-229,ball-1-in-play,0229-ball-1-in-play,129616,130016,14,JUGADOR BOLA,229
+229,ball-1-in-play,0229-ball-1-in-play,129616,130016,14,1 1 / JUGADOR BOLA,229
 230,ball-1-in-play,0230-ball-1-in-play,130083,130083,1,,3
 231,ball-1-in-play,0231-ball-1-in-play,130099,131933,29,,231
 232,ball-1-in-play,0232-ball-1-in-play,131949,131949,1,1 1 / JUGADOR BOLA,232
 233,ball-1-in-play,0233-ball-1-in-play,131983,132399,9,,233
 234,ball-1-in-play,0234-ball-1-in-play,132416,132416,1,,3
 235,ball-1-in-play,0235-ball-1-in-play,132449,134266,27,,227
-236,ball-1-in-play,0236-ball-1-in-play,134299,134683,9,JUGADOR BOLA,236
+236,ball-1-in-play,0236-ball-1-in-play,134299,134683,9,1 1 / JUGADOR BOLA,236
 237,ball-1-in-play,0237-ball-1-in-play,134733,134733,1,,3
 238,ball-1-in-play,0238-ball-1-in-play,134766,136583,28,,227
 239,ball-1-in-play,0239-ball-1-in-play,136616,136616,1,1 1 / JUGADOR BOLA,232
-240,ball-1-in-play,0240-ball-1-in-play,136633,147316,124,JUGADOR BOLA,240
+240,ball-1-in-play,0240-ball-1-in-play,136633,147316,124,1 1 / JUGADOR BOLA,240
 241,ball-1-drained,0241-ball-1-drained,147499,148833,9,,241
 242,ball-1-drained,0242-ball-1-drained,148849,149949,3,,242
 243,ball-1-drained,0243-ball-1-drained,149966,151083,3,1 2 / JUGADOR BOLA,243
-244,ball-1-drained,0244-ball-1-drained,151116,151149,2,JUGADOR BOLA,244
+244,ball-1-drained,0244-ball-1-drained,151116,151149,2,1 2 / JUGADOR BOLA,244
 245,ball-1-drained,0245-ball-1-drained,151166,151283,3,JUGADOR BOLA,245
 246,ball-1-drained,0246-ball-1-drained,151333,151333,1,JUGADOR BOLA,246
 247,ball-1-drained,0247-ball-1-drained,151399,151399,1,JUGADOR BOLA,247
@@ -283,27 +283,27 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 282,ball-1-drained,0282-ball-1-drained,153433,153433,1,JUGADOR BOLA,282
 283,ball-1-drained,0283-ball-1-drained,153483,153499,2,JUGADOR BOLA,283
 284,ball-1-drained,0284-ball-1-drained,153549,153549,1,JUGADOR BOLA,284
-285,ball-1-drained,0285-ball-1-drained,153599,154266,20,JUGADOR BOLA,285
-286,ball-2-in-play,0286-ball-2-in-play,154316,156633,23,3. 8.743 / JUGADOR BOLA,286
-287,ball-2-in-play,0287-ball-2-in-play,156666,157483,18,JUGADOR BOLA,287
-288,ball-2-in-play,0288-ball-2-in-play,157516,157566,3,JUGADOR BOLA,288
-289,ball-2-in-play,0289-ball-2-in-play,157599,158433,23,JUGADOR BOLA,289
-290,ball-2-in-play,0290-ball-2-in-play,158466,159616,8,JUGADOR BOLA,290
-291,drop-bank-2-down,0291-drop-bank-2-down,159799,160716,7,JUGADOR BOLA,291
-292,drop-bank-2-down,0292-drop-bank-2-down,160749,161566,17,JUGADOR BOLA,292
-293,drop-bank-2-down,0293-drop-bank-2-down,161599,161916,6,3. 5. 8 / JUGADOR BOLA,293
-294,drop-bank-2-down,0294-drop-bank-2-down,161933,162699,16,JUGADOR BOLA,294
-295,drop-bank-2-down,0295-drop-bank-2-down,162766,162766,1,JUGADOR BOLA,295
-296,drop-bank-2-down,0296-drop-bank-2-down,162783,163949,10,JUGADOR BOLA,296
-297,drop-bank-4-down,0297-drop-bank-4-down,164149,165083,6,: 95 / JUGADOR BOLA,297
-298,drop-bank-4-down,0298-drop-bank-4-down,165099,165949,26,JUGADOR BOLA,298
-299,drop-bank-4-down,0299-drop-bank-4-down,165966,167116,7,JUGADOR BOLA,299
-300,drop-bank-5-down,0300-drop-bank-5-down,167316,171199,25,JUGADOR BOLA,300
+285,ball-1-drained,0285-ball-1-drained,153599,154266,20,1 2 / JUGADOR BOLA,285
+286,ball-2-in-play,0286-ball-2-in-play,154316,156633,23,3. 8.743 / 1 2 / JUGADOR BOLA,286
+287,ball-2-in-play,0287-ball-2-in-play,156666,157483,18,1 2 / JUGADOR BOLA,287
+288,ball-2-in-play,0288-ball-2-in-play,157516,157566,3,1 2 / JUGADOR BOLA,288
+289,ball-2-in-play,0289-ball-2-in-play,157599,158433,23,1 2 / JUGADOR BOLA,289
+290,ball-2-in-play,0290-ball-2-in-play,158466,159616,8,1 2 / JUGADOR BOLA,290
+291,drop-bank-2-down,0291-drop-bank-2-down,159799,160716,7,1 2 / JUGADOR BOLA,291
+292,drop-bank-2-down,0292-drop-bank-2-down,160749,161566,17,1 2 / JUGADOR BOLA,292
+293,drop-bank-2-down,0293-drop-bank-2-down,161599,161916,6,3. 5. 8 / 1 2 / JUGADOR BOLA,293
+294,drop-bank-2-down,0294-drop-bank-2-down,161933,162699,16,1 2 / JUGADOR BOLA,294
+295,drop-bank-2-down,0295-drop-bank-2-down,162766,162766,1,1 2 / JUGADOR BOLA,295
+296,drop-bank-2-down,0296-drop-bank-2-down,162783,163949,10,1 2 / JUGADOR BOLA,296
+297,drop-bank-4-down,0297-drop-bank-4-down,164149,165083,6,: 95 / 1 2 / JUGADOR BOLA,297
+298,drop-bank-4-down,0298-drop-bank-4-down,165099,165949,26,1 2 / JUGADOR BOLA,298
+299,drop-bank-4-down,0299-drop-bank-4-down,165966,167116,7,1 2 / JUGADOR BOLA,299
+300,drop-bank-5-down,0300-drop-bank-5-down,167316,171199,25,1 2 / JUGADOR BOLA,300
 301,full-tilt,0301-full-tilt,171366,171366,1,,3
 302,full-tilt,0302-full-tilt,171399,171399,1,,302
 303,ball-2-drained,0303-ball-2-drained,200849,200883,2,2,303
 304,ball-2-drained,0304-ball-2-drained,200916,202049,5,1 3 / JUGADOR BOLA,304
-305,ball-2-drained,0305-ball-2-drained,202083,202099,2,JUGADOR BOLA,305
+305,ball-2-drained,0305-ball-2-drained,202083,202099,2,1 3 / JUGADOR BOLA,305
 306,ball-2-drained,0306-ball-2-drained,202133,202233,3,JUGADOR BOLA,306
 307,ball-2-drained,0307-ball-2-drained,202299,202299,1,JUGADOR BOLA,307
 308,ball-2-drained,0308-ball-2-drained,202349,202349,1,JUGADOR BOLA,308
@@ -347,8 +347,8 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 346,ball-2-drained,0346-ball-2-drained,204549,204549,1,JUGADOR BOLA,346
 347,ball-2-drained,0347-ball-2-drained,204616,204616,1,JUGADOR BOLA,347
 348,ball-2-drained,0348-ball-2-drained,204666,204666,1,JUGADOR BOLA,348
-349,ball-2-drained,0349-ball-2-drained,204716,207316,29,JUGADOR BOLA,349
-350,ball-3-in-play,0350-ball-3-in-play,207499,221166,102,JUGADOR BOLA,350
+349,ball-2-drained,0349-ball-2-drained,204716,207316,29,1 3 / JUGADOR BOLA,349
+350,ball-3-in-play,0350-ball-3-in-play,207499,221166,102,1 3 / JUGADOR BOLA,350
 351,ball-3-in-play,0351-ball-3-in-play,221233,221783,3,,351
 352,ball-3-in-play,0352-ball-3-in-play,221799,222216,5,1 3 / JUGADOR BOLA,352
 353,ball-3-in-play,0353-ball-3-in-play,222399,222399,1,,3
@@ -357,11 +357,11 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 356,ball-3-in-play,0356-ball-3-in-play,224749,224749,1,,3
 357,ball-3-in-play,0357-ball-3-in-play,224783,226516,25,,357
 358,ball-3-in-play,0358-ball-3-in-play,226566,226566,1,,358
-359,ball-3-in-play,0359-ball-3-in-play,226599,227033,10,JUGADOR BOLA,359
+359,ball-3-in-play,0359-ball-3-in-play,226599,227033,10,1 3 / JUGADOR BOLA,359
 360,ball-3-in-play,0360-ball-3-in-play,227066,227066,1,,3
 361,ball-3-in-play,0361-ball-3-in-play,227083,228916,28,,227
 362,ball-3-in-play,0362-ball-3-in-play,228933,228933,1,1 3 / JUGADOR BOLA,362
-363,ball-3-in-play,0363-ball-3-in-play,228966,240999,137,JUGADOR BOLA,363
+363,ball-3-in-play,0363-ball-3-in-play,228966,240999,137,1 3 / JUGADOR BOLA,363
 364,ball-3-drained-gameover,0364-ball-3-drained-gameover,241183,241383,2,,364
 365,ball-3-drained-gameover,0365-ball-3-drained-gameover,241399,241849,2,,365
 366,ball-3-drained-gameover,0366-ball-3-drained-gameover,242516,242516,1,,366
@@ -390,11 +390,11 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 389,lottery,0389-lottery,280366,280366,1,,3
 390,lottery,0390-lottery,280399,280399,1,,23
 391,lottery,0391-lottery,281233,281233,1,,3
-392,lottery,0392-lottery,281266,282466,12,5 0,25
+392,lottery,0392-lottery,281266,282466,12,50 00,25
 393,lottery,0393-lottery,283333,283333,1,,3
-394,lottery,0394-lottery,283366,284549,12,,394
+394,lottery,0394-lottery,283366,284549,12,9 0,394
 395,lottery,0395-lottery,285433,285433,1,,3
-396,lottery,0396-lottery,285466,285833,18,,396
+396,lottery,0396-lottery,285466,285833,18,00,396
 397,lottery,0397-lottery,286699,286699,1,,3
 398,lottery,0398-lottery,286733,286733,1,,6
 399,lottery,0399-lottery,286783,288783,86,,399
@@ -499,9 +499,9 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 498,attract-again,0498-attract-again,371499,371499,1,,498
 499,attract-again,0499-attract-again,371516,371516,1,,3
 500,attract-again,0500-attract-again,371533,373599,13,,500
-501,attract-again,0501-attract-again,373616,374816,13,,394
+501,attract-again,0501-attract-again,373616,374816,13,9 0,394
 502,attract-again,0502-attract-again,375699,375699,1,,3
-503,attract-again,0503-attract-again,375716,376083,14,,396
+503,attract-again,0503-attract-again,375716,376083,14,00,396
 504,attract-again,0504-attract-again,376966,376966,1,,3
 505,attract-again,0505-attract-again,376999,376999,1,,6
 506,attract-again,0506-attract-again,377049,385916,385,,8
@@ -587,7 +587,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 586,score-ball-1-in-play,0586-score-ball-1-in-play,402399,402399,1,,13
 587,score-ball-1-in-play,0587-score-ball-1-in-play,402466,402466,1,,208
 588,score-ball-1-in-play,0588-score-ball-1-in-play,402516,402516,1,,588
-589,score-ball-1-in-play,0589-score-ball-1-in-play,402766,402766,1,JUGADOR BOLA,589
+589,score-ball-1-in-play,0589-score-ball-1-in-play,402766,402766,1,1 1 / JUGADOR BOLA,589
 590,score-ball-1-in-play,0590-score-ball-1-in-play,402783,402783,1,,3
 591,score-ball-1-in-play,0591-score-ball-1-in-play,402816,402816,1,,591
 592,score-ball-1-in-play,0592-score-ball-1-in-play,402933,402933,1,,592
@@ -599,7 +599,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 598,score-ball-1-in-play,0598-score-ball-1-in-play,403666,403816,4,,591
 599,score-ball-1-in-play,0599-score-ball-1-in-play,403933,403933,1,,592
 600,score-ball-1-in-play,0600-score-ball-1-in-play,404066,404066,1,,591
-601,score-ball-1-in-play,0601-score-ball-1-in-play,404116,408583,34,JUGADOR BOLA,601
+601,score-ball-1-in-play,0601-score-ball-1-in-play,404116,408583,34,1 1 / JUGADOR BOLA,601
 602,score-ball-1-in-play,0602-score-ball-1-in-play,408716,408716,1,,602
 603,score-ball-1-in-play,0603-score-ball-1-in-play,408749,408749,1,,3
 604,score-ball-1-in-play,0604-score-ball-1-in-play,408783,408783,1,,13
@@ -623,7 +623,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 622,score-ball-1-in-play,0622-score-ball-1-in-play,409783,409783,1,,576
 623,score-ball-1-in-play,0623-score-ball-1-in-play,409799,409799,1,,208
 624,score-ball-1-in-play,0624-score-ball-1-in-play,409849,409849,1,,624
-625,score-ball-1-in-play,0625-score-ball-1-in-play,410099,410099,1,JUGADOR BOLA,625
+625,score-ball-1-in-play,0625-score-ball-1-in-play,410099,410099,1,1 1 / JUGADOR BOLA,625
 626,score-ball-1-in-play,0626-score-ball-1-in-play,410133,410133,1,,3
 627,score-ball-1-in-play,0627-score-ball-1-in-play,410166,410166,1,,591
 628,score-ball-1-in-play,0628-score-ball-1-in-play,410266,410266,1,,592
@@ -636,7 +636,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 635,score-ball-1-in-play,0635-score-ball-1-in-play,411149,411149,1,,591
 636,score-ball-1-in-play,0636-score-ball-1-in-play,411249,411249,1,,592
 637,score-ball-1-in-play,0637-score-ball-1-in-play,411399,411399,1,,591
-638,score-ball-1-in-play,0638-score-ball-1-in-play,411449,415933,39,JUGADOR BOLA,638
+638,score-ball-1-in-play,0638-score-ball-1-in-play,411449,415933,39,1 1 / JUGADOR BOLA,638
 639,score-ball-1-in-play,0639-score-ball-1-in-play,416066,416066,1,,639
 640,score-ball-1-in-play,0640-score-ball-1-in-play,416083,416083,1,,13
 641,score-ball-1-in-play,0641-score-ball-1-in-play,416149,416149,1,,208
@@ -655,7 +655,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 654,score-ball-1-in-play,0654-score-ball-1-in-play,417049,417049,1,,13
 655,score-ball-1-in-play,0655-score-ball-1-in-play,417099,417099,1,,208
 656,score-ball-1-in-play,0656-score-ball-1-in-play,417166,417166,1,,624
-657,score-ball-1-in-play,0657-score-ball-1-in-play,417433,417433,1,JUGADOR BOLA,657
+657,score-ball-1-in-play,0657-score-ball-1-in-play,417433,417433,1,1 1 / JUGADOR BOLA,657
 658,score-ball-1-in-play,0658-score-ball-1-in-play,417466,417466,1,,3
 659,score-ball-1-in-play,0659-score-ball-1-in-play,417483,417499,2,,591
 660,score-ball-1-in-play,0660-score-ball-1-in-play,417599,417749,3,,591
@@ -667,7 +667,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 666,score-ball-1-in-play,0666-score-ball-1-in-play,418483,418483,1,,591
 667,score-ball-1-in-play,0667-score-ball-1-in-play,418599,418599,1,,592
 668,score-ball-1-in-play,0668-score-ball-1-in-play,418733,418733,1,,591
-669,score-ball-1-in-play,0669-score-ball-1-in-play,418766,423233,36,JUGADOR BOLA,669
+669,score-ball-1-in-play,0669-score-ball-1-in-play,418766,423233,36,1 1 / JUGADOR BOLA,669
 670,score-ball-1-in-play,0670-score-ball-1-in-play,423399,423399,1,,3
 671,score-ball-1-in-play,0671-score-ball-1-in-play,423416,423416,1,,13
 672,score-ball-1-in-play,0672-score-ball-1-in-play,423466,423483,2,,208
@@ -688,7 +688,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 687,score-ball-1-in-play,0687-score-ball-1-in-play,424399,424399,1,,13
 688,score-ball-1-in-play,0688-score-ball-1-in-play,424449,424449,1,,208
 689,score-ball-1-in-play,0689-score-ball-1-in-play,424499,424499,1,,624
-690,score-ball-1-in-play,0690-score-ball-1-in-play,424783,424783,1,JUGADOR BOLA,690
+690,score-ball-1-in-play,0690-score-ball-1-in-play,424783,424783,1,1 1 / JUGADOR BOLA,690
 691,score-ball-1-in-play,0691-score-ball-1-in-play,424799,424799,1,,3
 692,score-ball-1-in-play,0692-score-ball-1-in-play,424833,424833,1,,591
 693,score-ball-1-in-play,0693-score-ball-1-in-play,424933,424933,1,,592
@@ -700,7 +700,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 699,score-ball-1-in-play,0699-score-ball-1-in-play,425683,425833,4,,591
 700,score-ball-1-in-play,0700-score-ball-1-in-play,425933,425933,1,,592
 701,score-ball-1-in-play,0701-score-ball-1-in-play,426083,426083,1,,591
-702,score-ball-1-in-play,0702-score-ball-1-in-play,426099,430566,36,JUGADOR BOLA,702
+702,score-ball-1-in-play,0702-score-ball-1-in-play,426099,430566,36,1 1 / JUGADOR BOLA,702
 703,score-ball-1-in-play,0703-score-ball-1-in-play,430733,430733,1,,3
 704,score-ball-1-in-play,0704-score-ball-1-in-play,430766,430766,1,,13
 705,score-ball-1-in-play,0705-score-ball-1-in-play,430816,430816,1,,208
@@ -735,7 +735,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 734,score-ball-1-in-play,0734-score-ball-1-in-play,433166,433166,1,,591
 735,score-ball-1-in-play,0735-score-ball-1-in-play,433266,433266,1,,592
 736,score-ball-1-in-play,0736-score-ball-1-in-play,433399,433399,1,,591
-737,score-ball-1-in-play,0737-score-ball-1-in-play,433466,437933,34,JUGADOR BOLA,737
+737,score-ball-1-in-play,0737-score-ball-1-in-play,433466,437933,34,1 1 / JUGADOR BOLA,737
 738,score-ball-1-in-play,0738-score-ball-1-in-play,438083,438083,1,,3
 739,score-ball-1-in-play,0739-score-ball-1-in-play,438099,438099,1,,13
 740,score-ball-1-in-play,0740-score-ball-1-in-play,438166,438166,1,,208
@@ -765,7 +765,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 764,score-ball-1-in-play,0764-score-ball-1-in-play,440466,440466,1,,591
 765,score-ball-1-in-play,0765-score-ball-1-in-play,440583,440583,1,,592
 766,score-ball-1-in-play,0766-score-ball-1-in-play,440716,440716,1,,591
-767,score-ball-1-in-play,0767-score-ball-1-in-play,440783,445233,35,JUGADOR BOLA,767
+767,score-ball-1-in-play,0767-score-ball-1-in-play,440783,445233,35,1 1 / JUGADOR BOLA,767
 768,score-ball-1-in-play,0768-score-ball-1-in-play,445399,445399,1,,3
 769,score-ball-1-in-play,0769-score-ball-1-in-play,445433,445433,1,,13
 770,score-ball-1-in-play,0770-score-ball-1-in-play,445483,445499,2,,208
@@ -788,7 +788,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 787,score-ball-1-in-play,0787-score-ball-1-in-play,446399,446399,1,,13
 788,score-ball-1-in-play,0788-score-ball-1-in-play,446466,446466,1,,208
 789,score-ball-1-in-play,0789-score-ball-1-in-play,446516,446516,1,,624
-790,score-ball-1-in-play,0790-score-ball-1-in-play,446766,446766,1,JUGADOR BOLA,790
+790,score-ball-1-in-play,0790-score-ball-1-in-play,446766,446766,1,1 1 / JUGADOR BOLA,790
 791,score-ball-1-in-play,0791-score-ball-1-in-play,446783,446783,1,,3
 792,score-ball-1-in-play,0792-score-ball-1-in-play,446816,446816,1,,591
 793,score-ball-1-in-play,0793-score-ball-1-in-play,446933,446933,1,,592
@@ -800,7 +800,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 799,score-ball-1-in-play,0799-score-ball-1-in-play,447666,447816,4,,591
 800,score-ball-1-in-play,0800-score-ball-1-in-play,447933,447933,1,,592
 801,score-ball-1-in-play,0801-score-ball-1-in-play,448066,448116,2,,801
-802,score-ball-1-in-play,0802-score-ball-1-in-play,448149,452583,35,JUGADOR BOLA,802
+802,score-ball-1-in-play,0802-score-ball-1-in-play,448149,452583,35,1 1 / JUGADOR BOLA,802
 803,score-ball-1-in-play,0803-score-ball-1-in-play,452749,452749,1,,3
 804,score-ball-1-in-play,0804-score-ball-1-in-play,452783,452783,1,,13
 805,score-ball-1-in-play,0805-score-ball-1-in-play,452833,452833,1,,208
@@ -823,7 +823,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 822,score-ball-1-in-play,0822-score-ball-1-in-play,453783,453783,1,,777
 823,score-ball-1-in-play,0823-score-ball-1-in-play,453799,453799,1,,208
 824,score-ball-1-in-play,0824-score-ball-1-in-play,453849,453849,1,,624
-825,score-ball-1-in-play,0825-score-ball-1-in-play,454099,454099,1,JUGADOR BOLA,825
+825,score-ball-1-in-play,0825-score-ball-1-in-play,454099,454099,1,1 1 / JUGADOR BOLA,825
 826,score-ball-1-in-play,0826-score-ball-1-in-play,454133,454133,1,,3
 827,score-ball-1-in-play,0827-score-ball-1-in-play,454166,454166,1,,591
 828,score-ball-1-in-play,0828-score-ball-1-in-play,454266,454266,1,,592
@@ -836,7 +836,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 835,score-ball-1-in-play,0835-score-ball-1-in-play,455149,455149,1,,591
 836,score-ball-1-in-play,0836-score-ball-1-in-play,455249,455249,1,,592
 837,score-ball-1-in-play,0837-score-ball-1-in-play,455399,455399,1,,591
-838,score-ball-1-in-play,0838-score-ball-1-in-play,455449,459933,39,JUGADOR BOLA,838
+838,score-ball-1-in-play,0838-score-ball-1-in-play,455449,459933,39,1 1 / JUGADOR BOLA,838
 839,score-ball-1-in-play,0839-score-ball-1-in-play,460066,460066,1,,639
 840,score-ball-1-in-play,0840-score-ball-1-in-play,460083,460083,1,,13
 841,score-ball-1-in-play,0841-score-ball-1-in-play,460149,460149,1,,208
@@ -855,7 +855,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 854,score-ball-1-in-play,0854-score-ball-1-in-play,461049,461049,1,,13
 855,score-ball-1-in-play,0855-score-ball-1-in-play,461099,461099,1,,208
 856,score-ball-1-in-play,0856-score-ball-1-in-play,461166,461166,1,,624
-857,score-ball-1-in-play,0857-score-ball-1-in-play,461433,461433,1,JUGADOR BOLA,857
+857,score-ball-1-in-play,0857-score-ball-1-in-play,461433,461433,1,1 1 / JUGADOR BOLA,857
 858,score-ball-1-in-play,0858-score-ball-1-in-play,461466,461466,1,,3
 859,score-ball-1-in-play,0859-score-ball-1-in-play,461483,461499,2,,591
 860,score-ball-1-in-play,0860-score-ball-1-in-play,461599,461749,3,,591
@@ -867,7 +867,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 866,score-ball-1-in-play,0866-score-ball-1-in-play,462483,462483,1,,591
 867,score-ball-1-in-play,0867-score-ball-1-in-play,462599,462599,1,,592
 868,score-ball-1-in-play,0868-score-ball-1-in-play,462733,462733,1,,591
-869,score-ball-1-in-play,0869-score-ball-1-in-play,462766,467233,36,JUGADOR BOLA,869
+869,score-ball-1-in-play,0869-score-ball-1-in-play,462766,467233,36,1 1 / JUGADOR BOLA,869
 870,score-ball-1-in-play,0870-score-ball-1-in-play,467399,467399,1,,3
 871,score-ball-1-in-play,0871-score-ball-1-in-play,467416,467416,1,,13
 872,score-ball-1-in-play,0872-score-ball-1-in-play,467466,467483,2,,208
@@ -888,7 +888,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 887,score-ball-1-in-play,0887-score-ball-1-in-play,468399,468399,1,,13
 888,score-ball-1-in-play,0888-score-ball-1-in-play,468449,468449,1,,208
 889,score-ball-1-in-play,0889-score-ball-1-in-play,468499,468749,2,BOLA,889
-890,score-ball-1-in-play,0890-score-ball-1-in-play,468783,468783,1,JUGADOR BOLA,890
+890,score-ball-1-in-play,0890-score-ball-1-in-play,468783,468783,1,1 1 / JUGADOR BOLA,890
 891,score-ball-1-in-play,0891-score-ball-1-in-play,468799,468799,1,,3
 892,score-ball-1-in-play,0892-score-ball-1-in-play,468833,468833,1,,591
 893,score-ball-1-in-play,0893-score-ball-1-in-play,468933,468933,1,,592
@@ -900,7 +900,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 899,score-ball-1-in-play,0899-score-ball-1-in-play,469683,469833,4,,591
 900,score-ball-1-in-play,0900-score-ball-1-in-play,469933,469933,1,,592
 901,score-ball-1-in-play,0901-score-ball-1-in-play,470083,470083,1,,591
-902,score-ball-1-in-play,0902-score-ball-1-in-play,470099,474566,36,JUGADOR BOLA,902
+902,score-ball-1-in-play,0902-score-ball-1-in-play,470099,474566,36,1 1 / JUGADOR BOLA,902
 903,score-ball-1-in-play,0903-score-ball-1-in-play,474733,474733,1,,3
 904,score-ball-1-in-play,0904-score-ball-1-in-play,474766,474766,1,,13
 905,score-ball-1-in-play,0905-score-ball-1-in-play,474816,474816,1,,208
@@ -935,7 +935,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 934,score-ball-1-in-play,0934-score-ball-1-in-play,477166,477166,1,,591
 935,score-ball-1-in-play,0935-score-ball-1-in-play,477266,477266,1,,592
 936,score-ball-1-in-play,0936-score-ball-1-in-play,477399,477399,1,,591
-937,score-ball-1-in-play,0937-score-ball-1-in-play,477466,481933,35,JUGADOR BOLA,937
+937,score-ball-1-in-play,0937-score-ball-1-in-play,477466,481933,35,1 1 / JUGADOR BOLA,937
 938,score-ball-1-in-play,0938-score-ball-1-in-play,482083,482083,1,,3
 939,score-ball-1-in-play,0939-score-ball-1-in-play,482099,482099,1,,13
 940,score-ball-1-in-play,0940-score-ball-1-in-play,482166,482166,1,,208
@@ -965,7 +965,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 964,score-ball-1-in-play,0964-score-ball-1-in-play,484466,484466,1,,591
 965,score-ball-1-in-play,0965-score-ball-1-in-play,484583,484583,1,,592
 966,score-ball-1-in-play,0966-score-ball-1-in-play,484716,484716,1,,591
-967,score-ball-1-in-play,0967-score-ball-1-in-play,484783,489233,36,JUGADOR BOLA,967
+967,score-ball-1-in-play,0967-score-ball-1-in-play,484783,489233,36,1 1 / JUGADOR BOLA,967
 968,score-ball-1-in-play,0968-score-ball-1-in-play,489399,489399,1,,3
 969,score-ball-1-in-play,0969-score-ball-1-in-play,489433,489433,1,,13
 970,score-ball-1-in-play,0970-score-ball-1-in-play,489483,489499,2,,208
@@ -988,7 +988,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 987,score-ball-1-in-play,0987-score-ball-1-in-play,490399,490399,1,,13
 988,score-ball-1-in-play,0988-score-ball-1-in-play,490466,490466,1,,208
 989,score-ball-1-in-play,0989-score-ball-1-in-play,490516,490516,1,,624
-990,score-ball-1-in-play,0990-score-ball-1-in-play,490766,490766,1,JUGADOR BOLA,589
+990,score-ball-1-in-play,0990-score-ball-1-in-play,490766,490766,1,1 1 / JUGADOR BOLA,589
 991,score-ball-1-in-play,0991-score-ball-1-in-play,490783,490783,1,,3
 992,score-ball-1-in-play,0992-score-ball-1-in-play,490816,490816,1,,591
 993,score-ball-1-in-play,0993-score-ball-1-in-play,490933,490933,1,,592
@@ -1000,7 +1000,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 999,score-ball-1-in-play,0999-score-ball-1-in-play,491666,491816,4,,591
 1000,score-ball-1-in-play,1000-score-ball-1-in-play,491933,491933,1,,592
 1001,score-ball-1-in-play,1001-score-ball-1-in-play,492066,492066,1,,591
-1002,score-ball-1-in-play,1002-score-ball-1-in-play,492116,496583,34,JUGADOR BOLA,1002
+1002,score-ball-1-in-play,1002-score-ball-1-in-play,492116,496583,34,1 1 / JUGADOR BOLA,1002
 1003,score-ball-1-in-play,1003-score-ball-1-in-play,496716,496716,1,,1003
 1004,score-ball-1-in-play,1004-score-ball-1-in-play,496749,496749,1,,3
 1005,score-ball-1-in-play,1005-score-ball-1-in-play,496783,496783,1,,13
@@ -1024,7 +1024,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1023,score-ball-1-in-play,1023-score-ball-1-in-play,497783,497783,1,,576
 1024,score-ball-1-in-play,1024-score-ball-1-in-play,497799,497799,1,,208
 1025,score-ball-1-in-play,1025-score-ball-1-in-play,497849,497849,1,,624
-1026,score-ball-1-in-play,1026-score-ball-1-in-play,498099,498099,1,JUGADOR BOLA,857
+1026,score-ball-1-in-play,1026-score-ball-1-in-play,498099,498099,1,1 1 / JUGADOR BOLA,857
 1027,score-ball-1-in-play,1027-score-ball-1-in-play,498133,498133,1,,3
 1028,score-ball-1-in-play,1028-score-ball-1-in-play,498166,498166,1,,591
 1029,score-ball-1-in-play,1029-score-ball-1-in-play,498266,498266,1,,592
@@ -1037,7 +1037,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1036,score-ball-1-in-play,1036-score-ball-1-in-play,499149,499149,1,,591
 1037,score-ball-1-in-play,1037-score-ball-1-in-play,499249,499249,1,,592
 1038,score-ball-1-in-play,1038-score-ball-1-in-play,499399,499399,1,,591
-1039,score-ball-1-in-play,1039-score-ball-1-in-play,499449,503933,39,JUGADOR BOLA,1039
+1039,score-ball-1-in-play,1039-score-ball-1-in-play,499449,503933,39,1 1 / JUGADOR BOLA,1039
 1040,score-ball-1-in-play,1040-score-ball-1-in-play,504066,504066,1,,639
 1041,score-ball-1-in-play,1041-score-ball-1-in-play,504083,504083,1,,13
 1042,score-ball-1-in-play,1042-score-ball-1-in-play,504149,504149,1,,208
@@ -1056,7 +1056,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1055,score-ball-1-in-play,1055-score-ball-1-in-play,505049,505049,1,,13
 1056,score-ball-1-in-play,1056-score-ball-1-in-play,505099,505099,1,,208
 1057,score-ball-1-in-play,1057-score-ball-1-in-play,505166,505166,1,,624
-1058,score-ball-1-in-play,1058-score-ball-1-in-play,505433,505433,1,JUGADOR BOLA,825
+1058,score-ball-1-in-play,1058-score-ball-1-in-play,505433,505433,1,1 1 / JUGADOR BOLA,825
 1059,score-ball-1-in-play,1059-score-ball-1-in-play,505466,505466,1,,3
 1060,score-ball-1-in-play,1060-score-ball-1-in-play,505483,505499,2,,591
 1061,score-ball-1-in-play,1061-score-ball-1-in-play,505599,505749,3,,591
@@ -1068,7 +1068,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1067,score-ball-1-in-play,1067-score-ball-1-in-play,506483,506483,1,,591
 1068,score-ball-1-in-play,1068-score-ball-1-in-play,506599,506599,1,,592
 1069,score-ball-1-in-play,1069-score-ball-1-in-play,506733,506733,1,,591
-1070,score-ball-1-in-play,1070-score-ball-1-in-play,506766,511233,36,JUGADOR BOLA,1070
+1070,score-ball-1-in-play,1070-score-ball-1-in-play,506766,511233,36,1 1 / JUGADOR BOLA,1070
 1071,score-ball-1-in-play,1071-score-ball-1-in-play,511399,511399,1,,3
 1072,score-ball-1-in-play,1072-score-ball-1-in-play,511416,511416,1,,13
 1073,score-ball-1-in-play,1073-score-ball-1-in-play,511466,511483,2,,208
@@ -1089,7 +1089,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1088,score-ball-1-in-play,1088-score-ball-1-in-play,512399,512399,1,,13
 1089,score-ball-1-in-play,1089-score-ball-1-in-play,512449,512449,1,,208
 1090,score-ball-1-in-play,1090-score-ball-1-in-play,512499,512749,2,1 1 / JUGADOR BOLA,1090
-1091,score-ball-1-in-play,1091-score-ball-1-in-play,512783,512783,1,JUGADOR BOLA,1091
+1091,score-ball-1-in-play,1091-score-ball-1-in-play,512783,512783,1,1 1 / JUGADOR BOLA,1091
 1092,score-ball-1-in-play,1092-score-ball-1-in-play,512799,512799,1,,3
 1093,score-ball-1-in-play,1093-score-ball-1-in-play,512833,512833,1,,591
 1094,score-ball-1-in-play,1094-score-ball-1-in-play,512933,512933,1,,592
@@ -1101,7 +1101,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1100,score-ball-1-in-play,1100-score-ball-1-in-play,513683,513833,4,,591
 1101,score-ball-1-in-play,1101-score-ball-1-in-play,513933,513933,1,,592
 1102,score-ball-1-in-play,1102-score-ball-1-in-play,514083,514083,1,,591
-1103,score-ball-1-in-play,1103-score-ball-1-in-play,514099,518566,37,JUGADOR BOLA,1103
+1103,score-ball-1-in-play,1103-score-ball-1-in-play,514099,518566,37,1 1 / JUGADOR BOLA,1103
 1104,score-ball-1-in-play,1104-score-ball-1-in-play,518733,518733,1,,3
 1105,score-ball-1-in-play,1105-score-ball-1-in-play,518766,518766,1,,13
 1106,score-ball-1-in-play,1106-score-ball-1-in-play,518816,518816,1,,208
@@ -1136,7 +1136,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1135,score-ball-1-in-play,1135-score-ball-1-in-play,521166,521166,1,,591
 1136,score-ball-1-in-play,1136-score-ball-1-in-play,521266,521266,1,,592
 1137,score-ball-1-in-play,1137-score-ball-1-in-play,521399,521399,1,,591
-1138,score-ball-1-in-play,1138-score-ball-1-in-play,521466,525933,35,3 / JUGADOR BOLA,1138
+1138,score-ball-1-in-play,1138-score-ball-1-in-play,521466,525933,35,3 / 1 1 / JUGADOR BOLA,1138
 1139,score-ball-1-in-play,1139-score-ball-1-in-play,526083,526083,1,,3
 1140,score-ball-1-in-play,1140-score-ball-1-in-play,526099,526099,1,,13
 1141,score-ball-1-in-play,1141-score-ball-1-in-play,526166,526166,1,,208
@@ -1166,7 +1166,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1165,score-ball-1-in-play,1165-score-ball-1-in-play,528466,528466,1,,591
 1166,score-ball-1-in-play,1166-score-ball-1-in-play,528583,528583,1,,592
 1167,score-ball-1-in-play,1167-score-ball-1-in-play,528716,528716,1,,591
-1168,score-ball-1-in-play,1168-score-ball-1-in-play,528783,533233,38,3 / JUGADOR BOLA,1168
+1168,score-ball-1-in-play,1168-score-ball-1-in-play,528783,533233,38,3 / 1 1 / JUGADOR BOLA,1168
 1169,score-ball-1-in-play,1169-score-ball-1-in-play,533399,533399,1,,3
 1170,score-ball-1-in-play,1170-score-ball-1-in-play,533433,533433,1,,13
 1171,score-ball-1-in-play,1171-score-ball-1-in-play,533483,533499,2,,208
@@ -1189,7 +1189,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1188,score-ball-1-in-play,1188-score-ball-1-in-play,534399,534399,1,,13
 1189,score-ball-1-in-play,1189-score-ball-1-in-play,534466,534466,1,,208
 1190,score-ball-1-in-play,1190-score-ball-1-in-play,534516,534516,1,,624
-1191,score-ball-1-in-play,1191-score-ball-1-in-play,534766,534766,1,JUGADOR BOLA,1191
+1191,score-ball-1-in-play,1191-score-ball-1-in-play,534766,534766,1,1 1 / JUGADOR BOLA,1191
 1192,score-ball-1-in-play,1192-score-ball-1-in-play,534783,534783,1,,3
 1193,score-ball-1-in-play,1193-score-ball-1-in-play,534816,534816,1,,591
 1194,score-ball-1-in-play,1194-score-ball-1-in-play,534933,534933,1,,592
@@ -1201,7 +1201,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1200,score-ball-1-in-play,1200-score-ball-1-in-play,535666,535816,4,,591
 1201,score-ball-1-in-play,1201-score-ball-1-in-play,535933,535933,1,,592
 1202,score-ball-1-in-play,1202-score-ball-1-in-play,536066,536066,1,,591
-1203,score-ball-1-in-play,1203-score-ball-1-in-play,536116,540583,35,3 / JUGADOR BOLA,1203
+1203,score-ball-1-in-play,1203-score-ball-1-in-play,536116,540583,35,3 / 1 1 / JUGADOR BOLA,1203
 1204,score-ball-1-in-play,1204-score-ball-1-in-play,540716,540716,1,,1204
 1205,score-ball-1-in-play,1205-score-ball-1-in-play,540749,540749,1,,3
 1206,score-ball-1-in-play,1206-score-ball-1-in-play,540783,540783,1,,13
@@ -1225,7 +1225,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1224,score-ball-1-in-play,1224-score-ball-1-in-play,541783,541783,1,,576
 1225,score-ball-1-in-play,1225-score-ball-1-in-play,541799,541799,1,,208
 1226,score-ball-1-in-play,1226-score-ball-1-in-play,541849,541849,1,,624
-1227,score-ball-1-in-play,1227-score-ball-1-in-play,542099,542099,1,JUGADOR BOLA,1227
+1227,score-ball-1-in-play,1227-score-ball-1-in-play,542099,542099,1,1 1 / JUGADOR BOLA,1227
 1228,score-ball-1-in-play,1228-score-ball-1-in-play,542133,542133,1,,3
 1229,score-ball-1-in-play,1229-score-ball-1-in-play,542166,542166,1,,591
 1230,score-ball-1-in-play,1230-score-ball-1-in-play,542266,542266,1,,592
@@ -1239,7 +1239,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1238,score-ball-1-in-play,1238-score-ball-1-in-play,543249,543249,1,,592
 1239,score-ball-1-in-play,1239-score-ball-1-in-play,543399,543399,1,,591
 1240,score-ball-1-in-play,1240-score-ball-1-in-play,543416,543416,1,,3
-1241,score-ball-1-in-play,1241-score-ball-1-in-play,543449,547899,38,3 / JUGADOR BOLA,1241
+1241,score-ball-1-in-play,1241-score-ball-1-in-play,543449,547899,38,3 / 1 1 / JUGADOR BOLA,1241
 1242,score-ball-1-in-play,1242-score-ball-1-in-play,548066,548066,1,,3
 1243,score-ball-1-in-play,1243-score-ball-1-in-play,548083,548083,1,,13
 1244,score-ball-1-in-play,1244-score-ball-1-in-play,548149,548149,1,,208
@@ -1258,7 +1258,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1257,score-ball-1-in-play,1257-score-ball-1-in-play,549049,549049,1,,13
 1258,score-ball-1-in-play,1258-score-ball-1-in-play,549099,549099,1,,208
 1259,score-ball-1-in-play,1259-score-ball-1-in-play,549166,549166,1,,624
-1260,score-ball-1-in-play,1260-score-ball-1-in-play,549433,549433,1,JUGADOR BOLA,1260
+1260,score-ball-1-in-play,1260-score-ball-1-in-play,549433,549433,1,1 1 / JUGADOR BOLA,1260
 1261,score-ball-1-in-play,1261-score-ball-1-in-play,549466,549466,1,,3
 1262,score-ball-1-in-play,1262-score-ball-1-in-play,549483,549499,2,,591
 1263,score-ball-1-in-play,1263-score-ball-1-in-play,549599,549749,3,,591
@@ -1270,7 +1270,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1269,score-ball-1-in-play,1269-score-ball-1-in-play,550483,550483,1,,591
 1270,score-ball-1-in-play,1270-score-ball-1-in-play,550599,550599,1,,592
 1271,score-ball-1-in-play,1271-score-ball-1-in-play,550733,550733,1,,591
-1272,score-ball-1-in-play,1272-score-ball-1-in-play,550783,555249,36,3 / JUGADOR BOLA,1272
+1272,score-ball-1-in-play,1272-score-ball-1-in-play,550783,555249,36,3 / 1 1 / JUGADOR BOLA,1272
 1273,score-ball-1-in-play,1273-score-ball-1-in-play,555399,555399,1,,3
 1274,score-ball-1-in-play,1274-score-ball-1-in-play,555416,555416,1,,13
 1275,score-ball-1-in-play,1275-score-ball-1-in-play,555466,555483,2,,208
@@ -1291,7 +1291,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1290,score-ball-1-in-play,1290-score-ball-1-in-play,556399,556399,1,,13
 1291,score-ball-1-in-play,1291-score-ball-1-in-play,556449,556449,1,,208
 1292,score-ball-1-in-play,1292-score-ball-1-in-play,556499,556749,2,JUGADOR BOLA,1292
-1293,score-ball-1-in-play,1293-score-ball-1-in-play,556783,556783,1,JUGADOR BOLA,1293
+1293,score-ball-1-in-play,1293-score-ball-1-in-play,556783,556783,1,1 1 / JUGADOR BOLA,1293
 1294,score-ball-1-in-play,1294-score-ball-1-in-play,556799,556799,1,,3
 1295,score-ball-1-in-play,1295-score-ball-1-in-play,556833,556833,1,,591
 1296,score-ball-1-in-play,1296-score-ball-1-in-play,556933,556933,1,,592
@@ -1303,7 +1303,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1302,score-ball-1-in-play,1302-score-ball-1-in-play,557683,557833,4,,591
 1303,score-ball-1-in-play,1303-score-ball-1-in-play,557933,557933,1,,592
 1304,score-ball-1-in-play,1304-score-ball-1-in-play,558083,558083,1,,591
-1305,score-ball-1-in-play,1305-score-ball-1-in-play,558133,562599,34,3 / JUGADOR BOLA,1305
+1305,score-ball-1-in-play,1305-score-ball-1-in-play,558133,562599,34,3 / 1 1 / JUGADOR BOLA,1305
 1306,score-ball-1-in-play,1306-score-ball-1-in-play,562733,562733,1,,3
 1307,score-ball-1-in-play,1307-score-ball-1-in-play,562766,562766,1,,13
 1308,score-ball-1-in-play,1308-score-ball-1-in-play,562816,562816,1,,208
@@ -1338,7 +1338,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1337,score-ball-1-in-play,1337-score-ball-1-in-play,565166,565166,1,,591
 1338,score-ball-1-in-play,1338-score-ball-1-in-play,565266,565266,1,,592
 1339,score-ball-1-in-play,1339-score-ball-1-in-play,565399,565399,1,,591
-1340,score-ball-1-in-play,1340-score-ball-1-in-play,565466,569933,36,JUGADOR BOLA,1340
+1340,score-ball-1-in-play,1340-score-ball-1-in-play,565466,569933,36,1 1 / JUGADOR BOLA,1340
 1341,score-ball-1-in-play,1341-score-ball-1-in-play,570083,570083,1,,3
 1342,score-ball-1-in-play,1342-score-ball-1-in-play,570099,570099,1,,13
 1343,score-ball-1-in-play,1343-score-ball-1-in-play,570166,570166,1,,208
@@ -1368,7 +1368,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1367,score-ball-1-in-play,1367-score-ball-1-in-play,572466,572466,1,,591
 1368,score-ball-1-in-play,1368-score-ball-1-in-play,572583,572583,1,,592
 1369,score-ball-1-in-play,1369-score-ball-1-in-play,572716,572716,1,,591
-1370,score-ball-1-in-play,1370-score-ball-1-in-play,572783,577233,36,JUGADOR BOLA,1370
+1370,score-ball-1-in-play,1370-score-ball-1-in-play,572783,577233,36,1 1 / JUGADOR BOLA,1370
 1371,score-ball-1-in-play,1371-score-ball-1-in-play,577399,577399,1,,3
 1372,score-ball-1-in-play,1372-score-ball-1-in-play,577433,577433,1,,13
 1373,score-ball-1-in-play,1373-score-ball-1-in-play,577483,577499,2,,208
@@ -1391,7 +1391,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1390,score-ball-1-in-play,1390-score-ball-1-in-play,578399,578399,1,,13
 1391,score-ball-1-in-play,1391-score-ball-1-in-play,578466,578466,1,,208
 1392,score-ball-1-in-play,1392-score-ball-1-in-play,578516,578516,1,,624
-1393,score-ball-1-in-play,1393-score-ball-1-in-play,578766,578766,1,JUGADOR BOLA,1393
+1393,score-ball-1-in-play,1393-score-ball-1-in-play,578766,578766,1,1 1 / JUGADOR BOLA,1393
 1394,score-ball-1-in-play,1394-score-ball-1-in-play,578783,578783,1,,3
 1395,score-ball-1-in-play,1395-score-ball-1-in-play,578816,578816,1,,591
 1396,score-ball-1-in-play,1396-score-ball-1-in-play,578933,578933,1,,592
@@ -1403,7 +1403,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1402,score-ball-1-in-play,1402-score-ball-1-in-play,579666,579816,4,,591
 1403,score-ball-1-in-play,1403-score-ball-1-in-play,579933,579933,1,,592
 1404,score-ball-1-in-play,1404-score-ball-1-in-play,580066,580066,1,,591
-1405,score-ball-1-in-play,1405-score-ball-1-in-play,580116,584583,36,JUGADOR BOLA,1405
+1405,score-ball-1-in-play,1405-score-ball-1-in-play,580116,584583,36,1 1 / JUGADOR BOLA,1405
 1406,score-ball-1-in-play,1406-score-ball-1-in-play,584716,584716,1,,1406
 1407,score-ball-1-in-play,1407-score-ball-1-in-play,584749,584749,1,,3
 1408,score-ball-1-in-play,1408-score-ball-1-in-play,584783,584783,1,,13
@@ -1427,7 +1427,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1426,score-ball-1-in-play,1426-score-ball-1-in-play,585783,585783,1,,777
 1427,score-ball-1-in-play,1427-score-ball-1-in-play,585799,585799,1,,208
 1428,score-ball-1-in-play,1428-score-ball-1-in-play,585849,585849,1,,624
-1429,score-ball-1-in-play,1429-score-ball-1-in-play,586099,586099,1,JUGADOR BOLA,857
+1429,score-ball-1-in-play,1429-score-ball-1-in-play,586099,586099,1,1 1 / JUGADOR BOLA,857
 1430,score-ball-1-in-play,1430-score-ball-1-in-play,586133,586133,1,,3
 1431,score-ball-1-in-play,1431-score-ball-1-in-play,586166,586166,1,,591
 1432,score-ball-1-in-play,1432-score-ball-1-in-play,586266,586266,1,,592
@@ -1441,7 +1441,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1440,score-ball-1-in-play,1440-score-ball-1-in-play,587249,587249,1,,592
 1441,score-ball-1-in-play,1441-score-ball-1-in-play,587399,587399,1,,591
 1442,score-ball-1-in-play,1442-score-ball-1-in-play,587416,587416,1,,3
-1443,score-ball-1-in-play,1443-score-ball-1-in-play,587449,591899,37,JUGADOR BOLA,1443
+1443,score-ball-1-in-play,1443-score-ball-1-in-play,587449,591899,37,1 1 / JUGADOR BOLA,1443
 1444,score-ball-1-in-play,1444-score-ball-1-in-play,592066,592066,1,,1444
 1445,score-ball-1-in-play,1445-score-ball-1-in-play,592083,592083,1,,13
 1446,score-ball-1-in-play,1446-score-ball-1-in-play,592149,592149,1,,208
@@ -1460,7 +1460,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1459,score-ball-1-in-play,1459-score-ball-1-in-play,593049,593049,1,,13
 1460,score-ball-1-in-play,1460-score-ball-1-in-play,593099,593099,1,,208
 1461,score-ball-1-in-play,1461-score-ball-1-in-play,593166,593166,1,,624
-1462,score-ball-1-in-play,1462-score-ball-1-in-play,593433,593433,1,JUGADOR BOLA,1260
+1462,score-ball-1-in-play,1462-score-ball-1-in-play,593433,593433,1,1 1 / JUGADOR BOLA,1260
 1463,score-ball-1-in-play,1463-score-ball-1-in-play,593466,593466,1,,3
 1464,score-ball-1-in-play,1464-score-ball-1-in-play,593483,593499,2,,591
 1465,score-ball-1-in-play,1465-score-ball-1-in-play,593599,593749,3,,591
@@ -1472,7 +1472,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1471,score-ball-1-in-play,1471-score-ball-1-in-play,594483,594483,1,,591
 1472,score-ball-1-in-play,1472-score-ball-1-in-play,594599,594599,1,,592
 1473,score-ball-1-in-play,1473-score-ball-1-in-play,594733,594733,1,,591
-1474,score-ball-1-in-play,1474-score-ball-1-in-play,594783,599249,35,JUGADOR BOLA,1474
+1474,score-ball-1-in-play,1474-score-ball-1-in-play,594783,599249,35,1 1 / JUGADOR BOLA,1474
 1475,score-ball-1-in-play,1475-score-ball-1-in-play,599399,599399,1,,3
 1476,score-ball-1-in-play,1476-score-ball-1-in-play,599416,599416,1,,13
 1477,score-ball-1-in-play,1477-score-ball-1-in-play,599466,599483,2,,208
@@ -1493,7 +1493,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1492,score-ball-1-in-play,1492-score-ball-1-in-play,600399,600399,1,,13
 1493,score-ball-1-in-play,1493-score-ball-1-in-play,600449,600449,1,,208
 1494,score-ball-1-in-play,1494-score-ball-1-in-play,600499,600499,1,,624
-1495,score-ball-1-in-play,1495-score-ball-1-in-play,600783,600783,1,JUGADOR BOLA,1495
+1495,score-ball-1-in-play,1495-score-ball-1-in-play,600783,600783,1,1 1 / JUGADOR BOLA,1495
 1496,score-ball-1-in-play,1496-score-ball-1-in-play,600799,600799,1,,3
 1497,score-ball-1-in-play,1497-score-ball-1-in-play,600833,600833,1,,591
 1498,score-ball-1-in-play,1498-score-ball-1-in-play,600933,600933,1,,592
@@ -1505,7 +1505,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1504,score-ball-1-in-play,1504-score-ball-1-in-play,601683,601833,4,,591
 1505,score-ball-1-in-play,1505-score-ball-1-in-play,601933,601933,1,,592
 1506,score-ball-1-in-play,1506-score-ball-1-in-play,602083,602083,1,,591
-1507,score-ball-1-in-play,1507-score-ball-1-in-play,602133,606599,35,JUGADOR BOLA,1507
+1507,score-ball-1-in-play,1507-score-ball-1-in-play,602133,606599,35,1 1 / JUGADOR BOLA,1507
 1508,score-ball-1-in-play,1508-score-ball-1-in-play,606733,606733,1,,3
 1509,score-ball-1-in-play,1509-score-ball-1-in-play,606766,606766,1,,13
 1510,score-ball-1-in-play,1510-score-ball-1-in-play,606816,606816,1,,208
@@ -1539,7 +1539,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1538,score-ball-1-in-play,1538-score-ball-1-in-play,609133,609133,1,,591
 1539,score-ball-1-in-play,1539-score-ball-1-in-play,609233,609233,1,,592
 1540,score-ball-1-in-play,1540-score-ball-1-in-play,609383,609383,1,,591
-1541,score-ball-1-in-play,1541-score-ball-1-in-play,609399,613883,39,JUGADOR BOLA,1541
+1541,score-ball-1-in-play,1541-score-ball-1-in-play,609399,613883,39,1 1 / JUGADOR BOLA,1541
 1542,score-ball-1-in-play,1542-score-ball-1-in-play,614083,614083,1,,3
 1543,score-ball-1-in-play,1543-score-ball-1-in-play,614099,614099,1,,13
 1544,score-ball-1-in-play,1544-score-ball-1-in-play,614166,614166,1,,208
@@ -1569,7 +1569,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1568,score-ball-1-in-play,1568-score-ball-1-in-play,616466,616466,1,,591
 1569,score-ball-1-in-play,1569-score-ball-1-in-play,616583,616583,1,,592
 1570,score-ball-1-in-play,1570-score-ball-1-in-play,616716,616716,1,,591
-1571,score-ball-1-in-play,1571-score-ball-1-in-play,616749,621216,34,JUGADOR BOLA,1571
+1571,score-ball-1-in-play,1571-score-ball-1-in-play,616749,621216,34,1 1 / JUGADOR BOLA,1571
 1572,score-ball-1-in-play,1572-score-ball-1-in-play,621399,621399,1,,3
 1573,score-ball-1-in-play,1573-score-ball-1-in-play,621433,621433,1,,13
 1574,score-ball-1-in-play,1574-score-ball-1-in-play,621483,621499,2,,208
@@ -1592,7 +1592,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1591,score-ball-1-in-play,1591-score-ball-1-in-play,622399,622399,1,,13
 1592,score-ball-1-in-play,1592-score-ball-1-in-play,622466,622466,1,,208
 1593,score-ball-1-in-play,1593-score-ball-1-in-play,622516,622516,1,,624
-1594,score-ball-1-in-play,1594-score-ball-1-in-play,622766,622766,1,JUGADOR BOLA,1594
+1594,score-ball-1-in-play,1594-score-ball-1-in-play,622766,622766,1,1 1 / JUGADOR BOLA,1594
 1595,score-ball-1-in-play,1595-score-ball-1-in-play,622783,622783,1,,3
 1596,score-ball-1-in-play,1596-score-ball-1-in-play,622816,622816,1,,591
 1597,score-ball-1-in-play,1597-score-ball-1-in-play,622933,622933,1,,592
@@ -1605,7 +1605,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1604,score-ball-1-in-play,1604-score-ball-1-in-play,623933,623933,1,,592
 1605,score-ball-1-in-play,1605-score-ball-1-in-play,624066,624066,1,,591
 1606,score-ball-1-in-play,1606-score-ball-1-in-play,624083,624083,1,1 1 / JUGADOR BOLA,232
-1607,score-ball-1-in-play,1607-score-ball-1-in-play,624116,628549,31,JUGADOR BOLA,1607
+1607,score-ball-1-in-play,1607-score-ball-1-in-play,624116,628549,31,1 1 / JUGADOR BOLA,1607
 1608,score-ball-1-in-play,1608-score-ball-1-in-play,628749,628749,1,,3
 1609,score-ball-1-in-play,1609-score-ball-1-in-play,628783,628783,1,,13
 1610,score-ball-1-in-play,1610-score-ball-1-in-play,628833,628833,1,,208
@@ -1628,7 +1628,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1627,score-ball-1-in-play,1627-score-ball-1-in-play,629783,629783,1,,576
 1628,score-ball-1-in-play,1628-score-ball-1-in-play,629799,629799,1,,208
 1629,score-ball-1-in-play,1629-score-ball-1-in-play,629849,629849,1,,624
-1630,score-ball-1-in-play,1630-score-ball-1-in-play,630099,630099,1,JUGADOR BOLA,1630
+1630,score-ball-1-in-play,1630-score-ball-1-in-play,630099,630099,1,1 1 / JUGADOR BOLA,1630
 1631,score-ball-1-in-play,1631-score-ball-1-in-play,630133,630133,1,,3
 1632,score-ball-1-in-play,1632-score-ball-1-in-play,630166,630166,1,,591
 1633,score-ball-1-in-play,1633-score-ball-1-in-play,630266,630266,1,,592
@@ -1641,7 +1641,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1640,score-ball-1-in-play,1640-score-ball-1-in-play,631149,631149,1,,591
 1641,score-ball-1-in-play,1641-score-ball-1-in-play,631249,631249,1,,592
 1642,score-ball-1-in-play,1642-score-ball-1-in-play,631399,631399,1,,591
-1643,score-ball-1-in-play,1643-score-ball-1-in-play,631449,635933,39,JUGADOR BOLA,1643
+1643,score-ball-1-in-play,1643-score-ball-1-in-play,631449,635933,39,1 1 / JUGADOR BOLA,1643
 1644,score-ball-1-in-play,1644-score-ball-1-in-play,636066,636066,1,,1644
 1645,score-ball-1-in-play,1645-score-ball-1-in-play,636083,636083,1,,13
 1646,score-ball-1-in-play,1646-score-ball-1-in-play,636149,636149,1,,208
@@ -1660,7 +1660,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1659,score-ball-1-in-play,1659-score-ball-1-in-play,637049,637049,1,,13
 1660,score-ball-1-in-play,1660-score-ball-1-in-play,637099,637099,1,,208
 1661,score-ball-1-in-play,1661-score-ball-1-in-play,637166,637166,1,,624
-1662,score-ball-1-in-play,1662-score-ball-1-in-play,637433,637433,1,JUGADOR BOLA,1630
+1662,score-ball-1-in-play,1662-score-ball-1-in-play,637433,637433,1,1 1 / JUGADOR BOLA,1630
 1663,score-ball-1-in-play,1663-score-ball-1-in-play,637466,637466,1,,3
 1664,score-ball-1-in-play,1664-score-ball-1-in-play,637483,637499,2,,591
 1665,score-ball-1-in-play,1665-score-ball-1-in-play,637599,637749,3,,591
@@ -1672,7 +1672,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1671,score-ball-1-in-play,1671-score-ball-1-in-play,638483,638483,1,,591
 1672,score-ball-1-in-play,1672-score-ball-1-in-play,638599,638599,1,,592
 1673,score-ball-1-in-play,1673-score-ball-1-in-play,638733,638733,1,,591
-1674,score-ball-1-in-play,1674-score-ball-1-in-play,638783,643249,35,JUGADOR BOLA,1674
+1674,score-ball-1-in-play,1674-score-ball-1-in-play,638783,643249,35,1 1 / JUGADOR BOLA,1674
 1675,score-ball-1-in-play,1675-score-ball-1-in-play,643399,643399,1,,3
 1676,score-ball-1-in-play,1676-score-ball-1-in-play,643416,643416,1,,13
 1677,score-ball-1-in-play,1677-score-ball-1-in-play,643466,643483,2,,208
@@ -1693,7 +1693,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1692,score-ball-1-in-play,1692-score-ball-1-in-play,644399,644399,1,,13
 1693,score-ball-1-in-play,1693-score-ball-1-in-play,644449,644449,1,,208
 1694,score-ball-1-in-play,1694-score-ball-1-in-play,644499,644749,2,BOLA,1694
-1695,score-ball-1-in-play,1695-score-ball-1-in-play,644783,644783,1,JUGADOR BOLA,1695
+1695,score-ball-1-in-play,1695-score-ball-1-in-play,644783,644783,1,1 1 / JUGADOR BOLA,1695
 1696,score-ball-1-in-play,1696-score-ball-1-in-play,644799,644799,1,,3
 1697,score-ball-1-in-play,1697-score-ball-1-in-play,644833,644833,1,,591
 1698,score-ball-1-in-play,1698-score-ball-1-in-play,644933,644933,1,,592
@@ -1705,7 +1705,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1704,score-ball-1-in-play,1704-score-ball-1-in-play,645683,645833,4,,591
 1705,score-ball-1-in-play,1705-score-ball-1-in-play,645933,645933,1,,592
 1706,score-ball-1-in-play,1706-score-ball-1-in-play,646083,646083,1,,591
-1707,score-ball-1-in-play,1707-score-ball-1-in-play,646099,650566,36,JUGADOR BOLA,1707
+1707,score-ball-1-in-play,1707-score-ball-1-in-play,646099,650566,36,1 1 / JUGADOR BOLA,1707
 1708,score-ball-1-in-play,1708-score-ball-1-in-play,650733,650733,1,,3
 1709,score-ball-1-in-play,1709-score-ball-1-in-play,650766,650766,1,,13
 1710,score-ball-1-in-play,1710-score-ball-1-in-play,650816,650816,1,,208
@@ -1740,7 +1740,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1739,score-ball-1-in-play,1739-score-ball-1-in-play,653166,653166,1,,591
 1740,score-ball-1-in-play,1740-score-ball-1-in-play,653266,653266,1,,592
 1741,score-ball-1-in-play,1741-score-ball-1-in-play,653399,653399,1,,591
-1742,score-ball-1-in-play,1742-score-ball-1-in-play,653466,657933,34,JUGADOR BOLA,1742
+1742,score-ball-1-in-play,1742-score-ball-1-in-play,653466,657933,34,1 1 / JUGADOR BOLA,1742
 1743,score-ball-1-in-play,1743-score-ball-1-in-play,658083,658083,1,,3
 1744,score-ball-1-in-play,1744-score-ball-1-in-play,658099,658099,1,,13
 1745,score-ball-1-in-play,1745-score-ball-1-in-play,658166,658166,1,,208
@@ -1770,7 +1770,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1769,score-ball-1-in-play,1769-score-ball-1-in-play,660466,660466,1,,591
 1770,score-ball-1-in-play,1770-score-ball-1-in-play,660583,660583,1,,592
 1771,score-ball-1-in-play,1771-score-ball-1-in-play,660716,660716,1,,591
-1772,score-ball-1-in-play,1772-score-ball-1-in-play,660783,665233,36,JUGADOR BOLA,1772
+1772,score-ball-1-in-play,1772-score-ball-1-in-play,660783,665233,36,1 1 / JUGADOR BOLA,1772
 1773,score-ball-1-in-play,1773-score-ball-1-in-play,665399,665399,1,,3
 1774,score-ball-1-in-play,1774-score-ball-1-in-play,665433,665433,1,,13
 1775,score-ball-1-in-play,1775-score-ball-1-in-play,665483,665499,2,,208
@@ -1793,7 +1793,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1792,score-ball-1-in-play,1792-score-ball-1-in-play,666399,666399,1,,13
 1793,score-ball-1-in-play,1793-score-ball-1-in-play,666466,666466,1,,208
 1794,score-ball-1-in-play,1794-score-ball-1-in-play,666516,666516,1,,624
-1795,score-ball-1-in-play,1795-score-ball-1-in-play,666766,666766,1,JUGADOR BOLA,790
+1795,score-ball-1-in-play,1795-score-ball-1-in-play,666766,666766,1,1 1 / JUGADOR BOLA,790
 1796,score-ball-1-in-play,1796-score-ball-1-in-play,666783,666783,1,,3
 1797,score-ball-1-in-play,1797-score-ball-1-in-play,666816,666816,1,,591
 1798,score-ball-1-in-play,1798-score-ball-1-in-play,666933,666933,1,,592
@@ -1805,7 +1805,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1804,score-ball-1-in-play,1804-score-ball-1-in-play,667666,667816,4,,591
 1805,score-ball-1-in-play,1805-score-ball-1-in-play,667933,667933,1,,592
 1806,score-ball-1-in-play,1806-score-ball-1-in-play,668066,668066,1,,591
-1807,score-ball-1-in-play,1807-score-ball-1-in-play,668083,672549,32,JUGADOR BOLA,1807
+1807,score-ball-1-in-play,1807-score-ball-1-in-play,668083,672549,32,1 1 / JUGADOR BOLA,1807
 1808,score-ball-1-in-play,1808-score-ball-1-in-play,672716,672716,1,,1808
 1809,score-ball-1-in-play,1809-score-ball-1-in-play,672749,672749,1,,3
 1810,score-ball-1-in-play,1810-score-ball-1-in-play,672783,672783,1,,13
@@ -1829,7 +1829,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1828,score-ball-1-in-play,1828-score-ball-1-in-play,673783,673783,1,,576
 1829,score-ball-1-in-play,1829-score-ball-1-in-play,673799,673799,1,,208
 1830,score-ball-1-in-play,1830-score-ball-1-in-play,673849,673849,1,,624
-1831,score-ball-1-in-play,1831-score-ball-1-in-play,674099,674099,1,JUGADOR BOLA,1260
+1831,score-ball-1-in-play,1831-score-ball-1-in-play,674099,674099,1,1 1 / JUGADOR BOLA,1260
 1832,score-ball-1-in-play,1832-score-ball-1-in-play,674133,674133,1,,3
 1833,score-ball-1-in-play,1833-score-ball-1-in-play,674166,674166,1,,591
 1834,score-ball-1-in-play,1834-score-ball-1-in-play,674266,674266,1,,592
@@ -1842,7 +1842,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1841,score-ball-1-in-play,1841-score-ball-1-in-play,675149,675149,1,,591
 1842,score-ball-1-in-play,1842-score-ball-1-in-play,675249,675249,1,,592
 1843,score-ball-1-in-play,1843-score-ball-1-in-play,675399,675449,2,,1843
-1844,score-ball-1-in-play,1844-score-ball-1-in-play,675466,679933,39,JUGADOR BOLA,1844
+1844,score-ball-1-in-play,1844-score-ball-1-in-play,675466,679933,39,1 1 / JUGADOR BOLA,1844
 1845,score-ball-1-in-play,1845-score-ball-1-in-play,680066,680066,1,,1845
 1846,score-ball-1-in-play,1846-score-ball-1-in-play,680083,680083,1,,3
 1847,score-ball-1-in-play,1847-score-ball-1-in-play,680116,680116,1,,13
@@ -1862,7 +1862,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1861,score-ball-1-in-play,1861-score-ball-1-in-play,681083,681083,1,,13
 1862,score-ball-1-in-play,1862-score-ball-1-in-play,681133,681133,1,,208
 1863,score-ball-1-in-play,1863-score-ball-1-in-play,681183,681183,1,,624
-1864,score-ball-1-in-play,1864-score-ball-1-in-play,681433,681433,1,JUGADOR BOLA,1864
+1864,score-ball-1-in-play,1864-score-ball-1-in-play,681433,681433,1,1 1 / JUGADOR BOLA,1864
 1865,score-ball-1-in-play,1865-score-ball-1-in-play,681466,681466,1,,3
 1866,score-ball-1-in-play,1866-score-ball-1-in-play,681483,681499,2,,591
 1867,score-ball-1-in-play,1867-score-ball-1-in-play,681599,681749,3,,591
@@ -1874,7 +1874,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1873,score-ball-1-in-play,1873-score-ball-1-in-play,682483,682483,1,,591
 1874,score-ball-1-in-play,1874-score-ball-1-in-play,682599,682599,1,,592
 1875,score-ball-1-in-play,1875-score-ball-1-in-play,682733,682733,1,,591
-1876,score-ball-1-in-play,1876-score-ball-1-in-play,682783,687249,34,JUGADOR BOLA,1876
+1876,score-ball-1-in-play,1876-score-ball-1-in-play,682783,687249,34,1 1 / JUGADOR BOLA,1876
 1877,score-ball-1-in-play,1877-score-ball-1-in-play,687399,687399,1,,3
 1878,score-ball-1-in-play,1878-score-ball-1-in-play,687416,687416,1,,13
 1879,score-ball-1-in-play,1879-score-ball-1-in-play,687466,687483,2,,208
@@ -1895,7 +1895,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1894,score-ball-1-in-play,1894-score-ball-1-in-play,688399,688399,1,,13
 1895,score-ball-1-in-play,1895-score-ball-1-in-play,688449,688449,1,,208
 1896,score-ball-1-in-play,1896-score-ball-1-in-play,688499,688749,2,JUGADOR BOLA,1292
-1897,score-ball-1-in-play,1897-score-ball-1-in-play,688783,688783,1,JUGADOR BOLA,1897
+1897,score-ball-1-in-play,1897-score-ball-1-in-play,688783,688783,1,1 1 / JUGADOR BOLA,1897
 1898,score-ball-1-in-play,1898-score-ball-1-in-play,688799,688799,1,,3
 1899,score-ball-1-in-play,1899-score-ball-1-in-play,688833,688833,1,,591
 1900,score-ball-1-in-play,1900-score-ball-1-in-play,688933,688933,1,,592
@@ -1907,7 +1907,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1906,score-ball-1-in-play,1906-score-ball-1-in-play,689683,689833,4,,591
 1907,score-ball-1-in-play,1907-score-ball-1-in-play,689933,689933,1,,592
 1908,score-ball-1-in-play,1908-score-ball-1-in-play,690083,690083,1,,591
-1909,score-ball-1-in-play,1909-score-ball-1-in-play,690099,694566,35,JUGADOR BOLA,1909
+1909,score-ball-1-in-play,1909-score-ball-1-in-play,690099,694566,35,1 1 / JUGADOR BOLA,1909
 1910,score-ball-1-in-play,1910-score-ball-1-in-play,694733,694733,1,,3
 1911,score-ball-1-in-play,1911-score-ball-1-in-play,694766,694766,1,,13
 1912,score-ball-1-in-play,1912-score-ball-1-in-play,694816,694816,1,,208
@@ -1942,7 +1942,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1941,score-ball-1-in-play,1941-score-ball-1-in-play,697166,697166,1,,591
 1942,score-ball-1-in-play,1942-score-ball-1-in-play,697266,697266,1,,592
 1943,score-ball-1-in-play,1943-score-ball-1-in-play,697399,697399,1,,591
-1944,score-ball-1-in-play,1944-score-ball-1-in-play,697466,701933,35,JUGADOR BOLA,1944
+1944,score-ball-1-in-play,1944-score-ball-1-in-play,697466,701933,35,1 1 / JUGADOR BOLA,1944
 1945,score-ball-1-in-play,1945-score-ball-1-in-play,702083,702083,1,,3
 1946,score-ball-1-in-play,1946-score-ball-1-in-play,702099,702099,1,,13
 1947,score-ball-1-in-play,1947-score-ball-1-in-play,702166,702166,1,,208
@@ -1972,7 +1972,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1971,score-ball-1-in-play,1971-score-ball-1-in-play,704466,704466,1,,591
 1972,score-ball-1-in-play,1972-score-ball-1-in-play,704583,704583,1,,592
 1973,score-ball-1-in-play,1973-score-ball-1-in-play,704716,704716,1,,591
-1974,score-ball-1-in-play,1974-score-ball-1-in-play,704749,709216,34,JUGADOR BOLA,1974
+1974,score-ball-1-in-play,1974-score-ball-1-in-play,704749,709216,34,1 1 / JUGADOR BOLA,1974
 1975,score-ball-1-in-play,1975-score-ball-1-in-play,709399,709399,1,,3
 1976,score-ball-1-in-play,1976-score-ball-1-in-play,709433,709433,1,,13
 1977,score-ball-1-in-play,1977-score-ball-1-in-play,709483,709499,2,,208
@@ -1995,7 +1995,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1994,score-ball-1-in-play,1994-score-ball-1-in-play,710399,710399,1,,13
 1995,score-ball-1-in-play,1995-score-ball-1-in-play,710466,710466,1,,208
 1996,score-ball-1-in-play,1996-score-ball-1-in-play,710516,710516,1,,624
-1997,score-ball-1-in-play,1997-score-ball-1-in-play,710766,710766,1,JUGADOR BOLA,1997
+1997,score-ball-1-in-play,1997-score-ball-1-in-play,710766,710766,1,1 1 / JUGADOR BOLA,1997
 1998,score-ball-1-in-play,1998-score-ball-1-in-play,710783,710783,1,,3
 1999,score-ball-1-in-play,1999-score-ball-1-in-play,710816,710816,1,,591
 2000,score-ball-1-in-play,2000-score-ball-1-in-play,710933,710933,1,,592
@@ -2007,7 +2007,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 2006,score-ball-1-in-play,2006-score-ball-1-in-play,711666,711816,4,,591
 2007,score-ball-1-in-play,2007-score-ball-1-in-play,711933,711933,1,,592
 2008,score-ball-1-in-play,2008-score-ball-1-in-play,712066,712066,1,,591
-2009,score-ball-1-in-play,2009-score-ball-1-in-play,712116,716583,34,JUGADOR BOLA,2009
+2009,score-ball-1-in-play,2009-score-ball-1-in-play,712116,716583,34,1 1 / JUGADOR BOLA,2009
 2010,score-ball-1-in-play,2010-score-ball-1-in-play,716716,716716,1,,2010
 2011,score-ball-1-in-play,2011-score-ball-1-in-play,716749,716749,1,,3
 2012,score-ball-1-in-play,2012-score-ball-1-in-play,716783,716783,1,,13
@@ -2031,7 +2031,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 2030,score-ball-1-in-play,2030-score-ball-1-in-play,717783,717783,1,,576
 2031,score-ball-1-in-play,2031-score-ball-1-in-play,717799,717799,1,,208
 2032,score-ball-1-in-play,2032-score-ball-1-in-play,717849,717849,1,,624
-2033,score-ball-1-in-play,2033-score-ball-1-in-play,718099,718099,1,JUGADOR BOLA,2033
+2033,score-ball-1-in-play,2033-score-ball-1-in-play,718099,718099,1,1 1 / JUGADOR BOLA,2033
 2034,score-ball-1-in-play,2034-score-ball-1-in-play,718133,718133,1,,3
 2035,score-ball-1-in-play,2035-score-ball-1-in-play,718166,718166,1,,591
 2036,score-ball-1-in-play,2036-score-ball-1-in-play,718266,718266,1,,592
@@ -2044,7 +2044,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 2043,score-ball-1-in-play,2043-score-ball-1-in-play,719149,719149,1,,591
 2044,score-ball-1-in-play,2044-score-ball-1-in-play,719249,719249,1,,592
 2045,score-ball-1-in-play,2045-score-ball-1-in-play,719399,719399,1,,591
-2046,score-ball-1-in-play,2046-score-ball-1-in-play,719449,723933,39,JUGADOR BOLA,2046
+2046,score-ball-1-in-play,2046-score-ball-1-in-play,719449,723933,39,1 1 / JUGADOR BOLA,2046
 2047,score-ball-1-in-play,2047-score-ball-1-in-play,724066,724066,1,,2047
 2048,score-ball-1-in-play,2048-score-ball-1-in-play,724083,724083,1,,3
 2049,score-ball-1-in-play,2049-score-ball-1-in-play,724116,724116,1,,13
@@ -2064,7 +2064,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 2063,score-ball-1-in-play,2063-score-ball-1-in-play,725083,725083,1,,13
 2064,score-ball-1-in-play,2064-score-ball-1-in-play,725133,725133,1,,208
 2065,score-ball-1-in-play,2065-score-ball-1-in-play,725183,725183,1,,624
-2066,score-ball-1-in-play,2066-score-ball-1-in-play,725433,725433,1,JUGADOR BOLA,2066
+2066,score-ball-1-in-play,2066-score-ball-1-in-play,725433,725433,1,1 1 / JUGADOR BOLA,2066
 2067,score-ball-1-in-play,2067-score-ball-1-in-play,725466,725466,1,,3
 2068,score-ball-1-in-play,2068-score-ball-1-in-play,725483,725499,2,,591
 2069,score-ball-1-in-play,2069-score-ball-1-in-play,725599,725749,3,,591
@@ -2076,8 +2076,8 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 2075,score-ball-1-in-play,2075-score-ball-1-in-play,726483,726483,1,,591
 2076,score-ball-1-in-play,2076-score-ball-1-in-play,726599,726599,1,,592
 2077,score-ball-1-in-play,2077-score-ball-1-in-play,726733,726733,1,,591
-2078,score-ball-1-in-play,2078-score-ball-1-in-play,726783,753616,176,JUGADOR BOLA,2078
-2079,score-ball-1-drained,2079-score-ball-1-drained,753783,753866,3,JUGADOR BOLA,2079
+2078,score-ball-1-in-play,2078-score-ball-1-in-play,726783,753616,176,1 1 / JUGADOR BOLA,2078
+2079,score-ball-1-drained,2079-score-ball-1-drained,753783,753866,3,1 1 / JUGADOR BOLA,2079
 2080,score-ball-1-drained,2080-score-ball-1-drained,753883,755016,5,JUGADOR BOLA EXTRA,2080
 2081,score-ball-1-drained,2081-score-ball-1-drained,755033,755066,2,JUGADOR BOLA EXTRA,2081
 2082,score-ball-1-drained,2082-score-ball-1-drained,755083,755199,3,JUGADOR BOLA EXTRA,2082
@@ -3630,7 +3630,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3629,score-ball-2-in-play,3629-score-ball-2-in-play,1093966,1120783,173,JUGADOR BOLA EXTRA,3629
 3630,score-ball-2-drained,3630-score-ball-2-drained,1120966,1120966,1,JUGADOR BOLA EXTRA,3630
 3631,score-ball-2-drained,3631-score-ball-2-drained,1121050,1122183,5,1 2 / JUGADOR BOLA,243
-3632,score-ball-2-drained,3632-score-ball-2-drained,1122216,1122233,2,JUGADOR BOLA,3632
+3632,score-ball-2-drained,3632-score-ball-2-drained,1122216,1122233,2,1 2 / JUGADOR BOLA,3632
 3633,score-ball-2-drained,3633-score-ball-2-drained,1122266,1122383,3,JUGADOR BOLA,3633
 3634,score-ball-2-drained,3634-score-ball-2-drained,1122433,1122433,1,JUGADOR BOLA,3634
 3635,score-ball-2-drained,3635-score-ball-2-drained,1122483,1122483,1,JUGADOR BOLA,3635
@@ -3673,8 +3673,8 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3672,score-ball-2-drained,3672-score-ball-2-drained,1124700,1124700,1,JUGADOR BOLA,3672
 3673,score-ball-2-drained,3673-score-ball-2-drained,1124750,1124750,1,JUGADOR BOLA,3673
 3674,score-ball-2-drained,3674-score-ball-2-drained,1124800,1124800,1,JUGADOR BOLA,3674
-3675,score-ball-2-drained,3675-score-ball-2-drained,1124850,1127450,30,JUGADOR BOLA,3675
-3676,score-ball-3-in-play,3676-score-ball-3-in-play,1127633,1135716,67,JUGADOR BOLA,3676
+3675,score-ball-2-drained,3675-score-ball-2-drained,1124850,1127450,30,1 2 / JUGADOR BOLA,3675
+3676,score-ball-3-in-play,3676-score-ball-3-in-play,1127633,1135716,67,1 2 / JUGADOR BOLA,3676
 3677,score-ball-3-in-play,3677-score-ball-3-in-play,1135733,1135733,1,,3
 3678,score-ball-3-in-play,3678-score-ball-3-in-play,1135750,1135766,2,,13
 3679,score-ball-3-in-play,3679-score-ball-3-in-play,1135800,1135800,1,,777
@@ -3694,7 +3694,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3693,score-ball-3-in-play,3693-score-ball-3-in-play,1136716,1136716,1,,13
 3694,score-ball-3-in-play,3694-score-ball-3-in-play,1136783,1136783,1,,208
 3695,score-ball-3-in-play,3695-score-ball-3-in-play,1136833,1136833,1,,588
-3696,score-ball-3-in-play,3696-score-ball-3-in-play,1137100,1137100,1,JUGADOR BOLA,3696
+3696,score-ball-3-in-play,3696-score-ball-3-in-play,1137100,1137100,1,1 2 / JUGADOR BOLA,3696
 3697,score-ball-3-in-play,3697-score-ball-3-in-play,1137133,1137133,1,,3
 3698,score-ball-3-in-play,3698-score-ball-3-in-play,1137166,1137166,1,,591
 3699,score-ball-3-in-play,3699-score-ball-3-in-play,1137266,1137266,1,,592
@@ -3706,7 +3706,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3705,score-ball-3-in-play,3705-score-ball-3-in-play,1138166,1138166,1,,591
 3706,score-ball-3-in-play,3706-score-ball-3-in-play,1138266,1138266,1,,592
 3707,score-ball-3-in-play,3707-score-ball-3-in-play,1138400,1138400,1,,591
-3708,score-ball-3-in-play,3708-score-ball-3-in-play,1138466,1142933,39,JUGADOR BOLA,3708
+3708,score-ball-3-in-play,3708-score-ball-3-in-play,1138466,1142933,39,1 2 / JUGADOR BOLA,3708
 3709,score-ball-3-in-play,3709-score-ball-3-in-play,1143066,1143066,1,,3
 3710,score-ball-3-in-play,3710-score-ball-3-in-play,1143083,1143083,1,,13
 3711,score-ball-3-in-play,3711-score-ball-3-in-play,1143150,1143150,1,,208
@@ -3727,7 +3727,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3726,score-ball-3-in-play,3726-score-ball-3-in-play,1144066,1144066,1,,13
 3727,score-ball-3-in-play,3727-score-ball-3-in-play,1144116,1144116,1,,208
 3728,score-ball-3-in-play,3728-score-ball-3-in-play,1144166,1144416,2,1 2 / JUGADOR BOLA,3728
-3729,score-ball-3-in-play,3729-score-ball-3-in-play,1144450,1144450,1,JUGADOR BOLA,3729
+3729,score-ball-3-in-play,3729-score-ball-3-in-play,1144450,1144450,1,1 2 / JUGADOR BOLA,3729
 3730,score-ball-3-in-play,3730-score-ball-3-in-play,1144466,1144466,1,,3
 3731,score-ball-3-in-play,3731-score-ball-3-in-play,1144500,1144500,1,,591
 3732,score-ball-3-in-play,3732-score-ball-3-in-play,1144616,1144616,1,,592
@@ -3738,7 +3738,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3737,score-ball-3-in-play,3737-score-ball-3-in-play,1145233,1145233,1,,591
 3738,score-ball-3-in-play,3738-score-ball-3-in-play,1145350,1145350,1,,592
 3739,score-ball-3-in-play,3739-score-ball-3-in-play,1145483,1145483,1,,591
-3740,score-ball-3-in-play,3740-score-ball-3-in-play,1145600,1150266,42,JUGADOR BOLA,3740
+3740,score-ball-3-in-play,3740-score-ball-3-in-play,1145600,1150266,42,1 2 / JUGADOR BOLA,3740
 3741,score-ball-3-in-play,3741-score-ball-3-in-play,1150400,1150400,1,,3
 3742,score-ball-3-in-play,3742-score-ball-3-in-play,1150433,1150433,1,,13
 3743,score-ball-3-in-play,3743-score-ball-3-in-play,1150483,1150483,1,,208
@@ -3771,7 +3771,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3770,score-ball-3-in-play,3770-score-ball-3-in-play,1152933,1152933,1,,592
 3771,score-ball-3-in-play,3771-score-ball-3-in-play,1153083,1153083,1,,591
 3772,score-ball-3-in-play,3772-score-ball-3-in-play,1153100,1153100,1,,3772
-3773,score-ball-3-in-play,3773-score-ball-3-in-play,1153133,1157733,40,JUGADOR BOLA,3773
+3773,score-ball-3-in-play,3773-score-ball-3-in-play,1153133,1157733,40,1 2 / JUGADOR BOLA,3773
 3774,score-ball-3-in-play,3774-score-ball-3-in-play,1157750,1157750,1,,3
 3775,score-ball-3-in-play,3775-score-ball-3-in-play,1157766,1157783,2,,13
 3776,score-ball-3-in-play,3776-score-ball-3-in-play,1157816,1157816,1,,576
@@ -3803,7 +3803,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3802,score-ball-3-in-play,3802-score-ball-3-in-play,1160250,1160250,1,,592
 3803,score-ball-3-in-play,3803-score-ball-3-in-play,1160400,1160400,1,,591
 3804,score-ball-3-in-play,3804-score-ball-3-in-play,1160416,1160416,1,,3804
-3805,score-ball-3-in-play,3805-score-ball-3-in-play,1160450,1165050,39,JUGADOR BOLA,3805
+3805,score-ball-3-in-play,3805-score-ball-3-in-play,1160450,1165050,39,1 2 / JUGADOR BOLA,3805
 3806,score-ball-3-in-play,3806-score-ball-3-in-play,1165083,1165083,1,,3
 3807,score-ball-3-in-play,3807-score-ball-3-in-play,1165100,1165100,1,,13
 3808,score-ball-3-in-play,3808-score-ball-3-in-play,1165166,1165166,1,,208
@@ -3826,7 +3826,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3825,score-ball-3-in-play,3825-score-ball-3-in-play,1166083,1166083,1,,13
 3826,score-ball-3-in-play,3826-score-ball-3-in-play,1166133,1166133,1,,208
 3827,score-ball-3-in-play,3827-score-ball-3-in-play,1166183,1166183,1,,624
-3828,score-ball-3-in-play,3828-score-ball-3-in-play,1166433,1166433,1,JUGADOR BOLA,3828
+3828,score-ball-3-in-play,3828-score-ball-3-in-play,1166433,1166433,1,1 2 / JUGADOR BOLA,3828
 3829,score-ball-3-in-play,3829-score-ball-3-in-play,1166466,1166466,1,,3
 3830,score-ball-3-in-play,3830-score-ball-3-in-play,1166483,1166483,1,,591
 3831,score-ball-3-in-play,3831-score-ball-3-in-play,1166600,1166600,1,,592
@@ -3838,7 +3838,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3837,score-ball-3-in-play,3837-score-ball-3-in-play,1167333,1167333,1,,592
 3838,score-ball-3-in-play,3838-score-ball-3-in-play,1167466,1167466,1,,591
 3839,score-ball-3-in-play,3839-score-ball-3-in-play,1167583,1167733,3,,591
-3840,score-ball-3-in-play,3840-score-ball-3-in-play,1167783,1172250,36,JUGADOR BOLA,3840
+3840,score-ball-3-in-play,3840-score-ball-3-in-play,1167783,1172250,36,1 2 / JUGADOR BOLA,3840
 3841,score-ball-3-in-play,3841-score-ball-3-in-play,1172400,1172400,1,,3841
 3842,score-ball-3-in-play,3842-score-ball-3-in-play,1172416,1172416,1,,3
 3843,score-ball-3-in-play,3843-score-ball-3-in-play,1172450,1172450,1,,13
@@ -3858,7 +3858,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3857,score-ball-3-in-play,3857-score-ball-3-in-play,1173400,1173416,2,,13
 3858,score-ball-3-in-play,3858-score-ball-3-in-play,1173466,1173466,1,,208
 3859,score-ball-3-in-play,3859-score-ball-3-in-play,1173516,1173766,3,,3859
-3860,score-ball-3-in-play,3860-score-ball-3-in-play,1173783,1173783,1,JUGADOR BOLA,3860
+3860,score-ball-3-in-play,3860-score-ball-3-in-play,1173783,1173783,1,1 2 / JUGADOR BOLA,3860
 3861,score-ball-3-in-play,3861-score-ball-3-in-play,1173800,1173800,1,,3
 3862,score-ball-3-in-play,3862-score-ball-3-in-play,1173833,1173833,1,,591
 3863,score-ball-3-in-play,3863-score-ball-3-in-play,1173933,1173933,1,,592
@@ -3871,7 +3871,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3870,score-ball-3-in-play,3870-score-ball-3-in-play,1174816,1174816,1,,591
 3871,score-ball-3-in-play,3871-score-ball-3-in-play,1174933,1174933,1,,592
 3872,score-ball-3-in-play,3872-score-ball-3-in-play,1175066,1175066,1,,591
-3873,score-ball-3-in-play,3873-score-ball-3-in-play,1175116,1179716,38,JUGADOR BOLA,3873
+3873,score-ball-3-in-play,3873-score-ball-3-in-play,1175116,1179716,38,1 2 / JUGADOR BOLA,3873
 3874,score-ball-3-in-play,3874-score-ball-3-in-play,1179733,1179733,1,,3
 3875,score-ball-3-in-play,3875-score-ball-3-in-play,1179750,1179766,2,,13
 3876,score-ball-3-in-play,3876-score-ball-3-in-play,1179800,1179800,1,,576
@@ -3891,7 +3891,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3890,score-ball-3-in-play,3890-score-ball-3-in-play,1180716,1180716,1,,13
 3891,score-ball-3-in-play,3891-score-ball-3-in-play,1180783,1180783,1,,208
 3892,score-ball-3-in-play,3892-score-ball-3-in-play,1180833,1180833,1,,624
-3893,score-ball-3-in-play,3893-score-ball-3-in-play,1181100,1181100,1,JUGADOR BOLA,3893
+3893,score-ball-3-in-play,3893-score-ball-3-in-play,1181100,1181100,1,1 2 / JUGADOR BOLA,3893
 3894,score-ball-3-in-play,3894-score-ball-3-in-play,1181133,1181133,1,,3
 3895,score-ball-3-in-play,3895-score-ball-3-in-play,1181166,1181166,1,,591
 3896,score-ball-3-in-play,3896-score-ball-3-in-play,1181266,1181266,1,,592
@@ -3903,7 +3903,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3902,score-ball-3-in-play,3902-score-ball-3-in-play,1182166,1182166,1,,591
 3903,score-ball-3-in-play,3903-score-ball-3-in-play,1182266,1182266,1,,592
 3904,score-ball-3-in-play,3904-score-ball-3-in-play,1182400,1182400,1,,591
-3905,score-ball-3-in-play,3905-score-ball-3-in-play,1182466,1186933,39,JUGADOR BOLA,3905
+3905,score-ball-3-in-play,3905-score-ball-3-in-play,1182466,1186933,39,1 2 / JUGADOR BOLA,3905
 3906,score-ball-3-in-play,3906-score-ball-3-in-play,1187066,1187066,1,,3
 3907,score-ball-3-in-play,3907-score-ball-3-in-play,1187083,1187083,1,,13
 3908,score-ball-3-in-play,3908-score-ball-3-in-play,1187150,1187150,1,,208
@@ -3924,7 +3924,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3923,score-ball-3-in-play,3923-score-ball-3-in-play,1188066,1188066,1,,13
 3924,score-ball-3-in-play,3924-score-ball-3-in-play,1188116,1188116,1,,208
 3925,score-ball-3-in-play,3925-score-ball-3-in-play,1188166,1188416,2,1 2 / JUGADOR BOLA,3728
-3926,score-ball-3-in-play,3926-score-ball-3-in-play,1188450,1188450,1,JUGADOR BOLA,3926
+3926,score-ball-3-in-play,3926-score-ball-3-in-play,1188450,1188450,1,1 2 / JUGADOR BOLA,3926
 3927,score-ball-3-in-play,3927-score-ball-3-in-play,1188466,1188466,1,,3
 3928,score-ball-3-in-play,3928-score-ball-3-in-play,1188500,1188500,1,,591
 3929,score-ball-3-in-play,3929-score-ball-3-in-play,1188616,1188616,1,,592
@@ -3935,7 +3935,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3934,score-ball-3-in-play,3934-score-ball-3-in-play,1189233,1189233,1,,591
 3935,score-ball-3-in-play,3935-score-ball-3-in-play,1189350,1189350,1,,592
 3936,score-ball-3-in-play,3936-score-ball-3-in-play,1189483,1189483,1,,591
-3937,score-ball-3-in-play,3937-score-ball-3-in-play,1189600,1194266,44,JUGADOR BOLA,3937
+3937,score-ball-3-in-play,3937-score-ball-3-in-play,1189600,1194266,44,1 2 / JUGADOR BOLA,3937
 3938,score-ball-3-in-play,3938-score-ball-3-in-play,1194400,1194400,1,,3
 3939,score-ball-3-in-play,3939-score-ball-3-in-play,1194433,1194433,1,,13
 3940,score-ball-3-in-play,3940-score-ball-3-in-play,1194483,1194483,1,,208
@@ -3965,7 +3965,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3964,score-ball-3-in-play,3964-score-ball-3-in-play,1196800,1196800,1,,591
 3965,score-ball-3-in-play,3965-score-ball-3-in-play,1196916,1196916,1,,592
 3966,score-ball-3-in-play,3966-score-ball-3-in-play,1197050,1197050,1,,591
-3967,score-ball-3-in-play,3967-score-ball-3-in-play,1197100,1201733,39,JUGADOR BOLA,3967
+3967,score-ball-3-in-play,3967-score-ball-3-in-play,1197100,1201733,39,1 2 / JUGADOR BOLA,3967
 3968,score-ball-3-in-play,3968-score-ball-3-in-play,1201750,1201750,1,,3
 3969,score-ball-3-in-play,3969-score-ball-3-in-play,1201766,1201783,2,,13
 3970,score-ball-3-in-play,3970-score-ball-3-in-play,1201816,1201816,1,,576
@@ -3996,7 +3996,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3995,score-ball-3-in-play,3995-score-ball-3-in-play,1204150,1204150,1,,591
 3996,score-ball-3-in-play,3996-score-ball-3-in-play,1204250,1204250,1,,592
 3997,score-ball-3-in-play,3997-score-ball-3-in-play,1204400,1204400,1,,591
-3998,score-ball-3-in-play,3998-score-ball-3-in-play,1204450,1208916,38,JUGADOR BOLA,3998
+3998,score-ball-3-in-play,3998-score-ball-3-in-play,1204450,1208916,38,1 2 / JUGADOR BOLA,3998
 3999,score-ball-3-in-play,3999-score-ball-3-in-play,1209083,1209083,1,,3
 4000,score-ball-3-in-play,4000-score-ball-3-in-play,1209100,1209100,1,,13
 4001,score-ball-3-in-play,4001-score-ball-3-in-play,1209166,1209166,1,,208
@@ -4019,7 +4019,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4018,score-ball-3-in-play,4018-score-ball-3-in-play,1210083,1210083,1,,13
 4019,score-ball-3-in-play,4019-score-ball-3-in-play,1210133,1210133,1,,208
 4020,score-ball-3-in-play,4020-score-ball-3-in-play,1210183,1210183,1,,624
-4021,score-ball-3-in-play,4021-score-ball-3-in-play,1210433,1210433,1,JUGADOR BOLA,4021
+4021,score-ball-3-in-play,4021-score-ball-3-in-play,1210433,1210433,1,1 2 / JUGADOR BOLA,4021
 4022,score-ball-3-in-play,4022-score-ball-3-in-play,1210466,1210466,1,,3
 4023,score-ball-3-in-play,4023-score-ball-3-in-play,1210483,1210483,1,,591
 4024,score-ball-3-in-play,4024-score-ball-3-in-play,1210600,1210600,1,,592
@@ -4031,7 +4031,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4030,score-ball-3-in-play,4030-score-ball-3-in-play,1211333,1211333,1,,592
 4031,score-ball-3-in-play,4031-score-ball-3-in-play,1211466,1211466,1,,591
 4032,score-ball-3-in-play,4032-score-ball-3-in-play,1211583,1211733,3,,591
-4033,score-ball-3-in-play,4033-score-ball-3-in-play,1211783,1216250,36,JUGADOR BOLA,4033
+4033,score-ball-3-in-play,4033-score-ball-3-in-play,1211783,1216250,36,1 2 / JUGADOR BOLA,4033
 4034,score-ball-3-in-play,4034-score-ball-3-in-play,1216400,1216400,1,,4034
 4035,score-ball-3-in-play,4035-score-ball-3-in-play,1216416,1216416,1,,3
 4036,score-ball-3-in-play,4036-score-ball-3-in-play,1216450,1216450,1,,13
@@ -4051,7 +4051,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4050,score-ball-3-in-play,4050-score-ball-3-in-play,1217400,1217416,2,,13
 4051,score-ball-3-in-play,4051-score-ball-3-in-play,1217466,1217466,1,,208
 4052,score-ball-3-in-play,4052-score-ball-3-in-play,1217516,1217766,3,,3859
-4053,score-ball-3-in-play,4053-score-ball-3-in-play,1217783,1217783,1,JUGADOR BOLA,3860
+4053,score-ball-3-in-play,4053-score-ball-3-in-play,1217783,1217783,1,1 2 / JUGADOR BOLA,3860
 4054,score-ball-3-in-play,4054-score-ball-3-in-play,1217800,1217800,1,,3
 4055,score-ball-3-in-play,4055-score-ball-3-in-play,1217833,1217833,1,,591
 4056,score-ball-3-in-play,4056-score-ball-3-in-play,1217933,1217933,1,,592
@@ -4064,7 +4064,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4063,score-ball-3-in-play,4063-score-ball-3-in-play,1218816,1218816,1,,591
 4064,score-ball-3-in-play,4064-score-ball-3-in-play,1218933,1218933,1,,592
 4065,score-ball-3-in-play,4065-score-ball-3-in-play,1219066,1219066,1,,591
-4066,score-ball-3-in-play,4066-score-ball-3-in-play,1219083,1223716,38,JUGADOR BOLA,4066
+4066,score-ball-3-in-play,4066-score-ball-3-in-play,1219083,1223716,38,1 2 / JUGADOR BOLA,4066
 4067,score-ball-3-in-play,4067-score-ball-3-in-play,1223733,1223733,1,,3
 4068,score-ball-3-in-play,4068-score-ball-3-in-play,1223750,1223766,2,,13
 4069,score-ball-3-in-play,4069-score-ball-3-in-play,1223800,1223800,1,,777
@@ -4084,7 +4084,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4083,score-ball-3-in-play,4083-score-ball-3-in-play,1224716,1224716,1,,13
 4084,score-ball-3-in-play,4084-score-ball-3-in-play,1224783,1224783,1,,208
 4085,score-ball-3-in-play,4085-score-ball-3-in-play,1224833,1224833,1,,624
-4086,score-ball-3-in-play,4086-score-ball-3-in-play,1225100,1225100,1,JUGADOR BOLA,3696
+4086,score-ball-3-in-play,4086-score-ball-3-in-play,1225100,1225100,1,1 2 / JUGADOR BOLA,3696
 4087,score-ball-3-in-play,4087-score-ball-3-in-play,1225133,1225133,1,,3
 4088,score-ball-3-in-play,4088-score-ball-3-in-play,1225166,1225166,1,,591
 4089,score-ball-3-in-play,4089-score-ball-3-in-play,1225266,1225266,1,,592
@@ -4096,7 +4096,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4095,score-ball-3-in-play,4095-score-ball-3-in-play,1226166,1226166,1,,591
 4096,score-ball-3-in-play,4096-score-ball-3-in-play,1226266,1226266,1,,592
 4097,score-ball-3-in-play,4097-score-ball-3-in-play,1226400,1226400,1,,591
-4098,score-ball-3-in-play,4098-score-ball-3-in-play,1226466,1230933,40,JUGADOR BOLA,4098
+4098,score-ball-3-in-play,4098-score-ball-3-in-play,1226466,1230933,40,1 2 / JUGADOR BOLA,4098
 4099,score-ball-3-in-play,4099-score-ball-3-in-play,1231066,1231066,1,,3
 4100,score-ball-3-in-play,4100-score-ball-3-in-play,1231083,1231083,1,,13
 4101,score-ball-3-in-play,4101-score-ball-3-in-play,1231150,1231150,1,,208
@@ -4117,7 +4117,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4116,score-ball-3-in-play,4116-score-ball-3-in-play,1232066,1232066,1,,13
 4117,score-ball-3-in-play,4117-score-ball-3-in-play,1232116,1232116,1,,208
 4118,score-ball-3-in-play,4118-score-ball-3-in-play,1232166,1232416,2,1 2 / JUGADOR BOLA,3728
-4119,score-ball-3-in-play,4119-score-ball-3-in-play,1232450,1232450,1,JUGADOR BOLA,4119
+4119,score-ball-3-in-play,4119-score-ball-3-in-play,1232450,1232450,1,1 2 / JUGADOR BOLA,4119
 4120,score-ball-3-in-play,4120-score-ball-3-in-play,1232466,1232466,1,,3
 4121,score-ball-3-in-play,4121-score-ball-3-in-play,1232500,1232500,1,,591
 4122,score-ball-3-in-play,4122-score-ball-3-in-play,1232616,1232616,1,,592
@@ -4128,7 +4128,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4127,score-ball-3-in-play,4127-score-ball-3-in-play,1233233,1233233,1,,591
 4128,score-ball-3-in-play,4128-score-ball-3-in-play,1233350,1233350,1,,592
 4129,score-ball-3-in-play,4129-score-ball-3-in-play,1233483,1233483,1,,591
-4130,score-ball-3-in-play,4130-score-ball-3-in-play,1233600,1238266,42,JUGADOR BOLA,4130
+4130,score-ball-3-in-play,4130-score-ball-3-in-play,1233600,1238266,42,1 2 / JUGADOR BOLA,4130
 4131,score-ball-3-in-play,4131-score-ball-3-in-play,1238400,1238400,1,,3
 4132,score-ball-3-in-play,4132-score-ball-3-in-play,1238433,1238433,1,,13
 4133,score-ball-3-in-play,4133-score-ball-3-in-play,1238483,1238483,1,,208
@@ -4159,7 +4159,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4158,score-ball-3-in-play,4158-score-ball-3-in-play,1240916,1240916,1,,592
 4159,score-ball-3-in-play,4159-score-ball-3-in-play,1241050,1241050,1,,591
 4160,score-ball-3-in-play,4160-score-ball-3-in-play,1241100,1241100,1,,4160
-4161,score-ball-3-in-play,4161-score-ball-3-in-play,1241133,1245733,39,JUGADOR BOLA,4161
+4161,score-ball-3-in-play,4161-score-ball-3-in-play,1241133,1245733,39,1 2 / JUGADOR BOLA,4161
 4162,score-ball-3-in-play,4162-score-ball-3-in-play,1245750,1245750,1,,3
 4163,score-ball-3-in-play,4163-score-ball-3-in-play,1245766,1245783,2,,13
 4164,score-ball-3-in-play,4164-score-ball-3-in-play,1245816,1245816,1,,777
@@ -4190,7 +4190,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4189,score-ball-3-in-play,4189-score-ball-3-in-play,1248150,1248150,1,,591
 4190,score-ball-3-in-play,4190-score-ball-3-in-play,1248250,1248250,1,,592
 4191,score-ball-3-in-play,4191-score-ball-3-in-play,1248400,1248450,2,,4191
-4192,score-ball-3-in-play,4192-score-ball-3-in-play,1248466,1252916,38,JUGADOR BOLA,4192
+4192,score-ball-3-in-play,4192-score-ball-3-in-play,1248466,1252916,38,1 2 / JUGADOR BOLA,4192
 4193,score-ball-3-in-play,4193-score-ball-3-in-play,1253083,1253083,1,,3
 4194,score-ball-3-in-play,4194-score-ball-3-in-play,1253100,1253100,1,,13
 4195,score-ball-3-in-play,4195-score-ball-3-in-play,1253166,1253166,1,,208
@@ -4213,7 +4213,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4212,score-ball-3-in-play,4212-score-ball-3-in-play,1254083,1254083,1,,13
 4213,score-ball-3-in-play,4213-score-ball-3-in-play,1254133,1254133,1,,208
 4214,score-ball-3-in-play,4214-score-ball-3-in-play,1254183,1254183,1,,624
-4215,score-ball-3-in-play,4215-score-ball-3-in-play,1254433,1254433,1,JUGADOR BOLA,4215
+4215,score-ball-3-in-play,4215-score-ball-3-in-play,1254433,1254433,1,1 2 / JUGADOR BOLA,4215
 4216,score-ball-3-in-play,4216-score-ball-3-in-play,1254466,1254466,1,,3
 4217,score-ball-3-in-play,4217-score-ball-3-in-play,1254483,1254483,1,,591
 4218,score-ball-3-in-play,4218-score-ball-3-in-play,1254600,1254600,1,,592
@@ -4225,7 +4225,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4224,score-ball-3-in-play,4224-score-ball-3-in-play,1255333,1255333,1,,592
 4225,score-ball-3-in-play,4225-score-ball-3-in-play,1255466,1255466,1,,591
 4226,score-ball-3-in-play,4226-score-ball-3-in-play,1255583,1255766,5,,3460
-4227,score-ball-3-in-play,4227-score-ball-3-in-play,1255783,1260233,38,JUGADOR BOLA,4227
+4227,score-ball-3-in-play,4227-score-ball-3-in-play,1255783,1260233,38,1 2 / JUGADOR BOLA,4227
 4228,score-ball-3-in-play,4228-score-ball-3-in-play,1260400,1260400,1,,639
 4229,score-ball-3-in-play,4229-score-ball-3-in-play,1260416,1260416,1,,3
 4230,score-ball-3-in-play,4230-score-ball-3-in-play,1260450,1260450,1,,13
@@ -4245,7 +4245,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4244,score-ball-3-in-play,4244-score-ball-3-in-play,1261400,1261416,2,,13
 4245,score-ball-3-in-play,4245-score-ball-3-in-play,1261466,1261466,1,,208
 4246,score-ball-3-in-play,4246-score-ball-3-in-play,1261516,1261766,3,,4246
-4247,score-ball-3-in-play,4247-score-ball-3-in-play,1261783,1261783,1,JUGADOR BOLA,4247
+4247,score-ball-3-in-play,4247-score-ball-3-in-play,1261783,1261783,1,1 2 / JUGADOR BOLA,4247
 4248,score-ball-3-in-play,4248-score-ball-3-in-play,1261800,1261800,1,,3
 4249,score-ball-3-in-play,4249-score-ball-3-in-play,1261833,1261833,1,,591
 4250,score-ball-3-in-play,4250-score-ball-3-in-play,1261933,1261933,1,,592
@@ -4258,7 +4258,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4257,score-ball-3-in-play,4257-score-ball-3-in-play,1262816,1262816,1,,591
 4258,score-ball-3-in-play,4258-score-ball-3-in-play,1262933,1262933,1,,592
 4259,score-ball-3-in-play,4259-score-ball-3-in-play,1263066,1263066,1,,591
-4260,score-ball-3-in-play,4260-score-ball-3-in-play,1263116,1267716,39,JUGADOR BOLA,4260
+4260,score-ball-3-in-play,4260-score-ball-3-in-play,1263116,1267716,39,1 2 / JUGADOR BOLA,4260
 4261,score-ball-3-in-play,4261-score-ball-3-in-play,1267733,1267733,1,,3
 4262,score-ball-3-in-play,4262-score-ball-3-in-play,1267750,1267766,2,,13
 4263,score-ball-3-in-play,4263-score-ball-3-in-play,1267800,1267800,1,,777
@@ -4278,7 +4278,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4277,score-ball-3-in-play,4277-score-ball-3-in-play,1268716,1268716,1,,13
 4278,score-ball-3-in-play,4278-score-ball-3-in-play,1268783,1268783,1,,208
 4279,score-ball-3-in-play,4279-score-ball-3-in-play,1268833,1268833,1,,624
-4280,score-ball-3-in-play,4280-score-ball-3-in-play,1269100,1269100,1,JUGADOR BOLA,3696
+4280,score-ball-3-in-play,4280-score-ball-3-in-play,1269100,1269100,1,1 2 / JUGADOR BOLA,3696
 4281,score-ball-3-in-play,4281-score-ball-3-in-play,1269133,1269133,1,,3
 4282,score-ball-3-in-play,4282-score-ball-3-in-play,1269166,1269166,1,,591
 4283,score-ball-3-in-play,4283-score-ball-3-in-play,1269266,1269266,1,,592
@@ -4290,7 +4290,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4289,score-ball-3-in-play,4289-score-ball-3-in-play,1270166,1270166,1,,591
 4290,score-ball-3-in-play,4290-score-ball-3-in-play,1270266,1270266,1,,592
 4291,score-ball-3-in-play,4291-score-ball-3-in-play,1270400,1270400,1,,591
-4292,score-ball-3-in-play,4292-score-ball-3-in-play,1270466,1274933,39,JUGADOR BOLA,4292
+4292,score-ball-3-in-play,4292-score-ball-3-in-play,1270466,1274933,39,1 2 / JUGADOR BOLA,4292
 4293,score-ball-3-in-play,4293-score-ball-3-in-play,1275066,1275066,1,,3
 4294,score-ball-3-in-play,4294-score-ball-3-in-play,1275083,1275083,1,,13
 4295,score-ball-3-in-play,4295-score-ball-3-in-play,1275150,1275150,1,,208
@@ -4311,7 +4311,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4310,score-ball-3-in-play,4310-score-ball-3-in-play,1276066,1276066,1,,13
 4311,score-ball-3-in-play,4311-score-ball-3-in-play,1276116,1276116,1,,208
 4312,score-ball-3-in-play,4312-score-ball-3-in-play,1276166,1276416,2,1 2 / JUGADOR BOLA,3728
-4313,score-ball-3-in-play,4313-score-ball-3-in-play,1276450,1276450,1,JUGADOR BOLA,4313
+4313,score-ball-3-in-play,4313-score-ball-3-in-play,1276450,1276450,1,1 2 / JUGADOR BOLA,4313
 4314,score-ball-3-in-play,4314-score-ball-3-in-play,1276466,1276466,1,,3
 4315,score-ball-3-in-play,4315-score-ball-3-in-play,1276500,1276500,1,,591
 4316,score-ball-3-in-play,4316-score-ball-3-in-play,1276616,1276616,1,,592
@@ -4322,7 +4322,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4321,score-ball-3-in-play,4321-score-ball-3-in-play,1277233,1277233,1,,591
 4322,score-ball-3-in-play,4322-score-ball-3-in-play,1277350,1277350,1,,592
 4323,score-ball-3-in-play,4323-score-ball-3-in-play,1277483,1277483,1,,591
-4324,score-ball-3-in-play,4324-score-ball-3-in-play,1277600,1282266,41,JUGADOR BOLA,4324
+4324,score-ball-3-in-play,4324-score-ball-3-in-play,1277600,1282266,41,1 2 / JUGADOR BOLA,4324
 4325,score-ball-3-in-play,4325-score-ball-3-in-play,1282400,1282400,1,,3
 4326,score-ball-3-in-play,4326-score-ball-3-in-play,1282433,1282433,1,,13
 4327,score-ball-3-in-play,4327-score-ball-3-in-play,1282483,1282483,1,,208
@@ -4353,7 +4353,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4352,score-ball-3-in-play,4352-score-ball-3-in-play,1284800,1284800,1,,591
 4353,score-ball-3-in-play,4353-score-ball-3-in-play,1284916,1284916,1,,592
 4354,score-ball-3-in-play,4354-score-ball-3-in-play,1285050,1285050,1,,591
-4355,score-ball-3-in-play,4355-score-ball-3-in-play,1285100,1289733,41,JUGADOR BOLA,4355
+4355,score-ball-3-in-play,4355-score-ball-3-in-play,1285100,1289733,41,1 2 / JUGADOR BOLA,4355
 4356,score-ball-3-in-play,4356-score-ball-3-in-play,1289750,1289750,1,,3
 4357,score-ball-3-in-play,4357-score-ball-3-in-play,1289766,1289783,2,,13
 4358,score-ball-3-in-play,4358-score-ball-3-in-play,1289816,1289816,1,,576
@@ -4384,7 +4384,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4383,score-ball-3-in-play,4383-score-ball-3-in-play,1292150,1292150,1,,591
 4384,score-ball-3-in-play,4384-score-ball-3-in-play,1292250,1292250,1,,592
 4385,score-ball-3-in-play,4385-score-ball-3-in-play,1292400,1292400,1,,591
-4386,score-ball-3-in-play,4386-score-ball-3-in-play,1292450,1296916,38,JUGADOR BOLA,4386
+4386,score-ball-3-in-play,4386-score-ball-3-in-play,1292450,1296916,38,1 2 / JUGADOR BOLA,4386
 4387,score-ball-3-in-play,4387-score-ball-3-in-play,1297083,1297083,1,,3
 4388,score-ball-3-in-play,4388-score-ball-3-in-play,1297100,1297100,1,,13
 4389,score-ball-3-in-play,4389-score-ball-3-in-play,1297166,1297166,1,,208
@@ -4407,7 +4407,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4406,score-ball-3-in-play,4406-score-ball-3-in-play,1298083,1298083,1,,13
 4407,score-ball-3-in-play,4407-score-ball-3-in-play,1298133,1298133,1,,208
 4408,score-ball-3-in-play,4408-score-ball-3-in-play,1298183,1298183,1,,624
-4409,score-ball-3-in-play,4409-score-ball-3-in-play,1298433,1298433,1,JUGADOR BOLA,4215
+4409,score-ball-3-in-play,4409-score-ball-3-in-play,1298433,1298433,1,1 2 / JUGADOR BOLA,4215
 4410,score-ball-3-in-play,4410-score-ball-3-in-play,1298466,1298466,1,,3
 4411,score-ball-3-in-play,4411-score-ball-3-in-play,1298483,1298483,1,,591
 4412,score-ball-3-in-play,4412-score-ball-3-in-play,1298600,1298600,1,,592
@@ -4418,7 +4418,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4417,score-ball-3-in-play,4417-score-ball-3-in-play,1299233,1299233,1,,591
 4418,score-ball-3-in-play,4418-score-ball-3-in-play,1299333,1299333,1,,592
 4419,score-ball-3-in-play,4419-score-ball-3-in-play,1299466,1299466,1,,591
-4420,score-ball-3-in-play,4420-score-ball-3-in-play,1299583,1304233,41,JUGADOR BOLA,4420
+4420,score-ball-3-in-play,4420-score-ball-3-in-play,1299583,1304233,41,1 2 / JUGADOR BOLA,4420
 4421,score-ball-3-in-play,4421-score-ball-3-in-play,1304400,1304400,1,,4421
 4422,score-ball-3-in-play,4422-score-ball-3-in-play,1304416,1304416,1,,3
 4423,score-ball-3-in-play,4423-score-ball-3-in-play,1304450,1304450,1,,13
@@ -4438,7 +4438,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4437,score-ball-3-in-play,4437-score-ball-3-in-play,1305400,1305416,2,,13
 4438,score-ball-3-in-play,4438-score-ball-3-in-play,1305466,1305466,1,,208
 4439,score-ball-3-in-play,4439-score-ball-3-in-play,1305516,1305766,3,,4246
-4440,score-ball-3-in-play,4440-score-ball-3-in-play,1305783,1305783,1,JUGADOR BOLA,4440
+4440,score-ball-3-in-play,4440-score-ball-3-in-play,1305783,1305783,1,1 2 / JUGADOR BOLA,4440
 4441,score-ball-3-in-play,4441-score-ball-3-in-play,1305800,1305800,1,,3
 4442,score-ball-3-in-play,4442-score-ball-3-in-play,1305833,1305833,1,,591
 4443,score-ball-3-in-play,4443-score-ball-3-in-play,1305933,1305933,1,,592
@@ -4451,7 +4451,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4450,score-ball-3-in-play,4450-score-ball-3-in-play,1306816,1306816,1,,591
 4451,score-ball-3-in-play,4451-score-ball-3-in-play,1306933,1306933,1,,592
 4452,score-ball-3-in-play,4452-score-ball-3-in-play,1307066,1307066,1,,591
-4453,score-ball-3-in-play,4453-score-ball-3-in-play,1307116,1311716,38,JUGADOR BOLA,4453
+4453,score-ball-3-in-play,4453-score-ball-3-in-play,1307116,1311716,38,1 2 / JUGADOR BOLA,4453
 4454,score-ball-3-in-play,4454-score-ball-3-in-play,1311733,1311733,1,,3
 4455,score-ball-3-in-play,4455-score-ball-3-in-play,1311750,1311766,2,,13
 4456,score-ball-3-in-play,4456-score-ball-3-in-play,1311800,1311800,1,,777
@@ -4471,7 +4471,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4470,score-ball-3-in-play,4470-score-ball-3-in-play,1312716,1312716,1,,13
 4471,score-ball-3-in-play,4471-score-ball-3-in-play,1312783,1312783,1,,208
 4472,score-ball-3-in-play,4472-score-ball-3-in-play,1312833,1312833,1,,624
-4473,score-ball-3-in-play,4473-score-ball-3-in-play,1313100,1313100,1,JUGADOR BOLA,3696
+4473,score-ball-3-in-play,4473-score-ball-3-in-play,1313100,1313100,1,1 2 / JUGADOR BOLA,3696
 4474,score-ball-3-in-play,4474-score-ball-3-in-play,1313133,1313133,1,,3
 4475,score-ball-3-in-play,4475-score-ball-3-in-play,1313166,1313166,1,,591
 4476,score-ball-3-in-play,4476-score-ball-3-in-play,1313266,1313266,1,,592
@@ -4483,7 +4483,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4482,score-ball-3-in-play,4482-score-ball-3-in-play,1314166,1314166,1,,591
 4483,score-ball-3-in-play,4483-score-ball-3-in-play,1314266,1314266,1,,592
 4484,score-ball-3-in-play,4484-score-ball-3-in-play,1314400,1314400,1,,591
-4485,score-ball-3-in-play,4485-score-ball-3-in-play,1314466,1318933,39,JUGADOR BOLA,4485
+4485,score-ball-3-in-play,4485-score-ball-3-in-play,1314466,1318933,39,1 2 / JUGADOR BOLA,4485
 4486,score-ball-3-in-play,4486-score-ball-3-in-play,1319066,1319066,1,,3
 4487,score-ball-3-in-play,4487-score-ball-3-in-play,1319083,1319083,1,,13
 4488,score-ball-3-in-play,4488-score-ball-3-in-play,1319150,1319150,1,,208
@@ -4504,7 +4504,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4503,score-ball-3-in-play,4503-score-ball-3-in-play,1320066,1320066,1,,13
 4504,score-ball-3-in-play,4504-score-ball-3-in-play,1320116,1320116,1,,208
 4505,score-ball-3-in-play,4505-score-ball-3-in-play,1320166,1320416,2,1 2 / JUGADOR BOLA,3728
-4506,score-ball-3-in-play,4506-score-ball-3-in-play,1320450,1320450,1,JUGADOR BOLA,4506
+4506,score-ball-3-in-play,4506-score-ball-3-in-play,1320450,1320450,1,1 2 / JUGADOR BOLA,4506
 4507,score-ball-3-in-play,4507-score-ball-3-in-play,1320466,1320466,1,,3
 4508,score-ball-3-in-play,4508-score-ball-3-in-play,1320500,1320500,1,,591
 4509,score-ball-3-in-play,4509-score-ball-3-in-play,1320616,1320616,1,,592
@@ -4515,7 +4515,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4514,score-ball-3-in-play,4514-score-ball-3-in-play,1321233,1321233,1,,591
 4515,score-ball-3-in-play,4515-score-ball-3-in-play,1321350,1321350,1,,592
 4516,score-ball-3-in-play,4516-score-ball-3-in-play,1321483,1321483,1,,591
-4517,score-ball-3-in-play,4517-score-ball-3-in-play,1321600,1326266,43,2 / JUGADOR BOLA,4517
+4517,score-ball-3-in-play,4517-score-ball-3-in-play,1321600,1326266,43,2 / 1 2 / JUGADOR BOLA,4517
 4518,score-ball-3-in-play,4518-score-ball-3-in-play,1326400,1326400,1,,3
 4519,score-ball-3-in-play,4519-score-ball-3-in-play,1326433,1326433,1,,13
 4520,score-ball-3-in-play,4520-score-ball-3-in-play,1326483,1326483,1,,208
@@ -4545,7 +4545,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4544,score-ball-3-in-play,4544-score-ball-3-in-play,1328800,1328800,1,,591
 4545,score-ball-3-in-play,4545-score-ball-3-in-play,1328916,1328916,1,,592
 4546,score-ball-3-in-play,4546-score-ball-3-in-play,1329050,1329050,1,,591
-4547,score-ball-3-in-play,4547-score-ball-3-in-play,1329133,1333733,38,JUGADOR BOLA,4547
+4547,score-ball-3-in-play,4547-score-ball-3-in-play,1329133,1333733,38,1 2 / JUGADOR BOLA,4547
 4548,score-ball-3-in-play,4548-score-ball-3-in-play,1333750,1333750,1,,3
 4549,score-ball-3-in-play,4549-score-ball-3-in-play,1333766,1333783,2,,13
 4550,score-ball-3-in-play,4550-score-ball-3-in-play,1333816,1333816,1,,576
@@ -4576,7 +4576,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4575,score-ball-3-in-play,4575-score-ball-3-in-play,1336150,1336150,1,,591
 4576,score-ball-3-in-play,4576-score-ball-3-in-play,1336250,1336250,1,,592
 4577,score-ball-3-in-play,4577-score-ball-3-in-play,1336400,1336400,1,,591
-4578,score-ball-3-in-play,4578-score-ball-3-in-play,1336416,1341050,40,JUGADOR BOLA,4578
+4578,score-ball-3-in-play,4578-score-ball-3-in-play,1336416,1341050,40,1 2 / JUGADOR BOLA,4578
 4579,score-ball-3-in-play,4579-score-ball-3-in-play,1341083,1341083,1,,3
 4580,score-ball-3-in-play,4580-score-ball-3-in-play,1341100,1341100,1,,13
 4581,score-ball-3-in-play,4581-score-ball-3-in-play,1341166,1341166,1,,208
@@ -4599,7 +4599,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4598,score-ball-3-in-play,4598-score-ball-3-in-play,1342083,1342083,1,,13
 4599,score-ball-3-in-play,4599-score-ball-3-in-play,1342133,1342133,1,,208
 4600,score-ball-3-in-play,4600-score-ball-3-in-play,1342183,1342183,1,,624
-4601,score-ball-3-in-play,4601-score-ball-3-in-play,1342433,1342433,1,JUGADOR BOLA,3828
+4601,score-ball-3-in-play,4601-score-ball-3-in-play,1342433,1342433,1,1 2 / JUGADOR BOLA,3828
 4602,score-ball-3-in-play,4602-score-ball-3-in-play,1342466,1342466,1,,3
 4603,score-ball-3-in-play,4603-score-ball-3-in-play,1342483,1342483,1,,591
 4604,score-ball-3-in-play,4604-score-ball-3-in-play,1342600,1342600,1,,592
@@ -4612,7 +4612,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4611,score-ball-3-in-play,4611-score-ball-3-in-play,1343466,1343466,1,,591
 4612,score-ball-3-in-play,4612-score-ball-3-in-play,1343583,1343750,4,,4612
 4613,score-ball-3-in-play,4613-score-ball-3-in-play,1343766,1343766,1,,3
-4614,score-ball-3-in-play,4614-score-ball-3-in-play,1343783,1348233,38,JUGADOR BOLA,4614
+4614,score-ball-3-in-play,4614-score-ball-3-in-play,1343783,1348233,38,1 2 / JUGADOR BOLA,4614
 4615,score-ball-3-in-play,4615-score-ball-3-in-play,1348400,1348400,1,,4615
 4616,score-ball-3-in-play,4616-score-ball-3-in-play,1348416,1348416,1,,3
 4617,score-ball-3-in-play,4617-score-ball-3-in-play,1348450,1348450,1,,13
@@ -4632,7 +4632,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4631,score-ball-3-in-play,4631-score-ball-3-in-play,1349400,1349416,2,,13
 4632,score-ball-3-in-play,4632-score-ball-3-in-play,1349466,1349466,1,,208
 4633,score-ball-3-in-play,4633-score-ball-3-in-play,1349516,1349766,3,,4246
-4634,score-ball-3-in-play,4634-score-ball-3-in-play,1349783,1349783,1,JUGADOR BOLA,4440
+4634,score-ball-3-in-play,4634-score-ball-3-in-play,1349783,1349783,1,1 2 / JUGADOR BOLA,4440
 4635,score-ball-3-in-play,4635-score-ball-3-in-play,1349800,1349800,1,,3
 4636,score-ball-3-in-play,4636-score-ball-3-in-play,1349833,1349833,1,,591
 4637,score-ball-3-in-play,4637-score-ball-3-in-play,1349933,1349933,1,,592
@@ -4664,7 +4664,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4663,score-ball-3-in-play,4663-score-ball-3-in-play,1356716,1356716,1,,13
 4664,score-ball-3-in-play,4664-score-ball-3-in-play,1356783,1356783,1,,208
 4665,score-ball-3-in-play,4665-score-ball-3-in-play,1356833,1356833,1,,624
-4666,score-ball-3-in-play,4666-score-ball-3-in-play,1357100,1357100,1,JUGADOR BOLA,3696
+4666,score-ball-3-in-play,4666-score-ball-3-in-play,1357100,1357100,1,1 2 / JUGADOR BOLA,3696
 4667,score-ball-3-in-play,4667-score-ball-3-in-play,1357133,1357133,1,,3
 4668,score-ball-3-in-play,4668-score-ball-3-in-play,1357166,1357166,1,,591
 4669,score-ball-3-in-play,4669-score-ball-3-in-play,1357266,1357266,1,,592
@@ -4676,7 +4676,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4675,score-ball-3-in-play,4675-score-ball-3-in-play,1358166,1358166,1,,591
 4676,score-ball-3-in-play,4676-score-ball-3-in-play,1358266,1358266,1,,592
 4677,score-ball-3-in-play,4677-score-ball-3-in-play,1358400,1358400,1,,591
-4678,score-ball-3-in-play,4678-score-ball-3-in-play,1358466,1362933,39,JUGADOR BOLA,4678
+4678,score-ball-3-in-play,4678-score-ball-3-in-play,1358466,1362933,39,1 2 / JUGADOR BOLA,4678
 4679,score-ball-3-in-play,4679-score-ball-3-in-play,1363066,1363066,1,,3
 4680,score-ball-3-in-play,4680-score-ball-3-in-play,1363083,1363083,1,,13
 4681,score-ball-3-in-play,4681-score-ball-3-in-play,1363150,1363150,1,,208
@@ -4697,7 +4697,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4696,score-ball-3-in-play,4696-score-ball-3-in-play,1364066,1364066,1,,13
 4697,score-ball-3-in-play,4697-score-ball-3-in-play,1364116,1364116,1,,208
 4698,score-ball-3-in-play,4698-score-ball-3-in-play,1364166,1364416,2,1 2 / JUGADOR BOLA,3728
-4699,score-ball-3-in-play,4699-score-ball-3-in-play,1364450,1364450,1,JUGADOR BOLA,4699
+4699,score-ball-3-in-play,4699-score-ball-3-in-play,1364450,1364450,1,1 2 / JUGADOR BOLA,4699
 4700,score-ball-3-in-play,4700-score-ball-3-in-play,1364466,1364466,1,,3
 4701,score-ball-3-in-play,4701-score-ball-3-in-play,1364500,1364500,1,,591
 4702,score-ball-3-in-play,4702-score-ball-3-in-play,1364616,1364616,1,,592
@@ -4708,7 +4708,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4707,score-ball-3-in-play,4707-score-ball-3-in-play,1365233,1365233,1,,591
 4708,score-ball-3-in-play,4708-score-ball-3-in-play,1365350,1365350,1,,592
 4709,score-ball-3-in-play,4709-score-ball-3-in-play,1365483,1365483,1,,591
-4710,score-ball-3-in-play,4710-score-ball-3-in-play,1365600,1370266,43,JUGADOR BOLA,4710
+4710,score-ball-3-in-play,4710-score-ball-3-in-play,1365600,1370266,43,1 2 / JUGADOR BOLA,4710
 4711,score-ball-3-in-play,4711-score-ball-3-in-play,1370400,1370400,1,,3
 4712,score-ball-3-in-play,4712-score-ball-3-in-play,1370433,1370433,1,,13
 4713,score-ball-3-in-play,4713-score-ball-3-in-play,1370483,1370483,1,,208
@@ -4740,7 +4740,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4739,score-ball-3-in-play,4739-score-ball-3-in-play,1372833,1372833,1,,591
 4740,score-ball-3-in-play,4740-score-ball-3-in-play,1372933,1372933,1,,592
 4741,score-ball-3-in-play,4741-score-ball-3-in-play,1373083,1373083,1,,591
-4742,score-ball-3-in-play,4742-score-ball-3-in-play,1373133,1377733,36,JUGADOR BOLA,4742
+4742,score-ball-3-in-play,4742-score-ball-3-in-play,1373133,1377733,36,- - / 1 2 / JUGADOR BOLA,4742
 4743,score-ball-3-in-play,4743-score-ball-3-in-play,1377750,1377750,1,,3
 4744,score-ball-3-in-play,4744-score-ball-3-in-play,1377766,1377783,2,,13
 4745,score-ball-3-in-play,4745-score-ball-3-in-play,1377816,1377816,1,,576
@@ -4771,7 +4771,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4770,score-ball-3-in-play,4770-score-ball-3-in-play,1380150,1380150,1,,591
 4771,score-ball-3-in-play,4771-score-ball-3-in-play,1380250,1380250,1,,592
 4772,score-ball-3-in-play,4772-score-ball-3-in-play,1380400,1380400,1,,591
-4773,score-ball-3-in-play,4773-score-ball-3-in-play,1380450,1384916,39,2 / JUGADOR BOLA,4773
+4773,score-ball-3-in-play,4773-score-ball-3-in-play,1380450,1384916,39,2 / 1 2 / JUGADOR BOLA,4773
 4774,score-ball-3-in-play,4774-score-ball-3-in-play,1385083,1385083,1,,3
 4775,score-ball-3-in-play,4775-score-ball-3-in-play,1385100,1385100,1,,13
 4776,score-ball-3-in-play,4776-score-ball-3-in-play,1385166,1385166,1,,208
@@ -4794,7 +4794,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4793,score-ball-3-in-play,4793-score-ball-3-in-play,1386083,1386083,1,,13
 4794,score-ball-3-in-play,4794-score-ball-3-in-play,1386133,1386133,1,,208
 4795,score-ball-3-in-play,4795-score-ball-3-in-play,1386183,1386183,1,,624
-4796,score-ball-3-in-play,4796-score-ball-3-in-play,1386433,1386433,1,JUGADOR BOLA,4215
+4796,score-ball-3-in-play,4796-score-ball-3-in-play,1386433,1386433,1,1 2 / JUGADOR BOLA,4215
 4797,score-ball-3-in-play,4797-score-ball-3-in-play,1386466,1386466,1,,3
 4798,score-ball-3-in-play,4798-score-ball-3-in-play,1386483,1386483,1,,591
 4799,score-ball-3-in-play,4799-score-ball-3-in-play,1386600,1386600,1,,592
@@ -4806,7 +4806,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4805,score-ball-3-in-play,4805-score-ball-3-in-play,1387333,1387333,1,,592
 4806,score-ball-3-in-play,4806-score-ball-3-in-play,1387466,1387466,1,,591
 4807,score-ball-3-in-play,4807-score-ball-3-in-play,1387583,1387733,3,,591
-4808,score-ball-3-in-play,4808-score-ball-3-in-play,1387783,1392250,36,2 / JUGADOR BOLA,4808
+4808,score-ball-3-in-play,4808-score-ball-3-in-play,1387783,1392250,36,2 / 1 2 / JUGADOR BOLA,4808
 4809,score-ball-3-in-play,4809-score-ball-3-in-play,1392400,1392400,1,,4809
 4810,score-ball-3-in-play,4810-score-ball-3-in-play,1392416,1392416,1,,13
 4811,score-ball-3-in-play,4811-score-ball-3-in-play,1392466,1392466,1,,208
@@ -4825,7 +4825,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4824,score-ball-3-in-play,4824-score-ball-3-in-play,1393383,1393400,2,,13
 4825,score-ball-3-in-play,4825-score-ball-3-in-play,1393433,1393450,2,,208
 4826,score-ball-3-in-play,4826-score-ball-3-in-play,1393483,1393766,3,,4246
-4827,score-ball-3-in-play,4827-score-ball-3-in-play,1393783,1393783,1,JUGADOR BOLA,4440
+4827,score-ball-3-in-play,4827-score-ball-3-in-play,1393783,1393783,1,1 2 / JUGADOR BOLA,4440
 4828,score-ball-3-in-play,4828-score-ball-3-in-play,1393800,1393800,1,,3
 4829,score-ball-3-in-play,4829-score-ball-3-in-play,1393833,1393833,1,,591
 4830,score-ball-3-in-play,4830-score-ball-3-in-play,1393933,1393933,1,,592
@@ -4838,7 +4838,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4837,score-ball-3-in-play,4837-score-ball-3-in-play,1394816,1394816,1,,591
 4838,score-ball-3-in-play,4838-score-ball-3-in-play,1394933,1394933,1,,592
 4839,score-ball-3-in-play,4839-score-ball-3-in-play,1395066,1395066,1,,591
-4840,score-ball-3-in-play,4840-score-ball-3-in-play,1395116,1399716,38,JUGADOR BOLA,4840
+4840,score-ball-3-in-play,4840-score-ball-3-in-play,1395116,1399716,38,1 2 / JUGADOR BOLA,4840
 4841,score-ball-3-in-play,4841-score-ball-3-in-play,1399733,1399733,1,,3
 4842,score-ball-3-in-play,4842-score-ball-3-in-play,1399750,1399766,2,,13
 4843,score-ball-3-in-play,4843-score-ball-3-in-play,1399800,1399800,1,,576
@@ -4858,7 +4858,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4857,score-ball-3-in-play,4857-score-ball-3-in-play,1400716,1400716,1,,13
 4858,score-ball-3-in-play,4858-score-ball-3-in-play,1400783,1400783,1,,208
 4859,score-ball-3-in-play,4859-score-ball-3-in-play,1400833,1400833,1,,624
-4860,score-ball-3-in-play,4860-score-ball-3-in-play,1401100,1401100,1,JUGADOR BOLA,3696
+4860,score-ball-3-in-play,4860-score-ball-3-in-play,1401100,1401100,1,1 2 / JUGADOR BOLA,3696
 4861,score-ball-3-in-play,4861-score-ball-3-in-play,1401133,1401133,1,,3
 4862,score-ball-3-in-play,4862-score-ball-3-in-play,1401166,1401166,1,,591
 4863,score-ball-3-in-play,4863-score-ball-3-in-play,1401266,1401266,1,,592
@@ -4870,7 +4870,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4869,score-ball-3-in-play,4869-score-ball-3-in-play,1402166,1402166,1,,591
 4870,score-ball-3-in-play,4870-score-ball-3-in-play,1402266,1402266,1,,592
 4871,score-ball-3-in-play,4871-score-ball-3-in-play,1402400,1402400,1,,591
-4872,score-ball-3-in-play,4872-score-ball-3-in-play,1402466,1406933,39,2 / JUGADOR BOLA,4872
+4872,score-ball-3-in-play,4872-score-ball-3-in-play,1402466,1406933,39,2 / 1 2 / JUGADOR BOLA,4872
 4873,score-ball-3-in-play,4873-score-ball-3-in-play,1407066,1407066,1,,3
 4874,score-ball-3-in-play,4874-score-ball-3-in-play,1407083,1407083,1,,13
 4875,score-ball-3-in-play,4875-score-ball-3-in-play,1407150,1407150,1,,208
@@ -4891,7 +4891,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4890,score-ball-3-in-play,4890-score-ball-3-in-play,1408066,1408066,1,,13
 4891,score-ball-3-in-play,4891-score-ball-3-in-play,1408116,1408116,1,,208
 4892,score-ball-3-in-play,4892-score-ball-3-in-play,1408166,1408416,2,1 2 / JUGADOR BOLA,3728
-4893,score-ball-3-in-play,4893-score-ball-3-in-play,1408450,1408450,1,JUGADOR BOLA,4893
+4893,score-ball-3-in-play,4893-score-ball-3-in-play,1408450,1408450,1,1 2 / JUGADOR BOLA,4893
 4894,score-ball-3-in-play,4894-score-ball-3-in-play,1408466,1408466,1,,3
 4895,score-ball-3-in-play,4895-score-ball-3-in-play,1408500,1408500,1,,591
 4896,score-ball-3-in-play,4896-score-ball-3-in-play,1408616,1408616,1,,592
@@ -4902,7 +4902,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4901,score-ball-3-in-play,4901-score-ball-3-in-play,1409233,1409233,1,,591
 4902,score-ball-3-in-play,4902-score-ball-3-in-play,1409350,1409350,1,,592
 4903,score-ball-3-in-play,4903-score-ball-3-in-play,1409483,1409483,1,,591
-4904,score-ball-3-in-play,4904-score-ball-3-in-play,1409600,1414266,41,2 / JUGADOR BOLA,4904
+4904,score-ball-3-in-play,4904-score-ball-3-in-play,1409600,1414266,41,2 / 1 2 / JUGADOR BOLA,4904
 4905,score-ball-3-in-play,4905-score-ball-3-in-play,1414400,1414400,1,,3
 4906,score-ball-3-in-play,4906-score-ball-3-in-play,1414433,1414433,1,,13
 4907,score-ball-3-in-play,4907-score-ball-3-in-play,1414483,1414483,1,,208
@@ -4932,7 +4932,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4931,score-ball-3-in-play,4931-score-ball-3-in-play,1416800,1416800,1,,591
 4932,score-ball-3-in-play,4932-score-ball-3-in-play,1416916,1416916,1,,592
 4933,score-ball-3-in-play,4933-score-ball-3-in-play,1417050,1417050,1,,591
-4934,score-ball-3-in-play,4934-score-ball-3-in-play,1417100,1421733,42,JUGADOR BOLA,4934
+4934,score-ball-3-in-play,4934-score-ball-3-in-play,1417100,1421733,42,- - / 1 2 / JUGADOR BOLA,4934
 4935,score-ball-3-in-play,4935-score-ball-3-in-play,1421750,1421750,1,,3
 4936,score-ball-3-in-play,4936-score-ball-3-in-play,1421766,1421783,2,,13
 4937,score-ball-3-in-play,4937-score-ball-3-in-play,1421816,1421816,1,,576
@@ -4963,7 +4963,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4962,score-ball-3-in-play,4962-score-ball-3-in-play,1424150,1424150,1,,591
 4963,score-ball-3-in-play,4963-score-ball-3-in-play,1424250,1424250,1,,592
 4964,score-ball-3-in-play,4964-score-ball-3-in-play,1424400,1424400,1,,591
-4965,score-ball-3-in-play,4965-score-ball-3-in-play,1424450,1428916,38,JUGADOR BOLA,4965
+4965,score-ball-3-in-play,4965-score-ball-3-in-play,1424450,1428916,38,1 2 / JUGADOR BOLA,4965
 4966,score-ball-3-in-play,4966-score-ball-3-in-play,1429083,1429083,1,,3
 4967,score-ball-3-in-play,4967-score-ball-3-in-play,1429100,1429100,1,,13
 4968,score-ball-3-in-play,4968-score-ball-3-in-play,1429166,1429166,1,,208
@@ -4986,7 +4986,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4985,score-ball-3-in-play,4985-score-ball-3-in-play,1430083,1430083,1,,13
 4986,score-ball-3-in-play,4986-score-ball-3-in-play,1430133,1430133,1,,208
 4987,score-ball-3-in-play,4987-score-ball-3-in-play,1430183,1430183,1,,624
-4988,score-ball-3-in-play,4988-score-ball-3-in-play,1430433,1430433,1,JUGADOR BOLA,4215
+4988,score-ball-3-in-play,4988-score-ball-3-in-play,1430433,1430433,1,1 2 / JUGADOR BOLA,4215
 4989,score-ball-3-in-play,4989-score-ball-3-in-play,1430466,1430466,1,,3
 4990,score-ball-3-in-play,4990-score-ball-3-in-play,1430483,1430483,1,,591
 4991,score-ball-3-in-play,4991-score-ball-3-in-play,1430600,1430600,1,,592
@@ -4998,7 +4998,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4997,score-ball-3-in-play,4997-score-ball-3-in-play,1431333,1431333,1,,592
 4998,score-ball-3-in-play,4998-score-ball-3-in-play,1431466,1431466,1,,591
 4999,score-ball-3-in-play,4999-score-ball-3-in-play,1431583,1431800,5,,4999
-5000,score-ball-3-in-play,5000-score-ball-3-in-play,1431816,1436250,36,JUGADOR BOLA,5000
+5000,score-ball-3-in-play,5000-score-ball-3-in-play,1431816,1436250,36,1 2 / JUGADOR BOLA,5000
 5001,score-ball-3-in-play,5001-score-ball-3-in-play,1436400,1436400,1,,1444
 5002,score-ball-3-in-play,5002-score-ball-3-in-play,1436416,1436416,1,,13
 5003,score-ball-3-in-play,5003-score-ball-3-in-play,1436466,1436466,1,,208
@@ -5017,7 +5017,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5016,score-ball-3-in-play,5016-score-ball-3-in-play,1437383,1437400,2,,13
 5017,score-ball-3-in-play,5017-score-ball-3-in-play,1437433,1437450,2,,208
 5018,score-ball-3-in-play,5018-score-ball-3-in-play,1437483,1437766,3,,4246
-5019,score-ball-3-in-play,5019-score-ball-3-in-play,1437783,1437783,1,JUGADOR BOLA,4440
+5019,score-ball-3-in-play,5019-score-ball-3-in-play,1437783,1437783,1,1 2 / JUGADOR BOLA,4440
 5020,score-ball-3-in-play,5020-score-ball-3-in-play,1437800,1437800,1,,3
 5021,score-ball-3-in-play,5021-score-ball-3-in-play,1437833,1437833,1,,591
 5022,score-ball-3-in-play,5022-score-ball-3-in-play,1437933,1437933,1,,592
@@ -5030,7 +5030,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5029,score-ball-3-in-play,5029-score-ball-3-in-play,1438816,1438816,1,,591
 5030,score-ball-3-in-play,5030-score-ball-3-in-play,1438933,1438933,1,,592
 5031,score-ball-3-in-play,5031-score-ball-3-in-play,1439066,1439066,1,,591
-5032,score-ball-3-in-play,5032-score-ball-3-in-play,1439116,1443716,38,JUGADOR BOLA,5032
+5032,score-ball-3-in-play,5032-score-ball-3-in-play,1439116,1443716,38,1 2 / JUGADOR BOLA,5032
 5033,score-ball-3-in-play,5033-score-ball-3-in-play,1443733,1443733,1,,5033
 5034,score-ball-3-in-play,5034-score-ball-3-in-play,1443750,1443766,2,,13
 5035,score-ball-3-in-play,5035-score-ball-3-in-play,1443800,1443800,1,,576
@@ -5050,7 +5050,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5049,score-ball-3-in-play,5049-score-ball-3-in-play,1444716,1444716,1,,13
 5050,score-ball-3-in-play,5050-score-ball-3-in-play,1444783,1444783,1,,208
 5051,score-ball-3-in-play,5051-score-ball-3-in-play,1444833,1444833,1,,624
-5052,score-ball-3-in-play,5052-score-ball-3-in-play,1445100,1445100,1,JUGADOR BOLA,3828
+5052,score-ball-3-in-play,5052-score-ball-3-in-play,1445100,1445100,1,1 2 / JUGADOR BOLA,3828
 5053,score-ball-3-in-play,5053-score-ball-3-in-play,1445133,1445133,1,,3
 5054,score-ball-3-in-play,5054-score-ball-3-in-play,1445166,1445166,1,,591
 5055,score-ball-3-in-play,5055-score-ball-3-in-play,1445266,1445266,1,,592
@@ -5062,7 +5062,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5061,score-ball-3-in-play,5061-score-ball-3-in-play,1446166,1446166,1,,591
 5062,score-ball-3-in-play,5062-score-ball-3-in-play,1446266,1446266,1,,592
 5063,score-ball-3-in-play,5063-score-ball-3-in-play,1446400,1446400,1,,591
-5064,score-ball-3-in-play,5064-score-ball-3-in-play,1446433,1450900,35,JUGADOR BOLA,5064
+5064,score-ball-3-in-play,5064-score-ball-3-in-play,1446433,1450900,35,1 2 / JUGADOR BOLA,5064
 5065,score-ball-3-in-play,5065-score-ball-3-in-play,1451066,1451066,1,,3
 5066,score-ball-3-in-play,5066-score-ball-3-in-play,1451083,1451083,1,,13
 5067,score-ball-3-in-play,5067-score-ball-3-in-play,1451150,1451150,1,,208
@@ -5083,7 +5083,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5082,score-ball-3-in-play,5082-score-ball-3-in-play,1452066,1452066,1,,13
 5083,score-ball-3-in-play,5083-score-ball-3-in-play,1452116,1452116,1,,208
 5084,score-ball-3-in-play,5084-score-ball-3-in-play,1452166,1452416,2,1 2 / JUGADOR BOLA,3728
-5085,score-ball-3-in-play,5085-score-ball-3-in-play,1452450,1452450,1,JUGADOR BOLA,5085
+5085,score-ball-3-in-play,5085-score-ball-3-in-play,1452450,1452450,1,1 2 / JUGADOR BOLA,5085
 5086,score-ball-3-in-play,5086-score-ball-3-in-play,1452466,1452466,1,,3
 5087,score-ball-3-in-play,5087-score-ball-3-in-play,1452500,1452500,1,,591
 5088,score-ball-3-in-play,5088-score-ball-3-in-play,1452616,1452616,1,,592
@@ -5095,7 +5095,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5094,score-ball-3-in-play,5094-score-ball-3-in-play,1453350,1453350,1,,592
 5095,score-ball-3-in-play,5095-score-ball-3-in-play,1453483,1453483,1,,591
 5096,score-ball-3-in-play,5096-score-ball-3-in-play,1453600,1453766,4,,5096
-5097,score-ball-3-in-play,5097-score-ball-3-in-play,1453783,1458233,37,JUGADOR BOLA,5097
+5097,score-ball-3-in-play,5097-score-ball-3-in-play,1453783,1458233,37,1 2 / JUGADOR BOLA,5097
 5098,score-ball-3-in-play,5098-score-ball-3-in-play,1458400,1458400,1,,3
 5099,score-ball-3-in-play,5099-score-ball-3-in-play,1458433,1458433,1,,13
 5100,score-ball-3-in-play,5100-score-ball-3-in-play,1458483,1458483,1,,208
@@ -5127,10 +5127,10 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5126,score-ball-3-in-play,5126-score-ball-3-in-play,1460833,1460833,1,,591
 5127,score-ball-3-in-play,5127-score-ball-3-in-play,1460933,1460933,1,,592
 5128,score-ball-3-in-play,5128-score-ball-3-in-play,1461083,1461083,1,,591
-5129,score-ball-3-in-play,5129-score-ball-3-in-play,1461100,1487933,176,2 / JUGADOR BOLA,5129
-5130,score-ball-3-drained-gameover,5130-score-ball-3-drained-gameover,1488116,1488116,1,JUGADOR BOLA,5130
+5129,score-ball-3-in-play,5129-score-ball-3-in-play,1461100,1487933,176,2 / 1 2 / JUGADOR BOLA,5129
+5130,score-ball-3-drained-gameover,5130-score-ball-3-drained-gameover,1488116,1488116,1,1 2 / JUGADOR BOLA,5130
 5131,score-ball-3-drained-gameover,5131-score-ball-3-drained-gameover,1488233,1489350,4,1 3 / JUGADOR BOLA,304
-5132,score-ball-3-drained-gameover,5132-score-ball-3-drained-gameover,1489383,1489400,2,JUGADOR BOLA,5132
+5132,score-ball-3-drained-gameover,5132-score-ball-3-drained-gameover,1489383,1489400,2,1 3 / JUGADOR BOLA,5132
 5133,score-ball-3-drained-gameover,5133-score-ball-3-drained-gameover,1489433,1489550,4,JUGADOR BOLA,5133
 5134,score-ball-3-drained-gameover,5134-score-ball-3-drained-gameover,1489600,1489866,11,JUGADOR BOLA,5134
 5135,score-ball-3-drained-gameover,5135-score-ball-3-drained-gameover,1489883,1489883,1,JUGADOR BOLA,5135
@@ -5169,20 +5169,20 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5168,score-ball-3-drained-gameover,5168-score-ball-3-drained-gameover,1491700,1491850,6,JUGADOR BOLA,5168
 5169,score-ball-3-drained-gameover,5169-score-ball-3-drained-gameover,1491866,1491933,3,JUGADOR BOLA,5169
 5170,score-ball-3-drained-gameover,5170-score-ball-3-drained-gameover,1491983,1491983,1,JUGADOR BOLA,5170
-5171,score-ball-3-drained-gameover,5171-score-ball-3-drained-gameover,1492033,1493850,22,JUGADOR BOLA,5171
-5172,score-recover-wait,5172-score-recover-wait,1494050,1543950,317,JUGADOR BOLA,5172
+5171,score-ball-3-drained-gameover,5171-score-ball-3-drained-gameover,1492033,1493850,22,1 3 / JUGADOR BOLA,5171
+5172,score-recover-wait,5172-score-recover-wait,1494050,1543950,317,1 3 / JUGADOR BOLA,5172
 5173,score-recover-plunge,5173-score-recover-plunge,1544166,1553883,66,1 3 / JUGADOR BOLA,5173
 5174,score-recover-hits,5174-score-recover-hits,1554100,1554266,7,1 3 / JUGADOR BOLA,5174
 5175,score-recover-hits,5175-score-recover-hits,1554300,1554300,1,,3
 5176,score-recover-hits,5176-score-recover-hits,1554316,1556150,29,,227
 5177,score-recover-hits,5177-score-recover-hits,1556166,1556166,1,1 3 / JUGADOR BOLA,362
-5178,score-recover-hits,5178-score-recover-hits,1556200,1556750,13,2 6.515 / JUGADOR BOLA,5178
-5179,score-recover-hits,5179-score-recover-hits,1556783,1557550,17,JUGADOR BOLA,5179
-5180,score-recover-hits,5180-score-recover-hits,1557600,1558400,10,JUGADOR BOLA,5180
+5178,score-recover-hits,5178-score-recover-hits,1556200,1556750,13,2 6.515 / 1 3 / JUGADOR BOLA,5178
+5179,score-recover-hits,5179-score-recover-hits,1556783,1557550,17,1 3 / JUGADOR BOLA,5179
+5180,score-recover-hits,5180-score-recover-hits,1557600,1558400,10,1 3 / JUGADOR BOLA,5180
 5181,score-recover-hits,5181-score-recover-hits,1558483,1558516,2,,197
 5182,score-recover-hits,5182-score-recover-hits,1559033,1559033,1,,3
-5183,score-recover-hits,5183-score-recover-hits,1559066,1585616,166,JUGADOR BOLA,5183
-5184,score-recover-drained,5184-score-recover-drained,1585633,1585866,4,JUGADOR BOLA,5184
+5183,score-recover-hits,5183-score-recover-hits,1559066,1585616,166,1 3 / JUGADOR BOLA,5183
+5184,score-recover-drained,5184-score-recover-drained,1585633,1585866,4,1 3 / JUGADOR BOLA,5184
 5185,score-recover-drained,5185-score-recover-drained,1585883,1586350,3,,5185
 5186,score-recover-drained,5186-score-recover-drained,1587016,1587016,1,,5186
 5187,score-recover-drained,5187-score-recover-drained,1587033,1587483,3,,367
@@ -5193,25 +5193,25 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5192,score-recover-drained,5192-score-recover-drained,1590850,1590850,1,,5192
 5193,score-recover-drained,5193-score-recover-drained,1590933,1590933,1,,5193
 5194,score-recover-drained,5194-score-recover-drained,1591016,1591016,1,,5194
-5195,score-recover-drained,5195-score-recover-drained,1591083,1591616,20,N N,5195
-5196,score-high-score-entry,5196-score-high-score-entry,1591633,1593100,57,N N,5196
-5197,wheel-c1-fwd-00,5197-wheel-c1-fwd-00,1593133,1594616,59,N N,5197
-5198,wheel-c1-fwd-01,5198-wheel-c1-fwd-01,1594650,1596116,58,N N,5198
-5199,wheel-c1-fwd-02,5199-wheel-c1-fwd-02,1596150,1597616,55,N N,5199
-5200,wheel-c1-fwd-03,5200-wheel-c1-fwd-03,1597633,1599116,57,N N,5200
-5201,wheel-c1-fwd-04,5201-wheel-c1-fwd-04,1599150,1601100,75,N N / 0A,5201
-5202,wheel-c1-fixed,5202-wheel-c1-fixed,1601133,1602616,59,N N / 0D,5202
-5203,wheel-c2-fwd-00,5203-wheel-c2-fwd-00,1602650,1604116,58,N N / 0F,5203
-5204,wheel-c2-fwd-01,5204-wheel-c2-fwd-01,1604150,1605616,55,N N / 0I,5204
-5205,wheel-c2-fwd-02,5205-wheel-c2-fwd-02,1605633,1607616,76,N N / 0IA,5205
-5206,wheel-c2-fixed,5206-wheel-c2-fixed,1607633,1609100,58,N N / 0I8,5206
-5207,wheel-c3-erase-symbol,5207-wheel-c3-erase-symbol,1609133,1611616,94,N N / 0I8A,5207
-5208,wheel-c3-erase-tried,5208-wheel-c3-erase-tried,1611633,1613100,57,N N / 0I8D,5208
-5209,wheel-c3-refwd-00,5209-wheel-c3-refwd-00,1613133,1614616,59,N N / 0I8G,5209
-5210,wheel-c3-refwd-01,5210-wheel-c3-refwd-01,1614650,1616116,57,N N / 0I8J,5210
-5211,wheel-c3-refwd-02,5211-wheel-c3-refwd-02,1616150,1617616,55,N N / 0I8M,5211
-5212,wheel-c3-refwd-03,5212-wheel-c3-refwd-03,1617633,1622616,190,N N / 0I8MA,5212
-5213,wheel-c3-fixed,5213-wheel-c3-fixed,1622650,1628700,232,N N / 0I8MA,5213
+5195,score-recover-drained,5195-score-recover-drained,1591083,1591616,20,INSCRIPCI0N / :A / JUGAD 1:,5195
+5196,score-high-score-entry,5196-score-high-score-entry,1591633,1593100,57,INSCRIPCI0N / :D / JUG 1:,5196
+5197,wheel-c1-fwd-00,5197-wheel-c1-fwd-00,1593133,1594616,59,INSCRIPCI0N / :G / JUG 1:,5197
+5198,wheel-c1-fwd-01,5198-wheel-c1-fwd-01,1594650,1596116,58,INSCRIPCI0N / :J / JUG 1:,5198
+5199,wheel-c1-fwd-02,5199-wheel-c1-fwd-02,1596150,1597616,55,INSCRIPCI0N / :M / JUG 1:,5199
+5200,wheel-c1-fwd-03,5200-wheel-c1-fwd-03,1597633,1599116,57,INSCRIPCI0N / :0 / JUG 1:,5200
+5201,wheel-c1-fwd-04,5201-wheel-c1-fwd-04,1599150,1601100,75,INSCRIPCI0N / :0A / JUG 1:,5201
+5202,wheel-c1-fixed,5202-wheel-c1-fixed,1601133,1602616,59,INSCRIPCI0N / :0D / JUG 1:,5202
+5203,wheel-c2-fwd-00,5203-wheel-c2-fwd-00,1602650,1604116,58,INSCRIPCI0N / :0F / JUG 1:,5203
+5204,wheel-c2-fwd-01,5204-wheel-c2-fwd-01,1604150,1605616,55,INSCRIPCI0N / :0I / JUG 1:,5204
+5205,wheel-c2-fwd-02,5205-wheel-c2-fwd-02,1605633,1607616,76,INSCRIPCI0N / :0IA / JUG 1:,5205
+5206,wheel-c2-fixed,5206-wheel-c2-fixed,1607633,1609100,58,INSCRIPCI0N / :0I8 / JUG 1:,5206
+5207,wheel-c3-erase-symbol,5207-wheel-c3-erase-symbol,1609133,1611616,94,INSCRIPCI0N / :0I8A / JUG 1:,5207
+5208,wheel-c3-erase-tried,5208-wheel-c3-erase-tried,1611633,1613100,57,INSCRIPCI0N / :0I8D / JUG 1:,5208
+5209,wheel-c3-refwd-00,5209-wheel-c3-refwd-00,1613133,1614616,59,INSCRIPCI0N / :0I8G / JUG 1:,5209
+5210,wheel-c3-refwd-01,5210-wheel-c3-refwd-01,1614650,1616116,57,INSCRIPCI0N / :0I8J / JUG 1:,5210
+5211,wheel-c3-refwd-02,5211-wheel-c3-refwd-02,1616150,1617616,55,INSCRIPCI0N / :0I8M / JUG 1:,5211
+5212,wheel-c3-refwd-03,5212-wheel-c3-refwd-03,1617633,1622616,190,INSCRIPCI0N / :0I8MA / JUG 1:,5212
+5213,wheel-c3-fixed,5213-wheel-c3-fixed,1622650,1628700,232,INSCRIPCI0N / :0I8MA / JU 1:,5213
 5214,wheel-c3-fixed,5214-wheel-c3-fixed,1628716,1628716,1,,3
 5215,wheel-c3-fixed,5215-wheel-c3-fixed,1628800,1634566,110,PRESS START,5215
 5216,score-post-entry-wait,5216-score-post-entry-wait,1656033,1656033,1,,3
@@ -5246,12 +5246,12 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5245,score-attract-again,5245-score-attract-again,1678433,1678433,1,,3
 5246,score-attract-again,5246-score-attract-again,1678466,1678466,1,,23
 5247,score-attract-again,5247-score-attract-again,1679316,1679316,1,,3
-5248,score-attract-again,5248-score-attract-again,1679333,1680533,12,5 0,25
+5248,score-attract-again,5248-score-attract-again,1679333,1680533,12,50 00,25
 5249,score-attract-again,5249-score-attract-again,1681400,1681400,1,,3
-5250,score-attract-again,5250-score-attract-again,1681433,1682616,13,,27
+5250,score-attract-again,5250-score-attract-again,1681433,1682616,13,00,27
 5251,score-attract-again,5251-score-attract-again,1683500,1683500,1,. . / . .,5251
 5252,score-attract-again,5252-score-attract-again,1683516,1683516,1,,3
-5253,score-attract-again,5253-score-attract-again,1683533,1683900,16,,5253
+5253,score-attract-again,5253-score-attract-again,1683533,1683900,16,00,5253
 5254,score-attract-again,5254-score-attract-again,1684783,1684783,1,,3
 5255,score-attract-again,5255-score-attract-again,1684800,1684800,1,,5255
 5256,score-attract-again,5256-score-attract-again,1684916,1684916,1,,3
@@ -5368,11 +5368,11 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5367,score-attract-again,5367-score-attract-again,1772400,1772400,1,,3
 5368,score-attract-again,5368-score-attract-again,1772416,1772416,1,,23
 5369,score-attract-again,5369-score-attract-again,1773266,1773266,1,,3
-5370,score-attract-again,5370-score-attract-again,1773300,1774483,12,5 0,25
+5370,score-attract-again,5370-score-attract-again,1773300,1774483,12,50 00,25
 5371,score-attract-again,5371-score-attract-again,1775366,1775366,1,,3
-5372,score-attract-again,5372-score-attract-again,1775400,1776583,13,,27
+5372,score-attract-again,5372-score-attract-again,1775400,1776583,13,00,27
 5373,score-attract-again,5373-score-attract-again,1777466,1777466,1,,3
-5374,score-attract-again,5374-score-attract-again,1777483,1777850,17,,5253
+5374,score-attract-again,5374-score-attract-again,1777483,1777850,17,00,5253
 5375,score-attract-again,5375-score-attract-again,1778733,1778733,1,,3
 5376,score-attract-again,5376-score-attract-again,1778766,1778766,1,,5255
 5377,score-attract-again,5377-score-attract-again,1778866,1778866,1,,3

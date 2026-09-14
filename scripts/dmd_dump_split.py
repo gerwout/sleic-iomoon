@@ -225,6 +225,23 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True, min_glyphs=2)
     frame's own '0'-'3' characters directly against
     iomoon_strings.score_glyph_bitmaps()'s own level strings.
 
+    Binarizing is itself two different rules, tried in order, not one:
+    "nonzero is lit" (the original rule, correct for a service-menu screen,
+    whose own h=9/h=12 text renders at a flat level 1 throughout -- rendering
+    `dmd/en/screens/5383-svc-1/repr.txt` finds no level-3 pixel anywhere on
+    it) and "only level 3 is lit" (needed for a screen like the high-score
+    wheel-walk, where the same faces render at level 3 but the panel's own
+    background dither shows through a glyph's *blank* margin at level 1 --
+    "nonzero is lit" then requires that dither to also be exactly 0, which
+    it never is, so an exact match finds the word nowhere even though it
+    renders cleanly). Neither rule is a strict refinement of the other --
+    "nonzero" is the looser requirement on lit pixels but the stricter one
+    on blank pixels, and vice versa for "only 3" -- so a window is tried
+    against "nonzero" first and only falls through to "only 3" on a miss:
+    this can only ever recover a match the first rule missed, never
+    override one it already found, which is why re-splitting the whole
+    corpus with this added showed zero cells lost, not just zero regressed.
+
     A run of misses between two matches on the same line becomes exactly
     one space (rather than the naive "WAITINGFOR" with no gap, or a space
     per missed column) -- this relies on the space glyph itself never being
@@ -257,16 +274,23 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True, min_glyphs=2)
     if width < cell_w:
         return []
     if binarize:
-        cmprows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+        cmp_variants = [
+            [''.join('1' if c != '0' else '0' for c in row) for row in rows],
+            [''.join('1' if c == '3' else '0' for c in row) for row in rows],
+        ]
     else:
-        cmprows = rows
+        cmp_variants = [rows]
 
     lines = []
     for y in range(len(rows) - height + 1):
-        window = cmprows[y:y + height]
+        windows = [cmp[y:y + height] for cmp in cmp_variants]
         chars, x, gap = [], 0, False
         while x <= width - cell_w:
-            label = bits_to_label.get(tuple(r[x:x + cell_w] for r in window))
+            label = None
+            for window in windows:
+                label = bits_to_label.get(tuple(r[x:x + cell_w] for r in window))
+                if label is not None:
+                    break
             if label is not None:
                 if chars and gap:
                     chars.append(' ')
