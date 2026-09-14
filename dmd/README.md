@@ -124,41 +124,60 @@ touches only the end-of-game path.
 
 ## Open items
 
-- **The large `height=23` score/price face never decodes in this corpus, because its
-  glyphs are SHADED and every matcher here used to key off plane 0 alone.** Its digits
-  are a bright (level 3) outline around a mid-tone (level 1) interior, so they occupy
-  both bitplanes at once; a matcher that reads plane 0 only and compares exactly can
-  never match a real captured frame, whatever its dither. Thresholding the frame at
-  level 3 (discarding the dimmer dither levels entirely) across 268 empty gameplay and
-  attract scenes recovers only 2 — the panel's own dithered background was not the
-  cause. `iomoon_strings.score_glyph_bitmaps` now builds its key from both planes
-  (level = `2*plane0_bit + plane1_bit`, F13's own weighting), and the fix is confirmed
-  structurally sound (the decimal-point mark it now finds spans a shaded 3x3 area, not
-  the plane-0-only 2x2 box the old reading found) — but this specific 16x23 face still
-  never exact-matches a real in-play number anywhere in this corpus: scanning all 21
-  of its labels against every one of the raw dump's 11,723 frames finds zero hits, and
-  the closest approximate match differs in 120 of 368 pixels — no resemblance. A
-  **smaller, 8x12 digit face** immediately after it in the font table (table index
-  183-203) does decode real digit runs from this corpus with the same two-plane fix —
-  `ball-2-in-play` (`3. 8.743`), `drop-bank-2-down` (`3. 5. 8`), `drop-bank-4-down`
-  (`: 95`) — but each run is short and no scene identifies what it displays; it may not
-  be the main player score. Which face draws that is open; see
-  `docs/dmd_graphics.md`'s own "Open items" for what would settle it.
-- **A whole second glyph face (`h=12`) now decodes in this `screens.csv`.** Several
-  service-menu leaf pages in this corpus show real text in a larger face than the h=9
-  one — e.g. `svc-25` showing legible "ORBIT FLIP"-style prose at roughly double the
-  h=9 cell size. Its table offset (75) is now pinned and wired into
-  `scripts/dmd_dump_split.py`, and this `screens.csv` has been re-split against it. It
-  also decodes the attract high-score amounts (`300.000.000`, `200.000.000`,
-  `100.000.000` — scenes 51/420/780, 55/424/784, 61/428/790) beside the h=9
-  `S.MOONLIGHT`/`J.SUNSHINE`/`B.STARWAY` labels already present. Scanned over every
-  frame in the corpus rather than just the screens it was pinned against, it also
-  produces low-confidence noise on unrelated content — short `00` fragments and
-  longer letter runs (`AADCAAAADAI...`) on several `svc-N`/`back-to-N`/`lottery`
-  scenes, evidently coincidental partial matches against menu-UI graphics (a
-  depth-trail icon, most likely) or another still-unpinned face, not real words. A
-  human reading `screens.csv` should treat any short, non-lexical `h=12` result on
-  those labels with that in mind.
+- **Two different score displays exist in this game, and only one of them
+  decodes.** The attract-mode high-score table is drawn in the `height=12`
+  face (table offset 75) and now decodes cleanly: `S.MOONLIGHT /
+  300.000.000 / . .`, `J.SUNSHINE / 200.000.000 / . .`, `B.STARWAY /
+  100.000.000 / . .` (scenes 51/420/780, 55/424/784, 61/428/790). The
+  **in-play** score is a separate, larger display — shaded digits, a bright
+  (level 3) outline around a mid-tone (level 1) interior, legible by eye
+  during a gameplay capture (e.g. `2.452.230`, `3.812.237`, `1.027.571` in
+  earlier renders of this and the prior corpus) — and its face is not
+  identified. `iomoon_strings.score_glyph_bitmaps` now builds its match key
+  from both bitplanes (level = `2*plane0_bit + plane1_bit`, F13's own
+  weighting), which rules out the panel's own dithered background as the
+  cause of the original empty cells: thresholding the frame at level 3
+  (discarding the dimmer dither levels entirely) across 268 empty gameplay
+  and attract scenes recovered only 2, and the fix is confirmed
+  structurally sound against the ROM's own font-table data (the
+  decimal-point mark it now finds spans a shaded 3x3 area, not the
+  plane-0-only 2x2 box the old reading found). Applied and measured, it
+  rules out one specific candidate for the in-play display: the `(h=23,
+  W=2)` face never exact-matches a real frame anywhere in this corpus —
+  scanning all 21 of its labels against every one of the raw dump's 11,723
+  frames finds zero hits, and the closest approximate match differs in 120
+  of 368 pixels, no resemblance. What would settle which face draws the
+  in-play score: matching a rendered in-play frame, by eye, against each
+  remaining candidate face in the walked font table (`docs/dmd_graphics.md`
+  lists them).
+- **The `h=12` face is pinned (table offset 75) and now decodes the
+  single most valuable text in this corpus: the attract high-score
+  table**, beside the h=9 `S.MOONLIGHT`/`J.SUNSHINE`/`B.STARWAY` labels
+  already present (see above). It also renders real text on several
+  service-menu leaf pages too large for the h=9 face — e.g. `svc-25`
+  showing legible "ORBIT FLIP"-style prose at roughly double the h=9 cell
+  size — and, through a second, smaller `(12, 1)` digit block at table
+  index 183-203, real digit runs from three gameplay scenes:
+  `ball-2-in-play` (`3. 8.743`), `drop-bank-2-down` (`3. 5. 8`),
+  `drop-bank-4-down` (`: 95`). It also reads `00` on six scenes — four
+  (`svc-33`, `svc-34`, `svc-37`, `svc-menu-final-close`) sit at or near the
+  free-running lamp/relay counters the auto-cycling TECNICO tests already
+  show elsewhere in this document, a plausible source though not
+  independently confirmed here; the other two (`lottery`, `attract-again`)
+  most likely read part of a larger, still-unidentified digit graphic.
+
+  Scanned over every frame in the corpus rather than just the screens it
+  was confirmed against, the same face also produces a **growing letter
+  run on `svc-N`/`back-to-N` scenes** — `AA`, `AAD`, `AADC`, `AADCA`,
+  `AADCAA`, ..., up to `AADCAAAADAI AE / AACABAAAAB AAB` — that grows by
+  exactly one character per scene as the service-menu walk descends. This
+  is not noise: rendered directly (`dmd/en/screens/0557-svc-16/repr.txt`),
+  it is a row of 13-14 glyph-shaped tiles over a dim (level-1) bar — the
+  service menu draws a bar or level indicator out of the same `h=12` letter
+  bitmaps, filling one tile at a time, so the matches are bitmap-faithful
+  (they are the real `h=12` bitmaps, not a coincidence) and simply are not
+  text. A reader of `screens.csv` should expect a growing letter run under
+  those two labels and read it as a level indicator, not a word.
 - **`full-tilt` produces zero scenes.** The tilt sequence itself runs (ball
   2 correctly proceeds to ball 3 afterward), but no DMD frame is captured
   between the second tilt press and the ball's drain — not a handful of
@@ -198,3 +217,13 @@ touches only the end-of-game path.
   approximate a fuller cycle rather than the ~10s the brief's literal
   ordering first produced, but a single continuous "one full loop, start to
   repeat" boundary is not identified either place.
+- **The in-play `PLAYER`/`BALL` font is not in the walked font table.**
+  Every `ball-N-in-play`/`ball-N-drained` scene shows `PLAYER 1` and
+  `BALL 1` in a small, roughly 6-row-tall, single-pixel-stroke font at full
+  brightness — nothing like the bold `h=9` or `h=12` faces this decoder
+  reads. It is not among the font table's 224 entries: searching both ROMs
+  for its `P` bitmap finds no match as contiguous one byte per row, padded
+  with blank rows to a taller cell, or at a 16-byte stride inside a
+  128-pixel-wide frame buffer. Unchanged by this round; see
+  `docs/dmd_graphics.md`'s own "Open items" for the full account and what
+  would settle it.

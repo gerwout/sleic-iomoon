@@ -420,6 +420,12 @@ to isolate just this text against a blank background.
 
 ### Which face draws the main player score is not settled
 
+Two different score displays exist. The attract-mode high-score table is
+the `height=12` face pinned above, and it decodes (`300.000.000` beside
+`S.MOONLIGHT`, etc.). The **in-play** score is a separate, larger display —
+legible by eye during a gameplay capture, e.g. `2.452.230`, `3.812.237`,
+`1.027.571` — and its face is not identified; this item is about that one.
+
 The large `height=23, width=2` face is shaded and its matcher now reads both
 bitplanes (see "Font Entry Structure" above), but no scene in the committed
 English corpus (`dmd/en/`) shows it decoding a real in-play number: scanning
