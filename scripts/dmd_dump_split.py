@@ -300,10 +300,104 @@ def slug(text):
     return s.strip('-')[:48] or 'screen'
 
 
+def _normalize_field(s):
+    """Case- and whitespace-fold one decoded field for coverage comparison.
+
+    Collapses internal blank runs to one space and drops leading/trailing
+    ones, because _scan_face's own space rule (a run of misses between two
+    matches becomes exactly one space; a leading gap before the first
+    matched glyph is never captured at all) means a corpus-decoded field
+    never reproduces a ROM pool string's original spacing byte for byte
+    (e.g. the pool's own '  OF  10 CRED:' decodes on screen as 'OF 10
+    CRED:').
+    """
+    return ' '.join(s.split()).upper()
+
+
+def coverage_report(rom_path, csv_paths):
+    """[(tier, source, string, found), ...] -- every string iomoon_strings.py
+    can currently name, checked against every given screens.csv's `text`
+    column, most to least certain about what ROM data a string actually is:
+
+      tier 1 -- contact_table()/menu_records(): a string reached through a
+        resolved pointer (F14 the 38-record menu tree, F16 the switch/
+        cabinet names), both languages.
+      tier 2 -- ENGLISH_POOL/SPANISH_POOL: the two windows iomoon_strings.py
+        declares. English is now the verified full envelope of tier 1's own
+        two English tables (so it adds nothing tier 1 didn't already reach);
+        Spanish stays a narrower, verified-clean sub-window -- tier 1's own
+        Spanish tables already resolve strings outside it.
+      tier 3 -- every other length-prefixed string a flat byte sweep finds
+        in the ROM's whole string area (0x17a8-0x2eaa, the bound a sweep
+        this wide actually needs -- one byte short of the facts file's own
+        approximate 0x2ebc, which includes a zero-padding run right after
+        the last real string that a byte-level sweep otherwise misreads as
+        one): fault/boot messages, the coil-group and fuse names, the
+        per-country CREDITS-page denominations -- real ROM strings with no
+        pointer table pinned down yet, reported as exactly that, not folded
+        into a coverage number against tiers 1-2 alone.
+
+    A string counts as present only if it equals -- after `_normalize_field`
+    on both sides -- one whole decoded field (one ' / '-delimited segment of
+    a row's `text`), never a substring or a single word carved out of a
+    longer field: a substring test counts the pool's own short or common
+    entries ('M', 'YES', 'SETTING') as covered by nearly any text, and even
+    a whole-word test would wrongly credit the ROM's distinct 'SETTING'
+    string from a field that is really the unrelated 'SETTING COUNTRY'.
+    Each distinct string value is reported once, at its first (lowest-
+    offset/earliest) source.
+    """
+    data = open(rom_path, 'rb').read()
+    seen = set()
+    for p in csv_paths:
+        for row in csv.DictReader(open(p)):
+            for seg in (row.get('text') or '').split(' / '):
+                seg = _normalize_field(seg)
+                if seg:
+                    seen.add(seg)
+
+    # Dedup key is the *normalized* form, not the raw bytes: the same string
+    # can sit at two pointer-reached offsets one byte apart (a far pointer
+    # that includes or skips a leading space a neighbouring one does not),
+    # which would otherwise report the identical word twice under two tiers.
+    out = []
+    known = set()
+
+    for code, (cnum, en, es) in sorted(iomoon_strings.contact_table(data).items()):
+        for lang, s in (('en', en), ('es', es)):
+            if _normalize_field(s) not in known:
+                known.add(_normalize_field(s))
+                out.append(('1', 'contact_table:%s code 0x%02X (C%d)' % (lang, code, cnum), s))
+    for base, lang in ((iomoon_strings.MENU_TABLE_BASE, 'en'),
+                        (iomoon_strings.SPANISH_MENU_TABLE_BASE, 'es')):
+        for i, (_rtype, _ic, _lc, lines, _children) in enumerate(iomoon_strings.menu_records(data, base)):
+            for s in lines:
+                if _normalize_field(s) not in known:
+                    known.add(_normalize_field(s))
+                    out.append(('1', 'menu_records:%s record %d' % (lang, i), s))
+
+    for lang, bounds in (('en', iomoon_strings.ENGLISH_POOL), ('es', iomoon_strings.SPANISH_POOL)):
+        for off, s in iomoon_strings.string_pool(data, *bounds):
+            s = s.strip()
+            if s and _normalize_field(s) not in known:
+                known.add(_normalize_field(s))
+                out.append(('2', 'pool:%s 0x%x' % (lang, off), s))
+
+    for off, s in iomoon_strings.string_pool(data, 0x17a8, 0x2eaa):
+        s = s.strip()
+        if s and _normalize_field(s) not in known:
+            known.add(_normalize_field(s))
+            out.append(('3', 'sweep 0x%x' % off, s))
+
+    return [(tier, src, s, _normalize_field(s) in seen) for tier, src, s in out]
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('dump', help='the frame dump, in the colorizer .txt format')
-    ap.add_argument('--out', required=True, help='directory to write screens/ and screens.csv into')
+    ap.add_argument('paths', nargs='+',
+                     help='the frame dump (colorizer .txt format); with --coverage, one or '
+                          'more screens.csv files instead')
+    ap.add_argument('--out', help='directory to write screens/ and screens.csv into')
     ap.add_argument('--marks', default=None,
                      help='the key script\'s .marks sidecar (default: <dump without extension>.marks)')
     ap.add_argument('--threshold', type=float, default=0.25,
@@ -312,8 +406,31 @@ def main():
                      help='lit-union diff that starts a new scene (default 0.8)')
     ap.add_argument('--rom', default=None,
                      help='the 80188 ROM1 image (e.g. roms/iomoon/v1_3_01.bin) to read the DMD '
-                          'font from for the text column; omitted, text is written empty')
+                          'font from for the text column; omitted, text is written empty. '
+                          'Required with --coverage, to decode the ROM string pools.')
+    ap.add_argument('--coverage', action='store_true',
+                     help='report which ROM strings (see coverage_report) the given '
+                          'screens.csv files do and do not contain, instead of splitting a dump')
     args = ap.parse_args()
+
+    if args.coverage:
+        if not args.rom:
+            sys.exit('--coverage needs --rom')
+        rows = coverage_report(args.rom, args.paths)
+        missing = 0
+        for tier, src, s, found in rows:
+            print('%s  tier %s  %-40s |%s|' % ('   OK' if found else 'MISSING', tier, src, s))
+            missing += not found
+        print('%d strings named, %d missing (tier counts: %s)'
+              % (len(rows), missing,
+                 ', '.join('%s=%d' % (t, sum(1 for r in rows if r[0] == t)) for t in '123')))
+        return
+
+    if len(args.paths) != 1:
+        sys.exit('exactly one dump file is required (omit --coverage for this mode)')
+    if not args.out:
+        sys.exit('--out is required (omit --coverage for this mode)')
+    args.dump = args.paths[0]
 
     glyphs, glyphs12, score_glyphs, small_digits = {}, {}, {}, {}
     if args.rom:

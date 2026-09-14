@@ -5,6 +5,46 @@ Per-language captures of every screen the IO Moon DMD draws, produced by driving
 frame dump with `scripts/dmd_dump_split.py`. See
 `scripts/keyscripts/iomoon-en.keys` for the exact walk and its own header
 comment for what it covers and what it found running against the real binary.
+See `docs/iomoon_dmd_screens.md` for the screen-by-screen index and the
+coverage report against the ROM's own string data.
+
+## PinMAME build and capture
+
+Every capture in this corpus (`en/`, `es/`, and `faults/`) is built against
+`pinmame` commit `ea634848` ("sleic: wire Io Moon's DMD path into the
+frame-dump hook"), branch `iomoon-sim` — the commit that first wires
+`-dmd_dump_dir` into Io Moon's own frame-submit path, checked out clean
+(`git status --short src/wpc/sleic.c` empty) for `en/` and `es/`; `faults/`
+additionally needs the throwaway probes `dmd/faults/README.md` cites per
+fault, reverted immediately after.
+
+```bash
+cd pinmame
+cp cmake/sdl3pinmame/CMakeLists.txt CMakeLists.txt
+cmake -DPLATFORM=linux -DARCH=x64 -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -j$(nproc)
+
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy ./build/sdl3pinmame iomoont \
+  -rompath ./roms -nvram_directory /tmp/nv -nosound \
+  -skip_disclaimer -skip_gameinfo -skip_gamewarnings -nothrottle -ftr 400000 \
+  -dmd_dump_dir ../sleic-iomoon/dmd/en \
+  -key_script ../sleic-iomoon/scripts/keyscripts/iomoon-en.keys
+```
+
+`es/` is the same invocation with `dmd/es` and `iomoon-es.keys`, run after
+copying `scripts/keyscripts/iomoont-spain.cfg` to `<cfg dir>/iomoont.cfg`
+(country 5; see the Spanish-corpus section below for why a saved cfg, not a
+live DIP sequence, is what sets it). `faults/`'s own per-fault commands,
+probes and scripts are `dmd/faults/README.md`'s "Reproducing a capture"
+section, not repeated here.
+
+`<lang>/<romset>.txt` is the artefact with downstream value: it is the exact
+input `SortingCDump`/`ColorizingDMD` and the Pin2DMD editor read (byte-exact
+Serum/Pin2DMD format, per-frame timestamps, no PinMAME-specific framing).
+Everything else in this directory — `screens.csv`, `screens/*/repr.txt`,
+`screens/*/frame-*.txt` — is derived from that one file (plus its `.marks`
+sidecar) by `scripts/dmd_dump_split.py` and is regenerable from it; see
+`docs/iomoon_dmd_screens.md`'s "Regenerating" for the exact commands.
 
 ## Layout
 
@@ -368,3 +408,29 @@ touches only the end-of-game path.
   128-pixel-wide frame buffer. Unchanged by this round; see
   `docs/dmd_graphics.md`'s own "Open items" for the full account and what
   would settle it.
+- **The 38-record service-menu tree's own item/title text mostly doesn't
+  render in this walk's dwell.** Beyond the root record and its first
+  child, every deeper `svc-N`/`back-to-N` scene shows the `h=12`
+  tile-glyph-bar level indicator (above) or nothing, never the record's own
+  static list — checked directly against the raw dump: `svc-2`'s entire
+  167 ms scene (all 4 frames) decodes the tile-bar's own growing count
+  throughout, with no trace of record 2's real lines (`LOWEST SCORE` /
+  `BALLS` / `EXTRA BALLS` / `AWARDS`) at any point, and `svc-1`'s own two
+  occurrences show first the previous record's stale text (`GAME` /
+  `TECHNICAL`, leftover from record 0), then, one redraw later, record 1's
+  own settled lines (`VOLUME` / `CUSTOM MESSAGE`) — consistent with a
+  capture-timing gap (the walk advances before a deeper record's display
+  settles) rather than a font or content limit. Spot-checked on `svc-1`/
+  `svc-2` only, not the other 35 records. `docs/iomoon_dmd_screens.md`'s
+  Coverage section has the full breakdown, including the F16 switch/cabinet
+  names (a separate gap: they render only on the live CONTACTOS/SWITCH TEST
+  screen when an actual matrix switch closes, which this walk never
+  triggers).
+- **`boot-setting-country` never shows text**, in either language. Its
+  three scenes per language are pixel-identical, in kind, to the ordinary
+  attract-logo dissolve (`dmd/en/screens/0008-attract/repr.txt`), not a
+  blank or text screen — this walk's normal boot path never triggers the
+  country-mismatch recovery screen (`SETTING COUNTRY` / `DEFAULT VALUES`,
+  `sub_D664D`'s override path, F11) the mark was presumably placed to
+  catch. What would settle it: a capture with the DIP-selected country
+  deliberately mismatched against the stored NVRAM country at boot.
