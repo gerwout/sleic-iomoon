@@ -55,7 +55,7 @@ always "read the row whose `id` equals this row's `repr_id`, then read *that* ro
 dmd/
 ├── README.md                    # capture method, build/commit info, per-corpus narrative
 ├── en/
-│   ├── iomoont.txt               # raw frame dump (Serum/Pin2DMD format, timestamped)
+│   ├── iomoont.txt.gz            # raw frame dump (Serum/Pin2DMD format, timestamped), gzipped
 │   ├── iomoont.marks             # key script's (frame, ms, label) sidecar
 │   ├── screens.csv               # one row per scene occurrence (see above)
 │   └── screens/<NNNN-label>/
@@ -64,7 +64,7 @@ dmd/
 ├── es/                          # same layout, no service-menu tree (F19)
 └── faults/
     ├── README.md                 # which probe forced each of the 8 captures
-    └── <fault>/                  # same iomoont.txt / iomoont.marks / screens.csv / screens/ layout
+    └── <fault>/                  # same iomoont.txt.gz / iomoont.marks / screens.csv / screens/ layout
 ```
 
 ## Regenerating
@@ -74,7 +74,7 @@ but needed for the `text` column):
 
 ```bash
 cd sleic-iomoon
-python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt --out /tmp/regen \
+python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt.gz --out /tmp/regen \
         --marks dmd/en/iomoont.marks --rom ../pinmame/roms/iomoon/v1_3_01.bin
 diff <(cut -d, -f1,2,6 /tmp/regen/screens.csv) <(cut -d, -f1,2,6 dmd/en/screens.csv) \
   && echo "regeneration reproduces the corpus"

@@ -111,7 +111,7 @@ SCORE_FACE_INDEX = 162    # table index 162 renders a 16x23 '0'
 # one above: entries 183-192 (0-9) and 194-203 (0.-9.) exact-match a run of
 # digits at row 0 of dmd/en/screens/0287-ball-2-in-play/repr.txt, decoding
 # '3. 8.743'.  Scanning every entry of both digit faces against all 27,712
-# raw frames of dmd/en/iomoont.txt, the large (23, 2) face never exact-
+# raw frames of dmd/en/iomoont.txt.gz, the large (23, 2) face never exact-
 # matches anywhere in the corpus; this one does, repeatedly, in gameplay.
 SMALL_DIGIT_FACE_HEIGHT = 12
 SMALL_DIGIT_FACE_WIDTH = 1

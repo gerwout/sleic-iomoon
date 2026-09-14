@@ -22,7 +22,7 @@ script that forced it.
 Same conventions as `dmd/en/` and `dmd/es/` (see `../README.md`), one
 directory per fault instead of per language:
 
-- `<fault>/iomoont.txt` — the raw frame dump (Serum/Pin2DMD format).
+- `<fault>/iomoont.txt.gz` — the raw frame dump (Serum/Pin2DMD format), gzipped.
 - `<fault>/iomoont.marks` — the driving key script's mark sidecar.
 - `<fault>/screens.csv` — one row per scene occurrence, `dmd_dump_split.py
   --rom` output.
@@ -245,6 +245,6 @@ SLEIC_FORCE_FAULT=<fault> SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
 | `ball-missing`, `solenoid-short`, `solenoid-cut`, `flipper-broken` | `iomoon-faults-attract` |
 | (tilt: no `SLEIC_FORCE_FAULT`) | `iomoon-faults-tilt`, run against an NVRAM already patched per that script's own header |
 
-Then split: `python3 scripts/dmd_dump_split.py dmd/faults/<fault>/iomoont.txt
+Then split: `python3 scripts/dmd_dump_split.py dmd/faults/<fault>/iomoont.txt.gz
 --out dmd/faults/<fault> --marks dmd/faults/<fault>/iomoont.marks --rom
 ../pinmame/roms/iomoon/v1_3_01.bin`.

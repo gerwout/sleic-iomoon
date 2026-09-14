@@ -42,10 +42,11 @@ not add up to a value or a pair of values that separates "same screen" from "new
 screen" in general; it only shrinks the case where both metrics miss and no mark
 covers it.
 
-    python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt --out dmd/en
+    python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt.gz --out dmd/en
 """
 import argparse
 import csv
+import gzip
 import os
 import sys
 from collections import Counter
@@ -102,7 +103,9 @@ def parse_dump(path):
         if len(pending) >= PROBE:
             settle(pending)
 
-    for line in open(path):
+    opener = gzip.open if path.endswith('.gz') else open
+
+    for line in opener(path, 'rt'):
         line = line.rstrip('\n')
         if line.startswith('0x'):
             if ms is not None and rows:
