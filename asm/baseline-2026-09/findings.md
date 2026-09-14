@@ -2160,13 +2160,13 @@ to match against.
 **The mechanism, read directly out of the ROM.** `sub_D0AF8` (`D0AF8`) stamps
 one 6-row-tall column at `DI` with a caller-supplied fill byte in `AL`
 (`MOV B[DI],AL` / `ADD DI,0x10`, unrolled six times — no table read of any
-kind). `sub_D0ACA` (`D0ACA`) reads a column count from work-RAM `4000:014A`
+kind). `sub_D0ACA` (`D0ACA`) reads a column count from work-RAM `4000:114A`
 and calls `sub_D0AF8` with `AL=0xFF` that many times, decrementing `DI` by
 one byte column each time — i.e. it draws N solid, full-height columns side
 by side, purely from a loop counter. A dispatch table immediately above it,
 `sub_D0A5D` (`D0A5D`, entries at `D0A94`-`D0AC9`), supplies one of nine
 partial-fill bytes (`0x00, 0x80, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE, 0xFF`)
-keyed by a second work-RAM cell, `4000:014B` (0-8), giving the bar's leading
+keyed by a second work-RAM cell, `4000:114B` (0-8), giving the bar's leading
 edge sub-column precision instead of only whole-column steps — the standard
 technique for a smooth level/progress gauge. Both destination cells are the
 background plane (`DI = 0x600 + 0x101 + count`, inside F13's `4000:0600-09FF`
@@ -2174,11 +2174,25 @@ window), not the sprite plane text is normally composed into.
 
 Two callers drive the whole mechanism, sharing the same pair of state cells:
 `sub_D09BC` (`D09BC`) increments the column count (capped at 100, work-RAM
-`4000:0149`) and calls `sub_D0A5D`/`sub_D0ACA` to redraw one notch longer;
+`4000:1149`) and calls `sub_D0A5D`/`sub_D0ACA` to redraw one notch longer;
 `sub_D0A33`'s neighbour at `D09F3`/`D0A02` decrements it and redraws one
 notch shorter. This is a general-purpose level-gauge primitive, not a
 routine written for one specific menu record — consistent with it recurring
 across multiple different `svc-N` pages rather than belonging to just one.
+
+**What actually calls the two callers.** `sub_DD669` (the menu's own
+navigation dispatch, F14) reads a switch code, subtracts `0x3F`, and jumps
+one of four ways: **exit** (`0x3F`) saves and leaves; **back** (`0x40`,
+`sub_DD6DB`) calls the decrement path; **scroll** (`0x41`, `sub_DD6C3`)
+calls the increment path; **select** (`0x42`) is a fourth branch, not
+traced here. Column count `4000:1149` is never reset between records —
+confirmed by grepping the whole listing for every write to it: only the
+increment/decrement routines themselves touch it — so the bar's length at
+any one record is however many net scroll-minus-back presses the whole
+walk has made *so far*, not a value tied to that record specifically. This
+is why the bar appears to "grow with depth": a deeper record has typically
+taken more navigation presses to reach, not because any record stores its
+own target length.
 
 **What this means for the DMD text decoder.** A font matcher finds real
 bitmap matches on these pages (the columns this loop stamps collide, at some
@@ -2188,11 +2202,15 @@ shape — the shape is the loop itself. This is a third class of "undecoded,"
 distinct from F20's stored-picture case and from an unlocated font: here
 there is no stored shape to find in the first place.
 
-**Confidence:** confirmed — both routines and the partial-fill dispatch
-table are read directly from the listing, with no inference involved. Open:
-which specific service-menu quantity (volume, a lamp-test brightness level,
-a solenoid-test intensity, ...) any one `svc-N` record's bar is showing is
-not established from this trace alone — only the drawing mechanism is.
+**Confidence:** confirmed — both routines, the partial-fill dispatch table,
+and `sub_DD669`'s own four-way dispatch are read directly from the listing,
+with no inference involved. This settles "which specific quantity" the bar
+shows: none — it is a navigation-press counter, not a per-record reading of
+volume, brightness, or intensity. Open: `svc-24`'s own record shows no bar
+at all rather than whatever length the cumulative counter had reached by
+that point in a given walk (every other deep record shows some length) —
+not explained by the counter being cumulative alone; see `dmd/README.md`
+for what would settle it.
 
 **Disposition:** new. No prior finding addressed the service-menu depth bar;
 `dmd/README.md`'s own Open items previously described it only as an
