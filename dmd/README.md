@@ -51,6 +51,75 @@ end-of-game hook (`D5123`).
 second number is the one that answers "how many screens does this machine
 draw"; the first counts how many times the walk visited one.
 
+## Spanish corpus (`es/`), captured against `iomoont`
+
+Country 5 selects the Spanish string and menu tables (F11: `D3277`,
+`D8048`, `DD406`); every other value is English. There is no command-line
+DIP option in this build (checked `src/unix/config.c`), so country 5 is
+set through a saved MAME cfg, `scripts/keyscripts/iomoont-spain.cfg`
+(MAME 0.76's binary `MAMECFG` format), rather than a live DIP-menu
+sequence inside `scripts/keyscripts/iomoon-es.keys` itself. To reproduce
+it: copy that cfg to `<cfg dir>/iomoont.cfg` (`~/.sdl3pinmame/cfg/` by
+default) before running the script — `python3 scripts/nvcheck.py
+<nvram>/iomoont.nv` should then read country 5 both before and after the
+run. The cfg was produced by driving MAME's own Config Menu from a
+throwaway key script (`KEYCODE_TAB` opens it; `KEYCODE_DOWN` to "Dip
+Switches", `KEYCODE_ENTER` to enter it, `KEYCODE_DOWN` to the "SW40-2/3/4
+Country" row, one `KEYCODE_RIGHT` to step Netherlands → Spain, `TAB` to
+close), confirmed both via `nvcheck.py` (NVRAM `0x1BF` = 5) and visually
+(the boot screen reads `BOLAS OK`, not `BALLS OK`).
+
+**This corpus has both games (the feature-coverage game and the
+high-score/wheel-walk game) and no service-menu tree.** The game portion
+is `scripts/keyscripts/iomoon-en.keys`'s own game section, replayed
+unchanged — same keys, same relative timing — since playfield switch
+timing is not language-dependent; only the on-screen text differs, and
+the wheel-walk lands on the same score (`233,400,000`) and the same
+per-step decoder progression as the English capture. The service-menu
+tree is not in this corpus: reaching it in this build reproducibly moves
+NVRAM's tracked country from 5 (Spain) to 7 (Portugal), confirmed with
+`nvcheck.py` after every one of three separate attempts — a full copy of
+the English 38-record walk, a minimal three-record walk (root, one
+child, CREDITS), and a bare TEST-key open-then-immediately-close with no
+other key at all, the last of these tried immediately after boot with no
+game ever played. Since the bare open-close reproduces it with zero
+menu keys pressed and zero accumulated game/credit state, this is not
+the English navigation landing on a wrong Spanish record (the risk the
+brief anticipated) and not an artifact of this capture's own play
+history — entering test mode at all, with country 5 already selected
+through the cfg, is sufficient by itself. F14 records that menu entry
+queues both Z80 test-mode commands (`0xF7` enter, `0xF8` exit-and-reboot),
+"so one I/O-board reboot per menu visit is by design"; that reboot
+re-reading the country DIP through a different path than the initial
+cfg-driven boot is the leading suspect, not confirmed — settling it needs
+an instrumented trace of that exchange across the reboot, which needs a
+rebuilt driver binary and was out of reach this round. Capturing
+service-menu screens under a country value that has already silently
+become Portuguese would be worse than not capturing them, so they are
+left out rather than shipped mislabeled.
+
+A related, now-resolved finding along the way: reaching country 5 through
+the live DIP menu **inside** the same run that then tries to play a game
+does not work — ball 1 never registers a single feature hit afterward,
+in every combination of coin count and settle time tried. A clean control
+(the identical DIP-menu sequence left at the Netherlands default) plays
+normally, and reaching country 5 through the saved cfg instead — with the
+English script's original coin economy completely unchanged — also plays
+normally (a real, climbing score). So the live DIP-menu key sequence
+itself, not country 5 and not Spain's coin pricing, is what breaks
+gameplay; this is consistent with F15's undocumented-timeout ball-search
+deadlock (`DC507` waits forever for command `0xEF`'s reply, satisfied
+only by three adjacent trough contacts closed), triggered by whatever the
+DIP-menu's own input-port refresh does to the ball simulator's exposed
+switches at that moment. Using the cfg instead of the live menu avoids it
+entirely, which is what this corpus does.
+
+`screens.csv` lists **5411 scene occurrences**, covering **824 distinct
+screens** under **52 labels**. `du -sh dmd/es` is 297M before committing
+(90M raw dump), comparable to `en/`'s 351M/108M once the missing
+service-menu tail is accounted for — not wildly larger, so nothing here
+is looping.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game
