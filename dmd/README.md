@@ -409,23 +409,36 @@ touches only the end-of-game path.
   `docs/dmd_graphics.md`'s own "Open items" for the full account and what
   would settle it.
 - **The 38-record service-menu tree's own item/title text mostly doesn't
-  render in this walk's dwell.** Beyond the root record and its first
-  child, every deeper `svc-N`/`back-to-N` scene shows the `h=12`
-  tile-glyph-bar level indicator (above) or nothing, never the record's own
-  static list — checked directly against the raw dump: `svc-2`'s entire
-  167 ms scene (all 4 frames) decodes the tile-bar's own growing count
-  throughout, with no trace of record 2's real lines (`LOWEST SCORE` /
-  `BALLS` / `EXTRA BALLS` / `AWARDS`) at any point, and `svc-1`'s own two
-  occurrences show first the previous record's stale text (`GAME` /
-  `TECHNICAL`, leftover from record 0), then, one redraw later, record 1's
-  own settled lines (`VOLUME` / `CUSTOM MESSAGE`) — consistent with a
-  capture-timing gap (the walk advances before a deeper record's display
-  settles) rather than a font or content limit. Spot-checked on `svc-1`/
-  `svc-2` only, not the other 35 records. `docs/iomoon_dmd_screens.md`'s
-  Coverage section has the full breakdown, including the F16 switch/cabinet
-  names (a separate gap: they render only on the live CONTACTOS/SWITCH TEST
-  screen when an actual matrix switch closes, which this walk never
-  triggers).
+  render, and fix round 5 tested — and mostly ruled out — the working
+  theory that this was simply not enough dwell time.** Beyond the root
+  record and its first child, every deeper `svc-N`/`back-to-N` scene
+  showed the `h=12` tile-glyph-bar level indicator (above) or nothing,
+  never the record's own static list, at the original ~120-frame
+  record-to-record dwell. Fix round 5 gave every ordinary record-to-record
+  transition roughly 25x longer (120 frames -> 3000) before the next mark
+  cuts the scene, on the reasoning that a scene's representative is
+  whatever stands last in that window (the same mark-alignment rule used
+  elsewhere in this corpus), so a longer window should let a genuinely
+  still-settling page finish. It mostly didn't move the number: root and
+  record 1 were already captured correctly and stay that way; of the other
+  36, only `svc-35` (one of the auto-cycling LIGHT TEST records) gained
+  real content it hadn't shown before (a legible dynamic readout,
+  `LIGHT: LC10`) — not the record's own static item name, just a sample of
+  its running test landing inside the now-longer window. `svc-2`'s own
+  scene decodes the identical tile-bar pattern whether given 167 ms or the
+  full 25x-longer window, which points away from "still settling" and
+  toward the tile-bar being the stable, fully-drawn state at this depth,
+  not a transitional one that a longer wait would resolve into real text.
+  Measured before/after in `.superpowers/sdd/2026-09-13-iomoon-simulation-
+  and-dmd-screens/task-16-report.md`'s "Fix round 5" section. What would
+  settle it now: comparing raw pixels, not decoded text, between a
+  shallow record's settled page and a deep one's, to see whether the item
+  list is drawn somewhere the tile-bar overlay covers, or not drawn there
+  at all past depth 1. `docs/iomoon_dmd_screens.md`'s Coverage section has
+  the fuller breakdown (now stale against this round's recapture — see the
+  fix-round-5 report), including the F16 switch/cabinet names (a separate
+  gap: they render only on the live CONTACTOS/SWITCH TEST screen when an
+  actual matrix switch closes, which this walk never triggers).
 - **`boot-setting-country` never shows text**, in either language. Its
   three scenes per language are pixel-identical, in kind, to the ordinary
   attract-logo dissolve (`dmd/en/screens/0008-attract/repr.txt`), not a

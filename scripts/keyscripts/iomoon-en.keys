@@ -89,6 +89,27 @@
 # or a third distinct PRESS START). Reaching D5077 needs an actual match
 # win, which this walk does not force. See dmd/README.md and the task
 # report for what was tried.
+#
+# Fix round 5: the service-menu tree's own record-to-record dwell (the gap
+# between a "mark svc-N" and the tap that advances to the next record) was
+# stretched from ~120 frames to 3000 for every ordinary single-hop
+# transition, on the theory that a deeper record's item text was still
+# settling when the walk advanced past it -- a scene's representative is
+# whatever stands last before the next mark, so a longer window should
+# show a still-settling page as done. It mostly did not: root and record 1
+# were already correct and stay that way; of the other 36 records, only
+# svc-35 (an auto-cycling LIGHT TEST record) gained real content (one
+# legible LIGHT: LCn readout) that the shorter dwell had not caught. The
+# other deep records decode the identical h=12 tile-bar pattern at 3000
+# frames that they did at ~120, which points at that pattern being the
+# stable drawn state at this depth rather than a transition a longer wait
+# would resolve -- see dmd/README.md and the task report's "Fix round 5"
+# section for the measurement. The larger transitions this walk already
+# uses for back-out-and-reopen sequences (240-1200 frames, and the
+# 5200-frame menu-reopen wait) are untouched: an earlier attempt that also
+# stretched those desynced the auto-cycling-test navigation and landed the
+# walk in ordinary attract mid-menu, so only the plain 120-frame hops were
+# touched here.
     40 mark boot
     40 tap 8 KEYCODE_1
     80 mark boot-setting-country
@@ -1742,324 +1763,324 @@
 100560 mark score-attract-again
 106560 mark svc-0
 106560 tap 10 KEYCODE_7
-106680 mark svc-1
-106680 tap 10 KEYCODE_RSHIFT
-106800 mark svc-4
-106800 tap 10 KEYCODE_RSHIFT
-106920 mark back-to-1
-106920 tap 10 KEYCODE_1
-107040 tap 10 KEYCODE_LSHIFT
-107160 mark svc-5
-107160 tap 10 KEYCODE_RSHIFT
-107280 mark back-to-1
-107280 tap 10 KEYCODE_1
-107400 mark back-to-0
-107400 tap 10 KEYCODE_1
-107520 tap 10 KEYCODE_LSHIFT
-107640 mark svc-2
-107640 tap 10 KEYCODE_RSHIFT
-107760 mark svc-31
-107760 tap 10 KEYCODE_RSHIFT
-107880 mark back-to-2
-107880 tap 10 KEYCODE_1
-108000 tap 10 KEYCODE_LSHIFT
-108120 mark svc-6
-108120 tap 10 KEYCODE_RSHIFT
-108240 mark svc-27
-108240 tap 10 KEYCODE_RSHIFT
-108360 mark back-to-6
-108360 tap 10 KEYCODE_1
-108480 tap 10 KEYCODE_LSHIFT
-108600 mark svc-28
-108600 tap 10 KEYCODE_RSHIFT
-108720 mark back-to-6
-108720 tap 10 KEYCODE_1
-108840 tap 10 KEYCODE_LSHIFT
-108960 mark svc-29
-108960 tap 10 KEYCODE_RSHIFT
-109080 mark back-to-6
-109080 tap 10 KEYCODE_1
-109200 mark back-to-2
-109200 tap 10 KEYCODE_1
-109320 tap 10 KEYCODE_LSHIFT
-109440 mark svc-7
-109440 tap 10 KEYCODE_RSHIFT
-109560 mark back-to-2
-109560 tap 10 KEYCODE_1
-109680 tap 10 KEYCODE_LSHIFT
-109800 mark svc-8
-109800 tap 10 KEYCODE_RSHIFT
-109920 mark svc-9
-109920 tap 10 KEYCODE_RSHIFT
-110040 mark back-to-8
-110040 tap 10 KEYCODE_1
-110160 tap 10 KEYCODE_LSHIFT
-110280 mark svc-10
-110280 tap 10 KEYCODE_RSHIFT
-110400 mark back-to-8
-110400 tap 10 KEYCODE_1
-110520 tap 10 KEYCODE_LSHIFT
-110640 mark svc-11
-110640 tap 10 KEYCODE_RSHIFT
-110760 mark svc-12
-110760 tap 10 KEYCODE_RSHIFT
-110880 mark svc-13
-110880 tap 10 KEYCODE_RSHIFT
-111000 mark back-to-12
-111000 tap 10 KEYCODE_1
-111120 tap 10 KEYCODE_LSHIFT
-111240 mark svc-14
-111240 tap 10 KEYCODE_RSHIFT
-111360 mark back-to-12
-111360 tap 10 KEYCODE_1
-111480 mark back-to-11
-111480 tap 10 KEYCODE_1
-111600 tap 10 KEYCODE_LSHIFT
-111720 mark svc-15
-111720 tap 10 KEYCODE_RSHIFT
-111840 mark svc-16
-111840 tap 10 KEYCODE_RSHIFT
-111960 mark back-to-15
-111960 tap 10 KEYCODE_1
-112080 tap 10 KEYCODE_LSHIFT
-112200 mark svc-17
-112200 tap 10 KEYCODE_RSHIFT
-112320 mark back-to-15
-112320 tap 10 KEYCODE_1
-112440 mark back-to-11
-112440 tap 10 KEYCODE_1
-112560 tap 10 KEYCODE_LSHIFT
-112680 mark svc-18
-112680 tap 10 KEYCODE_RSHIFT
-112800 mark svc-19
-112800 tap 10 KEYCODE_RSHIFT
-112920 mark back-to-18
-112920 tap 10 KEYCODE_1
-113040 tap 10 KEYCODE_LSHIFT
-113160 mark svc-20
-113160 tap 10 KEYCODE_RSHIFT
-113280 mark back-to-18
-113280 tap 10 KEYCODE_1
-113400 tap 10 KEYCODE_LSHIFT
-113520 mark svc-21
-113520 tap 10 KEYCODE_RSHIFT
-113640 mark back-to-18
-113640 tap 10 KEYCODE_1
-113760 mark back-to-11
-113760 tap 10 KEYCODE_1
-113880 mark back-to-8
-113880 tap 10 KEYCODE_1
-114000 mark back-to-2
-114000 tap 10 KEYCODE_1
-114120 mark back-to-0
-114120 tap 10 KEYCODE_1
-114240 tap 10 KEYCODE_LSHIFT
-114360 mark svc-3
-114360 tap 10 KEYCODE_RSHIFT
-114480 mark svc-22
-114480 tap 10 KEYCODE_RSHIFT
-114600 tap 10 KEYCODE_LSHIFT
-114720 mark svc-25
-114720 tap 10 KEYCODE_RSHIFT
-114840 mark back-to-22
-114840 tap 10 KEYCODE_1
-114960 tap 10 KEYCODE_LSHIFT
-115080 mark svc-26
-115080 tap 10 KEYCODE_RSHIFT
-115200 mark back-to-22
-115200 tap 10 KEYCODE_1
-115320 mark back-to-3
-115320 tap 10 KEYCODE_1
-115440 tap 10 KEYCODE_LSHIFT
-115560 mark svc-23
-115560 tap 10 KEYCODE_RSHIFT
-115680 mark back-to-3
-115680 tap 10 KEYCODE_1
-115800 tap 10 KEYCODE_LSHIFT
-115920 mark svc-30
-115920 tap 10 KEYCODE_RSHIFT
-116040 mark back-to-3
-116040 tap 10 KEYCODE_1
-116160 mark back-to-0
-116160 tap 10 KEYCODE_1
-116280 mark svc-root-exit
-116280 tap 10 KEYCODE_7
-116400 mark reopen-for-svc-35
-116400 tap 10 KEYCODE_7
-116520 tap 10 KEYCODE_LSHIFT
-116640 tap 10 KEYCODE_LSHIFT
-116760 tap 10 KEYCODE_RSHIFT
-116880 tap 10 KEYCODE_RSHIFT
-117000 tap 10 KEYCODE_LSHIFT
-117120 tap 10 KEYCODE_RSHIFT
-117240 mark svc-35
-117240 tap 10 KEYCODE_RSHIFT
-117390 mark svc-35
-117420 mark svc-35
-117450 mark svc-35
-117480 mark svc-35
-117510 mark svc-35
-117540 mark svc-35
-117570 mark svc-35
-117600 mark svc-35
-117630 mark svc-35
-117660 mark svc-35
-117690 mark svc-35
-117720 mark svc-35
-117720 mark svc-35-close
-117720 tap 10 KEYCODE_7
-122920 mark reopen-for-svc-36
-122920 tap 10 KEYCODE_7
-123040 tap 10 KEYCODE_LSHIFT
-123160 tap 10 KEYCODE_LSHIFT
-123280 tap 10 KEYCODE_RSHIFT
-123400 tap 10 KEYCODE_RSHIFT
-123520 tap 10 KEYCODE_LSHIFT
-123640 tap 10 KEYCODE_RSHIFT
-123760 tap 10 KEYCODE_LSHIFT
-123880 mark svc-36
-123880 tap 10 KEYCODE_RSHIFT
-124030 mark svc-36
-124060 mark svc-36
-124090 mark svc-36
-124120 mark svc-36
-124150 mark svc-36
-124180 mark svc-36
-124210 mark svc-36
-124240 mark svc-36
-124270 mark svc-36
-124300 mark svc-36
-124330 mark svc-36
-124360 mark svc-36
-124360 mark svc-36-close
-124360 tap 10 KEYCODE_7
-129560 mark reopen-for-svc-37
-129560 tap 10 KEYCODE_7
-129680 tap 10 KEYCODE_LSHIFT
-129800 tap 10 KEYCODE_LSHIFT
-129920 tap 10 KEYCODE_RSHIFT
-130040 tap 10 KEYCODE_RSHIFT
-130160 tap 10 KEYCODE_LSHIFT
-130280 tap 10 KEYCODE_RSHIFT
-130400 tap 10 KEYCODE_LSHIFT
-130520 tap 10 KEYCODE_LSHIFT
-130640 mark svc-37
-130640 tap 10 KEYCODE_RSHIFT
-130790 mark svc-37
-130820 mark svc-37
-130850 mark svc-37
-130880 mark svc-37
-130910 mark svc-37
-130940 mark svc-37
-130970 mark svc-37
-131000 mark svc-37
-131030 mark svc-37
-131060 mark svc-37
-131090 mark svc-37
-131120 mark svc-37
-131120 mark svc-37-close
-131120 tap 10 KEYCODE_7
-136320 mark reopen-for-svc-24
-136320 tap 10 KEYCODE_7
-136440 tap 10 KEYCODE_LSHIFT
-136560 tap 10 KEYCODE_LSHIFT
-136680 tap 10 KEYCODE_RSHIFT
-136800 tap 10 KEYCODE_RSHIFT
-136920 mark svc-24
-136920 tap 10 KEYCODE_RSHIFT
-137070 mark svc-24
-137100 mark svc-24
-137130 mark svc-24
-137160 mark svc-24
-137190 mark svc-24
-137220 mark svc-24
-137250 mark svc-24
-137280 mark svc-24
-137310 mark svc-24
-137340 mark svc-24
-137370 mark svc-24
-137400 mark svc-24
-137400 mark svc-24-close
-137400 tap 10 KEYCODE_7
-142600 mark reopen-for-svc-32
-142600 tap 10 KEYCODE_7
-142720 tap 10 KEYCODE_LSHIFT
-142840 tap 10 KEYCODE_LSHIFT
-142960 tap 10 KEYCODE_RSHIFT
-143080 tap 10 KEYCODE_RSHIFT
-143200 tap 10 KEYCODE_LSHIFT
-143320 tap 10 KEYCODE_LSHIFT
-143440 tap 10 KEYCODE_RSHIFT
-143560 mark svc-32
-143560 tap 10 KEYCODE_RSHIFT
-143710 mark svc-32
-143740 mark svc-32
-143770 mark svc-32
-143800 mark svc-32
-143830 mark svc-32
-143860 mark svc-32
-143890 mark svc-32
-143920 mark svc-32
-143950 mark svc-32
-143980 mark svc-32
-144010 mark svc-32
-144040 mark svc-32
-144040 mark svc-32-close
-144040 tap 10 KEYCODE_7
-149240 mark reopen-for-svc-33
-149240 tap 10 KEYCODE_7
-149360 tap 10 KEYCODE_LSHIFT
-149480 tap 10 KEYCODE_LSHIFT
-149600 tap 10 KEYCODE_RSHIFT
-149720 tap 10 KEYCODE_RSHIFT
-149840 tap 10 KEYCODE_LSHIFT
-149960 tap 10 KEYCODE_LSHIFT
-150080 tap 10 KEYCODE_RSHIFT
-150200 tap 10 KEYCODE_LSHIFT
-150320 mark svc-33
-150320 tap 10 KEYCODE_RSHIFT
-150470 mark svc-33
-150500 mark svc-33
-150530 mark svc-33
-150560 mark svc-33
-150590 mark svc-33
-150620 mark svc-33
-150650 mark svc-33
-150680 mark svc-33
-150710 mark svc-33
-150740 mark svc-33
-150770 mark svc-33
-150800 mark svc-33
-150800 mark svc-33-close
-150800 tap 10 KEYCODE_7
-156000 mark reopen-for-svc-34
-156000 tap 10 KEYCODE_7
-156120 tap 10 KEYCODE_LSHIFT
-156240 tap 10 KEYCODE_LSHIFT
-156360 tap 10 KEYCODE_RSHIFT
-156480 tap 10 KEYCODE_RSHIFT
+109560 mark svc-1
+109560 tap 10 KEYCODE_RSHIFT
+112560 mark svc-4
+112560 tap 10 KEYCODE_RSHIFT
+115560 mark back-to-1
+115560 tap 10 KEYCODE_1
+115680 tap 10 KEYCODE_LSHIFT
+115800 mark svc-5
+115800 tap 10 KEYCODE_RSHIFT
+118800 mark back-to-1
+118800 tap 10 KEYCODE_1
+121800 mark back-to-0
+121800 tap 10 KEYCODE_1
+121920 tap 10 KEYCODE_LSHIFT
+122040 mark svc-2
+122040 tap 10 KEYCODE_RSHIFT
+125040 mark svc-31
+125040 tap 10 KEYCODE_RSHIFT
+128040 mark back-to-2
+128040 tap 10 KEYCODE_1
+128160 tap 10 KEYCODE_LSHIFT
+128280 mark svc-6
+128280 tap 10 KEYCODE_RSHIFT
+131280 mark svc-27
+131280 tap 10 KEYCODE_RSHIFT
+134280 mark back-to-6
+134280 tap 10 KEYCODE_1
+134400 tap 10 KEYCODE_LSHIFT
+134520 mark svc-28
+134520 tap 10 KEYCODE_RSHIFT
+137520 mark back-to-6
+137520 tap 10 KEYCODE_1
+137640 tap 10 KEYCODE_LSHIFT
+137760 mark svc-29
+137760 tap 10 KEYCODE_RSHIFT
+140760 mark back-to-6
+140760 tap 10 KEYCODE_1
+143760 mark back-to-2
+143760 tap 10 KEYCODE_1
+143880 tap 10 KEYCODE_LSHIFT
+144000 mark svc-7
+144000 tap 10 KEYCODE_RSHIFT
+147000 mark back-to-2
+147000 tap 10 KEYCODE_1
+147120 tap 10 KEYCODE_LSHIFT
+147240 mark svc-8
+147240 tap 10 KEYCODE_RSHIFT
+150240 mark svc-9
+150240 tap 10 KEYCODE_RSHIFT
+153240 mark back-to-8
+153240 tap 10 KEYCODE_1
+153360 tap 10 KEYCODE_LSHIFT
+153480 mark svc-10
+153480 tap 10 KEYCODE_RSHIFT
+156480 mark back-to-8
+156480 tap 10 KEYCODE_1
 156600 tap 10 KEYCODE_LSHIFT
-156720 tap 10 KEYCODE_LSHIFT
-156840 tap 10 KEYCODE_RSHIFT
-156960 tap 10 KEYCODE_LSHIFT
-157080 tap 10 KEYCODE_LSHIFT
-157200 mark svc-34
-157200 tap 10 KEYCODE_RSHIFT
-157350 mark svc-34
-157380 mark svc-34
-157410 mark svc-34
-157440 mark svc-34
-157470 mark svc-34
-157500 mark svc-34
-157530 mark svc-34
-157560 mark svc-34
-157590 mark svc-34
-157620 mark svc-34
-157650 mark svc-34
-157680 mark svc-34
-157680 mark svc-34-close
-157680 tap 10 KEYCODE_7
-162880 mark svc-menu-final-close
-162880 tap 10 KEYCODE_7
-168080 mark svc-menu-done
-168380 quit
+156720 mark svc-11
+156720 tap 10 KEYCODE_RSHIFT
+159720 mark svc-12
+159720 tap 10 KEYCODE_RSHIFT
+162720 mark svc-13
+162720 tap 10 KEYCODE_RSHIFT
+165720 mark back-to-12
+165720 tap 10 KEYCODE_1
+165840 tap 10 KEYCODE_LSHIFT
+165960 mark svc-14
+165960 tap 10 KEYCODE_RSHIFT
+168960 mark back-to-12
+168960 tap 10 KEYCODE_1
+171960 mark back-to-11
+171960 tap 10 KEYCODE_1
+172080 tap 10 KEYCODE_LSHIFT
+172200 mark svc-15
+172200 tap 10 KEYCODE_RSHIFT
+175200 mark svc-16
+175200 tap 10 KEYCODE_RSHIFT
+178200 mark back-to-15
+178200 tap 10 KEYCODE_1
+178320 tap 10 KEYCODE_LSHIFT
+178440 mark svc-17
+178440 tap 10 KEYCODE_RSHIFT
+181440 mark back-to-15
+181440 tap 10 KEYCODE_1
+184440 mark back-to-11
+184440 tap 10 KEYCODE_1
+184560 tap 10 KEYCODE_LSHIFT
+184680 mark svc-18
+184680 tap 10 KEYCODE_RSHIFT
+187680 mark svc-19
+187680 tap 10 KEYCODE_RSHIFT
+190680 mark back-to-18
+190680 tap 10 KEYCODE_1
+190800 tap 10 KEYCODE_LSHIFT
+190920 mark svc-20
+190920 tap 10 KEYCODE_RSHIFT
+193920 mark back-to-18
+193920 tap 10 KEYCODE_1
+194040 tap 10 KEYCODE_LSHIFT
+194160 mark svc-21
+194160 tap 10 KEYCODE_RSHIFT
+197160 mark back-to-18
+197160 tap 10 KEYCODE_1
+200160 mark back-to-11
+200160 tap 10 KEYCODE_1
+203160 mark back-to-8
+203160 tap 10 KEYCODE_1
+206160 mark back-to-2
+206160 tap 10 KEYCODE_1
+209160 mark back-to-0
+209160 tap 10 KEYCODE_1
+209280 tap 10 KEYCODE_LSHIFT
+209400 mark svc-3
+209400 tap 10 KEYCODE_RSHIFT
+212400 mark svc-22
+212400 tap 10 KEYCODE_RSHIFT
+212520 tap 10 KEYCODE_LSHIFT
+212640 mark svc-25
+212640 tap 10 KEYCODE_RSHIFT
+215640 mark back-to-22
+215640 tap 10 KEYCODE_1
+215760 tap 10 KEYCODE_LSHIFT
+215880 mark svc-26
+215880 tap 10 KEYCODE_RSHIFT
+218880 mark back-to-22
+218880 tap 10 KEYCODE_1
+221880 mark back-to-3
+221880 tap 10 KEYCODE_1
+222000 tap 10 KEYCODE_LSHIFT
+222120 mark svc-23
+222120 tap 10 KEYCODE_RSHIFT
+225120 mark back-to-3
+225120 tap 10 KEYCODE_1
+225240 tap 10 KEYCODE_LSHIFT
+225360 mark svc-30
+225360 tap 10 KEYCODE_RSHIFT
+228360 mark back-to-3
+228360 tap 10 KEYCODE_1
+231360 mark back-to-0
+231360 tap 10 KEYCODE_1
+234360 mark svc-root-exit
+234360 tap 10 KEYCODE_7
+237360 mark reopen-for-svc-35
+237360 tap 10 KEYCODE_7
+237480 tap 10 KEYCODE_LSHIFT
+237600 tap 10 KEYCODE_LSHIFT
+237720 tap 10 KEYCODE_RSHIFT
+237840 tap 10 KEYCODE_RSHIFT
+237960 tap 10 KEYCODE_LSHIFT
+238080 tap 10 KEYCODE_RSHIFT
+238200 mark svc-35
+238200 tap 10 KEYCODE_RSHIFT
+238350 mark svc-35
+238380 mark svc-35
+238410 mark svc-35
+238440 mark svc-35
+238470 mark svc-35
+238500 mark svc-35
+238530 mark svc-35
+238560 mark svc-35
+238590 mark svc-35
+238620 mark svc-35
+238650 mark svc-35
+238680 mark svc-35
+238680 mark svc-35-close
+238680 tap 10 KEYCODE_7
+243880 mark reopen-for-svc-36
+243880 tap 10 KEYCODE_7
+244000 tap 10 KEYCODE_LSHIFT
+244120 tap 10 KEYCODE_LSHIFT
+244240 tap 10 KEYCODE_RSHIFT
+244360 tap 10 KEYCODE_RSHIFT
+244480 tap 10 KEYCODE_LSHIFT
+244600 tap 10 KEYCODE_RSHIFT
+244720 tap 10 KEYCODE_LSHIFT
+244840 mark svc-36
+244840 tap 10 KEYCODE_RSHIFT
+244990 mark svc-36
+245020 mark svc-36
+245050 mark svc-36
+245080 mark svc-36
+245110 mark svc-36
+245140 mark svc-36
+245170 mark svc-36
+245200 mark svc-36
+245230 mark svc-36
+245260 mark svc-36
+245290 mark svc-36
+245320 mark svc-36
+245320 mark svc-36-close
+245320 tap 10 KEYCODE_7
+250520 mark reopen-for-svc-37
+250520 tap 10 KEYCODE_7
+250640 tap 10 KEYCODE_LSHIFT
+250760 tap 10 KEYCODE_LSHIFT
+250880 tap 10 KEYCODE_RSHIFT
+251000 tap 10 KEYCODE_RSHIFT
+251120 tap 10 KEYCODE_LSHIFT
+251240 tap 10 KEYCODE_RSHIFT
+251360 tap 10 KEYCODE_LSHIFT
+251480 tap 10 KEYCODE_LSHIFT
+251600 mark svc-37
+251600 tap 10 KEYCODE_RSHIFT
+251750 mark svc-37
+251780 mark svc-37
+251810 mark svc-37
+251840 mark svc-37
+251870 mark svc-37
+251900 mark svc-37
+251930 mark svc-37
+251960 mark svc-37
+251990 mark svc-37
+252020 mark svc-37
+252050 mark svc-37
+252080 mark svc-37
+252080 mark svc-37-close
+252080 tap 10 KEYCODE_7
+257280 mark reopen-for-svc-24
+257280 tap 10 KEYCODE_7
+257400 tap 10 KEYCODE_LSHIFT
+257520 tap 10 KEYCODE_LSHIFT
+257640 tap 10 KEYCODE_RSHIFT
+257760 tap 10 KEYCODE_RSHIFT
+257880 mark svc-24
+257880 tap 10 KEYCODE_RSHIFT
+258030 mark svc-24
+258060 mark svc-24
+258090 mark svc-24
+258120 mark svc-24
+258150 mark svc-24
+258180 mark svc-24
+258210 mark svc-24
+258240 mark svc-24
+258270 mark svc-24
+258300 mark svc-24
+258330 mark svc-24
+258360 mark svc-24
+258360 mark svc-24-close
+258360 tap 10 KEYCODE_7
+263560 mark reopen-for-svc-32
+263560 tap 10 KEYCODE_7
+263680 tap 10 KEYCODE_LSHIFT
+263800 tap 10 KEYCODE_LSHIFT
+263920 tap 10 KEYCODE_RSHIFT
+264040 tap 10 KEYCODE_RSHIFT
+264160 tap 10 KEYCODE_LSHIFT
+264280 tap 10 KEYCODE_LSHIFT
+264400 tap 10 KEYCODE_RSHIFT
+264520 mark svc-32
+264520 tap 10 KEYCODE_RSHIFT
+264670 mark svc-32
+264700 mark svc-32
+264730 mark svc-32
+264760 mark svc-32
+264790 mark svc-32
+264820 mark svc-32
+264850 mark svc-32
+264880 mark svc-32
+264910 mark svc-32
+264940 mark svc-32
+264970 mark svc-32
+265000 mark svc-32
+265000 mark svc-32-close
+265000 tap 10 KEYCODE_7
+270200 mark reopen-for-svc-33
+270200 tap 10 KEYCODE_7
+270320 tap 10 KEYCODE_LSHIFT
+270440 tap 10 KEYCODE_LSHIFT
+270560 tap 10 KEYCODE_RSHIFT
+270680 tap 10 KEYCODE_RSHIFT
+270800 tap 10 KEYCODE_LSHIFT
+270920 tap 10 KEYCODE_LSHIFT
+271040 tap 10 KEYCODE_RSHIFT
+271160 tap 10 KEYCODE_LSHIFT
+271280 mark svc-33
+271280 tap 10 KEYCODE_RSHIFT
+271430 mark svc-33
+271460 mark svc-33
+271490 mark svc-33
+271520 mark svc-33
+271550 mark svc-33
+271580 mark svc-33
+271610 mark svc-33
+271640 mark svc-33
+271670 mark svc-33
+271700 mark svc-33
+271730 mark svc-33
+271760 mark svc-33
+271760 mark svc-33-close
+271760 tap 10 KEYCODE_7
+276960 mark reopen-for-svc-34
+276960 tap 10 KEYCODE_7
+277080 tap 10 KEYCODE_LSHIFT
+277200 tap 10 KEYCODE_LSHIFT
+277320 tap 10 KEYCODE_RSHIFT
+277440 tap 10 KEYCODE_RSHIFT
+277560 tap 10 KEYCODE_LSHIFT
+277680 tap 10 KEYCODE_LSHIFT
+277800 tap 10 KEYCODE_RSHIFT
+277920 tap 10 KEYCODE_LSHIFT
+278040 tap 10 KEYCODE_LSHIFT
+278160 mark svc-34
+278160 tap 10 KEYCODE_RSHIFT
+278310 mark svc-34
+278340 mark svc-34
+278370 mark svc-34
+278400 mark svc-34
+278430 mark svc-34
+278460 mark svc-34
+278490 mark svc-34
+278520 mark svc-34
+278550 mark svc-34
+278580 mark svc-34
+278610 mark svc-34
+278640 mark svc-34
+278640 mark svc-34-close
+278640 tap 10 KEYCODE_7
+283840 mark svc-menu-final-close
+283840 tap 10 KEYCODE_7
+289040 mark svc-menu-done
+289340 quit
