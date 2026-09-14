@@ -1,53 +1,74 @@
-# Reaches the mod's SPECIAL/match handler (D5077) against iomoont. This path is a real
-# lottery win -- after the game a free-running work-RAM counter (4000:113F, incremented
-# once per timer-0 tick, F3) is compared against the units digit of the player's score
-# (sub_D4CF4); on equality sub_D4FDC awards a free game and runs the SPECIAL animation
-# before drawing PRESS START through the same D5076/D5077 trampoline the tournament mod
-# hooks. This script's own timing does not land the match naturally -- the units-digit
-# comparison it exercises is the ordinary one, and a controlled sweep across the ten
-# reachable digits (varying only which target scores, not the frame schedule) found no
-# natural hit inside the tested window (see docs/iomoon_dmd_screens.md and dmd/README.md).
-# Run against a build with the throwaway probe in dmd/README.md's forced-match note
-# (pinmame commit noted there) and SLEIC_FORCE_MATCH=1 set in the environment -- the probe
-# turns sub_D4CF4's digit-vs-counter JE (D4DCB) into an unconditional JMP, so any score
-# reaches the SPECIAL branch. The screen this draws is real; only the path to it is forced.
+# Reaches the tournament mod's SPECIAL/match PRESS START hook (D5077) against iomoont with
+# a real lottery win: no ROM patch and no driver probe, run against build/sdl3pinmame.
 #
-# Keys: as scripts/keyscripts/iomoon-en.keys -- Y is any lane (100,000, flat, safe to
-# repeat). 1/5/7/T are START/COIN/TEST/TILT.
+# The rule sub_D4CF4 applies at every game's end (its game-over dispatch, sub_D3145 ->
+# sub_D46F8 at D3237): it divides the player's own score-digit cell [413C:0016] by 10 and
+# compares the remainder, at D4DCB, against the counter [4000:113F], which the timer-0 ISR
+# increments once per delivered tick (D030E/D0315, F3).  On equality sub_D4FDC banks a
+# credit and takes the D5076/D5077 trampoline the mod hooks; otherwise the game ends through
+# the mod's other hook at D5123.
+#
+# Two controls aim it, and both are needed because the counter is not fixed:
+#   * each of the twelve scoring slots below presses either a lane (KEYCODE_Y, 100,000,
+#     units digit 0 -- every lane's award ends in zero, docs/iomoon_game_rules.md 3.3.1) or
+#     the inner bank / Fondo Bancada (KEYCODE_I, 50,001, units digit 1, 3.3.6).  The score's
+#     units digit is exactly the number of I slots; four per ball keeps every ball above the
+#     100,000 short-ball replay threshold (F10 0x43) whichever key each slot takes.
+#   * every event from the coin press onward is shifted one frame later, which moves the
+#     counter without touching the score.
+# Five I slots at a one-frame shift puts both at 5.  The compare lands at ms 166494 and
+# NVRAM's credit triple (0x083/0x116/0x20C, F10) goes 0,0,0 -> 1,1,1.
+#
+# The four START taps after PRESS START are part of the capture: this occurrence does not
+# release on them, where the D5123 one releases on the first press.
+#
+# Keys as scripts/keyscripts/iomoon-en.keys: 1/5 are START/COIN, SPACE plunges, Q drains,
+# DOWN follows the next ball.
     40 mark boot
     40 tap 8 KEYCODE_1
     80 mark boot-setting-country
    640 mark attract
-  6640 mark credit
-  6640 tap 8 KEYCODE_5
-  6760 mark ball-1-start
-  6760 tap 8 KEYCODE_1
-  6910 mark ball-1-in-play
-  6910 tap 40 KEYCODE_SPACE
-  7030 tap 10 KEYCODE_Y
-  7100 tap 10 KEYCODE_Y
-  7170 tap 10 KEYCODE_Y
-  7240 tap 10 KEYCODE_Y
-  7610 mark ball-1-drained
-  7610 tap 10 KEYCODE_Q
-  7670 tap 10 KEYCODE_DOWN
-  8020 mark ball-2-in-play
-  8020 tap 40 KEYCODE_SPACE
-  8140 tap 10 KEYCODE_Y
-  8210 tap 10 KEYCODE_Y
-  8280 tap 10 KEYCODE_Y
-  8350 tap 10 KEYCODE_Y
-  8720 mark ball-2-drained
-  8720 tap 10 KEYCODE_Q
-  8780 tap 10 KEYCODE_DOWN
-  9130 mark ball-3-in-play
-  9130 tap 40 KEYCODE_SPACE
-  9250 tap 10 KEYCODE_Y
-  9320 tap 10 KEYCODE_Y
-  9390 tap 10 KEYCODE_Y
-  9460 tap 10 KEYCODE_Y
-  9830 mark ball-3-drained-gameover
-  9830 tap 10 KEYCODE_Q
-  9890 tap 10 KEYCODE_DOWN
- 17890 mark special-press-start
- 17890 quit
+  6641 mark credit
+  6641 tap 8 KEYCODE_5
+  6761 mark ball-1-start
+  6761 tap 8 KEYCODE_1
+  6911 mark ball-1-in-play
+  6911 tap 40 KEYCODE_SPACE
+  7031 tap 10 KEYCODE_I
+  7101 tap 10 KEYCODE_I
+  7171 tap 10 KEYCODE_I
+  7241 tap 10 KEYCODE_I
+  7611 mark ball-1-drained
+  7611 tap 10 KEYCODE_Q
+  7671 tap 10 KEYCODE_DOWN
+  8021 mark ball-2-in-play
+  8021 tap 40 KEYCODE_SPACE
+  8141 tap 10 KEYCODE_I
+  8211 tap 10 KEYCODE_Y
+  8281 tap 10 KEYCODE_Y
+  8351 tap 10 KEYCODE_Y
+  8721 mark ball-2-drained
+  8721 tap 10 KEYCODE_Q
+  8781 tap 10 KEYCODE_DOWN
+  9131 mark ball-3-in-play
+  9131 tap 40 KEYCODE_SPACE
+  9251 tap 10 KEYCODE_Y
+  9321 tap 10 KEYCODE_Y
+  9391 tap 10 KEYCODE_Y
+  9461 tap 10 KEYCODE_Y
+  9831 mark ball-3-drained-gameover
+  9831 tap 10 KEYCODE_Q
+  9891 tap 10 KEYCODE_DOWN
+  9995 mark lottery
+ 10330 mark special-press-start
+ 10401 mark post-game
+ 10501 mark press-start-ack
+ 10501 tap 20 KEYCODE_1
+ 11501 mark press-start-ack-2
+ 11501 tap 20 KEYCODE_1
+ 12501 mark press-start-ack-3
+ 12501 tap 20 KEYCODE_1
+ 13501 mark press-start-ack-4
+ 13501 tap 20 KEYCODE_1
+ 14201 mark done
+ 14201 quit

@@ -882,9 +882,31 @@ Worth knowing as a player: of every award the rules list, only the **bumpers**
 non-zero units digit — every other value ends in 0. The digit a player finishes
 on is therefore decided by how many of those they took, and Special Drop Target
 suspends even that by paying the *dianas* a flat 100,000 for its 15 seconds.
-(The bonus's own values are not given in the manual, so the bonus may move the
-digit too.) This is arithmetic on the manual's own numbers, not a rule the
-manual states.
+This is arithmetic on the manual's own numbers, not a rule the manual states —
+but the firmware agrees with it, and the bonus does not disturb it.
+
+**How the firmware does it.** `sub_D4CF4` (`D4CF4`) runs once per game, from the
+end-of-ball state machine's own game-over dispatch (`sub_D3145`, its call into
+`sub_D46F8` at `D3237`). It divides the player's own score-digit cell
+`413C:0016` by 10 and compares the remainder, at `D4DCB`, against work RAM
+`4000:113F` — the number the lottery screen draws, and **the same number the
+panel shows as a full-panel digit** under the final score. On equality
+`sub_D4FDC` banks a credit and runs the SPECIAL animation. The counter is
+incremented once per delivered timer-0 tick and by nothing else (`D030E`,
+`D0315`, F3), so nothing a player does steers it. It is not a clock, though:
+a tick that comes due while the firmware has interrupts masked is lost, so the
+number drawn is not a function of how long the machine has been on either
+(`dmd/special/README.md`).
+
+Two things this settles about the paragraph above. The bonus, whatever the
+manual leaves out about its values, **ends in zero**: across games whose only
+non-zero-digit awards were inner-target hits, `413C:0016` at the compare read
+exactly the number of those hits, so nothing else contributed to the units
+digit. And the cell is a raw accumulator rather than a reduced digit — it reads
+10, 11 or 12 after that many such hits — which is why the firmware divides
+rather than compares. Measured win rate over 104 complete games driven to known
+digits: 11.5%, against §3.5's own "roughly 20%"; the mechanism itself implies
+10%. `dmd/special/README.md` has the measurements and what drove them.
 
 ### High scores — *Records* (§4.1, §4.2)
 

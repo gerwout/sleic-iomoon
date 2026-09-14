@@ -112,6 +112,16 @@ The end-of-game flow has two distinct paths that both need interception:
 
 - **SPECIAL path** (`D5076`): The game ends with a SPECIAL (match win). The code at `D5076` calls `D72A:37F2` for the match animation. The trampoline at `C000:00D0` first shows PRESS START, then proceeds to the original match animation call.
 
+**The two hooks behave differently once the screen is up.** The normal path's
+`PRESS START` releases on the first START press and the machine returns to attract. The
+SPECIAL path's does not: in a captured match (`dmd/special/`, a real lottery win on
+`iomoont`) four START presses over 62 s of emulated time, and nine over 140 s in a longer
+run, leave the panel on `PRESS START` and never reach the match animation behind it. The
+cave's release condition needs `ES:[1147h]` non-zero *and* the byte at `ES:[[1150h]]` to
+read `0x40`, the START switch code; on the SPECIAL path it apparently never does, and the
+cave clears `[1147h]` and spins. Which of the two the pointer at `[1150h]` is left pointing
+at on each path is not established.
+
 ---
 ## Validation
 
