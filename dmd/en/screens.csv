@@ -49,17 +49,17 @@ id,label,dir,first_ms,last_ms,frames,text
 48,attract,0048-attract,55666,55666,1,
 49,attract,0049-attract,55700,55700,1,S.
 50,attract,0050-attract,55716,55716,1,S.M
-51,attract,0051-attract,55750,56400,27,S.MOONLIGHT / . .
+51,attract,0051-attract,55750,56400,27,S.MOONLIGHT / 300.000.000 / . .
 52,attract,0052-attract,57266,57266,1,
 53,attract,0053-attract,57300,57300,1,
 54,attract,0054-attract,57316,57316,1,J.
-55,attract,0055-attract,57350,58016,24,J.SUNSHINE / . .
+55,attract,0055-attract,57350,58016,24,J.SUNSHINE / 200.000.000 / . .
 56,attract,0056-attract,58900,58900,1,
 57,attract,0057-attract,58933,58933,1,
 58,attract,0058-attract,58950,58950,1,B.
 59,attract,0059-attract,58983,58983,1,B.S
 60,attract,0060-attract,59016,59016,1,B.ST
-61,attract,0061-attract,59033,59650,25,B.STARWAY / . .
+61,attract,0061-attract,59033,59650,25,B.STARWAY / 100.000.000 / . .
 62,attract,0062-attract,60533,60533,1,
 63,attract,0063-attract,60550,60550,1,
 64,attract,0064-attract,60616,69466,376,
@@ -285,18 +285,18 @@ id,label,dir,first_ms,last_ms,frames,text
 284,ball-1-drained,0284-ball-1-drained,153483,153499,2,
 285,ball-1-drained,0285-ball-1-drained,153549,153549,1,
 286,ball-1-drained,0286-ball-1-drained,153599,154266,20,
-287,ball-2-in-play,0287-ball-2-in-play,154316,156633,23,
+287,ball-2-in-play,0287-ball-2-in-play,154316,156633,23,3. 8.743
 288,ball-2-in-play,0288-ball-2-in-play,156666,157483,18,
 289,ball-2-in-play,0289-ball-2-in-play,157516,157566,3,
 290,ball-2-in-play,0290-ball-2-in-play,157599,158433,23,
 291,ball-2-in-play,0291-ball-2-in-play,158466,159616,8,
 292,drop-bank-2-down,0292-drop-bank-2-down,159799,160716,7,
 293,drop-bank-2-down,0293-drop-bank-2-down,160749,161566,17,
-294,drop-bank-2-down,0294-drop-bank-2-down,161599,161916,6,
+294,drop-bank-2-down,0294-drop-bank-2-down,161599,161916,6,3. 5. 8
 295,drop-bank-2-down,0295-drop-bank-2-down,161933,162699,16,
 296,drop-bank-2-down,0296-drop-bank-2-down,162766,162766,1,
 297,drop-bank-2-down,0297-drop-bank-2-down,162783,163949,10,
-298,drop-bank-4-down,0298-drop-bank-4-down,164149,165083,6,
+298,drop-bank-4-down,0298-drop-bank-4-down,164149,165083,6,: 95
 299,drop-bank-4-down,0299-drop-bank-4-down,165099,165949,26,
 300,drop-bank-4-down,0300-drop-bank-4-down,165966,167116,7,
 301,drop-bank-5-down,0301-drop-bank-5-down,167316,171199,25,
@@ -393,7 +393,7 @@ id,label,dir,first_ms,last_ms,frames,text
 392,lottery,0392-lottery,281233,281233,1,
 393,lottery,0393-lottery,281266,282466,12,
 394,lottery,0394-lottery,283333,283333,1,
-395,lottery,0395-lottery,283366,284549,12,
+395,lottery,0395-lottery,283366,284549,12,00
 396,lottery,0396-lottery,285433,285433,1,
 397,lottery,0397-lottery,285466,285833,18,
 398,lottery,0398-lottery,286699,286699,1,
@@ -418,15 +418,15 @@ id,label,dir,first_ms,last_ms,frames,text
 417,attract-again,0417-attract-again,314549,314549,1,
 418,attract-again,0418-attract-again,314566,314566,1,S.
 419,attract-again,0419-attract-again,314599,314599,1,S.M
-420,attract-again,0420-attract-again,314616,315249,23,S.MOONLIGHT / . .
+420,attract-again,0420-attract-again,314616,315249,23,S.MOONLIGHT / 300.000.000 / . .
 421,attract-again,0421-attract-again,316149,316149,1,
 422,attract-again,0422-attract-again,316166,316166,1,
 423,attract-again,0423-attract-again,316199,316199,1,J.
-424,attract-again,0424-attract-again,316233,317766,25,. .
+424,attract-again,0424-attract-again,316233,317766,25,200.000.000 / . .
 425,attract-again,0425-attract-again,317783,317799,2,
 426,attract-again,0426-attract-again,317816,317833,2,B.
 427,attract-again,0427-attract-again,317849,317883,3,B.ST
-428,attract-again,0428-attract-again,317916,318516,22,B.STARWAY / . .
+428,attract-again,0428-attract-again,317916,318516,22,B.STARWAY / 100.000.000 / . .
 429,attract-again,0429-attract-again,319399,319399,1,
 430,attract-again,0430-attract-again,319416,319416,1,
 431,attract-again,0431-attract-again,319466,328333,387,
@@ -501,7 +501,7 @@ id,label,dir,first_ms,last_ms,frames,text
 500,attract-again,0500-attract-again,371499,371499,1,
 501,attract-again,0501-attract-again,371516,371516,1,
 502,attract-again,0502-attract-again,371533,373599,13,
-503,attract-again,0503-attract-again,373616,374816,13,
+503,attract-again,0503-attract-again,373616,374816,13,00
 504,attract-again,0504-attract-again,375699,375699,1,
 505,attract-again,0505-attract-again,375716,376083,14,
 506,attract-again,0506-attract-again,376966,376966,1,
@@ -527,61 +527,61 @@ id,label,dir,first_ms,last_ms,frames,text
 526,back-to-1,0526-back-to-1,404849,404849,1,CUST
 527,back-to-1,0527-back-to-1,404883,406899,3,VOLUME / CUSTOM MESSAGE
 528,svc-5,0528-svc-5,408849,408849,1,
-529,back-to-1,0529-back-to-1,410866,410866,1,
-530,back-to-0,0530-back-to-0,412849,415033,5,
-531,svc-2,0531-svc-2,416849,416999,3,
-532,svc-31,0532-svc-31,418866,419033,4,
-533,back-to-2,0533-back-to-2,420849,423033,5,
-534,svc-6,0534-svc-6,424849,424999,3,
-535,svc-27,0535-svc-27,426866,426983,3,
-536,back-to-6,0536-back-to-6,428849,431016,4,
-537,svc-28,0537-svc-28,432849,432999,3,
-538,back-to-6,0538-back-to-6,434866,436999,4,
-539,svc-29,0539-svc-29,438866,438983,3,
-540,back-to-6,0540-back-to-6,440849,440849,1,
-541,back-to-2,0541-back-to-2,442866,444999,4,
-542,svc-7,0542-svc-7,446866,447016,3,
-543,back-to-2,0543-back-to-2,448849,451033,5,
-544,svc-8,0544-svc-8,452849,452999,3,
-545,svc-9,0545-svc-9,454866,455033,4,
-546,back-to-8,0546-back-to-8,456849,458983,4,
-547,svc-10,0547-svc-10,460849,460999,3,
-548,back-to-8,0548-back-to-8,462866,464999,4,
-549,svc-11,0549-svc-11,466866,467033,4,
-550,svc-12,0550-svc-12,468849,468999,3,
-551,svc-13,0551-svc-13,470866,471033,4,
-552,back-to-12,0552-back-to-12,472849,475033,5,
-553,svc-14,0553-svc-14,476849,476999,3,
-554,back-to-12,0554-back-to-12,478866,478866,1,
-555,back-to-11,0555-back-to-11,480849,482983,4,
-556,svc-15,0556-svc-15,484849,484999,3,
-557,svc-16,0557-svc-16,486866,487033,4,
-558,back-to-15,0558-back-to-15,488849,491016,4,
-559,svc-17,0559-svc-17,492849,492999,3,
-560,back-to-15,0560-back-to-15,494866,494866,1,
-561,back-to-11,0561-back-to-11,496849,499033,5,
-562,svc-18,0562-svc-18,500849,500999,3,
-563,svc-19,0563-svc-19,502866,502983,3,
-564,back-to-18,0564-back-to-18,504849,507016,4,
-565,svc-20,0565-svc-20,508849,508999,3,
-566,back-to-18,0566-back-to-18,510866,512999,4,
-567,svc-21,0567-svc-21,514866,515033,4,
-568,back-to-18,0568-back-to-18,516849,516849,1,
-569,back-to-11,0569-back-to-11,518866,518866,1,
-570,back-to-8,0570-back-to-8,520849,520849,1,
-571,back-to-2,0571-back-to-2,522866,522866,1,
-572,back-to-0,0572-back-to-0,524849,527033,5,
-573,svc-3,0573-svc-3,528849,528999,3,
-574,svc-22,0574-svc-22,530866,532999,7,
-575,svc-25,0575-svc-25,534866,535016,3,
-576,back-to-22,0576-back-to-22,536849,539033,5,
-577,svc-26,0577-svc-26,540849,540999,3,
-578,back-to-22,0578-back-to-22,542866,542866,1,
-579,back-to-3,0579-back-to-3,544849,546983,4,
-580,svc-23,0580-svc-23,548849,548999,3,
-581,back-to-3,0581-back-to-3,550866,552999,4,
-582,svc-30,0582-svc-30,554866,555033,4,
-583,back-to-3,0583-back-to-3,556849,556849,1,
+529,back-to-1,0529-back-to-1,410866,410866,1,AA
+530,back-to-0,0530-back-to-0,412849,415033,5,AA7
+531,svc-2,0531-svc-2,416849,416999,3,AA
+532,svc-31,0532-svc-31,418866,419033,4,AAD
+533,back-to-2,0533-back-to-2,420849,423033,5,AAD7
+534,svc-6,0534-svc-6,424849,424999,3,AAD
+535,svc-27,0535-svc-27,426866,426983,3,AADC
+536,back-to-6,0536-back-to-6,428849,431016,4,AADC8
+537,svc-28,0537-svc-28,432849,432999,3,AADCA
+538,back-to-6,0538-back-to-6,434866,436999,4,AADCA8
+539,svc-29,0539-svc-29,438866,438983,3,AADCAA
+540,back-to-6,0540-back-to-6,440849,440849,1,AADCAAA
+541,back-to-2,0541-back-to-2,442866,444999,4,AADCAAA8
+542,svc-7,0542-svc-7,446866,447016,3,AADCAAAA
+543,back-to-2,0543-back-to-2,448849,451033,5,AADCAAAA7
+544,svc-8,0544-svc-8,452849,452999,3,AADCAAAA
+545,svc-9,0545-svc-9,454866,455033,4,AADCAAAAD
+546,back-to-8,0546-back-to-8,456849,458983,4,AADCAAAAD8
+547,svc-10,0547-svc-10,460849,460999,3,AADCAAAADA
+548,back-to-8,0548-back-to-8,462866,464999,4,AADCAAAADA8
+549,svc-11,0549-svc-11,466866,467033,4,AADCAAAADAB
+550,svc-12,0550-svc-12,468849,468999,3,AADCAAAADAE
+551,svc-13,0551-svc-13,470866,471033,4,AADCAAAADAI
+552,back-to-12,0552-back-to-12,472849,475033,5,AADCAAAADAI7
+553,svc-14,0553-svc-14,476849,476999,3,AADCAAAADAI
+554,back-to-12,0554-back-to-12,478866,478866,1,AADCAAAADAI A
+555,back-to-11,0555-back-to-11,480849,482983,4,AADCAAAADAI A8
+556,svc-15,0556-svc-15,484849,484999,3,AADCAAAADAI AA
+557,svc-16,0557-svc-16,486866,487033,4,AADCAAAADAI AE
+558,back-to-15,0558-back-to-15,488849,491016,4,AADCAAAADAI AE
+559,svc-17,0559-svc-17,492849,492999,3,AADCAAAADAI AE
+560,back-to-15,0560-back-to-15,494866,494866,1,AADCAAAADAI AE / AA
+561,back-to-11,0561-back-to-11,496849,499033,5,AADCAAAADAI AE / AA7
+562,svc-18,0562-svc-18,500849,500999,3,AADCAAAADAI AE / AA
+563,svc-19,0563-svc-19,502866,502983,3,AADCAAAADAI AE / AAC
+564,back-to-18,0564-back-to-18,504849,507016,4,AADCAAAADAI AE / AAC8
+565,svc-20,0565-svc-20,508849,508999,3,AADCAAAADAI AE / AACA
+566,back-to-18,0566-back-to-18,510866,512999,4,AADCAAAADAI AE / AACA8
+567,svc-21,0567-svc-21,514866,515033,4,AADCAAAADAI AE / AACAB
+568,back-to-18,0568-back-to-18,516849,516849,1,AADCAAAADAI AE / AACABA
+569,back-to-11,0569-back-to-11,518866,518866,1,AADCAAAADAI AE / AACABAA
+570,back-to-8,0570-back-to-8,520849,520849,1,AADCAAAADAI AE / AACABAAA
+571,back-to-2,0571-back-to-2,522866,522866,1,AADCAAAADAI AE / AACABAAAA
+572,back-to-0,0572-back-to-0,524849,527033,5,AADCAAAADAI AE / AACABAAAA7
+573,svc-3,0573-svc-3,528849,528999,3,AADCAAAADAI AE / AACABAAAA
+574,svc-22,0574-svc-22,530866,532999,7,AADCAAAADAI AE / AACABAAAA9
+575,svc-25,0575-svc-25,534866,535016,3,AADCAAAADAI AE / AACABAAAAB
+576,back-to-22,0576-back-to-22,536849,539033,5,AADCAAAADAI AE / AACABAAAAB7
+577,svc-26,0577-svc-26,540849,540999,3,AADCAAAADAI AE / AACABAAAAB
+578,back-to-22,0578-back-to-22,542866,542866,1,AADCAAAADAI AE / AACABAAAAB A
+579,back-to-3,0579-back-to-3,544849,546983,4,AADCAAAADAI AE / AACABAAAAB A8
+580,svc-23,0580-svc-23,548849,548999,3,AADCAAAADAI AE / AACABAAAAB AA
+581,back-to-3,0581-back-to-3,550866,552999,4,AADCAAAADAI AE / AACABAAAAB AA8
+582,svc-30,0582-svc-30,554866,555033,4,AADCAAAADAI AE / AACABAAAAB AAB
+583,back-to-3,0583-back-to-3,556849,556849,1,AADCAAAADAI AE / AACABAAAAB AAB
 584,back-to-3,0584-back-to-3,556883,556916,2,VOLUME / CUSTOM MESSAGE
 585,back-to-0,0585-back-to-0,558866,558933,3,SOUND/VIDEO / GAME / TECHNICAL
 586,svc-root-exit,0586-svc-root-exit,560849,560849,1,
@@ -646,7 +646,7 @@ id,label,dir,first_ms,last_ms,frames,text
 645,svc-37,0645-svc-37,803333,803333,1,
 646,svc-37,0646-svc-37,803366,804549,12,
 647,svc-37,0647-svc-37,805433,805433,1,
-648,svc-37,0648-svc-37,805466,806649,12,
+648,svc-37,0648-svc-37,805466,806649,12,00
 649,svc-37,0649-svc-37,807533,807533,1,. .
 650,svc-37,0650-svc-37,807549,807933,15,
 651,svc-37-close,0651-svc-37-close,808199,808249,3,SOUND/VIDEO / GAME / TECHNICAL
@@ -700,9 +700,9 @@ id,label,dir,first_ms,last_ms,frames,text
 699,svc-33,0699-svc-33,1130550,1130550,1,
 700,svc-33,0700-svc-33,1131400,1131400,1,
 701,svc-33,0701-svc-33,1131416,1132616,12,
-702,svc-33,0702-svc-33,1133483,1133483,1,. .
+702,svc-33,0702-svc-33,1133483,1133483,1,. . / . .
 703,svc-33,0703-svc-33,1133500,1133500,1,
-704,svc-33,0704-svc-33,1133516,1134700,13,
+704,svc-33,0704-svc-33,1133516,1134700,13,00
 705,svc-33,0705-svc-33,1135583,1135583,1,
 706,svc-33,0706-svc-33,1135600,1135600,1,
 707,svc-33,0707-svc-33,1135616,1135983,13,
@@ -726,7 +726,7 @@ id,label,dir,first_ms,last_ms,frames,text
 725,svc-34,0725-svc-34,1244066,1244066,1,
 726,svc-34,0726-svc-34,1244083,1245266,12,
 727,svc-34,0727-svc-34,1246166,1246166,1,
-728,svc-34,0728-svc-34,1246183,1247366,12,
+728,svc-34,0728-svc-34,1246183,1247366,12,00
 729,svc-34,0729-svc-34,1248250,1248250,1,
 730,svc-34,0730-svc-34,1248283,1249516,14,
 731,svc-34,0731-svc-34,1249533,1249533,1,
@@ -753,7 +753,7 @@ id,label,dir,first_ms,last_ms,frames,text
 752,svc-menu-final-close,0752-svc-menu-final-close,1358700,1358700,1,
 753,svc-menu-final-close,0753-svc-menu-final-close,1358733,1359933,13,
 754,svc-menu-final-close,0754-svc-menu-final-close,1360800,1360800,1,
-755,svc-menu-final-close,0755-svc-menu-final-close,1360833,1362016,12,
+755,svc-menu-final-close,0755-svc-menu-final-close,1360833,1362016,12,00
 756,svc-menu-final-close,0756-svc-menu-final-close,1362900,1362900,1,
 757,svc-menu-final-close,0757-svc-menu-final-close,1362933,1363283,13,
 758,svc-menu-final-close,0758-svc-menu-final-close,1364166,1364166,1,
@@ -778,17 +778,17 @@ id,label,dir,first_ms,last_ms,frames,text
 777,svc-menu-final-close,0777-svc-menu-final-close,1392016,1392016,1,
 778,svc-menu-final-close,0778-svc-menu-final-close,1392033,1392033,1,S.
 779,svc-menu-final-close,0779-svc-menu-final-close,1392066,1392066,1,S.M
-780,svc-menu-final-close,0780-svc-menu-final-close,1392083,1392716,23,S.MOONLIGHT / . .
-781,svc-menu-final-close,0781-svc-menu-final-close,1393600,1393600,1,. .
+780,svc-menu-final-close,0780-svc-menu-final-close,1392083,1392716,23,S.MOONLIGHT / 300.000.000 / . .
+781,svc-menu-final-close,0781-svc-menu-final-close,1393600,1393600,1,. . / . .
 782,svc-menu-final-close,0782-svc-menu-final-close,1393616,1393616,1,
 783,svc-menu-final-close,0783-svc-menu-final-close,1393650,1393650,1,J.
-784,svc-menu-final-close,0784-svc-menu-final-close,1393683,1394350,27,J.SUNSHINE / . .
+784,svc-menu-final-close,0784-svc-menu-final-close,1393683,1394350,27,J.SUNSHINE / 200.000.000 / . .
 785,svc-menu-final-close,0785-svc-menu-final-close,1395233,1395233,1,
 786,svc-menu-final-close,0786-svc-menu-final-close,1395250,1395250,1,
 787,svc-menu-final-close,0787-svc-menu-final-close,1395283,1395283,1,B.
 788,svc-menu-final-close,0788-svc-menu-final-close,1395316,1395316,1,B.S
 789,svc-menu-final-close,0789-svc-menu-final-close,1395333,1395333,1,B.ST
-790,svc-menu-final-close,0790-svc-menu-final-close,1395366,1395983,23,B.STARWAY / . .
+790,svc-menu-final-close,0790-svc-menu-final-close,1395366,1395983,23,B.STARWAY / 100.000.000 / . .
 791,svc-menu-final-close,0791-svc-menu-final-close,1396850,1396850,1,
 792,svc-menu-final-close,0792-svc-menu-final-close,1396883,1396883,1,
 793,svc-menu-final-close,0793-svc-menu-final-close,1396933,1405800,384,
@@ -855,4 +855,4 @@ id,label,dir,first_ms,last_ms,frames,text
 854,svc-menu-done,0854-svc-menu-done,1428633,1428633,1,
 855,svc-menu-done,0855-svc-menu-done,1428700,1428700,1,
 856,svc-menu-done,0856-svc-menu-done,1428750,1428750,1,
-857,svc-menu-done,0857-svc-menu-done,1428800,1428816,2,
+857,svc-menu-done,0857-svc-menu-done,1428800,1428816,2,AADCAAAADAI AE / AACABAAAAB AAB

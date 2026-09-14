@@ -16,6 +16,12 @@ The all-pixel diff (differing pixels over all 4096) is the metric a full-frame
 animation dominates: the attract scroll never exceeds 0.065 and a bumper-hit
 graphic never exceeds 0.19 frame to frame, so 0.25 keeps both as one scene each
 and still cuts cleanly at a page change (attract to credit measures 0.43-0.51).
+A tighter threshold like 0.10 is worse, not just more cautious: the bumper-hit
+graphic's own 0.19 frame-to-frame diff alone would already cross it, shattering
+that one clean case into many scenes for no new information; 0.25 is the
+least-bad value measured for this metric, not one that separates "same screen"
+from "new screen" in general.
+
 But it is the wrong metric for this machine's dominant screen class: a service
 record or a fault screen lights only 400-900 of 4096 pixels, so a *complete*
 change of text can measure well under 0.25 of all pixels -- measured on the boot
@@ -178,15 +184,24 @@ def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
     return scenes
 
 
-def _scan_face(rows, bits_to_label, height, cell_w):
+def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
     """[(y, text), ...] for one glyph face, read by exact bitmap match.
 
-    `bits_to_label` maps a tuple of `height` row-bit-strings (each `cell_w`
-    wide) to the string to emit -- usually one character, but the score
-    face's digit+period glyphs stand for two.  Every (x, y) window of that
-    height is tried; a match emits its label and advances x by the full
-    cell width, a miss advances by one pixel, so text is found at any x
-    rather than only multiples of the cell width.
+    `bits_to_label` maps a tuple of `height` row strings (each `cell_w` wide)
+    to the string to emit -- usually one character, but the score face's
+    digit+period glyphs stand for two.  Every (x, y) window of that height is
+    tried; a match emits its label and advances x by the full cell width, a
+    miss advances by one pixel, so text is found at any x rather than only
+    multiples of the cell width.
+
+    `binarize` collapses the frame's four pixel levels to lit/unlit before
+    matching -- correct for the single-bitplane h=9 and h=12 faces, whose own
+    keys are '0'/'1' bit strings, but wrong for the shaded h=23 score face:
+    its glyphs mix level 1 (interior) and level 3 (outline) in the same cell,
+    so collapsing the frame would compare a two-level key against a
+    one-level frame and never match. Pass binarize=False there and match the
+    frame's own '0'-'3' characters directly against
+    iomoon_strings.score_glyph_bitmaps()'s own level strings.
 
     A run of misses between two matches on the same line becomes exactly
     one space (rather than the naive "WAITINGFOR" with no gap, or a space
@@ -209,11 +224,14 @@ def _scan_face(rows, bits_to_label, height, cell_w):
     width = len(rows[0])
     if width < cell_w:
         return []
-    binrows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+    if binarize:
+        cmprows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+    else:
+        cmprows = rows
 
     lines = []
     for y in range(len(rows) - height + 1):
-        window = binrows[y:y + height]
+        window = cmprows[y:y + height]
         chars, x, gap = [], 0, False
         while x <= width - cell_w:
             label = bits_to_label.get(tuple(r[x:x + cell_w] for r in window))
@@ -232,28 +250,44 @@ def _scan_face(rows, bits_to_label, height, cell_w):
     return lines
 
 
-def decode_text(rows, glyphs, score_glyphs=None, cell_w=8, score_cell_w=16):
+def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=None,
+                 cell_w=8, score_cell_w=16):
     """The on-screen text in a decoded frame's rows, read by exact bitmap match.
 
     `glyphs` is the h=9 glyph code -> row-bit-string table from
-    iomoon_strings.glyph_bitmaps(); `score_glyphs`, if given, is the h=23
-    score/price label -> row-bit-string table from
-    iomoon_strings.score_glyph_bitmaps() (unverified against a captured
-    frame -- see that function).  Both faces are scanned independently over
-    the whole frame and their lines merged top to bottom, then joined with
-    ' / '.  See _scan_face for the matching and space/noise rules.
+    iomoon_strings.glyph_bitmaps(); `glyphs12`, if given, is the same but for
+    the large h=12 face (iomoon_strings.glyph_bitmaps(data, height=12,
+    code_offset=75)); `score_glyphs` and `small_digits`, if given, are the
+    two digit faces' label -> row-level-string tables from
+    iomoon_strings.score_glyph_bitmaps() (the large, 16x23 face at its
+    default parameters, and the small, 8x12 one respectively -- see that
+    function for both). All four faces are scanned independently over the
+    whole frame and their lines merged top to bottom, then joined with
+    ' / '. The two digit faces match on raw pixel levels ('0'-'3', not
+    binarized -- see _scan_face); the other two match on lit/unlit only.
+    See _scan_face for the matching and space/noise rules.
+
+    The h=12 face has one real ambiguity, not a bug: code 0 ('0') and code
+    0x1A ('O') render the identical bitmap, so inverting code -> bitmap into
+    the bitmap -> label map this function needs necessarily drops one label
+    for that one shape.  '0' wins -- GLYPHS iterates digits before letters,
+    and this face's own pinned use (the attract high-score amount) is
+    numeric -- so a screen that genuinely shows a large-face 'O' decodes as
+    '0' instead; no pixel-level test can tell the two apart in this face.
     """
     lines = []
-    for table, glyph_cell_w in ((glyphs, cell_w), (score_glyphs, score_cell_w)):
+    faces = [(glyphs, cell_w, False), (glyphs12, cell_w, False),
+             (score_glyphs, score_cell_w, True), (small_digits, cell_w, True)]
+    for table, glyph_cell_w, is_score in faces:
         if not table:
             continue
         heights = {len(bits) for bits in table.values()}
         if len(heights) != 1:
             continue
-        is_score = table is score_glyphs
-        bits_to_label = {tuple(bits): (key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
-                          for key, bits in table.items()}
-        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w)
+        bits_to_label = {}
+        for key, bits in table.items():
+            bits_to_label.setdefault(tuple(bits), key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
+        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w, binarize=not is_score)
     lines.sort(key=lambda yt: yt[0])
     return ' / '.join(text for _, text in lines)
 
@@ -281,7 +315,7 @@ def main():
                           'font from for the text column; omitted, text is written empty')
     args = ap.parse_args()
 
-    glyphs, score_glyphs = {}, {}
+    glyphs, glyphs12, score_glyphs, small_digits = {}, {}, {}, {}
     if args.rom:
         try:
             rom_data = open(args.rom, 'rb').read()
@@ -290,9 +324,16 @@ def main():
         else:
             try:
                 glyphs = iomoon_strings.glyph_bitmaps(rom_data)
+                glyphs12 = iomoon_strings.glyph_bitmaps(
+                    rom_data, height=iomoon_strings.FONT_H12_HEIGHT,
+                    code_offset=iomoon_strings.FONT_H12_CODE_OFFSET)
             except ValueError as e:
                 sys.exit('%s: malformed ROM (%s)' % (args.rom, e))
             score_glyphs = iomoon_strings.score_glyph_bitmaps(rom_data)
+            small_digits = iomoon_strings.score_glyph_bitmaps(
+                rom_data, height=iomoon_strings.SMALL_DIGIT_FACE_HEIGHT,
+                width=iomoon_strings.SMALL_DIGIT_FACE_WIDTH,
+                index=iomoon_strings.SMALL_DIGIT_FACE_INDEX)
 
     try:
         frames = parse_dump(args.dump)
@@ -320,7 +361,7 @@ def main():
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
                          'frames': len(scene),
-                         'text': decode_text(scene[-1][1], glyphs, score_glyphs)})
+                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits)})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms', 'frames', 'text'])

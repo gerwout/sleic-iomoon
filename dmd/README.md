@@ -124,34 +124,41 @@ touches only the end-of-game path.
 
 ## Open items
 
-- **The `text` column does not decode an in-play score, on any scene in this
-  corpus.** The score is visible in every gameplay screenshot rendered
-  while producing this corpus (e.g. `2.452.230`, `3.812.237`) but decodes to
-  an empty string throughout — checked directly (`decode_text` run by hand
-  against a `ball-*-drained` frame, with `--rom` supplied, still empty).
-  Traced to the panel's own dithered background: it puts stray lit pixels
-  inside the score digits' bounding boxes, and the scoring face's matching
-  in `scripts/dmd_dump_split.py` requires an **exact** bitmap match, so one
-  stray pixel anywhere in a glyph's window is enough to miss. So: **every
-  `text` cell for a gameplay scene in this committed `screens.csv` is
-  unreliable for scores specifically**, independent of whether the face
-  itself is correctly built. A tolerant match (ignore isolated single-pixel
-  differences, or match against a composite-minus-mask plane rather than
-  the finished frame) would likely fix it; that is a decoder change, not
-  something this corpus's capture step can work around.
-- **A whole second glyph face (`h=12`) does not decode in this committed
-  `screens.csv`, though it is now pinned.** Several service-menu leaf pages
-  in this corpus show real text in a larger face than the one
-  `scripts/iomoon_strings.py` reads (`glyph_bitmaps` covers only the h=9
-  face) — rendered directly, not decoded, e.g. `svc-25` showing legible
-  "ORBIT FLIP"-style prose at roughly double the h=9 cell size. At the time
-  this corpus was split, that face's table offset was unknown, so every
-  `text` cell touching it is empty rather than wrong — a decoder gap, not a
-  capture gap. It has since been pinned, at table offset 75, by work outside
-  this task; **this committed `screens.csv` was produced before that fix**
-  and will need re-splitting (`scripts/dmd_dump_split.py` against the
-  already-committed raw dump — no new capture needed) once the decoder
-  carries it, to fill in every `svc-N` `text` cell this face covers.
+- **The large `height=23` score/price face never decodes in this corpus, because its
+  glyphs are SHADED and every matcher here used to key off plane 0 alone.** Its digits
+  are a bright (level 3) outline around a mid-tone (level 1) interior, so they occupy
+  both bitplanes at once; a matcher that reads plane 0 only and compares exactly can
+  never match a real captured frame, whatever its dither. Thresholding the frame at
+  level 3 (discarding the dimmer dither levels entirely) across 268 empty gameplay and
+  attract scenes recovers only 2 — the panel's own dithered background was not the
+  cause. `iomoon_strings.score_glyph_bitmaps` now builds its key from both planes
+  (level = `2*plane0_bit + plane1_bit`, F13's own weighting), and the fix is confirmed
+  structurally sound (the decimal-point mark it now finds spans a shaded 3x3 area, not
+  the plane-0-only 2x2 box the old reading found) — but this specific 16x23 face still
+  never exact-matches a real in-play number anywhere in this corpus: scanning all 21
+  of its labels against every one of the raw dump's 11,723 frames finds zero hits, and
+  the closest approximate match differs in 120 of 368 pixels — no resemblance. A
+  **smaller, 8x12 digit face** immediately after it in the font table (table index
+  183-203) does decode real digit runs from this corpus with the same two-plane fix —
+  `ball-2-in-play` (`3. 8.743`), `drop-bank-2-down` (`3. 5. 8`), `drop-bank-4-down`
+  (`: 95`) — but each run is short and no scene identifies what it displays; it may not
+  be the main player score. Which face draws that is open; see
+  `docs/dmd_graphics.md`'s own "Open items" for what would settle it.
+- **A whole second glyph face (`h=12`) now decodes in this `screens.csv`.** Several
+  service-menu leaf pages in this corpus show real text in a larger face than the h=9
+  one — e.g. `svc-25` showing legible "ORBIT FLIP"-style prose at roughly double the
+  h=9 cell size. Its table offset (75) is now pinned and wired into
+  `scripts/dmd_dump_split.py`, and this `screens.csv` has been re-split against it. It
+  also decodes the attract high-score amounts (`300.000.000`, `200.000.000`,
+  `100.000.000` — scenes 51/420/780, 55/424/784, 61/428/790) beside the h=9
+  `S.MOONLIGHT`/`J.SUNSHINE`/`B.STARWAY` labels already present. Scanned over every
+  frame in the corpus rather than just the screens it was pinned against, it also
+  produces low-confidence noise on unrelated content — short `00` fragments and
+  longer letter runs (`AADCAAAADAI...`) on several `svc-N`/`back-to-N`/`lottery`
+  scenes, evidently coincidental partial matches against menu-UI graphics (a
+  depth-trail icon, most likely) or another still-unpinned face, not real words. A
+  human reading `screens.csv` should treat any short, non-lexical `h=12` result on
+  those labels with that in mind.
 - **`full-tilt` produces zero scenes.** The tilt sequence itself runs (ball
   2 correctly proceeds to ball 3 afterward), but no DMD frame is captured
   between the second tilt press and the ball's drain — not a handful of

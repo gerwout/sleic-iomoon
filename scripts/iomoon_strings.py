@@ -7,6 +7,7 @@ linear 0x00000-0x3FFFF (findings F1), so a pointer's segment:offset is flat.
 Run directly to print the table and the pools:
     python3 scripts/iomoon_strings.py roms/iomoon/v1_3_01.bin
 """
+import io
 import struct
 import sys
 
@@ -25,16 +26,56 @@ for _i, _ch in enumerate('ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'):
 GLYPHS.update({0x26: '+', 0x28: '(', 0x29: ')', 0x2a: '/',
                0x2b: ',', 0x2c: '.', 0x2d: ';', 0x2e: ':', 0x2f: '-'})
 
-CONTACT_TABLE_BASE = 0x0830   # record = base + code*5: Cnum | off16 | seg16, pointer into ENGLISH_POOL
-SPANISH_TABLE_BASE = 0x1438   # same layout, same code axis, pointer into SPANISH_POOL
-ENGLISH_POOL = (0x1c5f, 0x1e4d)
+CONTACT_TABLE_BASE = 0x0830   # record = base + code*5: Cnum | off16 | seg16
+SPANISH_TABLE_BASE = 0x1438   # same layout, same code axis
+
+# sub_DD3FB (F14) sets [4137:004B] to one of these two flat addresses -- the
+# 38-record service-menu tree, one record per DD3FB's own English/Spanish
+# branch. Each 46-byte record is F14's layout (word type, word item count,
+# word line count, 4 x 8-byte line descriptor, 4 x word child index); a line
+# descriptor's first two words are an (offset, segment) far pointer, flat at
+# (segment << 4) + offset, into the same string data CONTACT_TABLE_BASE
+# reads -- record 0's first line decodes as '- ADJUSTMENT -' at flat 0x17a8.
+# An unused line (fewer than 4) has offset word 0x0000 or 0xFFFF.
+MENU_TABLE_BASE = 0x0100
+SPANISH_MENU_TABLE_BASE = 0x0D08
+
+# Every string either language's own two pointer-table families
+# (CONTACT_TABLE_BASE/SPANISH_TABLE_BASE, MENU_TABLE_BASE/
+# SPANISH_MENU_TABLE_BASE) resolve a string from, established the way Task 1
+# found CONTACT_TABLE_BASE itself: walk the pointers and take the envelope
+# of every offset any of them reaches, not a byte-pattern sweep.
+#
+# English's envelope, 0x17a8-0x1e4d, is a clean window: it holds every
+# string either English table resolves, and no Spanish-table string falls
+# inside it.
+ENGLISH_POOL = (0x17a8, 0x1e4d)
+
+# Spanish's own envelope is 0x1380-0x292b -- and it contains English's whole
+# window (every English-table offset falls inside it), because the ROM
+# interleaves the two languages' string data in blocks rather than
+# partitioning it into two contiguous halves (a sample: 0x17a8 '- ADJUSTMENT
+# -' and 0x185b 'NADA' are English and Spanish respectively, four bytes
+# apart). No address window can bound "Spanish only" the way ENGLISH_POOL
+# bounds English -- only which table resolves a pointer says which language
+# a string is in, so SPANISH_POOL is left at this narrower sub-window rather
+# than widened to that envelope: every string it currently sweeps is a real
+# Spanish-table hit (50 of 50, checked), where the full envelope would also
+# sweep in every English one. A complete Spanish enumeration is
+# contact_table()'s Spanish column unioned with
+# menu_records(data, SPANISH_MENU_TABLE_BASE)'s lines, not a window.
 SPANISH_POOL = (0x250e, 0x2784)
 
 # The DMD glyph table (docs/dmd_graphics.md, "Font System"): ROM1 file offset
 # 0x20000, combined-image 0xA0000.  Its entries have no fixed stride -- each
-# is a 6-byte header [h, 00, W, 00, h*W, 00] followed by three h*W-byte
-# blocks (plane 0, plane 1, then a mask -- F13's composite is
-# (background AND mask) OR sprite) -- so the table must be walked.
+# is a 6-byte header [h, 00, W, 00, len16_lo, len16_hi] (len16 = h*W, a 16-bit
+# field, not a byte -- the entry at ROM1 0x22c2e is h=0x20, W=0x10, len16=
+# 0x0200=512=32*16, a full-screen image, which a byte-wide read of bytes 4-5
+# would misread as 0) followed by three len16-byte blocks (plane 0, plane 1,
+# then a mask -- F13's composite is (background AND mask) OR sprite) -- so
+# the table must be walked.  It runs 224 entries, ROM1 0x20000-0x22c2e, then
+# one full-screen (h=32, W=16) image immediately follows at 0x22c2e before a
+# zero header ends the run at 0x23234.
 FONT_BASE = 0x20000
 # The on-screen text is the h=9, W=1 (one byte, 8px) face.  Its table entry
 # is the glyph code plus this offset: entry 57 matches a captured frame's
@@ -42,42 +83,81 @@ FONT_BASE = 0x20000
 FONT_FACE_HEIGHT = 9
 FONT_CODE_OFFSET = 23
 
-# The large score/price face, past the initial one-byte-wide run (docs/
-# dmd_graphics.md): 21 entries of h=23, W=2 (16 px).  Its index is the glyph
-# directly, not code + an offset -- table index 0 renders a 16x23 '0'.
+# The large h=12, W=1 face -- entries 75..127, 53 entries, contiguous and
+# immediately after the h=9 run.  Pinned three independent ways: entry 75
+# renders a clean '0' (so code 0 = entry 75); entry 119 is a 2x2 baseline
+# dot and 119-75=0x2c, the period pinned independently off the h=9 face; and
+# the attract high-score screen decodes as '300.000.000' in this face beside
+# 'S.MOONLIGHT' in h=9.  A "yields 38 distinct bitmaps" completeness
+# heuristic previously rejected this offset because two of its glyphs happen
+# to share a bitmap -- offset 75 yields 37, not 38.
+FONT_H12_HEIGHT = 12
+FONT_H12_CODE_OFFSET = 75
+
+# Two 21-entry digit faces sit back to back, past the initial one-byte-wide
+# run (docs/dmd_graphics.md): the large 16x23 price/score face, then a small
+# 8x12 digit face immediately after it. Both share the same 21-label layout
+# (0-9 plain, 10-19 the same digits plus a decimal-point mark, 20 a colon)
+# and are indexed by absolute table position, not code + an offset --
+# necessary because table position, not shape, is what tells them apart: a
+# second, unrelated 8x12 face (FONT_H12_HEIGHT/FONT_H12_CODE_OFFSET, entries
+# 75-127) already has the same (height, width), so filtering _font_entries
+# by shape alone would pick up the wrong block for the small digit face.
 SCORE_FACE_HEIGHT = 23
 SCORE_FACE_WIDTH = 2
+SCORE_FACE_INDEX = 162    # table index 162 renders a 16x23 '0'
+
+# The small digit face -- confirmed against a real frame, unlike the large
+# one above: entries 183-192 (0-9) and 194-203 (0.-9.) exact-match a run of
+# digits at row 0 of dmd/en/screens/0287-ball-2-in-play/repr.txt, decoding
+# '3. 8.743'.  Scanning every entry of both digit faces against all 11,723
+# raw frames of dmd/en/iomoont.txt, the large (23, 2) face never exact-
+# matches anywhere in the corpus; this one does, repeatedly, in gameplay.
+SMALL_DIGIT_FACE_HEIGHT = 12
+SMALL_DIGIT_FACE_WIDTH = 1
+SMALL_DIGIT_FACE_INDEX = 183   # immediately after the 21 SCORE_FACE entries
+
 # 0-9 plain digits, 10-19 the same digits with an attached decimal point (a
 # plain 2x2 dot at bottom right, not a comma's tail -- a Spanish-market
 # machine's peseta-style NNN.NNN pricing), 20 a colon (two stacked blocks,
-# matching the h=9 face's ':' shape scaled up).  Unverified against a
-# captured frame: no dump on disk shows an in-play score.
+# matching the h=9 face's ':' shape scaled up).
 SCORE_FACE_LABELS = [str(d) for d in range(10)] + ['%d.' % d for d in range(10)] + [':']
 
 
 def _font_entries(data, base=FONT_BASE):
     """[(offset, height, width_bytes), ...], walking the glyph table from `base`.
 
-    Stops at the first header whose byte 4 cannot hold height*width (over
-    255, as for a glyph larger than the on-screen face) -- walking this
-    reading of the header has not been verified past that point -- or whose
-    body would run past the end of `data`, as for a truncated ROM image.
+    Stops cleanly, with no message, at the first all-zero header (h == 0 or
+    W == 0) or the first header whose len16 (bytes 4-5, little-endian) does
+    not equal height*W -- on the real ROM this is the zero header at ROM1
+    0x23234, right after the one full-screen image that follows the last
+    glyph. Stops loudly, printing to stderr, when a header parses fine but
+    its body runs past the end of `data`: that is a truncated ROM, not the
+    table's real end, and a caller silently getting fewer glyphs back than
+    the ROM actually has is exactly the failure mode this reports.
     """
     out = []
     off = base
     while off + 6 <= len(data):
-        h, w, hw = data[off], data[off + 2], data[off + 4]
-        if h == 0 or w == 0 or hw != h * w:
+        h, w = data[off], data[off + 2]
+        len16 = data[off + 4] | (data[off + 5] << 8)
+        if h == 0 or w == 0 or len16 != h * w:
             break
-        if off + 6 + 3 * h * w > len(data):
+        if off + 6 + 3 * len16 > len(data):
+            print('iomoon_strings: font table truncated mid-entry at 0x%x (h=%d, w=%d) -- '
+                  '%d entries read, everything past this point is missing'
+                  % (off, h, w, len(out)), file=sys.stderr)
             break
         out.append((off, h, w))
-        off += 6 + 3 * h * w
+        off += 6 + 3 * len16
     return out
 
 
-def glyph_bitmaps(data):
-    """Glyph code -> list of row bit strings, for the on-screen h=9 face.
+def glyph_bitmaps(data, height=FONT_FACE_HEIGHT, code_offset=FONT_CODE_OFFSET):
+    """Glyph code -> list of row bit strings, for a one-byte-wide face.
+
+    Defaults to the on-screen h=9 face; pass height=FONT_H12_HEIGHT,
+    code_offset=FONT_H12_CODE_OFFSET for the large h=12 face.
 
     A uniform entry (every row identical, as for the space glyph's all-zero
     bitmap) is dropped: it would match any blank or solid window on the
@@ -90,11 +170,11 @@ def glyph_bitmaps(data):
     entries = _font_entries(data)
     out = {}
     for code in GLYPHS:
-        idx = code + FONT_CODE_OFFSET
+        idx = code + code_offset
         if idx >= len(entries):
             continue
         off, h, w = entries[idx]
-        if h != FONT_FACE_HEIGHT or w != 1:
+        if h != height or w != 1:
             continue
         row_bytes = data[off + 6:off + 6 + h]
         if len(row_bytes) < h:
@@ -104,25 +184,57 @@ def glyph_bitmaps(data):
             out[code] = rows
     if not out:
         raise ValueError('no matchable glyphs in the h=%d face at 0x%x -- '
-                          'truncated or wrong ROM image?' % (FONT_FACE_HEIGHT, FONT_BASE))
+                          'truncated or wrong ROM image?' % (height, FONT_BASE))
     return out
 
 
-def score_glyph_bitmaps(data):
-    """Label ('0'-'9', '0.'-'9.', ':') -> list of row bit strings, for the h=23 score face.
+def score_glyph_bitmaps(data, height=SCORE_FACE_HEIGHT, width=SCORE_FACE_WIDTH, index=SCORE_FACE_INDEX):
+    """Label ('0'-'9', '0.'-'9.', ':') -> list of row level strings, for a digit face.
 
-    Unlike glyph_bitmaps, an empty result is not an error: this face is
-    unverified against any captured frame (see SCORE_FACE_LABELS), so a ROM
-    image that has the on-screen h=9 face but not this one is not
-    necessarily malformed.
+    Defaults to the large h=23 score/price face at SCORE_FACE_INDEX; pass
+    height=SMALL_DIGIT_FACE_HEIGHT, width=SMALL_DIGIT_FACE_WIDTH,
+    index=SMALL_DIGIT_FACE_INDEX for the small h=12 digit face. Both are
+    read by absolute table position (`index` + label position), not by
+    filtering the whole table for matching (height, width): the small face
+    shares its shape with an unrelated face (FONT_H12_HEIGHT/
+    FONT_H12_CODE_OFFSET), so a shape-only filter would pick up the wrong
+    21 entries.
+
+    The large face is SHADED: a bright (level 3) outline around a mid-tone
+    (level 1) interior, so a single bitplane cannot represent one -- the
+    match key has to combine both. Each row is a string of '0'-'3'
+    characters (one per pixel, MSB first), built as level = 2*plane0_bit +
+    plane1_bit, the same weighting the display pipeline itself uses (F13:
+    plane 0 the MSB) -- not the '0'/'1' bit strings glyph_bitmaps returns
+    for the single-plane faces. The small face happens to use only levels 0
+    and 3 (plane 0 and plane 1 always agree), so the same level-string key
+    still matches it correctly without a separate code path.
+
+    Unlike glyph_bitmaps, an empty result is not an error: a ROM image that
+    has the on-screen h=9 face but not this one is not necessarily
+    malformed.
     """
-    entries = [e for e in _font_entries(data) if e[1] == SCORE_FACE_HEIGHT and e[2] == SCORE_FACE_WIDTH]
+    entries = _font_entries(data)
     out = {}
-    for label, (off, h, w) in zip(SCORE_FACE_LABELS, entries):
-        row_bytes = data[off + 6:off + 6 + h * w]
-        if len(row_bytes) < h * w:
+    for i, label in enumerate(SCORE_FACE_LABELS):
+        idx = index + i
+        if idx >= len(entries):
             continue
-        rows = [''.join(format(b, '08b') for b in row_bytes[r * w:r * w + w]) for r in range(h)]
+        off, h, w = entries[idx]
+        if h != height or w != width:
+            continue
+        hw = h * w
+        plane0 = data[off + 6:off + 6 + hw]
+        plane1 = data[off + 6 + hw:off + 6 + 2 * hw]
+        if len(plane1) < hw:
+            continue
+        rows = []
+        for r in range(h):
+            row = []
+            for c in range(w):
+                b0, b1 = plane0[r * w + c], plane1[r * w + c]
+                row.extend(str(((b0 >> bit) & 1) * 2 + ((b1 >> bit) & 1)) for bit in range(7, -1, -1))
+            rows.append(''.join(row))
         if len(set(rows)) > 1:
             out[label] = rows
     return out
@@ -167,6 +279,34 @@ def contact_table(data):
             'code %02X: C-number disagrees between tables (%d english, %d spanish)'
             % (code, cnum_en, cnum_es))
         out[code] = (cnum_en, en, es)
+    return out
+
+
+def menu_records(data, base=MENU_TABLE_BASE, count=38):
+    """The service-menu tree (F14) at `base`: [(type, item_count, line_count, [line strings], children), ...].
+
+    `base` is MENU_TABLE_BASE (English) or SPANISH_MENU_TABLE_BASE (country
+    5, Spanish); `children` is the 4 child record indices (0xFFFF where a
+    slot is unused). Decodes strictly fewer lines than `line_count` gives no
+    error: a leaf record's later line slots carry 0xFFFF and are skipped, not
+    a malformed table.
+    """
+    out = []
+    for i in range(count):
+        rec = data[base + i * 46:base + i * 46 + 46]
+        if len(rec) < 46:
+            break
+        rtype, item_count, line_count = struct.unpack('<HHH', rec[0:6])
+        lines = []
+        for j in range(4):
+            off16, seg16 = struct.unpack('<HH', rec[6 + 8 * j:10 + 8 * j])
+            if off16 in (0x0000, 0xFFFF):
+                continue
+            s = decode_string(data, (seg16 << 4) + off16)
+            if s is not None:
+                lines.append(s)
+        children = struct.unpack('<HHHH', rec[38:46])
+        out.append((rtype, item_count, line_count, lines, children))
     return out
 
 
@@ -222,6 +362,19 @@ def _self_test(data):
     assert len(glyphs) == 46, 'expected 46 non-space codes in the h=9 face, got %d' % len(glyphs)
     print('font self-test OK: %d matchable glyphs in the h=9 face' % len(glyphs))
 
+    # The h=12 face (FONT_H12_HEIGHT/FONT_H12_CODE_OFFSET): entry 75 is code
+    # 0, a clean '0'; entry 119 (75 + 0x2c) is the period, a 2x2 baseline dot,
+    # the same shape class as the h=9 face's own period.
+    glyphs12 = glyph_bitmaps(data, height=FONT_H12_HEIGHT, code_offset=FONT_H12_CODE_OFFSET)
+    zero_bits = ('00000000', '00111100', '01111110', '01100110', '01100110', '01100110',
+                 '01100110', '01100110', '01100110', '01111110', '00111100', '00000000')
+    assert tuple(glyphs12[0]) == zero_bits, 'h=12 entry 75 (code 0) is not a clean 0'
+    dot_bits = ('00000000',) * 9 + ('00011000', '00011000', '00000000')
+    assert tuple(glyphs12[0x2C]) == dot_bits, 'h=12 entry 119 (75+0x2c) is not a 2x2 baseline dot'
+    # 47 defined codes minus 0x27 -- same completeness as the h=9 face.
+    assert len(glyphs12) == 46, 'expected 46 non-space codes in the h=12 face, got %d' % len(glyphs12)
+    print('h=12 font self-test OK: %d matchable glyphs' % len(glyphs12))
+
     # A truncated ROM (a plausible partial chip dump) must fail cleanly, not
     # crash: cut right after entry 23's 6-byte header (off 0x202B2), with
     # none of its body present.
@@ -232,24 +385,63 @@ def _self_test(data):
         pass
     print('truncated-ROM self-test OK: glyph_bitmaps raises ValueError instead of crashing')
 
+    # A later truncation -- past enough entries that glyph_bitmaps' own
+    # non-emptiness check is already satisfied, but before the table's real
+    # end -- must still be reported, not merely returned short: cut mid-body
+    # of entry 60 ('X', table index 60 + no offset needed here, just past
+    # the codes a minimal ROM read would already have found).
+    stderr, sys.stderr = sys.stderr, io.StringIO()
+    try:
+        cut = _font_entries(data)[60][0] + 8  # past the header, mid-body
+        glyphs_short = glyph_bitmaps(data[:cut])
+        warned = sys.stderr.getvalue()
+    finally:
+        sys.stderr = stderr
+    assert glyphs_short, 'a mid-table cut should still return the entries before it'
+    assert 'truncated' in warned, 'a mid-table cut must warn, not fail silently: got %r' % warned
+    print('loud-truncation self-test OK: a later cut still warns (%d glyphs recovered)' % len(glyphs_short))
+
+    en_menu = menu_records(data, MENU_TABLE_BASE)
+    assert len(en_menu) == 38, 'expected 38 English menu records, got %d' % len(en_menu)
+    assert en_menu[0][3] == ['- ADJUSTMENT -', 'SOUND/VIDEO', 'GAME', 'TECHNICAL'], en_menu[0]
+    assert en_menu[0][4] == (1, 2, 3, 0xFFFF), en_menu[0]
+    assert en_menu[4][3][0] == '- VOLUME -', en_menu[4]  # F14: the music-trigger page
+    assert en_menu[23][3][0] == '  OF  10 CRED:', en_menu[23]  # F14: the CREDITS page
+    es_menu = menu_records(data, SPANISH_MENU_TABLE_BASE)
+    assert len(es_menu) == 38, 'expected 38 Spanish menu records, got %d' % len(es_menu)
+    assert es_menu[0][3][0] == '- AJUSTE -', es_menu[0]
+    print('menu-record self-test OK: %d English + %d Spanish records decode' % (len(en_menu), len(es_menu)))
+
     score = score_glyph_bitmaps(data)
     assert len(score) == 21, 'expected 21 score-face labels, got %d' % len(score)
     for d in range(10):
         digit, dotted = score[str(d)], score['%d.' % d]
-        # the '.' variant is the plain digit plus a small square mark at bottom
-        # right (rows 19-20, cols 13-14); a plain dot, not a comma's tail --
-        # nothing outside that 2x2 box ever differs, confirmed against all ten
+        # the '.' variant is the plain digit plus a small shaded mark at
+        # bottom right (rows 19-21, cols 13-15) -- a dot, not a comma's
+        # tail -- nothing outside that box ever differs, confirmed against
+        # all ten; digit 7 has no difference at all (the ROM's '7' and '7.'
+        # entries share a bitmap, the same kind of glyph reuse the h=12 face
+        # shows at offset 75).
         for i in range(SCORE_FACE_HEIGHT):
             if digit[i] == dotted[i]:
                 continue
-            assert i in (19, 20), 'digit %d.: mark row %d outside rows 19-20' % (d, i)
-            assert digit[i][:13] == dotted[i][:13] and digit[i][15:] == dotted[i][15:], (
-                'digit %d.: mark spread outside cols 13-14' % d)
-    # the colon is two identical same-width blocks, one above the other, nothing else lit
-    lit = [i for i, r in enumerate(score[':']) if r.count('1')]
-    assert len(lit) == 8 and lit == [7, 8, 9, 10, 14, 15, 16, 17], lit
-    assert len({score[':'][i] for i in lit}) == 1, 'colon: both blocks must be the same shape'
+            assert i in (19, 20, 21), 'digit %d.: mark row %d outside rows 19-21' % (d, i)
+            assert digit[i][:13] == dotted[i][:13], 'digit %d.: mark spread left of col 13' % d
+    # the colon is two identical shaded blocks, one above the other, nothing else lit
+    lit = [i for i, r in enumerate(score[':']) if any(ch != '0' for ch in r)]
+    assert lit == [7, 8, 9, 10, 11, 14, 15, 16, 17, 18], lit
+    assert score[':'][7:12] == score[':'][14:19], 'colon: both blocks must be the same shape'
     print('score-face self-test OK: %d labels, digit/period pairs and colon shape check out' % len(score))
+
+    small = score_glyph_bitmaps(data, height=SMALL_DIGIT_FACE_HEIGHT, width=SMALL_DIGIT_FACE_WIDTH,
+                                 index=SMALL_DIGIT_FACE_INDEX)
+    assert len(small) == 21, 'expected 21 small-digit-face labels, got %d' % len(small)
+    zero_bits = ('00000000', '00333000', '03000300', '03000300', '03000300', '00000000',
+                 '03000300', '03000300', '03000300', '00333000', '00000000', '00000000')
+    assert tuple(small['0']) == zero_bits, 'small-digit-face entry 183 is not a closed-loop 0'
+    # unlike the large score face, this one is never shaded -- every pixel is level 0 or 3
+    assert set(''.join(small['8'])) <= set('03'), 'small-digit-face should use only levels 0/3'
+    print('small-digit-face self-test OK: %d labels' % len(small))
 
 
 if __name__ == '__main__':
@@ -260,9 +452,15 @@ if __name__ == '__main__':
     for code in sorted(contact_table(blob)):
         cnum, en, es = contact_table(blob)[code]
         print('  %02X  C%-3d  %-16s %s' % (code, cnum, en, es))
+    print('\n=== English menu tree (F14) ===')
+    for i, (rtype, item_count, line_count, lines, children) in enumerate(menu_records(blob, MENU_TABLE_BASE)):
+        print('  %2d  type %-2d  %s  -> %s' % (i, rtype, ' / '.join(lines), children))
+    print('\n=== Spanish menu tree (F14) ===')
+    for i, (rtype, item_count, line_count, lines, children) in enumerate(menu_records(blob, SPANISH_MENU_TABLE_BASE)):
+        print('  %2d  type %-2d  %s  -> %s' % (i, rtype, ' / '.join(lines), children))
     print('\n=== English pool ===')
     for off, s in string_pool(blob, *ENGLISH_POOL):
         print('  %06x |%s|' % (off, s))
-    print('\n=== Spanish pool ===')
+    print('\n=== Spanish pool (a narrow, verified-clean sub-window; see SPANISH_POOL) ===')
     for off, s in string_pool(blob, *SPANISH_POOL):
         print('  %06x |%s|' % (off, s))
