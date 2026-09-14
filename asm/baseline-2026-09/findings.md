@@ -1,6 +1,6 @@
-# IO Moon — driver contract, F1..F15
+# IO Moon — driver contract, F1..F20
 
-Fifteen numbered facts extracted from the **2026-09 fresh baselines** in this
+Twenty numbered facts extracted from the **2026-09 fresh baselines** in this
 directory. Later driver tasks reference them by number.
 
 **Sources, and only these sources.** Every address citation below was read out
@@ -2082,6 +2082,69 @@ firmware behaviour, not a driver bug, and no driver change follows from it:
 delivering the `0xFF` accurately (as any faithful emulation of the Z80
 reboot must) is what triggers it, and there is no correct place to suppress
 that byte without becoming unfaithful to the ROM.
+
+---
+
+## F20 — Full-screen images share the font table's own entry format
+
+**Statement.** ROM1 stores at least one complete 128x32 DMD screen using the
+identical entry layout the walked font/glyph table uses (F13's frame
+buffers; `docs/dmd_graphics.md`, "Font Entry Structure") — a 6-byte header
+`[height, 0x00, width, 0x00, len16_lo, len16_hi]` followed by three
+`len16`-byte planes (plane 0, plane 1, mask) — sitting outside the walked
+table (`0x20000`-`0x22C2E`) rather than as one of its 224 entries, so it is
+not reached by walking from the table's own base and has to be found by
+other means (here, by searching the ROM for a captured frame's own bytes).
+
+**The instance, read directly out of the ROM.** Header at `0x24EA4`:
+`height=0x20, width=0x10, len16=0x0200` (`=32*16=512`, the same full-screen
+dimensions as the already-documented terminator image at `0x22C2E`). Plane 0
+at `0x24EAA` (header `+6`), plane 1 at `0x250AA` (`+len16`); each row is
+`width=16` bytes, so row 10 of plane 0 falls at `0x24EAA + 10*16 = 0x24F4A`
+and row 10 of plane 1 at `0x250AA + 10*16 = 0x2514A`.
+
+**Confirmed against a captured frame, not just against the header
+arithmetic.** Reconstructing all 32 rows from these two planes
+(`level = 2*plane0_bit + plane1_bit`, F13's own weighting) reproduces
+`dmd/en/screens/0023-attract/repr.txt` byte-for-byte, all 32 rows, no
+discrepancy. The same content — full or, in one case, a mid-redraw partial
+with the already-drawn rows matching exactly and the not-yet-reached rows
+still blank — is the settled or in-progress content of three deep
+service-menu leaf records in the same corpus: `svc-33` (SEND-REC TEST),
+`svc-36` (LIGHT TEST 2), `svc-37` (LIGHT TEST 3). A direct byte search of
+`v1_3_02.bin` through `v1_3_05.bin` (the graphics, sound and Z80 ROM images)
+for the plane-0 block finds no match in any of them — this image lives only
+in ROM1, in the font-table's own chip.
+
+**What this means for the DMD text decoder.** A screen drawn this way
+contributes no font-table match, ever, to `scripts/dmd_dump_split.py` or any
+other bitmap-matching decoder, because there are no glyphs on it to match —
+the panel content is one large pre-composed picture, not characters
+assembled from the font table at run time. This is a third class of
+"undecoded," distinct from a missing capture and from an unlocated font
+(`docs/dmd_graphics.md`'s own "Open items" already documents the unlocated
+in-play `PLAYER`/`BALL` font as the second class).
+
+**Confidence:** confirmed for the header, the two verified plane offsets,
+and the byte-exact 32-row match against a real captured frame. **Open:**
+which specific catalogued ROM string(s), if any, this particular picture
+depicts (not read letter by letter); whether every deep service-menu leaf
+record uses this mechanism (three are confirmed; `svc-24`, SOLENOID TEST,
+shows no new content of any kind across five occurrences even after F14's
+record-to-record dwell was stretched 25x, so its own mechanism is
+unresolved — see `dmd/README.md`'s Open items); why the same bytes also
+surface during ordinary attract-mode play (asset reuse across two contexts
+is the simplest reading and is consistent with everything checked, but is
+not independently confirmed); and whether the in-play score or any other
+still-undecoded screen (`docs/dmd_graphics.md`, "Which face draws the main
+player score is not settled") uses this same mechanism — not established
+either way, and not to be assumed from this finding alone.
+
+**Disposition:** new. No prior finding addressed whether a DMD screen could
+be a picture rather than composed text; this one does, with one directly
+confirmed instance and a documented method (byte-search a candidate frame
+against both ROM images, then verify the header arithmetic independently)
+for checking any other suspected instance.
 
 ---
 

@@ -430,15 +430,28 @@ touches only the end-of-game path.
   toward the tile-bar being the stable, fully-drawn state at this depth,
   not a transitional one that a longer wait would resolve into real text.
   Measured before/after in `.superpowers/sdd/2026-09-13-iomoon-simulation-
-  and-dmd-screens/task-16-report.md`'s "Fix round 5" section. What would
-  settle it now: comparing raw pixels, not decoded text, between a
-  shallow record's settled page and a deep one's, to see whether the item
-  list is drawn somewhere the tile-bar overlay covers, or not drawn there
-  at all past depth 1. `docs/iomoon_dmd_screens.md`'s Coverage section has
-  the fuller breakdown (now stale against this round's recapture — see the
-  fix-round-5 report), including the F16 switch/cabinet names (a separate
-  gap: they render only on the live CONTACTOS/SWITCH TEST screen when an
-  actual matrix switch closes, which this walk never triggers).
+  and-dmd-screens/task-16-report.md`'s "Fix round 5" section.
+
+  **That raw-pixel comparison has since been done, for three records, and
+  settles part of this (F20).** `svc-33` (SEND-REC TEST), `svc-36` (LIGHT
+  TEST 2) and `svc-37` (LIGHT TEST 3) are confirmed showing, as their real
+  settled or mid-redraw content, a complete 128x32 picture stored in ROM1
+  in the exact entry format the walked font table itself uses (header at
+  `0x24EA4`), not text composed from glyphs — `docs/dmd_graphics.md`, "Full-
+  screen images outside the walked table use the same entry format (F20)".
+  No font-based decoder can recover a string from a page drawn this way; it
+  is a third, distinct class from "not yet captured" and from "captured but
+  in an unlocated font." `svc-24` (SOLENOID TEST) is not part of this
+  answer — it shows no new content of any kind, image or text, across all
+  five of its occurrences even after the 25x dwell, so its own mechanism
+  stays open. Whether the tile-bar depth records (`svc-2` and others) are
+  *also* full-screen images, rather than the tile bar being their genuine
+  drawn content, is not established either way.
+
+  `docs/iomoon_dmd_screens.md`'s Coverage section has the current breakdown
+  against this round's recapture, including the F16 switch/cabinet names (a
+  separate gap: they render only on the live CONTACTOS/SWITCH TEST screen
+  when an actual matrix switch closes, which this walk never triggers).
 - **`boot-setting-country` never shows text**, in either language. Its
   three scenes per language are pixel-identical, in kind, to the ordinary
   attract-logo dissolve (`dmd/en/screens/0008-attract/repr.txt`), not a

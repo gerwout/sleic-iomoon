@@ -258,6 +258,57 @@ and no 7-segment-style face at this offset. The table runs 224 entries in
 total, ROM1 `0x20000`-`0x22C2E` (combined `0xA0000`-`0xA2C2E`), and is
 followed directly by the full-screen image at `0x22C2E` described above.
 
+### Full-screen images outside the walked table use the same entry format (F20)
+
+The image at `0x22C2E` is not the only one. A second, separate `[height=32,
+0x00, width=16, 0x00, len16=0x0200]` header sits at ROM1 `0x24EA4` — well
+past the walked table's own end and not reached by walking from `0x20000`,
+confirmed by re-deriving its data offsets from the header alone and checking
+them independently: plane 0 at `0x24EAA` (header `+6`), plane 1 at `0x250AA`
+(`+len16`), each row `width=16` bytes apart, so row 10 of plane 0 is
+`0x24EAA + 10*16 = 0x24F4A` and row 10 of plane 1 is `0x250AA + 10*16 =
+0x2514A` — both land exactly on the bytes that reproduce a captured frame's
+row 10, checked below.
+
+Reconstructing all 32 rows from this header's two planes (`level =
+2*plane0_bit + plane1_bit`, F13's weighting) matches a real captured DMD
+frame **byte-for-byte, all 32 rows** —
+`dmd/en/screens/0023-attract/repr.txt`, large multi-level shaded text (the
+same shaded style as the score glyphs, not the flat `height=9`/`height=12`
+text faces). The identical bytes are not a one-off: the same content, or a
+mid-redraw partial of it (rows already drawn matching exactly, rows not yet
+reached still blank), turns up as the settled or in-progress content of
+three deep service-menu leaf records in `dmd/en/screens.csv` — `svc-33`
+(SEND-REC TEST), `svc-36` (LIGHT TEST 2) and `svc-37` (LIGHT TEST 3) — and
+is absent from every other ROM chip in the set (`v1_3_02.bin` through
+`v1_3_05.bin`, byte-searched directly for the plane-0 block).
+
+**This is a third, distinct category from either a decoded string or an
+undecoded one: a screen whose content is a picture, composed once at ROM
+build time and blitted whole, not text assembled from character codes at
+run time.** No font-based matcher — this decoder or any other — can recover
+a string from a page drawn this way, because the pixels are not glyphs; the
+mechanism is the same one the walked table's own entries use (identical
+6-byte header, identical three-plane layout), just invoked on a "glyph"
+that happens to be an entire panel instead of one character. Which of the
+service-menu tree's own catalogued strings this specific picture depicts is
+not established — the picture has not been read letter by letter — only
+that it is a picture, on these three records, and not glyph-composed text.
+
+What is still open: whether every deep service-menu leaf record renders
+this way (only three are confirmed; `svc-24`, SOLENOID TEST, shows no new
+content of any kind across five occurrences even after a 25x longer dwell —
+`dmd/README.md`'s own Open items — so its mechanism is unresolved, not
+assumed to be this one or any other); why the identical bytes also appear
+during ordinary attract-mode play (`0023-attract`) — reuse of one baked
+asset across two unrelated screens is the simplest explanation and is
+consistent with everything checked so far, but is not independently
+confirmed; and whether the *other* full-screen image already noted above,
+at `0x22C2E`, is likewise reused anywhere in the captured corpus (not
+checked). What would settle the first question: the same row-by-row
+byte comparison used here, run against a captured frame from each of the
+remaining leaf records in turn.
+
 ### Character Mapping
 
 The table's entry index is **not** the glyph code: entry 0 renders a
@@ -438,6 +489,15 @@ miss. The smaller `height=12` digit face immediately after it (table index
 decoded so far is short, and no captured scene identifies what quantity it
 shows — it may be a bonus count, a lane multiplier, or something else, not
 necessarily the main player score.
+
+A third possibility exists alongside "which walked face draws it": the
+in-play score screen might not be glyph-composed at all, the way three deep
+service-menu records are confirmed not to be (see "Full-screen images
+outside the walked table use the same entry format (F20)" above). This is
+not established either way — no in-play frame has been checked against a
+font-table-shaped full-screen image the way the service-menu ones were —
+and should not be assumed true just because the mechanism exists elsewhere
+in this ROM.
 
 Two further faces from the same font table are walked but not pinned to any
 code offset or confirmed against a captured frame: `height=16` (20 entries,
