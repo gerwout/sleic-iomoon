@@ -1,0 +1,53 @@
+# Reaches the mod's SPECIAL/match handler (D5077) against iomoont. This path is a real
+# lottery win -- after the game a free-running work-RAM counter (4000:113F, incremented
+# once per timer-0 tick, F3) is compared against the units digit of the player's score
+# (sub_D4CF4); on equality sub_D4FDC awards a free game and runs the SPECIAL animation
+# before drawing PRESS START through the same D5076/D5077 trampoline the tournament mod
+# hooks. This script's own timing does not land the match naturally -- the units-digit
+# comparison it exercises is the ordinary one, and a controlled sweep across the ten
+# reachable digits (varying only which target scores, not the frame schedule) found no
+# natural hit inside the tested window (see docs/iomoon_dmd_screens.md and dmd/README.md).
+# Run against a build with the throwaway probe in dmd/README.md's forced-match note
+# (pinmame commit noted there) and SLEIC_FORCE_MATCH=1 set in the environment -- the probe
+# turns sub_D4CF4's digit-vs-counter JE (D4DCB) into an unconditional JMP, so any score
+# reaches the SPECIAL branch. The screen this draws is real; only the path to it is forced.
+#
+# Keys: as scripts/keyscripts/iomoon-en.keys -- Y is any lane (100,000, flat, safe to
+# repeat). 1/5/7/T are START/COIN/TEST/TILT.
+    40 mark boot
+    40 tap 8 KEYCODE_1
+    80 mark boot-setting-country
+   640 mark attract
+  6640 mark credit
+  6640 tap 8 KEYCODE_5
+  6760 mark ball-1-start
+  6760 tap 8 KEYCODE_1
+  6910 mark ball-1-in-play
+  6910 tap 40 KEYCODE_SPACE
+  7030 tap 10 KEYCODE_Y
+  7100 tap 10 KEYCODE_Y
+  7170 tap 10 KEYCODE_Y
+  7240 tap 10 KEYCODE_Y
+  7610 mark ball-1-drained
+  7610 tap 10 KEYCODE_Q
+  7670 tap 10 KEYCODE_DOWN
+  8020 mark ball-2-in-play
+  8020 tap 40 KEYCODE_SPACE
+  8140 tap 10 KEYCODE_Y
+  8210 tap 10 KEYCODE_Y
+  8280 tap 10 KEYCODE_Y
+  8350 tap 10 KEYCODE_Y
+  8720 mark ball-2-drained
+  8720 tap 10 KEYCODE_Q
+  8780 tap 10 KEYCODE_DOWN
+  9130 mark ball-3-in-play
+  9130 tap 40 KEYCODE_SPACE
+  9250 tap 10 KEYCODE_Y
+  9320 tap 10 KEYCODE_Y
+  9390 tap 10 KEYCODE_Y
+  9460 tap 10 KEYCODE_Y
+  9830 mark ball-3-drained-gameover
+  9830 tap 10 KEYCODE_Q
+  9890 tap 10 KEYCODE_DOWN
+ 17890 mark special-press-start
+ 17890 quit

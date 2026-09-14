@@ -1,0 +1,12 @@
+40 633 boot
+80 1299 boot-setting-country
+640 10633 attract
+6640 110633 credit
+6760 112633 ball-1-start
+6910 115133 ball-1-in-play
+7610 126800 ball-1-drained
+8020 133633 ball-2-in-play
+8720 145299 ball-2-drained
+9130 152133 ball-3-in-play
+9830 163799 ball-3-drained-gameover
+17890 298133 special-press-start

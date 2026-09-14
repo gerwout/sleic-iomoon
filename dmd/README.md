@@ -10,7 +10,7 @@ coverage report against the ROM's own string data.
 
 ## PinMAME build and capture
 
-Every capture in this corpus (`en/`, `es/`, and `faults/`) is built against
+Every capture in `en/`, `es/`, and `faults/` is built against
 `pinmame` commit `ea634848` ("sleic: wire Io Moon's DMD path into the
 frame-dump hook"), branch `iomoon-sim` — the commit that first wires
 `-dmd_dump_dir` into Io Moon's own frame-submit path, checked out clean
@@ -378,49 +378,60 @@ own scenes under that label, per the method above.
   established; the growth pattern does not cleanly map to three initial
   slots (it reaches five characters), so it is reported as decoded rather
   than interpreted.
-- **The mod's SPECIAL trampoline (`D5077`) is not exercised.** `PRESS START`
-  appears three times in this corpus (the boot seed screen, the normal
-  end-of-game hook at `D5123` twice — once per game below); reaching
-  `D5077` needs an actual match win, which this walk does not force.
+- ~~The mod's SPECIAL trampoline (`D5077`) is not exercised~~ **— reached, with the path
+  forced.** The mechanism is a real lottery: `sub_D4CF4` (`D4CF4`, called from `sub_D46F8`
+  once per game, from the end-of-ball state machine's own game-over dispatch,
+  `sub_D3145`/`D3237`) divides each player's own score-digit byte by 10 and compares the
+  remainder, at `D4DCB`, against work RAM `4000:113F` — a byte incremented once every
+  timer-0 tick (F3, 99.18 Hz) with no gating in the ISR that writes it, so it free-runs
+  0–9 for as long as the machine has been on. On equality, `sub_D4FDC` is called with `n=1`:
+  it banks a credit (`nvstore_write_triple_83`, immediately — this is a live NVRAM write,
+  confirmed by the byte actually landing on disk) and runs the SPECIAL animation through
+  the same `D5076`/`D5077` trampoline the tournament mod hooks, ending at `PRESS START`.
 
-  F10/F11's short-ball "salida nula" replay protection governs a scoring
-  ball regardless of how it was awarded: `sub_D368C`, tested at `D31D3`,
-  replays any ball — an awarded extra ball included — that scores at or
-  below the NVRAM `0x43` threshold (factory 100,000), indistinguishable
-  from a player abandoning the ball. A bare plunge immediately followed by
-  a drain scores
-  exactly zero and loops forever under this rule; it is not specific to
-  extra balls (an ordinary drained ball with no score loops identically)
-  and it is not a fault in the ball simulator, the driver, or the firmware.
+  **A controlled sweep did not land the match naturally, and that is worth stating
+  plainly rather than glossing over.** The approach `dmd/special/README.md` describes in
+  full: nine fixed press slots across a three-ball game, each slot's own frame and hold
+  duration identical in every trial, toggled only between a lane (100,000, units digit 0)
+  and a bumper/bull's-eye/inner-bank (10,001/20,001/50,001, all units digit 1 — the
+  fact every nonzero-digit award in the rules shares — docs/iomoon_game_rules.md §3.5) so
+  that a trial's own final units digit is exactly its count of nonzero-digit slots, 0
+  through 9, with the event schedule never moving. None of the ten digits matched inside
+  the window tested. This is not proof the counter is unstable under the controlled swap
+  — a null result over one window does not distinguish "the counter is fine but this
+  window's own value falls outside 0–9 relative to what was tried" from an actual
+  timing-sensitivity in the counter's own sampling instant — only that the natural route
+  did not pay off in the time available. Independently reading `4000:113F` to settle
+  which is which needs a genuine breakpoint/memory-watch tool; the debug build's own
+  classic debugger requires a real display and would not start under this project's
+  headless `SDL_VIDEODRIVER=dummy` convention (it segfaults trying to open one), and
+  MAME's own save-state file — reachable headlessly, confirmed working, format is a plain
+  `memcpy` of every `state_save_register`'d region with no per-item tag stored in the
+  payload — could not be resolved to this one byte's offset among roughly 780,000 other
+  byte positions in the ~1.15 MB save that also happen to read 0–9 (almost certainly a
+  video bitmap dominating the file), even matching against the exact predicted tick
+  sequence for several trial spacings. What would settle the stability question: the same
+  digit-vs-lottery correlation, run against a `-debug` build under a real X server
+  (`Xvfb`/`xvfb-run` rather than the dummy driver) with a genuine memory watch on
+  `4000:113F`, which this round did not reach.
 
-  With that understood, `scripts/keyscripts/iomoon-en.keys` clears the
-  lowest high-score preset (50,000,000 at NVRAM `0x85`, F10) with margin —
-  three balls of unlit-lane hits land the score around 233,000,000 — and
-  gives the awarded recovery ball five diverse real hits (a bumper, a
-  bull's-eye, a drop target, a ramp, Jupiter) before draining it, rather
-  than a bare plunge-and-drain. Both the qualifying score and the RECORD
-  INSCRIPTION entry screen are reached cleanly this way, and the high-score
-  wheel-walk (docs/iomoon_game_rules.md 4.2: right flipper forward, left
-  flipper backward, START fixes the character shown) is captured in
-  full — `score-high-score-entry` through `wheel-c3-fixed` in
-  `screens.csv`, including one erase-symbol demonstration
-  (`wheel-c3-erase-symbol` /
-  `wheel-c3-erase-tried`) — with the selected character changing at every
-  single marked step, confirmed against the current `h=12` decoder rather
-  than assumed from the key presses alone.
-
-  What is still open is the match itself: neither the ordinary,
-  non-qualifying game played first nor the qualifying one played second in
-  this same capture shows a distinct match/lottery screen in the window
-  after their own `PRESS START` — both go straight back into the normal
-  attract cycle (S. MOONLIGHT / J.SUNSHINE / ...), not a match digit or a
-  third, differently reached `PRESS START`. Reaching `D5077` needs an
-  actual match win, i.e. the score's last digit landing on whatever this
-  walk's fixed key sequence deterministically draws, and this walk does
-  not aim for that.
-  What would settle it: tracing the match check itself with a `-debug`
-  build (there is no probe for it among the `DEBUG_SLEIC` set) rather than
-  searching for a lucky score/timing combination by hand.
+  **Reached anyway, via the documented last resort, and said so plainly.** A one-byte
+  ROM patch — physical `D4DCB`, the digit-vs-counter `JE` (`0x74`) turned into an
+  unconditional `JMP` (`0xEB`), same operand, same target `D4DD0` — makes `sub_D4FDC` run
+  regardless of score or counter. Applied in `MACHINE_INIT(SLEIC2)`, gated on
+  `getenv("SLEIC_FORCE_MATCH")`, reverted immediately after the capture (`pinmame`'s own
+  tree carries none of it, same convention as `dmd/faults/`). The credit award is real —
+  NVRAM's triplicated `0x83` byte reads `0` before the game and `1` after, decoded with
+  `scripts/nvcheck.py` — and the screens drawn are real: a Monolith/train graphic, a
+  full-panel digit `5` (previously undocumented, and very plausibly the lottery number
+  itself, drawn on-panel rather than only compared in work RAM — not confirmed against
+  the ROM's own draw routine), and finally `PRESS START`, textually identical to the
+  `D5123` occurrence (`0375-ball-3-drained-gameover` in `dmd/en/`, both drawn by the same
+  code-cave text routine the mod's own patch installs) but reached down a visibly
+  different, longer path and behind a genuine credit award — the one thing a normal
+  `D5123` ending never does. `dmd/special/README.md` has the full account: the probe's
+  exact bytes, the capture command, and the frame-by-frame citation for each of the three
+  distinct screens against `dmd/special/screens.csv`.
 - **The pre-credit `attract` section and the post-game `attract-again`
   section are the same content, at different lengths.** `attract-again` (the
   post-game return to idle) already runs long enough to show the attract
