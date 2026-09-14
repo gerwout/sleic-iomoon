@@ -284,8 +284,9 @@ own scenes under that label, per the method above.
   (`svc-33`, `svc-34`, `svc-37`, `svc-menu-final-close`) sit at or near the
   free-running lamp/relay counters the auto-cycling TECNICO tests already
   show elsewhere in this document, a plausible source though not
-  independently confirmed here; the other two (`lottery`, `attract-again`)
-  most likely read part of a larger, still-unidentified digit graphic.
+  independently confirmed here; the other two (both `attract-again`, the
+  post-game idle cycle) most likely read part of a larger, still-unidentified digit
+  graphic.
 
   Scanned over every frame in the corpus rather than just the screens it
   was confirmed against, the same face also produces a **growing letter
@@ -378,64 +379,62 @@ own scenes under that label, per the method above.
   established; the growth pattern does not cleanly map to three initial
   slots (it reaches five characters), so it is reported as decoded rather
   than interpreted.
-- ~~The mod's SPECIAL trampoline (`D5077`) is not exercised~~ **— reached, with the path
-  forced.** The mechanism is a real lottery: `sub_D4CF4` (`D4CF4`, called from `sub_D46F8`
-  once per game, from the end-of-ball state machine's own game-over dispatch,
-  `sub_D3145`/`D3237`) divides each player's own score-digit byte by 10 and compares the
-  remainder, at `D4DCB`, against work RAM `4000:113F` — a byte incremented once every
-  timer-0 tick (F3, 99.18 Hz) with no gating in the ISR that writes it, so it free-runs
-  0–9 for as long as the machine has been on. On equality, `sub_D4FDC` is called with `n=1`:
-  it banks a credit (`nvstore_write_triple_83`, immediately — this is a live NVRAM write,
-  confirmed by the byte actually landing on disk) and runs the SPECIAL animation through
-  the same `D5076`/`D5077` trampoline the tournament mod hooks, ending at `PRESS START`.
+- ~~The mod's SPECIAL trampoline (`D5077`) is not exercised~~ **— reached, with a real
+  lottery win, on the shipped release build.** No ROM patch and no driver probe:
+  `scripts/keyscripts/iomoon-special.keys` aims the firmware's own match, NVRAM's
+  triplicated credit byte goes `0,0,0` → `1,1,1` across the game (`scripts/nvcheck.py`), and
+  the `PRESS START` the `D5077` trampoline draws is `dmd/special/screens/0313-*`.
 
-  **A controlled sweep did not land the match naturally, and the sweep itself turns out
-  not to reach a real game.** The approach `dmd/special/README.md` describes in full: nine
-  fixed press slots across a three-ball game, each slot's own frame and hold duration
-  identical in every trial, toggled only between a lane (100,000, units digit 0) and a
-  bumper/bull's-eye/inner-bank (10,001/20,001/50,001, all units digit 1 — the fact every
-  nonzero-digit award in the rules shares — docs/iomoon_game_rules.md §3.5) so that a
-  trial's own final units digit is exactly its count of nonzero-digit slots, 0 through 9,
-  with the event schedule never moving. None of the ten digits matched, and checking why
-  finds the digit-controlled game never starts: it runs as a second game, its own credit
-  and start presses fired at a fixed offset after a throwaway warm-up game, and that offset
-  (about 16.5 s after the warm-up's own `PRESS START`) lands inside the automatic
-  high-score-entry prompt that follows it (`PRESS START` to `high-score-entry` is +16100 ms
-  in `dmd/en/screens.csv`) — so the start press fixes a name-entry character (§4.2) instead
-  of starting a game, confirmed directly by the DMD showing the attract-mode logo, not
-  gameplay, at the instant the second game's own ball-1 mark fires, identically across
-  three trials checked. `sub_D4CF4` never runs in any of the ten trials, so the null
-  result says nothing about the counter's stability or the sweep's own digit coverage —
-  it says the sweep needs to confirm its own game actually started (its `PLAYER BALL` HUD
-  on screen) before relying on it. What would settle the stability question once a
-  corrected sweep does that: the same digit-vs-lottery correlation run against a `-debug`
-  build under a real X server (`Xvfb`/`xvfb-run` rather than the dummy driver) with a
-  genuine memory watch on `4000:113F` — blocked headlessly so far the same way: the debug
-  build's own classic debugger requires a real display and segfaults under this project's
-  `SDL_VIDEODRIVER=dummy` convention, and MAME's own save-state file, reachable headlessly
-  and confirmed working (a plain `memcpy` of every `state_save_register`'d region with no
-  per-item tag in the payload), could not be resolved to this one byte's offset among
-  roughly 780,000 other byte positions in the ~1.15 MB save that also happen to read 0–9
-  (almost certainly a video bitmap dominating the file), even matching against the exact
-  predicted tick sequence for several trial spacings.
+  **The rule, and it now holds exactly over 104 complete games.** `sub_D4CF4` (`D4CF4`,
+  called from `sub_D46F8` at `D3237`, from the end-of-ball game-over dispatch `sub_D3145`)
+  divides the player's score-digit cell `413C:0016` by 10 and compares the remainder, at
+  `D4DCB`, against work RAM `4000:113F`; on equality `sub_D4FDC` banks a credit
+  (`nvstore_write_triple_83`) and takes the `D5076`/`D5077` trampoline, and on inequality the
+  game ends through the mod's other hook at `D5123`. `[4000:113F] == [413C:0016] mod 10`
+  predicted the credit award in 104 of 104 trials, no exceptions either way.
 
-  **Reached anyway, via the documented last resort, and said so plainly.** A one-byte
-  ROM patch — physical `D4DCB`, the digit-vs-counter `JE` (`0x74`) turned into an
-  unconditional `JMP` (`0xEB`), same operand, same target `D4DD0` — makes `sub_D4FDC` run
-  regardless of score or counter. Applied in `MACHINE_INIT(SLEIC2)`, gated on
-  `getenv("SLEIC_FORCE_MATCH")`, reverted immediately after the capture (`pinmame`'s own
-  tree carries none of it, same convention as `dmd/faults/`). The credit award is real —
-  NVRAM's triplicated `0x83` byte reads `0` before the game and `1` after, decoded with
-  `scripts/nvcheck.py` — and the screens drawn are real: a Monolith/train graphic, a
-  full-panel digit `5` (previously undocumented, and very plausibly the lottery number
-  itself, drawn on-panel rather than only compared in work RAM — not confirmed against
-  the ROM's own draw routine), and finally `PRESS START`, textually identical to the
-  `D5123` occurrence (`0375-ball-3-drained-gameover` in `dmd/en/`, both drawn by the same
-  code-cave text routine the mod's own patch installs) but reached down a visibly
-  different, longer path and behind a genuine credit award — the one thing a normal
-  `D5123` ending never does. `dmd/special/README.md` has the full account: the probe's
-  exact bytes, the capture command, and the frame-by-frame citation for each of the three
-  distinct screens against `dmd/special/screens.csv`.
+  **The counter is the count of *delivered* timer-0 ticks, mod 10 — which is not the same as
+  elapsed time.** The timer-0 ISR is its only writer (`D030E` stores the wrap, `D0315`
+  increments; nothing else in either ROM writes it, and `D4DC4` is the only other reader),
+  and its value equals the number of ISR writes so far, mod 10, in every trial. But ticks
+  that come due while the firmware has interrupts masked are lost: eight games on one fixed
+  event schedule, differing only in which targets scored, reached the compare at the same
+  millisecond having delivered 15,335 to 15,341 ticks — against 16,513 nominal for that
+  166.494 s at 99.18 Hz. So the counter at the compare **moves with what the game did**, and
+  a sweep over the score digit alone is not a ten-way search against a fixed target. (How
+  many ticks real hardware drops is not established; the 80188's timer latches one request
+  per source, as the driver models, so it loses them too.)
+
+  **Aiming it takes two controls.** Twelve scoring slots, each a lane (`KEYCODE_Y`, 100,000,
+  units digit 0) or the inner bank (`KEYCODE_I`, 50,001, units digit 1): `[413C:0016]` at the
+  compare equals the number of inner-bank slots exactly, for every count 0 to 12, so that
+  cell is a raw accumulator `sub_D4CF4` reduces itself. And a whole-game time shift, which
+  moves the counter while leaving the score alone. A 13 × 8 sweep of the two landed twelve
+  free games out of 104, 11.5%, against §3.5's "roughly 20%" for the machine.
+
+  **The lottery number is drawn on the panel, and it is the counter's own value** — which
+  settles what the full-panel digit in this sequence is. Counter `5` draws `5`, counter `9`
+  draws `9`, and `dmd/en/`'s own `0374-lottery`, from an unaimed ordinary
+  game, draws `4`. It is **not** SPECIAL-only: the whole reveal — the Monolith/train graphic
+  (`dmd/special/screens/0311-*`, byte-identical to `dmd/en/screens/0373-*`) and the digit —
+  runs at the end of every game. What a match changes on the panel is only *when* `PRESS
+  START` arrives (250 ms after the reveal ends, against 1.35 s), and that this occurrence
+  does not release on a START press where the `D5123` one does. `dmd/special/README.md` has
+  the full account: the sweep's own table, the four digit observations, the three-way
+  `PRESS START` comparison, and the reverted watch the counter measurements came from.
+
+- **The second game's own `score-lottery` and `score-press-start-normal` marks do not sit
+  on the screens they name.** The first game's do: `lottery` covers the draw — the
+  Monolith/train graphic and then the final score above the drawn digit — and
+  `press-start-normal` starts on the `PRESS START` frame itself. The second game's ending
+  runs differently: it takes the awarded extra ball (`score-recover-*`), its own
+  `PRESS START` frame lands at ms 1635783, **after** the name-entry wheel walk rather than
+  before it (`dmd/en/screens.csv`, under `wheel-c3-fixed`), and between its last drain
+  (ms 1585633) and its name entry (ms 1591633) nothing like the first game's 30-frame and
+  61-frame draw pair appears — every scene in that window is one to four frames. So the two
+  marks are left where they are rather than moved to a guess. What would settle it:
+  identifying that game's own draw frames, if it draws any, against the raw dump across
+  that window, and whether the awarded extra ball reorders the end-of-game path.
 - **The pre-credit `attract` section and the post-game `attract-again`
   section are the same content, at different lengths.** `attract-again` (the
   post-game return to idle) already runs long enough to show the attract

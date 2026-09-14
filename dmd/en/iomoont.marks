@@ -13,9 +13,10 @@
 12040 200633 ball-2-drained
 12450 207466 ball-3-in-play
 14470 241133 ball-3-drained-gameover
-15230 253799 press-start-normal
+14766 246066 lottery
+15161 252649 press-start-normal
 16130 268799 high-score-entry
-16730 278799 lottery
+16730 278799 attract-again
 17330 288799 attract-again
 23330 388799 score-credit
 23450 390799 score-start

@@ -183,10 +183,11 @@
  14470 mark ball-3-drained-gameover
  14470 tap 10 KEYCODE_Q
  14530 tap 10 KEYCODE_DOWN
- 15230 mark press-start-normal
+ 14766 mark lottery
+ 15161 mark press-start-normal
  15530 tap 10 KEYCODE_1
  16130 mark high-score-entry
- 16730 mark lottery
+ 16730 mark attract-again
  17330 mark attract-again
  23330 mark score-credit
  23330 tap 8 KEYCODE_5

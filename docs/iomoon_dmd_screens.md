@@ -13,10 +13,10 @@ screen, and why.
 
 | Corpus | Scene occurrences | Distinct screens | Labels |
 |---|---|---|---|
-| `dmd/en/` | 5716 | 922 | 118 |
-| `dmd/es/` | 5411 | 824 | 52 |
+| `dmd/en/` | 5715 | 921 | 118 |
+| `dmd/es/` | 5410 | 823 | 52 |
 | `dmd/faults/` (8 captures) | 178 | 159 | 7 labels, shared across captures (`unlabelled`, `boot`, `credit`, `ball-1-start`, `tilt-1`, `tilt-2`, `settle`) — a fault's own text rides on one of these, not a fault-named label of its own |
-| `dmd/special/` | 300 | 246 | 12, an ordinary boot/attract/game walk's own labels — the SPECIAL/match content itself rides on `ball-3-drained-gameover`, the same label a non-matching game over uses (`dmd/special/README.md`) |
+| `dmd/special/` | 313 | 259 | 13 — an ordinary boot/attract/game walk's labels plus `lottery` for the draw and `special-press-start` for the `D5077` screen the match reaches (`dmd/special/README.md`) |
 
 "Scene occurrences" counts every visit the walk makes; "distinct screens" counts unique
 `repr.txt` content — the number that answers "how many screens does this machine draw."
@@ -76,7 +76,7 @@ dmd/
 │   ├── README.md                 # which probe forced each of the 8 captures
 │   └── <fault>/                  # same iomoont.txt.gz / iomoont.marks / screens.csv / screens/ layout
 └── special/
-    ├── README.md                 # the SPECIAL/match (D5077) probe and the three-way PRESS START comparison
+    ├── README.md                 # the SPECIAL/match (D5077) win, the lottery counter, and the three-way PRESS START comparison
     └── iomoont.txt.gz / iomoont.marks / screens.csv / screens/   # same layout again
 ```
 
@@ -120,13 +120,12 @@ one example of decoded text where any exists. Numbered families (`ball-1-*`,
 | Label | Occ (en/es) | Distinct (en/es) | Example text |
 |---|---|---|---|
 | `attract` | 134/133 | 88/88 | `S.` (fragment of `S.MOONLIGHT`) |
-| `attract-again` | 111/110 | 74/74 | same idle cycle, reached after a game instead of from boot |
-| `lottery` | 15/15 | 9/9 | `00` (h=12 tile-bar noise, not real text — see Coverage) |
+| `attract-again` | 125/124 | 75/75 | same idle cycle, reached after a game instead of from boot |
 | `credit` | 7/7 | 6/6 | empty |
-| `press-start-normal` | 3/3 | 3/3 | empty |
+| `press-start-normal` | 4/4 | 4/4 | `PRESS START` — the tournament mod's end-of-game hook (`D5123`) |
 | `score-attract-again` (same idle cycle, second game) | 149/172 | 86/76 | `S.` |
 | `score-credit` (same as `credit`, second game) | 5/6 | 5/6 | empty |
-| `score-lottery` (same as `lottery`, second game) | 8/6 | 8/6 | empty |
+| `score-lottery` (the second game's own mark; it sits in the post-game idle cycle rather than on that game's draw — `dmd/README.md`, Open items) | 8/6 | 8/6 | empty |
 
 ### Game
 
@@ -154,7 +153,8 @@ themselves.
 
 | Label | Occ (en/es) | Distinct (en/es) | Example text |
 |---|---|---|---|
-| `ball-3-drained-gameover` | 11/11 | 10/10 | `PRESS START` |
+| `ball-3-drained-gameover` | 7/7 | 7/7 | empty — the last drain and the score wrap-up, up to the draw |
+| `lottery` | 3/3 | 3/3 | empty — the post-game draw (§3.5): a Monolith/train graphic, then the final score above a full-panel digit, and **that digit is the drawn number**, equal to the counter `4000:113F` the match compares against (`dmd/special/README.md`). Drawn at the end of every game, matching or not |
 | `high-score-entry` | 7/7 | 6/6 | empty |
 | `wheel-cN-*` (12 label families — `fixed`/`fwd-00..04`/`refwd-00..03`/`erase-*` — across wheels 1-3, 17 raw labels) | 20/19 | matches occ (each a distinct redraw) | `N N / 0D` (the selected character plus its wheel position) |
 | `score-post-entry-wait` (holds after fixing the last initial, before returning to attract) | 3/18 | 3/7 | empty |
