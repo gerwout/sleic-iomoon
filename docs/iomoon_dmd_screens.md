@@ -49,6 +49,13 @@ live at `dmd/en/screens/5382-svc-0/repr.txt`. Looking up a scene's real content 
 always "read the row whose `id` equals this row's `repr_id`, then read *that* row's
 `dir`" — true whether or not the row in hand is the canonical one.
 
+A `text` segment read through the `height=12` face can show a `0` where the panel
+actually reads `O`, or vice versa: that face's own `0` and `O` glyphs are
+byte-identical bitmaps (`docs/dmd_graphics.md`, "Font Entry Structure"), an
+undecidable-from-pixels property of the font, not a decoder fault — `INSCRIPTI0N`
+for `INSCRIPTION` (`dmd/README.md`, the record-inscription item) is this, not a
+typo. No other face here has the collision.
+
 ## Directory layout
 
 ```

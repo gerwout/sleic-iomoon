@@ -262,8 +262,15 @@ own scenes under that label, per the method above.
   to survive a frame's own draw order — usually one, which is why this
   table alone never recovers a multi-digit score, only isolated digits
   (`1`, `2`, ...). Digit `1` is not decoded at all (a sentinel byte, not a
-  stored digit, occupies its table slot — see the doc above), and a second,
-  alternating drawing path (`CS:052BF`) is not modelled.
+  stored digit, occupies its table slot in the traced mode — see the doc
+  above for the five untraced modes this might still reach it through).
+  The digit table's own alternate base, `CS:052BF`, turns out to be the
+  same digit shapes pitch-shifted 4px, not a second font (`docs/
+  dmd_graphics.md`) — confirmed, but not wired into the decoder this round:
+  the expected gain (recovering some of the digits the overlap above
+  already drops) did not seem worth changing a function every other face
+  also relies on, without the time left this round to re-verify all of them
+  against it.
 - **The `h=12` face is pinned (table offset 75) and now decodes the
   single most valuable text in this corpus: the attract high-score
   table**, beside the h=9 `S.MOONLIGHT`/`J.SUNSHINE`/`B.STARWAY` labels
@@ -312,6 +319,65 @@ own scenes under that label, per the method above.
   mark-placement bug, unfixed — its own `full-tilt` mark never has a frame
   attached at all in the committed `dmd/es/` corpus (zero rows in
   `screens.csv`), not just a misattributed one.
+- **The record-inscription (wheel-walk) screen decodes: `captured, not read`
+  is fixed for its header and player label, and confirmed against the ROM's
+  own stored strings, not just bitmap matching.** The header reads
+  `INSCRIPTION` (`INSCRIPCION` in Spanish) — `text` itself shows
+  `INSCRIPTI0N`, a zero for the `O`; that is the `height=12` face's own
+  `0`/`O` bitmap collision (`docs/dmd_graphics.md`), not a decode error.
+  The label beside the entered
+  initials reads `PLAYER 1:` (`JUGADOR 1:`) — both found verbatim as
+  GLYPHS-encoded bytes in ROM1 at flat `0x10014`/`0x10021` (English) and
+  `0x30015`/`0x30021` (Spanish), a small table of `PLAYER 1:`/`PLAYER 2:`/
+  `PLAYER 3:`/`PLAYER 4:` label lines, not just inferred from partial glyph
+  matches. Both use the existing `h=9`/`h=12` faces; what was broken was the
+  matcher, not a missing font: it required every blank margin pixel to also
+  read blank on screen ("nonzero is lit"), which holds for a clean
+  service-menu screen (confirmed: `dmd/en/screens/5383-svc-1/repr.txt` has
+  no level-3 pixel anywhere, so that screen's own text genuinely needs
+  "nonzero is lit" to match) but not for this one, where the panel's
+  dithered background shows through the header's own blank margins at
+  level 1. `_scan_face` now tries "nonzero is lit" first and falls back to
+  "only level 3 is lit" on a miss, recovering both without ever replacing a
+  match the first rule already found — re-splitting both corpora with the
+  fix lost zero previously-decoded cells (checked directly, not assumed).
+
+  **Not fixed: the player-number digit's own last three letters
+  (`PLAYER`'s `Y`, `E`, `R`) render unreliably** — row 1 of each cell (the
+  glyph's own top row) is sometimes blank, sometimes lit but not matching
+  the stored glyph exactly, varying scene to scene with no pattern found
+  (not simply another binarization threshold: the missing pixels are
+  genuinely absent from the captured frame, not dimmed).
+
+  Two things checked before leaving it open, as asked. **Row 1 is not
+  simply content the blitter never draws**: `dmd/en/screens/
+  5200-score-recover-drained/repr.txt` shows `Y` and `E`'s own row 1
+  matching their stored `h=9` bitmaps exactly at level 3, in the same scene
+  where `R`'s row 1 shows dim, wrong-shaped content — row 1 is genuinely
+  drawn, correctly, for two of the three letters, in a scene where the
+  third still fails, which rules out "always blank" as the cause.
+  **Because of that, tolerating a missing row 1 was not implemented**: since
+  row 1 is sometimes the *only* pixels distinguishing a correct match from
+  a coincidental one, a blanket "row 1 doesn't count" rule would trade a
+  narrow, already-rare failure for a broader, harder-to-bound one, for a
+  letter class (`Y`/`E`/`R`) that only ever appears in this one label. The
+  decoder recovers `PLA` reliably and the rest inconsistently
+  (`PLAYE`/`PLAYER`/`PLA` depending on the scene); the full word is
+  confirmed from the ROM string above, not from any single frame's bitmap.
+  What would settle it: tracing the routine that draws this specific label
+  (not identified here) rather than more bitmap comparison — `R` sitting at
+  the *end* of the label, the one position never observed correct, is worth
+  checking against a right-edge clipping boundary specifically.
+
+  **Also decoded, meaning not established:** the block beside the label
+  (`0I8M`-style, growing by one `h=12` character as the wheel is cycled)
+  matches the walked font table cleanly and exactly, character by
+  character, confirmed against the growing sequence across all 17
+  `wheel-c*` scenes — but what it represents (the entered initials
+  themselves, a candidate-history readout, something else) is not
+  established; the growth pattern does not cleanly map to three initial
+  slots (it reaches five characters), so it is reported as decoded rather
+  than interpreted.
 - **The mod's SPECIAL trampoline (`D5077`) is not exercised.** `PRESS START`
   appears three times in this corpus (the boot seed screen, the normal
   end-of-game hook at `D5123` twice — once per game below); reaching
@@ -445,10 +511,31 @@ own scenes under that label, per the method above.
   is a third, distinct class from "not yet captured" and from "captured but
   in an unlocated font." `svc-24` (SOLENOID TEST) is not part of this
   answer — it shows no new content of any kind, image or text, across all
-  five of its occurrences even after the 25x dwell, so its own mechanism
-  stays open. Whether the tile-bar depth records (`svc-2` and others) are
-  *also* full-screen images, rather than the tile bar being their genuine
-  drawn content, is not established either way.
+  five of its occurrences even after the 25x dwell.
+
+  **The spike's own guess for `svc-24` — that its record passes a zero bar
+  count — is refuted, not just unconfirmed.** The bar's own counter,
+  work-RAM `4000:114A`, is written in exactly two places in the whole ROM
+  (`D09E3`, `D0A19`), both *inside* the increment/decrement routines
+  themselves (F21's own `sub_D09BC`/its decrement counterpart) — nowhere is
+  it loaded from a menu record field, so no record, `svc-24`'s included,
+  can "pass" it a value at all. The real driver, traced to its caller
+  (`sub_DD669`, the menu's own navigation dispatch, four-way on switch codes
+  `0x3F`-`0x42`, F14): pressing **scroll** (`0x41`) calls the increment
+  routine: pressing **back** (`0x40`) calls the decrement; the counter
+  persists across records rather than resetting per-record, which is
+  consistent with "grows with the depth of a whole walk" without needing a
+  per-record source at all. `svc-24` showing nothing is therefore a
+  property of *this walk's own key sequence* at that record (whether it
+  happened to press scroll there), not a stored ROM value — though why
+  `svc-24` specifically shows *no* bar, rather than whatever length the
+  cumulative counter had already reached by that point in the walk (every
+  other deep record does show some bar), is not explained by this alone
+  and stays open. What would settle it: a capture that presses scroll at
+  least once while `svc-24` itself is open, checked against one that
+  deliberately does not. Whether the tile-bar depth records (`svc-2` and
+  others) are *also* full-screen images, rather than the tile bar being
+  their genuine drawn content, is not established either way.
 
   `docs/iomoon_dmd_screens.md`'s Coverage section has the current breakdown,
   including the F16 switch/cabinet names (a separate gap: they render only

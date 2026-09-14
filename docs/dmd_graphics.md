@@ -430,7 +430,14 @@ in `height=9` (`dmd/en/screens/0051-attract/repr.txt` in the English
 corpus). Two of its glyphs render the identical bitmap — code `0` and code
 `0x1A` (`O`) — so the face has 37 distinct bitmaps across its 46 defined
 codes, not 46: the two codes are genuinely indistinguishable by pixels alone
-in this face, not a decoder gap.
+in this face, not a decoder gap. `iomoon_strings.GLYPHS` resolves the
+collision by iterating digits before letters, so `'0'` always wins — a
+`height=12` decode reading `INSCRIPTI0N` for `INSCRIPTION` (`dmd/README.md`,
+the record-inscription item) is this same face fact showing up in the
+`text` column, not a separate matcher bug. The `height=9` face has no such
+collision: its own `0` and `O` glyphs are two genuinely different bitmaps
+(checked directly, not assumed from this face's own case), so `text`
+segments read through `height=9` never need this caveat.
 
 Past the initial one-byte-wide run, at file offset `0x218B4`, sit 62 further
 entries of mixed shape: 21 of `height=23, width=2` (16 px, table index
@@ -557,19 +564,41 @@ for the three windows the CPU actually sees.
 
 ## Open items
 
-### The `CS:052BF` alternate score-digit path is not modelled
+### `CS:052BF` is a pitch-shifted duplicate, not a second drawing path — not wired into the decoder
 
-`sub_F0907` (the in-play score renderer) alternates a digit between two
-different table bases and drawing primitives depending on whether the
-previous character was a decimal point (work-RAM flag `413C:00CD`):
-`CS:052BB`, plain-overwrite, is the path "The in-play score digit table is
-headerless..." above confirms against a real frame; `CS:052BF`, drawn with
-an OR-then-AND compositing primitive (`sub_F0C49`) instead of a plain
-overwrite, is not traced. Digit `1` is also not reachable through either
-table by the normal digit-value multiply (it is intercepted earlier as the
-decimal-point sentinel) and is not decoded. What would settle both: tracing
-`sub_F0C49`'s own callers and the `413C:00CD` toggle, and finding where
-(if anywhere) a literal digit `1` is drawn from.
+`sub_F0907` (the in-play score renderer) alternates a digit between
+`CS:052BB` and `CS:052BF` on *every* digit, not on a decimal-point
+condition: the mode flag `413C:00CD` toggles after every plain digit
+(`F09BB`/`F0A1F`) and holds only across a decimal point (`F09E1`/`F0A47`),
+so digits strictly alternate tables — odd position `CS:052BB`, even
+position `CS:052BF` — while a decimal point never changes which table is
+next. `CS:052BF`'s own base resolves to `CS:052BB`'s base plus exactly ten
+strides (`0x2958C` = `0x29154 + 10*0x6C`); read the same way (two 54-byte
+halves, `level = 2*plane0_bit + plane1_bit`), its digits `0`/`2`-`9` are
+**pixel-for-pixel the same shapes as `CS:052BB`'s, shifted 4 px left within
+the 16 px cell** — confirmed by direct comparison, not assumed from the
+stride arithmetic. `sub_F0C49` (the primitive `CS:052BF`'s first half uses,
+OR-then-AND rather than plain overwrite) composites this shifted copy
+against whatever the previous digit already drew, which is what lets
+adjacent digits overlap by a consistent 4 px rather than needing the
+firmware to bit-shift a single stored glyph at draw time — a rendering
+optimization, not a visually distinct second font. **Not wired into the
+decoder**: recognizing `CS:052BF`'s own shapes as additional bitmaps for
+the same digit labels would recover some even-position digits the overlap
+(below) currently drops, but doing so needs `_scan_face`'s single
+bits-per-label assumption extended to multiple variants, which was not
+attempted this round given the bounded expected gain against the
+regression-testing cost of changing a function every other face also uses.
+
+Digit `1` is confirmed unreachable through either table by the normal
+digit-value multiply, in `sub_F0907`'s traced mode (work-RAM mode byte
+`413C:00EA` = 1, the one confirmed as the in-play score path) — byte value
+`1` is intercepted as the decimal-point sentinel before the multiply in
+*both* the `CS:052BB` and the `CS:052BF` branch. `413C:00EA` dispatches five
+other modes (0, 2, 3, 4, 5) through the same renderer, each its own
+routine, not traced this round — whether digit `1` is drawn by any of them,
+through some other mechanism entirely, is open. What would settle it:
+tracing those five routines.
 
 ### Consecutive in-play score digits overlap, limiting recovery
 
