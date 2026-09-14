@@ -86,8 +86,8 @@ awarded extra ball drained for real, then the RECORD INSCRIPTION screen).
 Both games end at the mod's own PRESS START screen at the normal
 end-of-game hook (`D5123`).
 
-`screens.csv` lists **5683 scene occurrences** across the walk, covering
-**909 distinct screens** (repr.txt contents) under **118 labels** — the
+`screens.csv` lists **5716 scene occurrences** across the walk, covering
+**922 distinct screens** (repr.txt contents) under **118 labels** — the
 second number is the one that answers "how many screens does this machine
 draw"; the first counts how many times the walk visited one.
 
@@ -216,67 +216,24 @@ the same scripted navigation — neither one got stuck or diverged onto a
 screen the script has no mark for — it does not by itself confirm the
 *content* under a shared label matches.
 
-Measured on the committed `en/` corpus: every label that appears on one side
-appears on the other (zero labels unique to either side, in the sense just
-qualified above). Within the shared labels, **80 mod-only** and **124
-parent-only** representative-frame hashes never recur under that same label
-on the other side, out of **857 (mod) / 898 (parent) scenes** total — close
-to the plain global-hash count from fix round 1 (81 / 122), which confirms
-the two counting methods agree here, though "agree" is itself only a
-consistency check between two hash-counting methods, not independent
-confirmation that the mismatches are harmless. The 41-scene difference in
-total scene counts (857 vs 898) is plausible under the same mechanism (more
-attract-loop frames pass the splitter's diff threshold on one side than the
-other) but has not been separately confirmed.
+No mismatch count in this section is current against the `en/` corpus
+above: producing one needs a parent capture built with the two commands
+above, from the current key script — including its current
+record-to-record dwell (Open items, below), which sets the corpus above's
+own scene boundaries — and no such capture is committed.
 
-The mismatches fall into three groups by label — `PRESS START` and its
-neighbours (`press-start-normal`, `ball-3-drained-gameover`,
-`high-score-entry`, `lottery`, `attract-again`), the auto-cycling TECNICO
-tests, and the menu's own `back-to-N` transitions — and it is plausible that
-all three are timing drift (the same screen, caught a frame apart) rather
-than a genuine content difference, since the patch touches only the
-end-of-game path. That plausibility is not the same as having looked.
-**Spot-checked, one pair per group, by rendering both sides' `repr.txt`
-directly:**
-
-- `attract-again` (mod scene 402 vs parent scene 440, same script frame):
-  the mod's frame is a partial, mid-dissolve view of the "IO MOON" logo
-  (only the bottom of the letters); the parent's is the same logo fully
-  settled. Consistent with the same attract-loop animation caught at two
-  different points, not a different screen.
-- `svc-37` (mod scene 649 vs parent scene 690, same script frame, one of the
-  CONTACTOS-adjacent auto-cycling tests): the two frames are visually
-  identical but for a one-or-two-pixel difference in a small mark near the
-  bottom of the panel — consistent with a free-running relay/lamp counter
-  one tick apart.
-- `back-to-2` (mod scene 541 vs parent scene 582, same script frame): the
-  two frames show the same layout and are nearly pixel-identical, but one
-  character position differs — consistent with a redraw caught mid-update
-  rather than a different value being displayed.
-
-All three checked pairs support "timing drift, not content divergence" —
-but three pairs out of 204 mismatched frames is a spot check, not a proof
-for the other 201.
-
-A fourth thing worth stating precisely rather than glossing over: many
-`svc-N` service-menu records only have one captured scene on each side at
-all (a single-item leaf visited once), and for about twenty of them that one
-scene *is* the mismatch — there is no second, matching scene to fall back
-on, so for these labels 100% of the captured content differs, not a minor
-exception. Rendered one (`svc-7`, mod scene 542 vs parent scene 583, same
-script frame): the same near-miss shape as `back-to-2` above — nearly
-identical content, one character position different, nothing else. So the
-pattern extends to these too, on the one further example checked, but "no
-`svc-N` record differs" would be the wrong way to summarize it; the honest
-statement is that every checked `svc-N` mismatch (four now, across both
-`back-to-N` and plain `svc-N` labels) looks like the same single-glyph
-redraw-timing artifact, not a structurally different screen, and that this
-has been checked on 4 of the roughly 55 mismatched `svc-N`/`back-to-N`
-pairs (110 mismatched hash instances split evenly between the two sides).
-
-No GAME or SOUND/VIDEO adjustment page, attract feature-ad screen, or boot
-text shows a mismatch at all — which is the expected result given the patch
-touches only the end-of-game path.
+Given the patch touches only the end-of-game path
+(`docs/press_start_patch.md`), a mismatch, if any, is expected only under
+`PRESS START` and its neighbours (`press-start-normal`,
+`ball-3-drained-gameover`, `high-score-entry`, `lottery`, `attract-again`),
+the auto-cycling TECNICO tests, and the menu's own `back-to-N` transitions —
+not under any GAME or SOUND/VIDEO adjustment page, attract feature-ad
+screen, or boot-text label, since the patch does not touch those code
+paths. This is a prediction from the patch's scope, not a measured result.
+What would settle it: rebuild the parent capture with the two commands
+above and run `python3 scripts/dmd_dump_diff.py dmd/en /tmp/parent`
+against it, then check every mod-only hash's label against the parent's
+own scenes under that label, per the method above.
 
 ## Open items
 
@@ -284,7 +241,7 @@ touches only the end-of-game path.
   decodes.** The attract-mode high-score table is drawn in the `height=12`
   face (table offset 75) and now decodes cleanly: `S.MOONLIGHT /
   300.000.000 / . .`, `J.SUNSHINE / 200.000.000 / . .`, `B.STARWAY /
-  100.000.000 / . .` (scenes 51/420/780, 55/424/784, 61/428/790). The
+  100.000.000 / . .` (scenes 51/420/5281/5674, 55/5287, 61/428). The
   **in-play** score is a separate, larger display — shaded digits, a bright
   (level 3) outline around a mid-tone (level 1) interior, legible by eye
   during a gameplay capture (e.g. `2.452.230`, `3.812.237`, `1.027.571` in
@@ -300,7 +257,7 @@ touches only the end-of-game path.
   plane-0-only 2x2 box the old reading found). Applied and measured, it
   rules out one specific candidate for the in-play display: the `(h=23,
   W=2)` face never exact-matches a real frame anywhere in this corpus —
-  scanning all 21 of its labels against every one of the raw dump's 11,723
+  scanning all 21 of its labels against every one of the raw dump's 27,712
   frames finds zero hits, and the closest approximate match differs in 120
   of 368 pixels, no resemblance. What would settle which face draws the
   in-play score: matching a rendered in-play frame, by eye, against each
@@ -327,7 +284,7 @@ touches only the end-of-game path.
   run on `svc-N`/`back-to-N` scenes** — `AA`, `AAD`, `AADC`, `AADCA`,
   `AADCAA`, ..., up to `AADCAAAADAI AE / AACABAAAAB AAB` — that grows by
   exactly one character per scene as the service-menu walk descends. This
-  is not noise: rendered directly (`dmd/en/screens/0557-svc-16/repr.txt`),
+  is not noise: rendered directly (`dmd/en/screens/5417-svc-16/repr.txt`),
   it is a row of 13-14 glyph-shaped tiles over a dim (level-1) bar — the
   service menu draws a bar or level indicator out of the same `h=12` letter
   bitmaps, filling one tile at a time, so the matches are bitmap-faithful
@@ -350,14 +307,12 @@ touches only the end-of-game path.
   end-of-game hook at `D5123` twice — once per game below); reaching
   `D5077` needs an actual match win, which this walk does not force.
 
-  An earlier round of this corpus recorded, as committed fact, that every
-  score at or above roughly 50,000,000 also earns an EXTRA BALL and that
-  "the ball simulator's fixed three-ball trough then has no further ball to
-  serve." That was wrong, and the real cause is F10/F11's short-ball
-  "salida nula" replay protection: `sub_D368C`, tested at `D31D3`, replays
-  any ball — an awarded extra ball included — that scores at or below the
-  NVRAM `0x43` threshold (factory 100,000), indistinguishable from a player
-  abandoning the ball. A bare plunge immediately followed by a drain scores
+  F10/F11's short-ball "salida nula" replay protection governs a scoring
+  ball regardless of how it was awarded: `sub_D368C`, tested at `D31D3`,
+  replays any ball — an awarded extra ball included — that scores at or
+  below the NVRAM `0x43` threshold (factory 100,000), indistinguishable
+  from a player abandoning the ball. A bare plunge immediately followed by
+  a drain scores
   exactly zero and loops forever under this rule; it is not specific to
   extra balls (an ordinary drained ball with no score loops identically)
   and it is not a fault in the ball simulator, the driver, or the firmware.
@@ -394,10 +349,9 @@ touches only the end-of-game path.
   section are the same content, at different lengths.** `attract-again` (the
   post-game return to idle) already runs long enough to show the attract
   cycle's own feature-ad screens (`S.MOONLIGHT`, `J.SUNSHINE`,
-  `B.STARWAY`, ...); `attract` itself was lengthened in fix round 1 to
-  approximate a fuller cycle rather than the ~10s the brief's literal
-  ordering first produced, but a single continuous "one full loop, start to
-  repeat" boundary is not identified either place.
+  `B.STARWAY`, ...); `attract` itself runs long enough to approximate a
+  fuller cycle, but a single continuous "one full loop, start to repeat"
+  boundary is not identified either place.
 - **The in-play `PLAYER`/`BALL` font is not in the walked font table.**
   Every `ball-N-in-play`/`ball-N-drained` scene shows `PLAYER 1` and
   `BALL 1` in a small, roughly 6-row-tall, single-pixel-stroke font at full
@@ -405,35 +359,28 @@ touches only the end-of-game path.
   reads. It is not among the font table's 224 entries: searching both ROMs
   for its `P` bitmap finds no match as contiguous one byte per row, padded
   with blank rows to a taller cell, or at a 16-byte stride inside a
-  128-pixel-wide frame buffer. Unchanged by this round; see
-  `docs/dmd_graphics.md`'s own "Open items" for the full account and what
-  would settle it.
+  128-pixel-wide frame buffer. See `docs/dmd_graphics.md`'s own "Open
+  items" for the full account and what would settle it.
 - **The 38-record service-menu tree's own item/title text mostly doesn't
-  render, and fix round 5 tested — and mostly ruled out — the working
-  theory that this was simply not enough dwell time.** Beyond the root
-  record and its first child, every deeper `svc-N`/`back-to-N` scene
-  showed the `h=12` tile-glyph-bar level indicator (above) or nothing,
-  never the record's own static list, at the original ~120-frame
-  record-to-record dwell. Fix round 5 gave every ordinary record-to-record
-  transition roughly 25x longer (120 frames -> 3000) before the next mark
-  cuts the scene, on the reasoning that a scene's representative is
-  whatever stands last in that window (the same mark-alignment rule used
-  elsewhere in this corpus), so a longer window should let a genuinely
-  still-settling page finish. It mostly didn't move the number: root and
-  record 1 were already captured correctly and stay that way; of the other
-  36, only `svc-35` (one of the auto-cycling LIGHT TEST records) gained
-  real content it hadn't shown before (a legible dynamic readout,
-  `LIGHT: LC10`) — not the record's own static item name, just a sample of
-  its running test landing inside the now-longer window. `svc-2`'s own
-  scene decodes the identical tile-bar pattern whether given 167 ms or the
-  full 25x-longer window, which points away from "still settling" and
-  toward the tile-bar being the stable, fully-drawn state at this depth,
-  not a transitional one that a longer wait would resolve into real text.
-  Measured before/after in `.superpowers/sdd/2026-09-13-iomoon-simulation-
-  and-dmd-screens/task-16-report.md`'s "Fix round 5" section.
+  render.** Beyond the root record and its first child, every deeper
+  `svc-N`/`back-to-N` scene shows the `h=12` tile-glyph-bar level indicator
+  (above) or nothing, never the record's own static list, at the current
+  ~3000-frame record-to-record dwell (each ordinary transition holds a
+  scene until the next mark, on the reasoning that a scene's representative
+  is whatever stands last in that window — the same mark-alignment rule
+  used elsewhere in this corpus). Dwell length is not the general cause:
+  root and record 1 already capture correctly; of the other 36, only
+  `svc-35` (one of the auto-cycling LIGHT TEST records) shows content
+  beyond the tile-bar — a legible dynamic readout, `LIGHT: LC10` — and that
+  is a sample of its own running test landing inside the capture window,
+  not the record's own static item name. `svc-2`'s own scene decodes the
+  identical tile-bar pattern at 167 ms into the record as at the full
+  ~3000-frame window, which points to the tile-bar being the stable,
+  fully-drawn state at this depth, not a transitional one a longer wait
+  would resolve into real text.
 
-  **That raw-pixel comparison has since been done, for three records, and
-  settles part of this (F20).** `svc-33` (SEND-REC TEST), `svc-36` (LIGHT
+  **A raw-pixel comparison for three of these records settles part of this
+  (F20).** `svc-33` (SEND-REC TEST), `svc-36` (LIGHT
   TEST 2) and `svc-37` (LIGHT TEST 3) are confirmed showing, as their real
   settled or mid-redraw content, a complete 128x32 picture stored in ROM1
   in the exact entry format the walked font table itself uses (header at
@@ -448,10 +395,10 @@ touches only the end-of-game path.
   *also* full-screen images, rather than the tile bar being their genuine
   drawn content, is not established either way.
 
-  `docs/iomoon_dmd_screens.md`'s Coverage section has the current breakdown
-  against this round's recapture, including the F16 switch/cabinet names (a
-  separate gap: they render only on the live CONTACTOS/SWITCH TEST screen
-  when an actual matrix switch closes, which this walk never triggers).
+  `docs/iomoon_dmd_screens.md`'s Coverage section has the current breakdown,
+  including the F16 switch/cabinet names (a separate gap: they render only
+  on the live CONTACTOS/SWITCH TEST screen when an actual matrix switch
+  closes, which this walk never triggers).
 - **`boot-setting-country` never shows text**, in either language. Its
   three scenes per language are pixel-identical, in kind, to the ordinary
   attract-logo dissolve (`dmd/en/screens/0008-attract/repr.txt`), not a

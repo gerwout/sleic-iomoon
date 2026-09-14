@@ -356,7 +356,7 @@ against the mark added by the decimal-point entries, which spans a shaded
 plane-0-only 2x2 box a single-bitplane reading finds. Despite the fix, no
 captured scene in the committed English corpus (`dmd/en/`) shows this
 specific face decoding a real in-play number: scanning all 21 of its labels
-against all 11,723 raw frames of `dmd/en/iomoont.txt` finds zero exact
+against all 27,712 raw frames of `dmd/en/iomoont.txt` finds zero exact
 matches, and the closest approximate match anywhere in a gameplay-adjacent
 frame differs in 120 of the glyph's 368 pixels — no resemblance, not a near
 miss.
@@ -480,7 +480,7 @@ legible by eye during a gameplay capture, e.g. `2.452.230`, `3.812.237`,
 The large `height=23, width=2` face is shaded and its matcher now reads both
 bitplanes (see "Font Entry Structure" above), but no scene in the committed
 English corpus (`dmd/en/`) shows it decoding a real in-play number: scanning
-its 21 labels against all 11,723 raw frames of `dmd/en/iomoont.txt` finds
+its 21 labels against all 27,712 raw frames of `dmd/en/iomoont.txt` finds
 zero exact matches, and the closest approximate match in a gameplay-adjacent
 frame differs in 120 of the window's 368 pixels — no resemblance, not a near
 miss. The smaller `height=12` digit face immediately after it (table index

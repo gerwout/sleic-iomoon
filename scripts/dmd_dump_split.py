@@ -48,6 +48,7 @@ import argparse
 import csv
 import os
 import sys
+from collections import Counter
 
 import iomoon_strings
 
@@ -55,9 +56,12 @@ import iomoon_strings
 def parse_dump(path):
     """[(ms, [row_string, ...]), ...] in file order.
 
-    Geometry (row count, and each row's width) is taken from the first frame,
-    not hard-coded, so the same splitter works on another machine's dump.  A
-    later frame whose geometry differs is a torn write -- PinMAME's
+    Geometry (row count, and each row's width) is taken from the modal shape
+    of the first few frames, not hard-coded, so the same splitter works on
+    another machine's dump -- and so a torn *first* frame (the same failure
+    mode as any other torn frame, just at offset 0) does not lock in the
+    wrong shape and drop every good frame after it. A later frame whose
+    geometry differs from the settled one is a torn write -- PinMAME's
     core_dmd_capture_frame appends each frame open-write-close, so a run
     killed mid-write leaves a partial row, not a partial timestamp -- and is
     dropped rather than kept with the wrong shape, since a scene's repr.txt is
@@ -65,15 +69,12 @@ def parse_dump(path):
     the timestamp and what differed goes to stderr either way: a torn frame is
     a capture defect, not something to pass on in silence.
     """
+    PROBE = 5
     frames, ms, rows = [], None, []
     shape = None
+    pending = []
 
     def keep(ms, rows):
-        nonlocal shape
-        if shape is None:
-            shape = [len(r) for r in rows]
-            frames.append((ms, rows))
-            return
         if len(rows) != len(shape):
             print('%s: frame 0x%08x has %d rows, expected %d -- dropped'
                   % (path, ms, len(rows), len(shape)), file=sys.stderr)
@@ -85,16 +86,34 @@ def parse_dump(path):
                 return
         frames.append((ms, rows))
 
+    def settle(pending):
+        nonlocal shape
+        counts = Counter(tuple(len(r) for r in prows) for _, prows in pending)
+        shape = list(counts.most_common(1)[0][0])
+        for pms, prows in pending:
+            keep(pms, prows)
+
+    def see(ms, rows):
+        nonlocal shape
+        if shape is not None:
+            keep(ms, rows)
+            return
+        pending.append((ms, rows))
+        if len(pending) >= PROBE:
+            settle(pending)
+
     for line in open(path):
         line = line.rstrip('\n')
         if line.startswith('0x'):
             if ms is not None and rows:
-                keep(ms, rows)
+                see(ms, rows)
             ms, rows = int(line, 16), []
         elif line.strip():
             rows.append(line)
     if ms is not None and rows:
-        keep(ms, rows)
+        see(ms, rows)
+    if shape is None and pending:
+        settle(pending)
     return frames
 
 
@@ -328,14 +347,15 @@ def coverage_report(rom_path, csv_paths):
         Spanish stays a narrower, verified-clean sub-window -- tier 1's own
         Spanish tables already resolve strings outside it.
       tier 3 -- every other length-prefixed string a flat byte sweep finds
-        in the ROM's whole string area (0x17a8-0x2eaa, the bound a sweep
-        this wide actually needs -- one byte short of the facts file's own
-        approximate 0x2ebc, which includes a zero-padding run right after
-        the last real string that a byte-level sweep otherwise misreads as
-        one): fault/boot messages, the coil-group and fuse names, the
-        per-country CREDITS-page denominations -- real ROM strings with no
-        pointer table pinned down yet, reported as exactly that, not folded
-        into a coverage number against tiers 1-2 alone.
+        in the ROM's whole string area (0x17a8-0x2eaa -- 18 bytes short of
+        0x2ebc, which picks up one spurious string, '0020000000000000' at
+        0x2eab: the six bytes right before it, 20 00 10 00 00 02 at 0x2ea9,
+        are a second image header in the same format as the one at
+        0x24EA4 (F20), not padding): fault/boot messages, the coil-group
+        and fuse names, the per-country CREDITS-page denominations -- real
+        ROM strings with no pointer table pinned down yet, reported as
+        exactly that, not folded into a coverage number against tiers 1-2
+        alone.
 
     A string counts as present only if it equals -- after `_normalize_field`
     on both sides -- one whole decoded field (one ' / '-delimited segment of
@@ -468,8 +488,9 @@ def main():
     # attract frame the loop revisits, the settled tail of an animation --
     # show pixel-for-pixel the same frame as an earlier scene, and a corpus
     # that stores that frame again for every occurrence overstates how many
-    # screens the machine actually draws (measured on the round-3 corpus:
-    # 5683 scenes, 909 distinct repr.txt contents -- 84% redundant copies).
+    # screens the machine actually draws (measured on the committed en/
+    # corpus: 5716 scenes, 922 distinct repr.txt contents -- 84% redundant
+    # copies).
     # The first scene (in dump order, so this is stable across a re-split of
     # the same dump) to show a given content is canonical: its directory is
     # the one that gets a real repr.txt, and every later scene with the same

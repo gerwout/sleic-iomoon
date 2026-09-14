@@ -17,7 +17,7 @@
 # The game portion below is the English script's game section, replayed
 # unchanged (same keys, same relative timing): both games (the original
 # feature-coverage game, then the high-score/wheel-walk game) carry over
-# exactly as fix round 3/4 built and verified them for English, since
+# exactly as they are built and verified for English, since
 # playfield mechanics and switch timing are not language-dependent -- only
 # the on-screen text differs, and the h=9/h=12 decoder reads it fine
 # (`Ñ` is in the glyph set at code 0x19; Spanish accented vowels are not

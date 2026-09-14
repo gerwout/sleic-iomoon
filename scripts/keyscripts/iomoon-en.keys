@@ -45,7 +45,7 @@
 # menu for real at the very end, checked by confirming the tail of the
 # dump is live attract animation, not a static frame.
 #
-# What fix round 3 settled, against F10/F11: F10/F11's short-ball "salida
+# F10/F11's short-ball "salida
 # nula" replay protection (sub_D368C, NVRAM 0x43, factory threshold
 # 100,000) replays any ball -- an awarded extra ball included -- that
 # scores at or below the threshold, indistinguishable from an abandoned
@@ -77,39 +77,37 @@
 # timing artifact, not the game's position in the session or the feature
 # hits in the other game.
 #
-# The mod's SPECIAL trampoline (D5077, the match-win path) is still not
+# The mod's SPECIAL trampoline (D5077, the match-win path) is not
 # exercised. The qualifying score and the RECORD INSCRIPTION screen are
-# both reached cleanly now (above), which was the blocker fix rounds 1-2
-# recorded; what replaces it is that no distinct match/lottery screen was
-# found at all in the window after either the qualifying game above or an
+# both reached cleanly (above); no distinct match/lottery screen appears
+# at all in the window after either the qualifying game above or an
 # ordinary, non-qualifying one -- both go straight from PRESS START back
 # into the normal attract cycle (checked directly against the current
 # h=12 decoder, which reads the attract ad screens fine, and against the
 # raw dump, which shows only ordinary attract content, not a match digit
 # or a third distinct PRESS START). Reaching D5077 needs an actual match
-# win, which this walk does not force. See dmd/README.md and the task
-# report for what was tried.
+# win, which this walk does not force. See dmd/README.md's Open items for
+# what this would take.
 #
-# Fix round 5: the service-menu tree's own record-to-record dwell (the gap
-# between a "mark svc-N" and the tap that advances to the next record) was
+# The service-menu tree's own record-to-record dwell (the gap
+# between a "mark svc-N" and the tap that advances to the next record) is
 # stretched from ~120 frames to 3000 for every ordinary single-hop
 # transition, on the theory that a deeper record's item text was still
 # settling when the walk advanced past it -- a scene's representative is
 # whatever stands last before the next mark, so a longer window should
-# show a still-settling page as done. It mostly did not: root and record 1
-# were already correct and stay that way; of the other 36 records, only
-# svc-35 (an auto-cycling LIGHT TEST record) gained real content (one
-# legible LIGHT: LCn readout) that the shorter dwell had not caught. The
+# show a still-settling page as done. It mostly does not: root and record 1
+# are already correct and stay that way; of the other 36 records, only
+# svc-35 (an auto-cycling LIGHT TEST record) gains real content (one
+# legible LIGHT: LCn readout) that the shorter dwell did not catch. The
 # other deep records decode the identical h=12 tile-bar pattern at 3000
-# frames that they did at ~120, which points at that pattern being the
+# frames that they do at ~120, which points at that pattern being the
 # stable drawn state at this depth rather than a transition a longer wait
-# would resolve -- see dmd/README.md and the task report's "Fix round 5"
-# section for the measurement. The larger transitions this walk already
-# uses for back-out-and-reopen sequences (240-1200 frames, and the
-# 5200-frame menu-reopen wait) are untouched: an earlier attempt that also
-# stretched those desynced the auto-cycling-test navigation and landed the
-# walk in ordinary attract mid-menu, so only the plain 120-frame hops were
-# touched here.
+# would resolve -- see dmd/README.md's Open items for the measurement. The
+# larger transitions this walk already uses for back-out-and-reopen
+# sequences (240-1200 frames, and the 5200-frame menu-reopen wait) are
+# untouched: stretching those as well desyncs the auto-cycling-test
+# navigation and lands the walk in ordinary attract mid-menu, so only the
+# plain 120-frame hops are touched here.
     40 mark boot
     40 tap 8 KEYCODE_1
     80 mark boot-setting-country

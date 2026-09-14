@@ -42,8 +42,8 @@ SPANISH_MENU_TABLE_BASE = 0x0D08
 
 # Every string either language's own two pointer-table families
 # (CONTACT_TABLE_BASE/SPANISH_TABLE_BASE, MENU_TABLE_BASE/
-# SPANISH_MENU_TABLE_BASE) resolve a string from, established the way Task 1
-# found CONTACT_TABLE_BASE itself: walk the pointers and take the envelope
+# SPANISH_MENU_TABLE_BASE) resolve a string from, established the way
+# CONTACT_TABLE_BASE itself is: walk the pointers and take the envelope
 # of every offset any of them reaches, not a byte-pattern sweep.
 #
 # English's envelope, 0x17a8-0x1e4d, is a clean window: it holds every
@@ -89,8 +89,8 @@ FONT_CODE_OFFSET = 23
 # dot and 119-75=0x2c, the period pinned independently off the h=9 face; and
 # the attract high-score screen decodes as '300.000.000' in this face beside
 # 'S.MOONLIGHT' in h=9.  A "yields 38 distinct bitmaps" completeness
-# heuristic previously rejected this offset because two of its glyphs happen
-# to share a bitmap -- offset 75 yields 37, not 38.
+# heuristic is the wrong test here: two of offset 75's glyphs share a
+# bitmap, so it correctly yields 37 distinct bitmaps, not 38.
 FONT_H12_HEIGHT = 12
 FONT_H12_CODE_OFFSET = 75
 
@@ -110,7 +110,7 @@ SCORE_FACE_INDEX = 162    # table index 162 renders a 16x23 '0'
 # The small digit face -- confirmed against a real frame, unlike the large
 # one above: entries 183-192 (0-9) and 194-203 (0.-9.) exact-match a run of
 # digits at row 0 of dmd/en/screens/0287-ball-2-in-play/repr.txt, decoding
-# '3. 8.743'.  Scanning every entry of both digit faces against all 11,723
+# '3. 8.743'.  Scanning every entry of both digit faces against all 27,712
 # raw frames of dmd/en/iomoont.txt, the large (23, 2) face never exact-
 # matches anywhere in the corpus; this one does, repeatedly, in gameplay.
 SMALL_DIGIT_FACE_HEIGHT = 12
