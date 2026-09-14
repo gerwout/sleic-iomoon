@@ -51,6 +51,34 @@ end-of-game hook (`D5123`).
 second number is the one that answers "how many screens does this machine
 draw"; the first counts how many times the walk visited one.
 
+**A limitation found after the fact, and it is this corpus's, not
+Spanish-only.** F19 (`asm/baseline-2026-09/findings.md`) establishes that
+exiting the service menu re-derives the machine's tracked country from a
+stray byte and gets it wrong in **every** country, not only Spain — the
+byte it wrongly accepts decodes to country 7 (Portugal) regardless of
+which country was actually running. This walk's own key script exits and
+re-enters the menu several times over its 38-record traversal (its
+`reopen-for-svc-N` marks, the first at script frame 116400, are exactly
+those re-entries), so at least the later part of the service-menu section
+here was almost certainly captured at country 7, not the Netherlands'
+country 4 the run started at — invisible in the decoded text, since both
+render in English, but not invisible everywhere: menu record 23 (CREDITS)
+renders the **live coin-pricing table**, which differs by country (F11),
+so that page, wherever it falls after the first re-entry, shows Portugal's
+prices rather than the Netherlands'. Record 23 itself (`svc-23`) is marked
+*before* that first re-entry in this walk's own frame order (script frame
+115560 against 116400), so which country was in effect for it specifically
+turns on exactly which navigation step first makes the menu loop
+(`sub_DD2E6`, F14) return — not traced here. It is moot for this one page
+regardless: rendered directly, `svc-23`'s own captured frames do not show
+legible pricing digits at all (the same `h=12` "growing letter run / level
+indicator" artifact already documented under Open items below, not the
+settled CREDITS page), so which country's prices they would show, if any
+were legible, is unverified either way. What would settle both questions:
+tracing which specific key presses in this script make `sub_DD2E6` return
+versus stay in its own internal back-navigation (F14), cross-referenced
+against these frame timestamps.
+
 ## Spanish corpus (`es/`), captured against `iomoont`
 
 Country 5 selects the Spanish string and menu tables (F11: `D3277`,
@@ -75,28 +103,25 @@ is `scripts/keyscripts/iomoon-en.keys`'s own game section, replayed
 unchanged — same keys, same relative timing — since playfield switch
 timing is not language-dependent; only the on-screen text differs, and
 the wheel-walk lands on the same score (`233,400,000`) and the same
-per-step decoder progression as the English capture. The service-menu
-tree is not in this corpus: reaching it in this build reproducibly moves
-NVRAM's tracked country from 5 (Spain) to 7 (Portugal), confirmed with
-`nvcheck.py` after every one of three separate attempts — a full copy of
-the English 38-record walk, a minimal three-record walk (root, one
-child, CREDITS), and a bare TEST-key open-then-immediately-close with no
-other key at all, the last of these tried immediately after boot with no
-game ever played. Since the bare open-close reproduces it with zero
-menu keys pressed and zero accumulated game/credit state, this is not
-the English navigation landing on a wrong Spanish record (the risk the
-brief anticipated) and not an artifact of this capture's own play
-history — entering test mode at all, with country 5 already selected
-through the cfg, is sufficient by itself. F14 records that menu entry
-queues both Z80 test-mode commands (`0xF7` enter, `0xF8` exit-and-reboot),
-"so one I/O-board reboot per menu visit is by design"; that reboot
-re-reading the country DIP through a different path than the initial
-cfg-driven boot is the leading suspect, not confirmed — settling it needs
-an instrumented trace of that exchange across the reboot, which needs a
-rebuilt driver binary and was out of reach this round. Capturing
-service-menu screens under a country value that has already silently
-become Portuguese would be worse than not capturing them, so they are
-left out rather than shipped mislabeled.
+per-step decoder progression as the English capture. **The Spanish
+service-menu tree is not capturable through the menu at all, in
+principle, not by bad luck of this capture** — opening the menu flips
+the machine's own tracked country to 7 (Portugal) before the first
+record renders, in **every** country, regardless of which one was
+running. That is a firmware behaviour, not a driver bug and not
+something a re-timed key script can route around: see finding F19 in
+`asm/baseline-2026-09/findings.md` for the full trace. In short, menu
+exit reboots the Z80 (F14), and the rebooting Z80 announces its own
+"all inputs idle" byte (`0xFF`) over J1 before the 80188's real
+country-DIP query can get an answer; the 80188's wait loop accepts the
+first byte `>= 0xF0` it sees as the DIP report (F19), and `0xFF` decodes
+to country 7 unconditionally — not to whatever country was actually
+selected. Confirmed with `nvcheck.py` reproducing exactly this
+(country 5 to 7) across three attempts of decreasing scope, down to a
+bare TEST-key open-then-immediately-close with no other key and no
+game ever played. Capturing service-menu screens under a country that
+has already silently become Portuguese would misrepresent them as
+Spanish, so they are left out.
 
 A related, now-resolved finding along the way: reaching country 5 through
 the live DIP menu **inside** the same run that then tries to play a game

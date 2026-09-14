@@ -1978,6 +1978,113 @@ the same way F16 closed the switch-matrix one.
 
 ---
 
+## F19 — Opening the service menu re-derives the country from a stray byte, not the DIP
+
+**Statement.** Opening the service menu **changes the machine's own tracked
+country**, every time, regardless of which country was running. It is not a
+capture artefact and not a Spanish-specific bug: the country-DIP re-read that
+menu exit triggers loses a race against the Z80 reboot that same exit
+causes, and the byte it wrongly accepts as the DIP report decodes to country
+7 (Portugal) **unconditionally**, whatever country was actually selected.
+
+**The command sequence, read directly out of the ROM.** Menu exit
+(`sub_DD253`, F14) queues four 80188->Z80 commands back to back through
+`qout_push` (F6, the outbound FIFO at `4000:1158`, drained at INT0/8):
+
+```
+DD29E: PUSH 000F8 / CALL qout_push        ; leave test mode
+DD2A7: PUSH 000C4 / CALL qout_push        ; queued directly behind F8
+DD2B0: CALL sub_D622C                     ; F10's NVRAM-reinit routine --
+                                           ; calls sub_D5A8B below, which
+                                           ; itself queues F9
+DD2B5: PUSH 000A9 / CALL qout_push
+...
+```
+`sub_D622C` (F10) is not a first-boot-only routine here: this call site
+(`DD2B0`) is one of four, alongside boot itself (`D2F72`, `D3033`) and a
+fourth site (`DF5FF`). Inside it, at the point F11 already names (`D664D`),
+`sub_D5A8B` `D5A8B` runs the country-DIP re-read:
+
+```
+D5A91: PUSH 000F9 / CALL qout_push        ; ask the Z80 for the DIP byte
+D5AA6: CALL sub_D5C3E                     ; poll for the reply, in a retry
+D5AAD: JNE 0D5ABC                         ; loop against a 16-tick timeout
+D5AB4: CMP ES:0113D, 00000 / JNE 0D5AA6   ; ([113D], loaded 0x14 at DD28D)
+```
+
+**`sub_D5C3E`'s accept test is "the next byte in the FIFO is `>= 0xF0`", not
+"the next byte is `0xF9`'s specific reply".** Traced byte for byte:
+
+```
+D5C49: MOV AL, ES:[1147]                  ; F4's "byte available" flag
+D5C5C: LES BX, ES:[1150]                  ; the SAME inbound FIFO F4 describes
+D5C61: MOV AL, ES:[BX]                     ; pop the head byte, unconditionally
+D5CA3: CMP 00006, 0F0 / JNB D5CAC          ; >= 0xF0 -> accept; else discard, return "nothing yet"
+D5CAC: AND AL, 00E                         ; bits 1-3
+D5CB6: SUB AX, 00002                       ; 7-way jump table, indices 0,2,4,6,8,10,12 -> country 1..7
+D5CF8: (out of range)  MOV 00020, 000      ; country 0 (fallback)
+```
+This is F4's own general rule — "every consumer pops one byte unconditionally
+and then tests it, discarding it if it is not the value that consumer
+wants" — except that `sub_D5C3E`'s test is a **range**, not an exact match,
+so it does not discard a byte merely because it came from somewhere else.
+Any byte `>= 0xF0` that reaches the head of the FIFO while this loop is
+polling is accepted as the DIP report, from whatever source sent it.
+
+**What supplies that byte, faster than the real reply can arrive.** `0xF8`
+(queued first, above) reboots the Z80 outright — F14: `2DD9: DI / JP boot`.
+A rebooting Z80 announces its own input state unconditionally, over the
+**other** J1 channel (F6: `C008`, the state-bitmask send, `host_send_c008_*`,
+strobed on port-`0x81` bit 5, a **different** strobe from the `C0FC`
+event-code channel `0xF9`'s reply travels on but the **same** inbound
+NMI/PCS2 path on the 80188 side that every byte — event code or state
+bitmask alike — is read through, per F6's own account). "All inputs idle"
+is `0xFF`, and `(0xFF AND 0x0E) - 2 = 0x0C`, the **last** of the seven table
+entries traced above — **country 7, unconditionally, whatever byte a real
+DIP would have produced**, because `0xFF` is not a DIP report at all, it is
+every input bit set. The real `0xF9` reply cannot win this race structurally:
+it is queued (at `sub_D622C`'s call into `sub_D5A8B`) **after** `0xC4`, which
+is itself queued **after** `0xF8`, and the outbound FIFO drains one
+throttled byte at a time (F6: INT0/8) — while the `0xFF` announcement rides
+the Z80's own reboot and needs no outbound turn at all.
+
+**Confirmed live, not only from the ROM.** A traced repro run, country 5
+selected beforehand:
+```
+cmd=f8 -> byte=ff(C008) -> NVRAM 0x1BF 05->07 -> byte=47(alive) -> cmd=c4 -> cmd=f9 -> byte=fb
+```
+`0xFF` arrives and NVRAM `0x1BF` is rewritten from 5 to 7 **before** `0xF9`
+is even transmitted — matching the queue order traced above exactly (`C4`
+before `F9`) — and the real reply, `0xFB` (`(0xFB AND 0x0E) - 2 = 0x08`,
+table entry 4 of 7 -> country 5, correct), arrives too late: `sub_D5A8B`'s
+retry loop has already accepted the `0xFF` on an earlier pass and returned.
+Independently verified against the disassembly above with a second country:
+`0xFF` decodes to country 7 by the same arithmetic regardless of which
+country was actually running, since it does not depend on the real DIP
+value at all — only on `0xFF` itself.
+
+**Confidence:** confirmed for the command sequence (`DD29E`-`DD2B5`, byte for
+byte), for `sub_D5C3E`'s accept test and arithmetic (`D5C49`-`D5CFD`, traced
+to the same seven-way table F11 names at `D5D01`), for the channel identity
+(F6: `C008` state bitmask vs `C0FC` event code, one inbound path), and for
+`D664D` persisting whatever `sub_D5A8B` returns (F11). Confirmed live on one
+traced repro run reproducing the exact byte sequence the static trace
+predicts. **Open:** whether a real machine's Z80/80188 pair races the same
+way — the 16-tick (F6) timeout and the INT0/8 outbound rate are this
+emulation's timing, not measured against real silicon; a logic-analyzer
+capture of J1 during a real machine's menu exit would settle it, and would
+also settle whether the real machine's own operators have ever observed a
+country/language flip after using the service menu (which this finding
+predicts they should, on every visit, in every country).
+
+**Disposition:** new. No prior hypothesis existed to adjudicate — this is a
+firmware behaviour, not a driver bug, and no driver change follows from it:
+delivering the `0xFF` accurately (as any faithful emulation of the Z80
+reboot must) is what triggers it, and there is no correct place to suppress
+that byte without becoming unfaithful to the ROM.
+
+---
+
 ## What changed
 
 **Counting basis.** Three facts — F2, F13 and F14 — have **split
