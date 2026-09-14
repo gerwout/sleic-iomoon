@@ -143,6 +143,7 @@ For a detailed breakdown of the hardware architecture, see:
 - [Z80 Board IC Inventory](docs/board_011-030A_ics.md) — Every populated chip on the Z80 board with part number and function
 - [DMD Graphics System](docs/dmd_graphics.md) — Display format, bitplanes, frame encoding
 - [DMD Wire Protocol](docs/dmd_wire_protocol.md) — Signals on the PIC→plasma panel ribbon, frame-detect timing, measured clock rates
+- [DMD Screen Corpus — Index and Coverage](docs/iomoon_dmd_screens.md) — Every captured screen, grouped by area, and a coverage report against the ROM's own string data (`dmd/`)
 - [YM3812 PinMAME Precedents](docs/ym3812_pinmame_precedents.md) — How other PinMAME drivers attach the YM3812; what that implies for IO Moon
 - [Chips Worth Dumping](docs/chips_to_dump.md) — The three programmable parts, their state, and the dumping procedures for each
 - [Component Datasheets](datasheets/README.md) — Offline PDF datasheets for every IC on the boards, linked from the board IC inventories

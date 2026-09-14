@@ -16,6 +16,12 @@ The all-pixel diff (differing pixels over all 4096) is the metric a full-frame
 animation dominates: the attract scroll never exceeds 0.065 and a bumper-hit
 graphic never exceeds 0.19 frame to frame, so 0.25 keeps both as one scene each
 and still cuts cleanly at a page change (attract to credit measures 0.43-0.51).
+A tighter threshold like 0.10 is worse, not just more cautious: the bumper-hit
+graphic's own 0.19 frame-to-frame diff alone would already cross it, shattering
+that one clean case into many scenes for no new information; 0.25 is the
+least-bad value measured for this metric, not one that separates "same screen"
+from "new screen" in general.
+
 But it is the wrong metric for this machine's dominant screen class: a service
 record or a fault screen lights only 400-900 of 4096 pixels, so a *complete*
 change of text can measure well under 0.25 of all pixels -- measured on the boot
@@ -36,12 +42,14 @@ not add up to a value or a pair of values that separates "same screen" from "new
 screen" in general; it only shrinks the case where both metrics miss and no mark
 covers it.
 
-    python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt --out dmd/en
+    python3 scripts/dmd_dump_split.py dmd/en/iomoont.txt.gz --out dmd/en
 """
 import argparse
 import csv
+import gzip
 import os
 import sys
+from collections import Counter
 
 import iomoon_strings
 
@@ -49,9 +57,12 @@ import iomoon_strings
 def parse_dump(path):
     """[(ms, [row_string, ...]), ...] in file order.
 
-    Geometry (row count, and each row's width) is taken from the first frame,
-    not hard-coded, so the same splitter works on another machine's dump.  A
-    later frame whose geometry differs is a torn write -- PinMAME's
+    Geometry (row count, and each row's width) is taken from the modal shape
+    of the first few frames, not hard-coded, so the same splitter works on
+    another machine's dump -- and so a torn *first* frame (the same failure
+    mode as any other torn frame, just at offset 0) does not lock in the
+    wrong shape and drop every good frame after it. A later frame whose
+    geometry differs from the settled one is a torn write -- PinMAME's
     core_dmd_capture_frame appends each frame open-write-close, so a run
     killed mid-write leaves a partial row, not a partial timestamp -- and is
     dropped rather than kept with the wrong shape, since a scene's repr.txt is
@@ -59,15 +70,12 @@ def parse_dump(path):
     the timestamp and what differed goes to stderr either way: a torn frame is
     a capture defect, not something to pass on in silence.
     """
+    PROBE = 5
     frames, ms, rows = [], None, []
     shape = None
+    pending = []
 
     def keep(ms, rows):
-        nonlocal shape
-        if shape is None:
-            shape = [len(r) for r in rows]
-            frames.append((ms, rows))
-            return
         if len(rows) != len(shape):
             print('%s: frame 0x%08x has %d rows, expected %d -- dropped'
                   % (path, ms, len(rows), len(shape)), file=sys.stderr)
@@ -79,16 +87,36 @@ def parse_dump(path):
                 return
         frames.append((ms, rows))
 
-    for line in open(path):
+    def settle(pending):
+        nonlocal shape
+        counts = Counter(tuple(len(r) for r in prows) for _, prows in pending)
+        shape = list(counts.most_common(1)[0][0])
+        for pms, prows in pending:
+            keep(pms, prows)
+
+    def see(ms, rows):
+        nonlocal shape
+        if shape is not None:
+            keep(ms, rows)
+            return
+        pending.append((ms, rows))
+        if len(pending) >= PROBE:
+            settle(pending)
+
+    opener = gzip.open if path.endswith('.gz') else open
+
+    for line in opener(path, 'rt'):
         line = line.rstrip('\n')
         if line.startswith('0x'):
             if ms is not None and rows:
-                keep(ms, rows)
+                see(ms, rows)
             ms, rows = int(line, 16), []
         elif line.strip():
             rows.append(line)
     if ms is not None and rows:
-        keep(ms, rows)
+        see(ms, rows)
+    if shape is None and pending:
+        settle(pending)
     return frames
 
 
@@ -178,15 +206,24 @@ def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
     return scenes
 
 
-def _scan_face(rows, bits_to_label, height, cell_w):
+def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
     """[(y, text), ...] for one glyph face, read by exact bitmap match.
 
-    `bits_to_label` maps a tuple of `height` row-bit-strings (each `cell_w`
-    wide) to the string to emit -- usually one character, but the score
-    face's digit+period glyphs stand for two.  Every (x, y) window of that
-    height is tried; a match emits its label and advances x by the full
-    cell width, a miss advances by one pixel, so text is found at any x
-    rather than only multiples of the cell width.
+    `bits_to_label` maps a tuple of `height` row strings (each `cell_w` wide)
+    to the string to emit -- usually one character, but the score face's
+    digit+period glyphs stand for two.  Every (x, y) window of that height is
+    tried; a match emits its label and advances x by the full cell width, a
+    miss advances by one pixel, so text is found at any x rather than only
+    multiples of the cell width.
+
+    `binarize` collapses the frame's four pixel levels to lit/unlit before
+    matching -- correct for the single-bitplane h=9 and h=12 faces, whose own
+    keys are '0'/'1' bit strings, but wrong for the shaded h=23 score face:
+    its glyphs mix level 1 (interior) and level 3 (outline) in the same cell,
+    so collapsing the frame would compare a two-level key against a
+    one-level frame and never match. Pass binarize=False there and match the
+    frame's own '0'-'3' characters directly against
+    iomoon_strings.score_glyph_bitmaps()'s own level strings.
 
     A run of misses between two matches on the same line becomes exactly
     one space (rather than the naive "WAITINGFOR" with no gap, or a space
@@ -209,11 +246,14 @@ def _scan_face(rows, bits_to_label, height, cell_w):
     width = len(rows[0])
     if width < cell_w:
         return []
-    binrows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+    if binarize:
+        cmprows = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+    else:
+        cmprows = rows
 
     lines = []
     for y in range(len(rows) - height + 1):
-        window = binrows[y:y + height]
+        window = cmprows[y:y + height]
         chars, x, gap = [], 0, False
         while x <= width - cell_w:
             label = bits_to_label.get(tuple(r[x:x + cell_w] for r in window))
@@ -232,28 +272,44 @@ def _scan_face(rows, bits_to_label, height, cell_w):
     return lines
 
 
-def decode_text(rows, glyphs, score_glyphs=None, cell_w=8, score_cell_w=16):
+def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=None,
+                 cell_w=8, score_cell_w=16):
     """The on-screen text in a decoded frame's rows, read by exact bitmap match.
 
     `glyphs` is the h=9 glyph code -> row-bit-string table from
-    iomoon_strings.glyph_bitmaps(); `score_glyphs`, if given, is the h=23
-    score/price label -> row-bit-string table from
-    iomoon_strings.score_glyph_bitmaps() (unverified against a captured
-    frame -- see that function).  Both faces are scanned independently over
-    the whole frame and their lines merged top to bottom, then joined with
-    ' / '.  See _scan_face for the matching and space/noise rules.
+    iomoon_strings.glyph_bitmaps(); `glyphs12`, if given, is the same but for
+    the large h=12 face (iomoon_strings.glyph_bitmaps(data, height=12,
+    code_offset=75)); `score_glyphs` and `small_digits`, if given, are the
+    two digit faces' label -> row-level-string tables from
+    iomoon_strings.score_glyph_bitmaps() (the large, 16x23 face at its
+    default parameters, and the small, 8x12 one respectively -- see that
+    function for both). All four faces are scanned independently over the
+    whole frame and their lines merged top to bottom, then joined with
+    ' / '. The two digit faces match on raw pixel levels ('0'-'3', not
+    binarized -- see _scan_face); the other two match on lit/unlit only.
+    See _scan_face for the matching and space/noise rules.
+
+    The h=12 face has one real ambiguity, not a bug: code 0 ('0') and code
+    0x1A ('O') render the identical bitmap, so inverting code -> bitmap into
+    the bitmap -> label map this function needs necessarily drops one label
+    for that one shape.  '0' wins -- GLYPHS iterates digits before letters,
+    and this face's own pinned use (the attract high-score amount) is
+    numeric -- so a screen that genuinely shows a large-face 'O' decodes as
+    '0' instead; no pixel-level test can tell the two apart in this face.
     """
     lines = []
-    for table, glyph_cell_w in ((glyphs, cell_w), (score_glyphs, score_cell_w)):
+    faces = [(glyphs, cell_w, False), (glyphs12, cell_w, False),
+             (score_glyphs, score_cell_w, True), (small_digits, cell_w, True)]
+    for table, glyph_cell_w, is_score in faces:
         if not table:
             continue
         heights = {len(bits) for bits in table.values()}
         if len(heights) != 1:
             continue
-        is_score = table is score_glyphs
-        bits_to_label = {tuple(bits): (key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
-                          for key, bits in table.items()}
-        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w)
+        bits_to_label = {}
+        for key, bits in table.items():
+            bits_to_label.setdefault(tuple(bits), key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
+        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w, binarize=not is_score)
     lines.sort(key=lambda yt: yt[0])
     return ' / '.join(text for _, text in lines)
 
@@ -266,10 +322,105 @@ def slug(text):
     return s.strip('-')[:48] or 'screen'
 
 
+def _normalize_field(s):
+    """Case- and whitespace-fold one decoded field for coverage comparison.
+
+    Collapses internal blank runs to one space and drops leading/trailing
+    ones, because _scan_face's own space rule (a run of misses between two
+    matches becomes exactly one space; a leading gap before the first
+    matched glyph is never captured at all) means a corpus-decoded field
+    never reproduces a ROM pool string's original spacing byte for byte
+    (e.g. the pool's own '  OF  10 CRED:' decodes on screen as 'OF 10
+    CRED:').
+    """
+    return ' '.join(s.split()).upper()
+
+
+def coverage_report(rom_path, csv_paths):
+    """[(tier, source, string, found), ...] -- every string iomoon_strings.py
+    can currently name, checked against every given screens.csv's `text`
+    column, most to least certain about what ROM data a string actually is:
+
+      tier 1 -- contact_table()/menu_records(): a string reached through a
+        resolved pointer (F14 the 38-record menu tree, F16 the switch/
+        cabinet names), both languages.
+      tier 2 -- ENGLISH_POOL/SPANISH_POOL: the two windows iomoon_strings.py
+        declares. English is now the verified full envelope of tier 1's own
+        two English tables (so it adds nothing tier 1 didn't already reach);
+        Spanish stays a narrower, verified-clean sub-window -- tier 1's own
+        Spanish tables already resolve strings outside it.
+      tier 3 -- every other length-prefixed string a flat byte sweep finds
+        in the ROM's whole string area (0x17a8-0x2eaa -- 18 bytes short of
+        0x2ebc, which picks up one spurious string, '0020000000000000' at
+        0x2eab: the six bytes right before it, 20 00 10 00 00 02 at 0x2ea9,
+        are a second image header in the same format as the one at
+        0x24EA4 (F20), not padding): fault/boot messages, the coil-group
+        and fuse names, the per-country CREDITS-page denominations -- real
+        ROM strings with no pointer table pinned down yet, reported as
+        exactly that, not folded into a coverage number against tiers 1-2
+        alone.
+
+    A string counts as present only if it equals -- after `_normalize_field`
+    on both sides -- one whole decoded field (one ' / '-delimited segment of
+    a row's `text`), never a substring or a single word carved out of a
+    longer field: a substring test counts the pool's own short or common
+    entries ('M', 'YES', 'SETTING') as covered by nearly any text, and even
+    a whole-word test would wrongly credit the ROM's distinct 'SETTING'
+    string from a field that is really the unrelated 'SETTING COUNTRY'.
+    Each distinct string value is reported once, at its first (lowest-
+    offset/earliest) source.
+    """
+    data = open(rom_path, 'rb').read()
+    seen = set()
+    for p in csv_paths:
+        for row in csv.DictReader(open(p)):
+            for seg in (row.get('text') or '').split(' / '):
+                seg = _normalize_field(seg)
+                if seg:
+                    seen.add(seg)
+
+    # Dedup key is the *normalized* form, not the raw bytes: the same string
+    # can sit at two pointer-reached offsets one byte apart (a far pointer
+    # that includes or skips a leading space a neighbouring one does not),
+    # which would otherwise report the identical word twice under two tiers.
+    out = []
+    known = set()
+
+    for code, (cnum, en, es) in sorted(iomoon_strings.contact_table(data).items()):
+        for lang, s in (('en', en), ('es', es)):
+            if _normalize_field(s) not in known:
+                known.add(_normalize_field(s))
+                out.append(('1', 'contact_table:%s code 0x%02X (C%d)' % (lang, code, cnum), s))
+    for base, lang in ((iomoon_strings.MENU_TABLE_BASE, 'en'),
+                        (iomoon_strings.SPANISH_MENU_TABLE_BASE, 'es')):
+        for i, (_rtype, _ic, _lc, lines, _children) in enumerate(iomoon_strings.menu_records(data, base)):
+            for s in lines:
+                if _normalize_field(s) not in known:
+                    known.add(_normalize_field(s))
+                    out.append(('1', 'menu_records:%s record %d' % (lang, i), s))
+
+    for lang, bounds in (('en', iomoon_strings.ENGLISH_POOL), ('es', iomoon_strings.SPANISH_POOL)):
+        for off, s in iomoon_strings.string_pool(data, *bounds):
+            s = s.strip()
+            if s and _normalize_field(s) not in known:
+                known.add(_normalize_field(s))
+                out.append(('2', 'pool:%s 0x%x' % (lang, off), s))
+
+    for off, s in iomoon_strings.string_pool(data, 0x17a8, 0x2eaa):
+        s = s.strip()
+        if s and _normalize_field(s) not in known:
+            known.add(_normalize_field(s))
+            out.append(('3', 'sweep 0x%x' % off, s))
+
+    return [(tier, src, s, _normalize_field(s) in seen) for tier, src, s in out]
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('dump', help='the frame dump, in the colorizer .txt format')
-    ap.add_argument('--out', required=True, help='directory to write screens/ and screens.csv into')
+    ap.add_argument('paths', nargs='+',
+                     help='the frame dump (colorizer .txt format); with --coverage, one or '
+                          'more screens.csv files instead')
+    ap.add_argument('--out', help='directory to write screens/ and screens.csv into')
     ap.add_argument('--marks', default=None,
                      help='the key script\'s .marks sidecar (default: <dump without extension>.marks)')
     ap.add_argument('--threshold', type=float, default=0.25,
@@ -278,10 +429,33 @@ def main():
                      help='lit-union diff that starts a new scene (default 0.8)')
     ap.add_argument('--rom', default=None,
                      help='the 80188 ROM1 image (e.g. roms/iomoon/v1_3_01.bin) to read the DMD '
-                          'font from for the text column; omitted, text is written empty')
+                          'font from for the text column; omitted, text is written empty. '
+                          'Required with --coverage, to decode the ROM string pools.')
+    ap.add_argument('--coverage', action='store_true',
+                     help='report which ROM strings (see coverage_report) the given '
+                          'screens.csv files do and do not contain, instead of splitting a dump')
     args = ap.parse_args()
 
-    glyphs, score_glyphs = {}, {}
+    if args.coverage:
+        if not args.rom:
+            sys.exit('--coverage needs --rom')
+        rows = coverage_report(args.rom, args.paths)
+        missing = 0
+        for tier, src, s, found in rows:
+            print('%s  tier %s  %-40s |%s|' % ('   OK' if found else 'MISSING', tier, src, s))
+            missing += not found
+        print('%d strings named, %d missing (tier counts: %s)'
+              % (len(rows), missing,
+                 ', '.join('%s=%d' % (t, sum(1 for r in rows if r[0] == t)) for t in '123')))
+        return
+
+    if len(args.paths) != 1:
+        sys.exit('exactly one dump file is required (omit --coverage for this mode)')
+    if not args.out:
+        sys.exit('--out is required (omit --coverage for this mode)')
+    args.dump = args.paths[0]
+
+    glyphs, glyphs12, score_glyphs, small_digits = {}, {}, {}, {}
     if args.rom:
         try:
             rom_data = open(args.rom, 'rb').read()
@@ -290,9 +464,16 @@ def main():
         else:
             try:
                 glyphs = iomoon_strings.glyph_bitmaps(rom_data)
+                glyphs12 = iomoon_strings.glyph_bitmaps(
+                    rom_data, height=iomoon_strings.FONT_H12_HEIGHT,
+                    code_offset=iomoon_strings.FONT_H12_CODE_OFFSET)
             except ValueError as e:
                 sys.exit('%s: malformed ROM (%s)' % (args.rom, e))
             score_glyphs = iomoon_strings.score_glyph_bitmaps(rom_data)
+            small_digits = iomoon_strings.score_glyph_bitmaps(
+                rom_data, height=iomoon_strings.SMALL_DIGIT_FACE_HEIGHT,
+                width=iomoon_strings.SMALL_DIGIT_FACE_WIDTH,
+                index=iomoon_strings.SMALL_DIGIT_FACE_INDEX)
 
     try:
         frames = parse_dump(args.dump)
@@ -305,6 +486,23 @@ def main():
     marks = load_marks(args.marks or (os.path.splitext(args.dump)[0] + '.marks'))
     scenes = split_scenes(frames, args.threshold, marks, args.lit_threshold)
 
+    # A scene's repr.txt is written once per DISTINCT content, not once per
+    # scene: many scenes -- a menu record with no leaf under it, an idle
+    # attract frame the loop revisits, the settled tail of an animation --
+    # show pixel-for-pixel the same frame as an earlier scene, and a corpus
+    # that stores that frame again for every occurrence overstates how many
+    # screens the machine actually draws (measured on the committed en/
+    # corpus: 5716 scenes, 922 distinct repr.txt contents -- 84% redundant
+    # copies).
+    # The first scene (in dump order, so this is stable across a re-split of
+    # the same dump) to show a given content is canonical: its directory is
+    # the one that gets a real repr.txt, and every later scene with the same
+    # content records that scene's id in its own `repr_id` column instead of
+    # writing the bytes again. A canonical scene's own `repr_id` is its own
+    # id, so the column resolves the same way -- look up the row whose `id`
+    # equals this row's `repr_id`, read *that* row's `dir` -- whether or not
+    # this row is the one holding the file.
+    canonical_id = {}
     rows_out = []
     for n, scene in enumerate(scenes, 1):
         label = label_for(scene[0][0], marks)
@@ -315,18 +513,24 @@ def main():
             with open(os.path.join(d, 'frame-%08d.txt' % ms), 'w') as f:
                 f.write('\n'.join(rows) + '\n')
         # the representative is the scene's last frame: an animation has settled by then
-        with open(os.path.join(d, 'repr.txt'), 'w') as f:
-            f.write('\n'.join(scene[-1][1]) + '\n')
+        content = tuple(scene[-1][1])
+        repr_id = canonical_id.setdefault(content, n)
+        if repr_id == n:
+            with open(os.path.join(d, 'repr.txt'), 'w') as f:
+                f.write('\n'.join(scene[-1][1]) + '\n')
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
                          'frames': len(scene),
-                         'text': decode_text(scene[-1][1], glyphs, score_glyphs)})
+                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits),
+                         'repr_id': repr_id})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms', 'frames', 'text'])
+        w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms',
+                                          'frames', 'text', 'repr_id'])
         w.writeheader()
         w.writerows(rows_out)
-    print('%d frames -> %d scenes' % (len(frames), len(scenes)))
+    print('%d frames -> %d scene occurrences, %d distinct screens'
+          % (len(frames), len(scenes), len(canonical_id)))
 
 
 if __name__ == '__main__':

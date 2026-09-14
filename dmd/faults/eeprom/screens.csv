@@ -1,0 +1,5 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,333,2,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,416,449,2,SETTING / DEFAULT VALUES / PRESS START,2
+3,boot,0003-boot,699,699,1,,3
+4,boot,0004-boot,716,749,2,EEPROM FAILURE,4

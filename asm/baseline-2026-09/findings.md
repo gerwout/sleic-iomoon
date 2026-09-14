@@ -1,6 +1,6 @@
-# IO Moon — driver contract, F1..F15
+# IO Moon — driver contract, F1..F20
 
-Fifteen numbered facts extracted from the **2026-09 fresh baselines** in this
+Twenty numbered facts extracted from the **2026-09 fresh baselines** in this
 directory. Later driver tasks reference them by number.
 
 **Sources, and only these sources.** Every address citation below was read out
@@ -1975,6 +1975,176 @@ corroboration, with zero disagreements across 30 cross-checked cells.
 physical lamp sits at which (column,bit); there was no full LC map committed
 before this. It is now measured rather than transcribed, closing that gap
 the same way F16 closed the switch-matrix one.
+
+---
+
+## F19 — Opening the service menu re-derives the country from a stray byte, not the DIP
+
+**Statement.** Opening the service menu **changes the machine's own tracked
+country**, every time, regardless of which country was running. It is not a
+capture artefact and not a Spanish-specific bug: the country-DIP re-read that
+menu exit triggers loses a race against the Z80 reboot that same exit
+causes, and the byte it wrongly accepts as the DIP report decodes to country
+7 (Portugal) **unconditionally**, whatever country was actually selected.
+
+**The command sequence, read directly out of the ROM.** Menu exit
+(`sub_DD253`, F14) queues four 80188->Z80 commands back to back through
+`qout_push` (F6, the outbound FIFO at `4000:1158`, drained at INT0/8):
+
+```
+DD29E: PUSH 000F8 / CALL qout_push        ; leave test mode
+DD2A7: PUSH 000C4 / CALL qout_push        ; queued directly behind F8
+DD2B0: CALL sub_D622C                     ; F10's NVRAM-reinit routine --
+                                           ; calls sub_D5A8B below, which
+                                           ; itself queues F9
+DD2B5: PUSH 000A9 / CALL qout_push
+...
+```
+`sub_D622C` (F10) is not a first-boot-only routine here: this call site
+(`DD2B0`) is one of four, alongside boot itself (`D2F72`, `D3033`) and a
+fourth site (`DF5FF`). Inside it, at the point F11 already names (`D664D`),
+`sub_D5A8B` `D5A8B` runs the country-DIP re-read:
+
+```
+D5A91: PUSH 000F9 / CALL qout_push        ; ask the Z80 for the DIP byte
+D5AA6: CALL sub_D5C3E                     ; poll for the reply, in a retry
+D5AAD: JNE 0D5ABC                         ; loop against a 16-tick timeout
+D5AB4: CMP ES:0113D, 00000 / JNE 0D5AA6   ; ([113D], loaded 0x14 at DD28D)
+```
+
+**`sub_D5C3E`'s accept test is "the next byte in the FIFO is `>= 0xF0`", not
+"the next byte is `0xF9`'s specific reply".** Traced byte for byte:
+
+```
+D5C49: MOV AL, ES:[1147]                  ; F4's "byte available" flag
+D5C5C: LES BX, ES:[1150]                  ; the SAME inbound FIFO F4 describes
+D5C61: MOV AL, ES:[BX]                     ; pop the head byte, unconditionally
+D5CA3: CMP 00006, 0F0 / JNB D5CAC          ; >= 0xF0 -> accept; else discard, return "nothing yet"
+D5CAC: AND AL, 00E                         ; bits 1-3
+D5CB6: SUB AX, 00002                       ; 7-way jump table, indices 0,2,4,6,8,10,12 -> country 1..7
+D5CF8: (out of range)  MOV 00020, 000      ; country 0 (fallback)
+```
+This is F4's own general rule — "every consumer pops one byte unconditionally
+and then tests it, discarding it if it is not the value that consumer
+wants" — except that `sub_D5C3E`'s test is a **range**, not an exact match,
+so it does not discard a byte merely because it came from somewhere else.
+Any byte `>= 0xF0` that reaches the head of the FIFO while this loop is
+polling is accepted as the DIP report, from whatever source sent it.
+
+**What supplies that byte, faster than the real reply can arrive.** `0xF8`
+(queued first, above) reboots the Z80 outright — F14: `2DD9: DI / JP boot`.
+A rebooting Z80 announces its own input state unconditionally, over the
+**other** J1 channel (F6: `C008`, the state-bitmask send, `host_send_c008_*`,
+strobed on port-`0x81` bit 5, a **different** strobe from the `C0FC`
+event-code channel `0xF9`'s reply travels on but the **same** inbound
+NMI/PCS2 path on the 80188 side that every byte — event code or state
+bitmask alike — is read through, per F6's own account). "All inputs idle"
+is `0xFF`, and `(0xFF AND 0x0E) - 2 = 0x0C`, the **last** of the seven table
+entries traced above — **country 7, unconditionally, whatever byte a real
+DIP would have produced**, because `0xFF` is not a DIP report at all, it is
+every input bit set. The real `0xF9` reply cannot win this race structurally:
+it is queued (at `sub_D622C`'s call into `sub_D5A8B`) **after** `0xC4`, which
+is itself queued **after** `0xF8`, and the outbound FIFO drains one
+throttled byte at a time (F6: INT0/8) — while the `0xFF` announcement rides
+the Z80's own reboot and needs no outbound turn at all.
+
+**Confirmed live, not only from the ROM.** A traced repro run, country 5
+selected beforehand:
+```
+cmd=f8 -> byte=ff(C008) -> NVRAM 0x1BF 05->07 -> byte=47(alive) -> cmd=c4 -> cmd=f9 -> byte=fb
+```
+`0xFF` arrives and NVRAM `0x1BF` is rewritten from 5 to 7 **before** `0xF9`
+is even transmitted — matching the queue order traced above exactly (`C4`
+before `F9`) — and the real reply, `0xFB` (`(0xFB AND 0x0E) - 2 = 0x08`,
+table entry 4 of 7 -> country 5, correct), arrives too late: `sub_D5A8B`'s
+retry loop has already accepted the `0xFF` on an earlier pass and returned.
+Independently verified against the disassembly above with a second country:
+`0xFF` decodes to country 7 by the same arithmetic regardless of which
+country was actually running, since it does not depend on the real DIP
+value at all — only on `0xFF` itself.
+
+**Confidence:** confirmed for the command sequence (`DD29E`-`DD2B5`, byte for
+byte), for `sub_D5C3E`'s accept test and arithmetic (`D5C49`-`D5CFD`, traced
+to the same seven-way table F11 names at `D5D01`), for the channel identity
+(F6: `C008` state bitmask vs `C0FC` event code, one inbound path), and for
+`D664D` persisting whatever `sub_D5A8B` returns (F11). Confirmed live on one
+traced repro run reproducing the exact byte sequence the static trace
+predicts. **Open:** whether a real machine's Z80/80188 pair races the same
+way — the 16-tick (F6) timeout and the INT0/8 outbound rate are this
+emulation's timing, not measured against real silicon; a logic-analyzer
+capture of J1 during a real machine's menu exit would settle it, and would
+also settle whether the real machine's own operators have ever observed a
+country/language flip after using the service menu (which this finding
+predicts they should, on every visit, in every country).
+
+**Disposition:** new. No prior hypothesis existed to adjudicate — this is a
+firmware behaviour, not a driver bug, and no driver change follows from it:
+delivering the `0xFF` accurately (as any faithful emulation of the Z80
+reboot must) is what triggers it, and there is no correct place to suppress
+that byte without becoming unfaithful to the ROM.
+
+---
+
+## F20 — Full-screen images share the font table's own entry format
+
+**Statement.** ROM1 stores at least one complete 128x32 DMD screen using the
+identical entry layout the walked font/glyph table uses (F13's frame
+buffers; `docs/dmd_graphics.md`, "Font Entry Structure") — a 6-byte header
+`[height, 0x00, width, 0x00, len16_lo, len16_hi]` followed by three
+`len16`-byte planes (plane 0, plane 1, mask) — sitting outside the walked
+table (`0x20000`-`0x22C2E`) rather than as one of its 224 entries, so it is
+not reached by walking from the table's own base and has to be found by
+other means (here, by searching the ROM for a captured frame's own bytes).
+
+**The instance, read directly out of the ROM.** Header at `0x24EA4`:
+`height=0x20, width=0x10, len16=0x0200` (`=32*16=512`, the same full-screen
+dimensions as the already-documented terminator image at `0x22C2E`). Plane 0
+at `0x24EAA` (header `+6`), plane 1 at `0x250AA` (`+len16`); each row is
+`width=16` bytes, so row 10 of plane 0 falls at `0x24EAA + 10*16 = 0x24F4A`
+and row 10 of plane 1 at `0x250AA + 10*16 = 0x2514A`.
+
+**Confirmed against a captured frame, not just against the header
+arithmetic.** Reconstructing all 32 rows from these two planes
+(`level = 2*plane0_bit + plane1_bit`, F13's own weighting) reproduces
+`dmd/en/screens/0023-attract/repr.txt` byte-for-byte, all 32 rows, no
+discrepancy. The same content — full or, in one case, a mid-redraw partial
+with the already-drawn rows matching exactly and the not-yet-reached rows
+still blank — is the settled or in-progress content of three deep
+service-menu leaf records in the same corpus: `svc-33` (SEND-REC TEST),
+`svc-36` (LIGHT TEST 2), `svc-37` (LIGHT TEST 3). A direct byte search of
+`v1_3_02.bin` through `v1_3_05.bin` (the graphics, sound and Z80 ROM images)
+for the plane-0 block finds no match in any of them — this image lives only
+in ROM1, in the font-table's own chip.
+
+**What this means for the DMD text decoder.** A screen drawn this way
+contributes no font-table match, ever, to `scripts/dmd_dump_split.py` or any
+other bitmap-matching decoder, because there are no glyphs on it to match —
+the panel content is one large pre-composed picture, not characters
+assembled from the font table at run time. This is a third class of
+"undecoded," distinct from a missing capture and from an unlocated font
+(`docs/dmd_graphics.md`'s own "Open items" already documents the unlocated
+in-play `PLAYER`/`BALL` font as the second class).
+
+**Confidence:** confirmed for the header, the two verified plane offsets,
+and the byte-exact 32-row match against a real captured frame. **Open:**
+which specific catalogued ROM string(s), if any, this particular picture
+depicts (not read letter by letter); whether every deep service-menu leaf
+record uses this mechanism (three are confirmed; `svc-24`, SOLENOID TEST,
+shows no new content of any kind across five occurrences even after F14's
+record-to-record dwell was stretched 25x, so its own mechanism is
+unresolved — see `dmd/README.md`'s Open items); why the same bytes also
+surface during ordinary attract-mode play (asset reuse across two contexts
+is the simplest reading and is consistent with everything checked, but is
+not independently confirmed); and whether the in-play score or any other
+still-undecoded screen (`docs/dmd_graphics.md`, "Which face draws the main
+player score is not settled") uses this same mechanism — not established
+either way, and not to be assumed from this finding alone.
+
+**Disposition:** new. No prior finding addressed whether a DMD screen could
+be a picture rather than composed text; this one does, with one directly
+confirmed instance and a documented method (byte-search a candidate frame
+against both ROM images, then verify the header arithmetic independently)
+for checking any other suspected instance.
 
 ---
 

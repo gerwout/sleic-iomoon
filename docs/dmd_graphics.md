@@ -229,16 +229,21 @@ variable-size entries with no fixed stride; a reader has to walk it.
 Each entry is a 6-byte header followed by **three** bitmap blocks, not two:
 
 ```
-Header: [height, 0x00, width, 0x00, height*width, 0x00]
-Data:   [height*width bytes] plane 0
-        [height*width bytes] plane 1
-        [height*width bytes] mask
+Header: [height, 0x00, width, 0x00, len16_lo, len16_hi]
+Data:   [len16 bytes] plane 0
+        [len16 bytes] plane 1
+        [len16 bytes] mask
 ```
+
+`len16` is a **16-bit** field (bytes 4-5, little-endian), equal to
+`height*width`, not a byte: the entry at ROM1 `0x22C2E` is `height=0x20,
+width=0x10`, length bytes `00 02` = `0x0200` = 512 = 32*16, a full-screen
+128x32 image, and a byte-wide read of byte 4 alone misreads that length as 0.
 
 `width` is bytes per row, not pixels wide: the on-screen text face is one
 byte (8 px) wide, but the table also holds two-byte-wide entries, so glyphs
-are not uniformly 8 px wide. Entry stride is `6 + 3*height*width` and varies
-entry to entry — there is no fixed stride to index by.
+are not uniformly 8 px wide. Entry stride is `6 + 3*len16` and varies entry
+to entry — there is no fixed stride to index by.
 
 The third block is a mask, not a second copy of the bitmap: F13's DMD
 composite is `(background AND mask) OR sprite`, and a glyph's mask reads as
@@ -247,10 +252,62 @@ right-aligned one).
 
 Walking from `0x20000` with one byte per row (`width == 1`), 162 consecutive
 entries decode before the first two-byte-wide entry, at file offset
-`0x218B4` (combined-image `0xA18B4`); the table continues past that point but
-has not been walked further here. Heights seen in that run: 12 px (53
+`0x218B4` (combined-image `0xA18B4`). Heights seen in that run: 12 px (53
 entries), 9 px (52), 8 px (34), 18 px (21), 15 px (2). There is no 10 px size
-and no 7-segment-style face at this offset.
+and no 7-segment-style face at this offset. The table runs 224 entries in
+total, ROM1 `0x20000`-`0x22C2E` (combined `0xA0000`-`0xA2C2E`), and is
+followed directly by the full-screen image at `0x22C2E` described above.
+
+### Full-screen images outside the walked table use the same entry format (F20)
+
+The image at `0x22C2E` is not the only one. A second, separate `[height=32,
+0x00, width=16, 0x00, len16=0x0200]` header sits at ROM1 `0x24EA4` — well
+past the walked table's own end and not reached by walking from `0x20000`,
+confirmed by re-deriving its data offsets from the header alone and checking
+them independently: plane 0 at `0x24EAA` (header `+6`), plane 1 at `0x250AA`
+(`+len16`), each row `width=16` bytes apart, so row 10 of plane 0 is
+`0x24EAA + 10*16 = 0x24F4A` and row 10 of plane 1 is `0x250AA + 10*16 =
+0x2514A` — both land exactly on the bytes that reproduce a captured frame's
+row 10, checked below.
+
+Reconstructing all 32 rows from this header's two planes (`level =
+2*plane0_bit + plane1_bit`, F13's weighting) matches a real captured DMD
+frame **byte-for-byte, all 32 rows** —
+`dmd/en/screens/0023-attract/repr.txt`, large multi-level shaded text (the
+same shaded style as the score glyphs, not the flat `height=9`/`height=12`
+text faces). The identical bytes are not a one-off: the same content, or a
+mid-redraw partial of it (rows already drawn matching exactly, rows not yet
+reached still blank), turns up as the settled or in-progress content of
+three deep service-menu leaf records in `dmd/en/screens.csv` — `svc-33`
+(SEND-REC TEST), `svc-36` (LIGHT TEST 2) and `svc-37` (LIGHT TEST 3) — and
+is absent from every other ROM chip in the set (`v1_3_02.bin` through
+`v1_3_05.bin`, byte-searched directly for the plane-0 block).
+
+**This is a third, distinct category from either a decoded string or an
+undecoded one: a screen whose content is a picture, composed once at ROM
+build time and blitted whole, not text assembled from character codes at
+run time.** No font-based matcher — this decoder or any other — can recover
+a string from a page drawn this way, because the pixels are not glyphs; the
+mechanism is the same one the walked table's own entries use (identical
+6-byte header, identical three-plane layout), just invoked on a "glyph"
+that happens to be an entire panel instead of one character. Which of the
+service-menu tree's own catalogued strings this specific picture depicts is
+not established — the picture has not been read letter by letter — only
+that it is a picture, on these three records, and not glyph-composed text.
+
+What is still open: whether every deep service-menu leaf record renders
+this way (only three are confirmed; `svc-24`, SOLENOID TEST, shows no new
+content of any kind across five occurrences even after a 25x longer dwell —
+`dmd/README.md`'s own Open items — so its mechanism is unresolved, not
+assumed to be this one or any other); why the identical bytes also appear
+during ordinary attract-mode play (`0023-attract`) — reuse of one baked
+asset across two unrelated screens is the simplest explanation and is
+consistent with everything checked so far, but is not independently
+confirmed; and whether the *other* full-screen image already noted above,
+at `0x22C2E`, is likewise reused anywhere in the captured corpus (not
+checked). What would settle the first question: the same row-by-row
+byte comparison used here, run against a captured frame from each of the
+remaining leaf records in turn.
 
 ### Character Mapping
 
@@ -262,26 +319,62 @@ at table index 23 — pinned by matching a captured frame's `W` byte-for-byte
 against table entry 57, and `W` is glyph code `0x22` (34): `table index =
 glyph code + 23`.
 
-A second complete face exists at `height=12`, plausibly large digits for
-scores, but its index offset is not pinned: table indices 23-37 are all
-self-consistent for the `height=9` face and 76-90 are all self-consistent for
-the `height=12` face, and only a frame independently known to show large text
-— not merely a bitmap that happens to look letter-shaped — can settle which
-one is real. An untested offset in that range can select a uniform (blank or
-solid) bitmap that then matches large blank or lit regions of an unrelated
-screen rather than one glyph, so guessing it is unsafe, not just unproven.
+A second complete face exists at `height=12`, entries **75-127** (53
+entries), immediately after the `height=9` run. Its offset is confirmed
+three independent ways: entry 75 renders a clean `0` (so code 0 = entry 75);
+entry 119 is a 2x2 dot on the baseline and `119-75=44=0x2C`, exactly the
+period pinned independently off the `height=9` face; and the attract
+high-score screen decodes as `300.000.000` in this face beside `S.MOONLIGHT`
+in `height=9` (`dmd/en/screens/0051-attract/repr.txt` in the English
+corpus). Two of its glyphs render the identical bitmap — code `0` and code
+`0x1A` (`O`) — so the face has 37 distinct bitmaps across its 46 defined
+codes, not 46: the two codes are genuinely indistinguishable by pixels alone
+in this face, not a decoder gap.
 
 Past the initial one-byte-wide run, at file offset `0x218B4`, sit 62 further
-entries of mixed shape: 21 of `height=23, width=2` (16 px), 21 of `(12, 1)`,
-20 of `(16, 1)`. The `(23, 2)` set is the large score/price digits, and it
-needs no offset pinned: its entry index is the glyph directly. Entry 0 of
-that set renders a 16x23 `0`, entry 1 a `1`, entry 2 a `2`. Entries 10-19 are
-the same ten digits with one small square mark added at bottom right (rows
-19-20 of 23, columns 13-14 of 16) — a plain dot, not a comma's tail, so a
-decimal point, consistent with a Spanish-market machine's peseta-style
-`NNN.NNN` pricing. Entry 20 is a colon: two of the h=9 face's own colon
-blocks, scaled to this face's width. This face is not verified against any
-captured frame — no dump on disk shows an in-play score.
+entries of mixed shape: 21 of `height=23, width=2` (16 px, table index
+162-182), 21 of `(12, 1)` (183-203), 20 of `(16, 1)` (204-223). The `(23,
+2)` set is the large price/score digits, and it needs no offset pinned
+beyond its own start index: entry 162 renders a 16x23 `0`, 163 a `1`, 164 a
+`2`. Entries 172-181 are the same ten digits with one small mark added at
+bottom right, a decimal point, consistent with a Spanish-market machine's
+peseta-style `NNN.NNN` pricing. Entry 182 is a colon: two of the h=9 face's
+own colon blocks, scaled to this face's width.
+
+**This face is SHADED, not single-plane.** Every glyph is a bright (level 3)
+outline around a mid-tone (level 1) interior, so it occupies both bitplanes
+at once: reading plane 0 alone (as the `height=9` and `height=12` text
+faces correctly do — they are genuinely single-plane) throws away the
+interior/outline distinction and can never exact-match a real captured
+frame, whose four pixel levels reflect both planes. `iomoon_strings.
+score_glyph_bitmaps` reconstructs each glyph's per-pixel level as
+`2*plane0_bit + plane1_bit` (F13's own weighting) and returns level strings
+('0'-'3'), not bit strings, so a caller has to match against the frame's own
+levels directly rather than a binarized lit/unlit reading — confirmed
+against the mark added by the decimal-point entries, which spans a shaded
+3x3 area (rows 19-21, columns 13-15) once both planes are read, not the
+plane-0-only 2x2 box a single-bitplane reading finds. Despite the fix, no
+captured scene in the committed English corpus (`dmd/en/`) shows this
+specific face decoding a real in-play number: scanning all 21 of its labels
+against all 27,712 raw frames of `dmd/en/iomoont.txt.gz` finds zero exact
+matches, and the closest approximate match anywhere in a gameplay-adjacent
+frame differs in 120 of the glyph's 368 pixels — no resemblance, not a near
+miss.
+
+The 21-entry `(12, 1)` block immediately after it (table index 183-203) is
+the same 21-label layout at a smaller size, and it is confirmed against a
+real frame: its digits 0-9 (183-192) and their decimal-point variants
+(194-203) exact-match a run of digits at row 0 of
+`dmd/en/screens/0287-ball-2-in-play/repr.txt`, decoding `3. 8.743`, and two
+more `ball-*`/`drop-bank-*` scenes in the committed corpus (294, 298) decode
+real digit runs the same way. Unlike the large face, every one of its
+glyphs uses only level 0 and level 3 — plane 0 and plane 1 always agree, so
+it renders at flat full brightness rather than shaded, even though the same
+two-plane match key correctly reads it (a level string that happens to use
+only two of its four possible values). Which gameplay quantity this face
+displays (a bonus count, a lane multiplier, or something else — the digit
+runs decoded so far are short and the scenes' own labels do not say) is not
+established; see "Open items" below.
 
 ### Custom Text Encoding
 
@@ -301,34 +394,34 @@ The 80188 game code uses a **custom character encoding** for DMD text, not stand
 
 `0x26`-`0x2F` are read off the h=9 face's own bitmaps (`glyph_bitmaps`, table
 entry = code + 23), the same way entry 57 pinned the face itself against a
-captured `W` — not inherited from either this table's own prior text or from
-`iomoon_strings.py`'s `GLYPHS`, both of which disagreed with the bitmaps and
-with each other. Read by eye: `0x26` is a vertical bar crossed by a
-horizontal one -- a plus sign, not `!`. `0x28`/`0x29` bulge toward the
-opening they curve around, confirming them as `(` and `)`. `0x2A` is a
-single diagonal stroke, upper right to lower left -- `/`. `0x2B` is a 2x2
-block with a tail trailing down-left -- a comma, not a colon. `0x2C` is that
-same 2x2 block alone, on the baseline -- a period. `0x2D` is two of that
-block stacked with a gap, plus a comma's tail below the lower one -- a
-semicolon, not a hyphen. `0x2E` is the same two stacked blocks with no
-tail -- a colon. `0x2F` is a single one-row horizontal bar -- a hyphen, which
-rules out both this table's former "newline" claim (a control code has no
-bitmap to have measured) and `GLYPHS`' former `'*'`.
+captured `W`. Read by eye: `0x26` is a vertical bar crossed by a horizontal
+one -- a plus sign. `0x28`/`0x29` bulge toward the opening they curve
+around, confirming them as `(` and `)`. `0x2A` is a single diagonal stroke,
+upper right to lower left -- `/`. `0x2B` is a 2x2 block with a tail trailing
+down-left -- a comma. `0x2C` is that same 2x2 block alone, on the baseline
+-- a period. `0x2D` is two of that block stacked with a gap, plus a comma's
+tail below the lower one -- a semicolon. `0x2E` is the same two stacked
+blocks with no tail -- a colon. `0x2F` is a single one-row horizontal bar --
+a hyphen.
 
-`0x27`'s bitmap is left open. `GLYPHS` used to say `?`, but there is no gap
-between the bowl and the tail, which a question mark requires — the shape
-is continuous through the middle rows where a real `?` has a break before
-the dot. What it actually is isn't settled from the bitmap alone; it would
-take a captured frame that shows this code in use, or a string-pool entry
-that resolves to it, the way `W` pinned the h=9 face itself.
-`iomoon_strings.py`'s `GLYPHS` leaves this code unmapped rather than guess.
+`0x27`'s bitmap is left open: there is no gap between the bowl and the tail,
+which a question mark requires — the shape is continuous through the middle
+rows where a real `?` has a break before the dot. What it actually is isn't
+settled from the bitmap alone; it would take a captured frame that shows
+this code in use, or a string-pool entry that resolves to it, the way `W`
+pinned the h=9 face itself. `iomoon_strings.py`'s `GLYPHS` leaves this code
+unmapped rather than guess.
 
-None of this touches any decoded string: scanning both `ENGLISH_POOL` and
-`SPANISH_POOL` (and so F16's contact table, which is drawn from the same
-pools), the only code `>= 0x26` either pool ever uses is `0x2C`, 17 times —
-one of the codes that was already right. The four wrong mappings only
-affected the DMD frame decoder, and only for a screen that actually draws
-one of these marks (on the captures examined so far, none does).
+None of this touches any string decoded so far: scanning both `ENGLISH_POOL`
+and `SPANISH_POOL` (which between them cover the contact table, F16, and the
+menu tree, F14), the codes `>= 0x26` in use are `0x2F` (hyphen, 67 times —
+every `- LABEL -` menu header uses two), `0x2C` (period, 46), `0x2E` (colon,
+16), `0x2A` (slash, 3, e.g. `SOUND/VIDEO`) and `0x29` (close paren, 2, in a
+line reading ` 2)`). `0x26`, `0x28`, `0x2B` and `0x2D` do not appear in
+either pool at all, and `0x27` never appears anywhere. The bitmap-pinned
+mappings above matter only to the DMD frame decoder, then, and only for a
+screen that actually draws one of these marks (on the captures examined so
+far, none does).
 
 A **character mapping table** at ROM offset `0x809B0` (96 bytes) maps ASCII codes `0x20`–`0x7F` to glyph indices.
 
@@ -351,8 +444,70 @@ for the three windows the CPU actually sees.
 0x808D4 – 0x809AF : ROM1: further tables in the LMCS window
 0x809B0 – 0x80A0F : Character mapping table (ASCII -> glyph index)
 0x82000 – 0xA0000 : Static screens (bilingual pairs)
-0xA0000 – 0xA18B4+: Font glyph table, variable-stride entries (see Font System);
-                    walked this far, continues beyond
+0xA0000 – 0xA2C2E : Font glyph table, variable-stride entries, 224 of them
+                    (see Font System)
+0xA2C2E –         : A full-screen (128x32) image in the same header format,
+                    immediately after the font table
 0xA9D00 – 0xAC000 : Scrolling credits animation data
 0xC0000 – 0xFFFFF : ROM1: 80188 program code (segments D000/E000/F000 + boot stub)
 ```
+
+---
+
+## Open items
+
+### The in-play `PLAYER`/`BALL` font is not in the walked font table
+
+Rendering any `ball-N-in-play` or `ball-N-drained` scene shows text reading
+`PLAYER 1` and `BALL 1` in a small, roughly 6-row-tall, single-pixel-stroke
+font at full brightness — nothing like the bold `height=9` face pinned
+above. It is not among the font table's 224 entries (`0x20000`-`0x22C2E`):
+searching both ROM images for its `P` bitmap finds no match in any of three
+forms tried — contiguous one byte per row, padded with blank rows to a
+taller cell, or at a 16-byte stride inside a 128-pixel-wide frame buffer.
+What would settle it: a disassembly trace of the routine that draws
+`PLAYER`/`BALL` (rather than more bitmap search), or a capture narrow enough
+to isolate just this text against a blank background.
+
+### Which face draws the main player score is not settled
+
+Two different score displays exist. The attract-mode high-score table is
+the `height=12` face pinned above, and it decodes (`300.000.000` beside
+`S.MOONLIGHT`, etc.). The **in-play** score is a separate, larger display —
+legible by eye during a gameplay capture, e.g. `2.452.230`, `3.812.237`,
+`1.027.571` — and its face is not identified; this item is about that one.
+
+The large `height=23, width=2` face is shaded and its matcher now reads both
+bitplanes (see "Font Entry Structure" above), but no scene in the committed
+English corpus (`dmd/en/`) shows it decoding a real in-play number: scanning
+its 21 labels against all 27,712 raw frames of `dmd/en/iomoont.txt.gz` finds
+zero exact matches, and the closest approximate match in a gameplay-adjacent
+frame differs in 120 of the window's 368 pixels — no resemblance, not a near
+miss. The smaller `height=12` digit face immediately after it (table index
+183-203) does decode real digit runs from gameplay scenes (`3. 8.743`,
+`3. 5. 8`, `: 95` — see "Font Entry Structure" above), but each run
+decoded so far is short, and no captured scene identifies what quantity it
+shows — it may be a bonus count, a lane multiplier, or something else, not
+necessarily the main player score.
+
+A third possibility exists alongside "which walked face draws it": the
+in-play score screen might not be glyph-composed at all, the way three deep
+service-menu records are confirmed not to be (see "Full-screen images
+outside the walked table use the same entry format (F20)" above). This is
+not established either way — no in-play frame has been checked against a
+font-table-shaped full-screen image the way the service-menu ones were —
+and should not be assumed true just because the mechanism exists elsewhere
+in this ROM.
+
+Two further faces from the same font table are walked but not pinned to any
+code offset or confirmed against a captured frame: `height=16` (20 entries,
+table index 204-223, immediately after the small digit face) and `height=18`
+(21 entries, within the initial one-byte-wide run). A two-plane search of
+both across every `attract`- and `ball`-labelled scene in the English corpus
+turns up only a coincidental partial match of a sparse two-dot glyph against
+unrelated animated content, not a genuine decode. What would settle either
+open question: a capture with a cleaner instant (a frame taken right after a
+score change, before the gameplay background animation resumes), a
+disassembly trace of the routine that draws the main score, or pinning the
+`height=16`/`height=18` faces the way `height=12`'s text face was pinned
+above.
