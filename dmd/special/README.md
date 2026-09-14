@@ -6,7 +6,13 @@ The tournament mod's second `PRESS START` hook, inside the SPECIAL/match handler
 `D5077` (`scripts/io_moon_press_start_patch.py` calls it "hook inside SPECIAL handler,
 before animation starts") — a real lottery win, per `docs/iomoon_game_rules.md` §3.5: a
 free-running counter is compared against the units digit of a player's score, and a match
-awards a free game. This capture is the one short, targeted headless run that reaches it.
+awards a free game.
+
+**This capture is forced, not natural.** Ten controlled trials offering every score units
+digit failed to land a match, so the screen was reached with a one-byte ROM patch at `D4DCB`
+applied for the capture alone and reverted afterwards. The frames are the machine's own and
+the credit award is real; only the route to them is forced. Both the null result and the
+patch are described below.
 
 ## The mechanism, cited
 
@@ -42,6 +48,15 @@ under it. A single window with no hit does not distinguish "the counter behaves 
 window's own sampled value simply was not one of the ten offered" from a genuine
 timing-sensitivity in exactly when `sub_D4CF4` samples it. Settling that needs an
 independent read of `4000:113F` at the sampling instant, which this round could not get:
+
+**The sharpest lead for settling this is cheaper than reading the counter.** If the counter
+is stable across the ten trials, and the trials genuinely offered all ten units digits, then
+one of them had to match — that is arithmetic, not luck. A clean null across all ten
+therefore says at least one of those two premises is false. Checking the second is easy and
+needs no debugger: record each trial's own final score and confirm its units digit is what
+the slot pattern intended. If the digits did vary as designed, the premise that fails is the
+counter's stability, and that is the answer the independent read was after. If they did not,
+the sweep never tested what it meant to test.
 
 - The classic MAME debugger (`build-debug/sdl3pinmame -debug`) needs a real display
   window; under this project's own headless convention, `SDL_VIDEODRIVER=dummy`, it
