@@ -45,11 +45,21 @@ def sha(path):
 
 
 def load(out_dir):
-    """label -> [(repr.txt sha256, scene id), ...] for one split-dump directory."""
+    """label -> [(repr.txt sha256, scene id), ...] for one split-dump directory.
+
+    dmd_dump_split.py writes repr.txt once per distinct content: a scene
+    whose representative frame duplicates an earlier one carries that
+    scene's id in its own `repr_id` column instead of a second copy of the
+    file. Resolving through `repr_id` (via `dir_by_id`) rather than reading
+    `r['dir']` directly means this still finds the right bytes for a
+    duplicate scene, which has no repr.txt of its own.
+    """
     rows = list(csv.DictReader(open(os.path.join(out_dir, 'screens.csv'))))
+    dir_by_id = {r['id']: r['dir'] for r in rows}
     by_label = defaultdict(list)
     for r in rows:
-        p = os.path.join(out_dir, 'screens', r['dir'], 'repr.txt')
+        repr_dir = dir_by_id[r.get('repr_id') or r['id']]
+        p = os.path.join(out_dir, 'screens', repr_dir, 'repr.txt')
         by_label[r['label']].append((sha(p), r['id']))
     return by_label, len(rows)
 

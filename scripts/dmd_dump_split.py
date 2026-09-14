@@ -346,6 +346,22 @@ def main():
     marks = load_marks(args.marks or (os.path.splitext(args.dump)[0] + '.marks'))
     scenes = split_scenes(frames, args.threshold, marks, args.lit_threshold)
 
+    # A scene's repr.txt is written once per DISTINCT content, not once per
+    # scene: many scenes -- a menu record with no leaf under it, an idle
+    # attract frame the loop revisits, the settled tail of an animation --
+    # show pixel-for-pixel the same frame as an earlier scene, and a corpus
+    # that stores that frame again for every occurrence overstates how many
+    # screens the machine actually draws (measured on the round-3 corpus:
+    # 5683 scenes, 909 distinct repr.txt contents -- 84% redundant copies).
+    # The first scene (in dump order, so this is stable across a re-split of
+    # the same dump) to show a given content is canonical: its directory is
+    # the one that gets a real repr.txt, and every later scene with the same
+    # content records that scene's id in its own `repr_id` column instead of
+    # writing the bytes again. A canonical scene's own `repr_id` is its own
+    # id, so the column resolves the same way -- look up the row whose `id`
+    # equals this row's `repr_id`, read *that* row's `dir` -- whether or not
+    # this row is the one holding the file.
+    canonical_id = {}
     rows_out = []
     for n, scene in enumerate(scenes, 1):
         label = label_for(scene[0][0], marks)
@@ -356,18 +372,24 @@ def main():
             with open(os.path.join(d, 'frame-%08d.txt' % ms), 'w') as f:
                 f.write('\n'.join(rows) + '\n')
         # the representative is the scene's last frame: an animation has settled by then
-        with open(os.path.join(d, 'repr.txt'), 'w') as f:
-            f.write('\n'.join(scene[-1][1]) + '\n')
+        content = tuple(scene[-1][1])
+        repr_id = canonical_id.setdefault(content, n)
+        if repr_id == n:
+            with open(os.path.join(d, 'repr.txt'), 'w') as f:
+                f.write('\n'.join(scene[-1][1]) + '\n')
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
                          'frames': len(scene),
-                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits)})
+                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits),
+                         'repr_id': repr_id})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms', 'frames', 'text'])
+        w = csv.DictWriter(f, fieldnames=['id', 'label', 'dir', 'first_ms', 'last_ms',
+                                          'frames', 'text', 'repr_id'])
         w.writeheader()
         w.writerows(rows_out)
-    print('%d frames -> %d scenes' % (len(frames), len(scenes)))
+    print('%d frames -> %d scene occurrences, %d distinct screens'
+          % (len(frames), len(scenes), len(canonical_id)))
 
 
 if __name__ == '__main__':

@@ -11,11 +11,21 @@ comment for what it covers and what it found running against the real binary.
 - `<lang>/<romset>.txt` — the raw frame dump, byte-exact Serum/Pin2DMD format
   with per-frame timestamps. This is the artefact with downstream value.
 - `<lang>/<romset>.marks` — the key script's mark sidecar (frame, ms, label).
-- `<lang>/screens.csv` — one row per scene: id, label, dir, first/last ms,
-  frame count, and the on-screen text decoded from the ROM's own font
-  (`--rom`), where the h=9 face covers it.
+- `<lang>/screens.csv` — one row per **scene occurrence**: id, label, dir,
+  first/last ms, frame count, the on-screen text decoded from the ROM's own
+  font (`--rom`, where the h=9 face covers it), and `repr_id`, the id of the
+  scene whose directory holds this occurrence's actual representative
+  frame (see the next item). Every occurrence gets a row; occurrences are
+  not the same count as distinct screens — see below.
 - `<lang>/screens/<NNNN-label>/repr.txt` — one representative frame (the
-  scene's last) per scene. Committed.
+  scene's last) **per distinct content**, not per occurrence: many
+  occurrences show pixel-for-pixel the same frame as an earlier one (an
+  idle attract frame the loop revisits, a menu record with no leaf under
+  it, the settled tail of an animation), and `dmd_dump_split.py` writes the
+  bytes only under the first scene, in dump order, to show that content —
+  every later occurrence of the same content has no `repr.txt` of its own
+  and points at that scene's id through its own row's `repr_id` instead.
+  Committed.
 - `<lang>/screens/<NNNN-label>/frame-*.txt` — every raw frame of the scene.
   Not committed (`.gitignore`); regenerate with `dmd_dump_split.py` from the
   committed raw dump, which carries the timestamps a scene needs to be
@@ -35,6 +45,11 @@ high-score bar and walk the initials wheel (three balls of lane hits, the
 awarded extra ball drained for real, then the RECORD INSCRIPTION screen).
 Both games end at the mod's own PRESS START screen at the normal
 end-of-game hook (`D5123`).
+
+`screens.csv` lists **5683 scene occurrences** across the walk, covering
+**909 distinct screens** (repr.txt contents) under **118 labels** — the
+second number is the one that answers "how many screens does this machine
+draw"; the first counts how many times the walk visited one.
 
 ## Parent differential (`iomoont` vs `iomoon`)
 
