@@ -206,7 +206,7 @@ def split_scenes(frames, threshold=0.25, marks=None, lit_threshold=0.8):
     return scenes
 
 
-def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
+def _scan_face(rows, bits_to_label, height, cell_w, binarize=True, min_glyphs=2):
     """[(y, text), ...] for one glyph face, read by exact bitmap match.
 
     `bits_to_label` maps a tuple of `height` row strings (each `cell_w` wide)
@@ -240,6 +240,16 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
     while every genuine use of a sparse glyph here (a decimal point inside
     a run of digits, a colon between two words) is. Requiring at least two
     keeps every real line and drops exactly this class of noise.
+
+    `min_glyphs` overrides that "at least two" floor -- pass 1 for a face
+    whose glyphs are dense enough that a lone match carries negligible
+    false-positive risk (the in-play score digit table: 16x18 pixels of
+    real content per glyph, nothing like the period's 2-of-162-pixel
+    bitmap this rule was written to guard against), since overlapping
+    consecutive digits in a real score already leaves only one glyph
+    surviving intact in most captured frames (iomoon_strings.
+    SCORE_DIGIT_BASE's own comment) -- requiring two there would silently
+    discard almost every real recovery.
     """
     if not rows or not bits_to_label or len(rows) < height:
         return []
@@ -267,13 +277,64 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True):
                 if chars:
                     gap = True
                 x += 1
-        if len(chars) > 1:
+        if len(chars) >= min_glyphs:
             lines.append((y, ''.join(chars)))
     return lines
 
 
+def _scan_words(rows, messages):
+    """[(y, text), ...] for a table of whole-phrase bitmaps, read by exact
+    match -- iomoon_strings.hud_message_bitmaps()'s own entries (BALL,
+    PLAYER, the two-line INSERT COIN, ...), not per-character glyphs.
+
+    Unlike _scan_face, entries here vary in both height and width (each is
+    a complete rendered word), so there is no single cell size to advance
+    by on a match -- every (label, height, width, bits) entry is tried
+    independently at every (x, y), and a match advances x by *that* label's
+    own width rather than a shared constant. A single match is reported
+    on its own: a whole word's worth of lit pixels (tens to low hundreds)
+    carries none of the sparse-glyph false-positive risk _scan_face's own
+    "at least two" rule exists for, so there is no minimum-count filter
+    here.
+
+    `rows` must already be binarized (lit/unlit, matching how
+    iomoon_strings.hud_message_bitmaps() reads plane 0 alone) -- the caller
+    does this once for the whole frame rather than once per message.
+    """
+    if not rows or not messages:
+        return []
+    H, W = len(rows), len(rows[0])
+    hits = []
+    for label, height, width, bits in messages:
+        if height > H or width > W:
+            continue
+        y = 0
+        while y <= H - height:
+            window_rows = rows[y:y + height]
+            x = 0
+            while x <= W - width:
+                if [r[x:x + width] for r in window_rows] == bits:
+                    hits.append((y, x, label))
+                    x += width
+                else:
+                    x += 1
+            y += 1
+    # merge same-row hits left to right, the same convention _scan_face's
+    # own lines use, so decode_text's final sort-and-join treats a word
+    # table's output the same way as every other face's.
+    hits.sort()
+    lines = []
+    for y, x, label in hits:
+        if lines and lines[-1][0] == y:
+            lines[-1] = (y, lines[-1][1] + ' ' + label)
+        else:
+            lines.append((y, label))
+    return lines
+
+
 def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=None,
-                 cell_w=8, score_cell_w=16):
+                 hud_messages=None, player_digits=None, score_digits=None,
+                 cell_w=8, score_cell_w=16, player_digit_cell_w=8, score_digit_cell_w=16):
     """The on-screen text in a decoded frame's rows, read by exact bitmap match.
 
     `glyphs` is the h=9 glyph code -> row-bit-string table from
@@ -283,11 +344,22 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
     two digit faces' label -> row-level-string tables from
     iomoon_strings.score_glyph_bitmaps() (the large, 16x23 face at its
     default parameters, and the small, 8x12 one respectively -- see that
-    function for both). All four faces are scanned independently over the
-    whole frame and their lines merged top to bottom, then joined with
-    ' / '. The two digit faces match on raw pixel levels ('0'-'3', not
-    binarized -- see _scan_face); the other two match on lit/unlit only.
-    See _scan_face for the matching and space/noise rules.
+    function for both). `hud_messages`, if given, is
+    iomoon_strings.hud_message_bitmaps()'s own label -> (height, width,
+    rows) table for the in-play PLAYER/BALL HUD words (both languages);
+    `player_digits`, if given, is iomoon_strings.player_number_bitmaps()'s
+    '0'-'9' table for the digit that follows PLAYER/PLAYERS; `score_digits`,
+    if given, is iomoon_strings.score_digit_bitmaps()'s own '0'/'2'-'9'/'.'
+    table for the in-play score (see that function's own comment for why
+    '1' is absent, and for the overlap that limits how many digits of a
+    real multi-digit score this table recovers).
+
+    Every face is scanned independently over the whole frame and their
+    lines merged top to bottom, then joined with ' / '. The two
+    iomoon_strings.score_glyph_bitmaps() faces and score_digits match on raw
+    pixel levels ('0'-'3', not binarized -- see _scan_face); every other
+    face matches on lit/unlit only. See _scan_face and _scan_words for the
+    matching, space and noise rules each uses.
 
     The h=12 face has one real ambiguity, not a bug: code 0 ('0') and code
     0x1A ('O') render the identical bitmap, so inverting code -> bitmap into
@@ -298,9 +370,21 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
     '0' instead; no pixel-level test can tell the two apart in this face.
     """
     lines = []
-    faces = [(glyphs, cell_w, False), (glyphs12, cell_w, False),
-             (score_glyphs, score_cell_w, True), (small_digits, cell_w, True)]
-    for table, glyph_cell_w, is_score in faces:
+    # (table, cell_w, binarize, label_is_key, min_glyphs) -- `binarize`
+    # picks the matching convention (lit/unlit vs raw '0'-'3' levels, see
+    # _scan_face); `label_is_key` is independent of it: the two score faces
+    # and the two new digit faces already key their table by the label to
+    # emit ('0'-'9', '0.'-'9.', ':', '.'), while glyphs/glyphs12/player_digits
+    # key by glyph code or digit and need iomoon_strings.GLYPHS to turn that
+    # into a character -- player_digits is the one face where these two
+    # choices disagree with each other (binarized like glyphs, but
+    # key-is-label like the score faces), which is exactly why they are two
+    # separate flags here and not the one `is_score` flag this used to be.
+    faces = [(glyphs, cell_w, True, False, 2), (glyphs12, cell_w, True, False, 2),
+             (score_glyphs, score_cell_w, False, True, 2), (small_digits, cell_w, False, True, 2),
+             (player_digits, player_digit_cell_w, True, True, 2),
+             (score_digits, score_digit_cell_w, False, True, 1)]
+    for table, glyph_cell_w, binarize, label_is_key, min_glyphs in faces:
         if not table:
             continue
         heights = {len(bits) for bits in table.values()}
@@ -308,8 +392,13 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
             continue
         bits_to_label = {}
         for key, bits in table.items():
-            bits_to_label.setdefault(tuple(bits), key if is_score else iomoon_strings.GLYPHS.get(key, '?'))
-        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w, binarize=not is_score)
+            bits_to_label.setdefault(tuple(bits), key if label_is_key else iomoon_strings.GLYPHS.get(key, '?'))
+        lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w,
+                             binarize=binarize, min_glyphs=min_glyphs)
+    if hud_messages:
+        binarized = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+        messages = [(label, h, w, tuple(bits)) for label, (h, w, bits) in hud_messages.items()]
+        lines += _scan_words(binarized, messages)
     lines.sort(key=lambda yt: yt[0])
     return ' / '.join(text for _, text in lines)
 
@@ -456,6 +545,7 @@ def main():
     args.dump = args.paths[0]
 
     glyphs, glyphs12, score_glyphs, small_digits = {}, {}, {}, {}
+    hud_messages, player_digits, score_digits = {}, {}, {}
     if args.rom:
         try:
             rom_data = open(args.rom, 'rb').read()
@@ -474,6 +564,9 @@ def main():
                 rom_data, height=iomoon_strings.SMALL_DIGIT_FACE_HEIGHT,
                 width=iomoon_strings.SMALL_DIGIT_FACE_WIDTH,
                 index=iomoon_strings.SMALL_DIGIT_FACE_INDEX)
+            hud_messages = iomoon_strings.hud_message_bitmaps(rom_data)
+            player_digits = iomoon_strings.player_number_bitmaps(rom_data)
+            score_digits = iomoon_strings.score_digit_bitmaps(rom_data)
 
     try:
         frames = parse_dump(args.dump)
@@ -521,7 +614,8 @@ def main():
         rows_out.append({'id': n, 'label': label, 'dir': name,
                          'first_ms': scene[0][0], 'last_ms': scene[-1][0],
                          'frames': len(scene),
-                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits),
+                         'text': decode_text(scene[-1][1], glyphs, glyphs12, score_glyphs, small_digits,
+                                             hud_messages, player_digits, score_digits),
                          'repr_id': repr_id})
 
     with open(os.path.join(args.out, 'screens.csv'), 'w', newline='') as f:

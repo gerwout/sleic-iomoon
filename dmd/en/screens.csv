@@ -223,7 +223,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 222,ball-1-in-play,0222-ball-1-in-play,120466,120466,1,,209
 223,ball-1-in-play,0223-ball-1-in-play,120550,120550,1,,13
 224,ball-1-in-play,0224-ball-1-in-play,120616,120616,1,,209
-225,ball-1-in-play,0225-ball-1-in-play,120666,120716,2,,225
+225,ball-1-in-play,0225-ball-1-in-play,120666,120716,2,1 1,225
 226,ball-1-in-play,0226-ball-1-in-play,120750,127716,47,,226
 227,ball-1-in-play,0227-ball-1-in-play,127733,127733,1,,3
 228,ball-1-in-play,0228-ball-1-in-play,127750,129583,28,,228
@@ -231,18 +231,18 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 230,ball-1-in-play,0230-ball-1-in-play,129616,130016,14,,230
 231,ball-1-in-play,0231-ball-1-in-play,130083,130083,1,,3
 232,ball-1-in-play,0232-ball-1-in-play,130099,131933,29,,232
-233,ball-1-in-play,0233-ball-1-in-play,131949,131949,1,,233
+233,ball-1-in-play,0233-ball-1-in-play,131949,131949,1,1 1,233
 234,ball-1-in-play,0234-ball-1-in-play,131983,132399,9,,234
 235,ball-1-in-play,0235-ball-1-in-play,132416,132416,1,,3
 236,ball-1-in-play,0236-ball-1-in-play,132449,134266,27,,228
 237,ball-1-in-play,0237-ball-1-in-play,134299,134683,9,,237
 238,ball-1-in-play,0238-ball-1-in-play,134733,134733,1,,3
 239,ball-1-in-play,0239-ball-1-in-play,134766,136583,28,,228
-240,ball-1-in-play,0240-ball-1-in-play,136616,136616,1,,233
+240,ball-1-in-play,0240-ball-1-in-play,136616,136616,1,1 1,233
 241,ball-1-in-play,0241-ball-1-in-play,136633,147316,124,,241
 242,ball-1-drained,0242-ball-1-drained,147499,148833,9,,242
 243,ball-1-drained,0243-ball-1-drained,148849,149949,3,,243
-244,ball-1-drained,0244-ball-1-drained,149966,151083,3,,244
+244,ball-1-drained,0244-ball-1-drained,149966,151083,3,1 2,244
 245,ball-1-drained,0245-ball-1-drained,151116,151149,2,,245
 246,ball-1-drained,0246-ball-1-drained,151166,151283,3,,246
 247,ball-1-drained,0247-ball-1-drained,151333,151333,1,,247
@@ -300,10 +300,10 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 299,drop-bank-4-down,0299-drop-bank-4-down,165099,165949,26,,299
 300,drop-bank-4-down,0300-drop-bank-4-down,165966,167116,7,,300
 301,drop-bank-5-down,0301-drop-bank-5-down,167316,171199,25,,301
-302,drop-bank-5-down,0302-drop-bank-5-down,171366,171366,1,,3
-303,drop-bank-5-down,0303-drop-bank-5-down,171399,171399,1,,303
-304,ball-2-drained,0304-ball-2-drained,200849,200883,2,,304
-305,ball-2-drained,0305-ball-2-drained,200916,202049,5,,305
+302,full-tilt,0302-full-tilt,171366,171366,1,,3
+303,full-tilt,0303-full-tilt,171399,171399,1,,303
+304,ball-2-drained,0304-ball-2-drained,200849,200883,2,2,304
+305,ball-2-drained,0305-ball-2-drained,200916,202049,5,1 3,305
 306,ball-2-drained,0306-ball-2-drained,202083,202099,2,,306
 307,ball-2-drained,0307-ball-2-drained,202133,202233,3,,307
 308,ball-2-drained,0308-ball-2-drained,202299,202299,1,,308
@@ -351,7 +351,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 350,ball-2-drained,0350-ball-2-drained,204716,207316,29,,350
 351,ball-3-in-play,0351-ball-3-in-play,207499,221166,102,,351
 352,ball-3-in-play,0352-ball-3-in-play,221233,221783,3,,352
-353,ball-3-in-play,0353-ball-3-in-play,221799,222216,5,,353
+353,ball-3-in-play,0353-ball-3-in-play,221799,222216,5,1 3,353
 354,ball-3-in-play,0354-ball-3-in-play,222399,222399,1,,3
 355,ball-3-in-play,0355-ball-3-in-play,222433,224249,29,,355
 356,ball-3-in-play,0356-ball-3-in-play,224283,224716,10,,356
@@ -361,13 +361,13 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 360,ball-3-in-play,0360-ball-3-in-play,226599,227033,10,,360
 361,ball-3-in-play,0361-ball-3-in-play,227066,227066,1,,3
 362,ball-3-in-play,0362-ball-3-in-play,227083,228916,28,,228
-363,ball-3-in-play,0363-ball-3-in-play,228933,228933,1,,363
+363,ball-3-in-play,0363-ball-3-in-play,228933,228933,1,1 3,363
 364,ball-3-in-play,0364-ball-3-in-play,228966,240999,137,,364
 365,ball-3-drained-gameover,0365-ball-3-drained-gameover,241183,241383,2,,365
 366,ball-3-drained-gameover,0366-ball-3-drained-gameover,241399,241849,2,,366
 367,ball-3-drained-gameover,0367-ball-3-drained-gameover,242516,242516,1,,367
 368,ball-3-drained-gameover,0368-ball-3-drained-gameover,242549,242949,2,,368
-369,ball-3-drained-gameover,0369-ball-3-drained-gameover,243616,244083,3,,369
+369,ball-3-drained-gameover,0369-ball-3-drained-gameover,243616,244083,3,3,369
 370,ball-3-drained-gameover,0370-ball-3-drained-gameover,244716,244716,1,,3
 371,ball-3-drained-gameover,0371-ball-3-drained-gameover,244749,246049,2,,371
 372,ball-3-drained-gameover,0372-ball-3-drained-gameover,246083,246083,1,,3
@@ -518,7 +518,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 517,score-start,0517-score-start,390816,390849,2,,517
 518,score-start,0518-score-start,390866,390866,1,,3
 519,score-start,0519-score-start,390899,390899,1,,519
-520,score-start,0520-score-start,390933,390933,1,,233
+520,score-start,0520-score-start,390933,390933,1,1 1,233
 521,score-start,0521-score-start,390949,390949,1,,153
 522,score-start,0522-score-start,391016,391066,3,,154
 523,score-start,0523-score-start,391116,391116,1,,155
@@ -565,7 +565,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 564,score-ball-1-in-play,0564-score-ball-1-in-play,393383,393383,1,,195
 565,score-ball-1-in-play,0565-score-ball-1-in-play,393433,393433,1,,196
 566,score-ball-1-in-play,0566-score-ball-1-in-play,393483,393516,3,,197
-567,score-ball-1-in-play,0567-score-ball-1-in-play,393549,401383,84,,567
+567,score-ball-1-in-play,0567-score-ball-1-in-play,393549,401383,84,1 1,567
 568,score-ball-1-in-play,0568-score-ball-1-in-play,401399,401399,1,,3
 569,score-ball-1-in-play,0569-score-ball-1-in-play,401433,401433,1,,13
 570,score-ball-1-in-play,0570-score-ball-1-in-play,401483,401499,2,,209
@@ -722,7 +722,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 721,score-ball-1-in-play,0721-score-ball-1-in-play,431716,431716,1,,210
 722,score-ball-1-in-play,0722-score-ball-1-in-play,431733,431733,1,,13
 723,score-ball-1-in-play,0723-score-ball-1-in-play,431783,431833,2,,723
-724,score-ball-1-in-play,0724-score-ball-1-in-play,431849,432083,2,,724
+724,score-ball-1-in-play,0724-score-ball-1-in-play,431849,432083,2,1 1,724
 725,score-ball-1-in-play,0725-score-ball-1-in-play,432116,432116,1,,725
 726,score-ball-1-in-play,0726-score-ball-1-in-play,432149,432149,1,,3
 727,score-ball-1-in-play,0727-score-ball-1-in-play,432166,432166,1,,592
@@ -754,7 +754,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 753,score-ball-1-in-play,0753-score-ball-1-in-play,438983,438983,1,,209
 754,score-ball-1-in-play,0754-score-ball-1-in-play,439066,439066,1,,13
 755,score-ball-1-in-play,0755-score-ball-1-in-play,439116,439116,1,,209
-756,score-ball-1-in-play,0756-score-ball-1-in-play,439166,439416,2,,756
+756,score-ball-1-in-play,0756-score-ball-1-in-play,439166,439416,2,1 1,756
 757,score-ball-1-in-play,0757-score-ball-1-in-play,439449,439449,1,,3
 758,score-ball-1-in-play,0758-score-ball-1-in-play,439466,439466,1,,592
 759,score-ball-1-in-play,0759-score-ball-1-in-play,439583,439733,3,,592
@@ -922,7 +922,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 921,score-ball-1-in-play,0921-score-ball-1-in-play,475716,475716,1,,210
 922,score-ball-1-in-play,0922-score-ball-1-in-play,475733,475733,1,,13
 923,score-ball-1-in-play,0923-score-ball-1-in-play,475783,475833,2,,723
-924,score-ball-1-in-play,0924-score-ball-1-in-play,475849,476083,2,,924
+924,score-ball-1-in-play,0924-score-ball-1-in-play,475849,476083,2,1 1,924
 925,score-ball-1-in-play,0925-score-ball-1-in-play,476116,476116,1,,925
 926,score-ball-1-in-play,0926-score-ball-1-in-play,476149,476149,1,,3
 927,score-ball-1-in-play,0927-score-ball-1-in-play,476166,476166,1,,592
@@ -954,7 +954,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 953,score-ball-1-in-play,0953-score-ball-1-in-play,482983,482983,1,,209
 954,score-ball-1-in-play,0954-score-ball-1-in-play,483066,483066,1,,13
 955,score-ball-1-in-play,0955-score-ball-1-in-play,483116,483116,1,,209
-956,score-ball-1-in-play,0956-score-ball-1-in-play,483166,483416,2,,956
+956,score-ball-1-in-play,0956-score-ball-1-in-play,483166,483416,2,1 1,956
 957,score-ball-1-in-play,0957-score-ball-1-in-play,483449,483449,1,,3
 958,score-ball-1-in-play,0958-score-ball-1-in-play,483466,483466,1,,592
 959,score-ball-1-in-play,0959-score-ball-1-in-play,483583,483733,3,,592
@@ -1089,7 +1089,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1088,score-ball-1-in-play,1088-score-ball-1-in-play,512316,512316,1,,209
 1089,score-ball-1-in-play,1089-score-ball-1-in-play,512399,512399,1,,13
 1090,score-ball-1-in-play,1090-score-ball-1-in-play,512449,512449,1,,209
-1091,score-ball-1-in-play,1091-score-ball-1-in-play,512499,512749,2,,1091
+1091,score-ball-1-in-play,1091-score-ball-1-in-play,512499,512749,2,1 1,1091
 1092,score-ball-1-in-play,1092-score-ball-1-in-play,512783,512783,1,,1092
 1093,score-ball-1-in-play,1093-score-ball-1-in-play,512799,512799,1,,3
 1094,score-ball-1-in-play,1094-score-ball-1-in-play,512833,512833,1,,592
@@ -1123,7 +1123,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1122,score-ball-1-in-play,1122-score-ball-1-in-play,519716,519716,1,,210
 1123,score-ball-1-in-play,1123-score-ball-1-in-play,519733,519733,1,,13
 1124,score-ball-1-in-play,1124-score-ball-1-in-play,519783,519833,2,,723
-1125,score-ball-1-in-play,1125-score-ball-1-in-play,519849,520083,2,,1125
+1125,score-ball-1-in-play,1125-score-ball-1-in-play,519849,520083,2,1 1,1125
 1126,score-ball-1-in-play,1126-score-ball-1-in-play,520116,520116,1,,1126
 1127,score-ball-1-in-play,1127-score-ball-1-in-play,520149,520149,1,,3
 1128,score-ball-1-in-play,1128-score-ball-1-in-play,520166,520166,1,,592
@@ -1137,7 +1137,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1136,score-ball-1-in-play,1136-score-ball-1-in-play,521166,521166,1,,592
 1137,score-ball-1-in-play,1137-score-ball-1-in-play,521266,521266,1,,593
 1138,score-ball-1-in-play,1138-score-ball-1-in-play,521399,521399,1,,592
-1139,score-ball-1-in-play,1139-score-ball-1-in-play,521466,525933,35,,1139
+1139,score-ball-1-in-play,1139-score-ball-1-in-play,521466,525933,35,3,1139
 1140,score-ball-1-in-play,1140-score-ball-1-in-play,526083,526083,1,,3
 1141,score-ball-1-in-play,1141-score-ball-1-in-play,526099,526099,1,,13
 1142,score-ball-1-in-play,1142-score-ball-1-in-play,526166,526166,1,,209
@@ -1155,7 +1155,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1154,score-ball-1-in-play,1154-score-ball-1-in-play,526983,526983,1,,209
 1155,score-ball-1-in-play,1155-score-ball-1-in-play,527066,527066,1,,13
 1156,score-ball-1-in-play,1156-score-ball-1-in-play,527116,527116,1,,209
-1157,score-ball-1-in-play,1157-score-ball-1-in-play,527166,527416,2,,1157
+1157,score-ball-1-in-play,1157-score-ball-1-in-play,527166,527416,2,1 1,1157
 1158,score-ball-1-in-play,1158-score-ball-1-in-play,527449,527449,1,,3
 1159,score-ball-1-in-play,1159-score-ball-1-in-play,527466,527466,1,,592
 1160,score-ball-1-in-play,1160-score-ball-1-in-play,527583,527733,3,,592
@@ -1167,7 +1167,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1166,score-ball-1-in-play,1166-score-ball-1-in-play,528466,528466,1,,592
 1167,score-ball-1-in-play,1167-score-ball-1-in-play,528583,528583,1,,593
 1168,score-ball-1-in-play,1168-score-ball-1-in-play,528716,528716,1,,592
-1169,score-ball-1-in-play,1169-score-ball-1-in-play,528783,533233,38,,1169
+1169,score-ball-1-in-play,1169-score-ball-1-in-play,528783,533233,38,3,1169
 1170,score-ball-1-in-play,1170-score-ball-1-in-play,533399,533399,1,,3
 1171,score-ball-1-in-play,1171-score-ball-1-in-play,533433,533433,1,,13
 1172,score-ball-1-in-play,1172-score-ball-1-in-play,533483,533499,2,,209
@@ -1202,7 +1202,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1201,score-ball-1-in-play,1201-score-ball-1-in-play,535666,535816,4,,592
 1202,score-ball-1-in-play,1202-score-ball-1-in-play,535933,535933,1,,593
 1203,score-ball-1-in-play,1203-score-ball-1-in-play,536066,536066,1,,592
-1204,score-ball-1-in-play,1204-score-ball-1-in-play,536116,540583,35,,1204
+1204,score-ball-1-in-play,1204-score-ball-1-in-play,536116,540583,35,3,1204
 1205,score-ball-1-in-play,1205-score-ball-1-in-play,540716,540716,1,,1205
 1206,score-ball-1-in-play,1206-score-ball-1-in-play,540749,540749,1,,3
 1207,score-ball-1-in-play,1207-score-ball-1-in-play,540783,540783,1,,13
@@ -1240,7 +1240,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1239,score-ball-1-in-play,1239-score-ball-1-in-play,543249,543249,1,,593
 1240,score-ball-1-in-play,1240-score-ball-1-in-play,543399,543399,1,,592
 1241,score-ball-1-in-play,1241-score-ball-1-in-play,543416,543416,1,,3
-1242,score-ball-1-in-play,1242-score-ball-1-in-play,543449,547899,38,,1242
+1242,score-ball-1-in-play,1242-score-ball-1-in-play,543449,547899,38,3,1242
 1243,score-ball-1-in-play,1243-score-ball-1-in-play,548066,548066,1,,3
 1244,score-ball-1-in-play,1244-score-ball-1-in-play,548083,548083,1,,13
 1245,score-ball-1-in-play,1245-score-ball-1-in-play,548149,548149,1,,209
@@ -1271,7 +1271,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1270,score-ball-1-in-play,1270-score-ball-1-in-play,550483,550483,1,,592
 1271,score-ball-1-in-play,1271-score-ball-1-in-play,550599,550599,1,,593
 1272,score-ball-1-in-play,1272-score-ball-1-in-play,550733,550733,1,,592
-1273,score-ball-1-in-play,1273-score-ball-1-in-play,550783,555249,36,,1273
+1273,score-ball-1-in-play,1273-score-ball-1-in-play,550783,555249,36,3,1273
 1274,score-ball-1-in-play,1274-score-ball-1-in-play,555399,555399,1,,3
 1275,score-ball-1-in-play,1275-score-ball-1-in-play,555416,555416,1,,13
 1276,score-ball-1-in-play,1276-score-ball-1-in-play,555466,555483,2,,209
@@ -1304,7 +1304,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1303,score-ball-1-in-play,1303-score-ball-1-in-play,557683,557833,4,,592
 1304,score-ball-1-in-play,1304-score-ball-1-in-play,557933,557933,1,,593
 1305,score-ball-1-in-play,1305-score-ball-1-in-play,558083,558083,1,,592
-1306,score-ball-1-in-play,1306-score-ball-1-in-play,558133,562599,33,,1306
+1306,score-ball-1-in-play,1306-score-ball-1-in-play,558133,562599,33,3,1306
 1307,score-ball-1-in-play,1307-score-ball-1-in-play,562733,562733,1,,3
 1308,score-ball-1-in-play,1308-score-ball-1-in-play,562766,562766,1,,13
 1309,score-ball-1-in-play,1309-score-ball-1-in-play,562816,562816,1,,209
@@ -1325,7 +1325,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1324,score-ball-1-in-play,1324-score-ball-1-in-play,563716,563716,1,,210
 1325,score-ball-1-in-play,1325-score-ball-1-in-play,563733,563733,1,,13
 1326,score-ball-1-in-play,1326-score-ball-1-in-play,563783,563833,2,,723
-1327,score-ball-1-in-play,1327-score-ball-1-in-play,563849,564083,2,,1327
+1327,score-ball-1-in-play,1327-score-ball-1-in-play,563849,564083,2,1 1,1327
 1328,score-ball-1-in-play,1328-score-ball-1-in-play,564116,564116,1,,1328
 1329,score-ball-1-in-play,1329-score-ball-1-in-play,564149,564149,1,,3
 1330,score-ball-1-in-play,1330-score-ball-1-in-play,564166,564166,1,,592
@@ -1357,7 +1357,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1356,score-ball-1-in-play,1356-score-ball-1-in-play,570983,570983,1,,209
 1357,score-ball-1-in-play,1357-score-ball-1-in-play,571066,571066,1,,13
 1358,score-ball-1-in-play,1358-score-ball-1-in-play,571116,571116,1,,209
-1359,score-ball-1-in-play,1359-score-ball-1-in-play,571166,571416,2,,1359
+1359,score-ball-1-in-play,1359-score-ball-1-in-play,571166,571416,2,1 1,1359
 1360,score-ball-1-in-play,1360-score-ball-1-in-play,571449,571449,1,,3
 1361,score-ball-1-in-play,1361-score-ball-1-in-play,571466,571466,1,,592
 1362,score-ball-1-in-play,1362-score-ball-1-in-play,571583,571733,3,,592
@@ -1540,7 +1540,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1539,score-ball-1-in-play,1539-score-ball-1-in-play,609133,609133,1,,592
 1540,score-ball-1-in-play,1540-score-ball-1-in-play,609233,609233,1,,593
 1541,score-ball-1-in-play,1541-score-ball-1-in-play,609383,609383,1,,592
-1542,score-ball-1-in-play,1542-score-ball-1-in-play,609399,609399,1,,233
+1542,score-ball-1-in-play,1542-score-ball-1-in-play,609399,609399,1,1 1,233
 1543,score-ball-1-in-play,1543-score-ball-1-in-play,609433,613883,38,,1543
 1544,score-ball-1-in-play,1544-score-ball-1-in-play,614083,614083,1,,3
 1545,score-ball-1-in-play,1545-score-ball-1-in-play,614099,614099,1,,13
@@ -1559,7 +1559,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1558,score-ball-1-in-play,1558-score-ball-1-in-play,614983,614983,1,,209
 1559,score-ball-1-in-play,1559-score-ball-1-in-play,615066,615066,1,,13
 1560,score-ball-1-in-play,1560-score-ball-1-in-play,615116,615116,1,,209
-1561,score-ball-1-in-play,1561-score-ball-1-in-play,615166,615416,2,,1561
+1561,score-ball-1-in-play,1561-score-ball-1-in-play,615166,615416,2,1 1,1561
 1562,score-ball-1-in-play,1562-score-ball-1-in-play,615449,615449,1,,3
 1563,score-ball-1-in-play,1563-score-ball-1-in-play,615466,615466,1,,592
 1564,score-ball-1-in-play,1564-score-ball-1-in-play,615583,615733,3,,592
@@ -1606,7 +1606,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1605,score-ball-1-in-play,1605-score-ball-1-in-play,623666,623816,4,,592
 1606,score-ball-1-in-play,1606-score-ball-1-in-play,623933,623933,1,,593
 1607,score-ball-1-in-play,1607-score-ball-1-in-play,624066,624066,1,,592
-1608,score-ball-1-in-play,1608-score-ball-1-in-play,624083,624083,1,,233
+1608,score-ball-1-in-play,1608-score-ball-1-in-play,624083,624083,1,1 1,233
 1609,score-ball-1-in-play,1609-score-ball-1-in-play,624116,628549,31,,1609
 1610,score-ball-1-in-play,1610-score-ball-1-in-play,628749,628749,1,,3
 1611,score-ball-1-in-play,1611-score-ball-1-in-play,628783,628783,1,,13
@@ -1728,7 +1728,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1727,score-ball-1-in-play,1727-score-ball-1-in-play,651716,651716,1,,210
 1728,score-ball-1-in-play,1728-score-ball-1-in-play,651733,651733,1,,13
 1729,score-ball-1-in-play,1729-score-ball-1-in-play,651783,651833,2,,723
-1730,score-ball-1-in-play,1730-score-ball-1-in-play,651849,652083,2,,1730
+1730,score-ball-1-in-play,1730-score-ball-1-in-play,651849,652083,2,1 1,1730
 1731,score-ball-1-in-play,1731-score-ball-1-in-play,652116,652116,1,,1731
 1732,score-ball-1-in-play,1732-score-ball-1-in-play,652149,652149,1,,3
 1733,score-ball-1-in-play,1733-score-ball-1-in-play,652166,652166,1,,592
@@ -1760,7 +1760,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1759,score-ball-1-in-play,1759-score-ball-1-in-play,658983,658983,1,,209
 1760,score-ball-1-in-play,1760-score-ball-1-in-play,659066,659066,1,,13
 1761,score-ball-1-in-play,1761-score-ball-1-in-play,659116,659116,1,,209
-1762,score-ball-1-in-play,1762-score-ball-1-in-play,659166,659416,2,,1762
+1762,score-ball-1-in-play,1762-score-ball-1-in-play,659166,659416,2,1 1,1762
 1763,score-ball-1-in-play,1763-score-ball-1-in-play,659449,659449,1,,3
 1764,score-ball-1-in-play,1764-score-ball-1-in-play,659466,659466,1,,592
 1765,score-ball-1-in-play,1765-score-ball-1-in-play,659583,659733,3,,592
@@ -1807,7 +1807,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1806,score-ball-1-in-play,1806-score-ball-1-in-play,667666,667816,4,,592
 1807,score-ball-1-in-play,1807-score-ball-1-in-play,667933,667933,1,,593
 1808,score-ball-1-in-play,1808-score-ball-1-in-play,668066,668066,1,,592
-1809,score-ball-1-in-play,1809-score-ball-1-in-play,668083,668083,1,,233
+1809,score-ball-1-in-play,1809-score-ball-1-in-play,668083,668083,1,1 1,233
 1810,score-ball-1-in-play,1810-score-ball-1-in-play,668116,672549,31,,1810
 1811,score-ball-1-in-play,1811-score-ball-1-in-play,672716,672716,1,,1811
 1812,score-ball-1-in-play,1812-score-ball-1-in-play,672749,672749,1,,3
@@ -1931,7 +1931,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1930,score-ball-1-in-play,1930-score-ball-1-in-play,695716,695716,1,,210
 1931,score-ball-1-in-play,1931-score-ball-1-in-play,695733,695733,1,,13
 1932,score-ball-1-in-play,1932-score-ball-1-in-play,695783,695833,2,,723
-1933,score-ball-1-in-play,1933-score-ball-1-in-play,695849,696083,2,,1933
+1933,score-ball-1-in-play,1933-score-ball-1-in-play,695849,696083,2,1 1,1933
 1934,score-ball-1-in-play,1934-score-ball-1-in-play,696116,696116,1,,1934
 1935,score-ball-1-in-play,1935-score-ball-1-in-play,696149,696149,1,,3
 1936,score-ball-1-in-play,1936-score-ball-1-in-play,696166,696166,1,,592
@@ -1963,7 +1963,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 1962,score-ball-1-in-play,1962-score-ball-1-in-play,702983,702983,1,,209
 1963,score-ball-1-in-play,1963-score-ball-1-in-play,703066,703066,1,,13
 1964,score-ball-1-in-play,1964-score-ball-1-in-play,703116,703116,1,,209
-1965,score-ball-1-in-play,1965-score-ball-1-in-play,703166,703416,2,,1965
+1965,score-ball-1-in-play,1965-score-ball-1-in-play,703166,703416,2,1 1,1965
 1966,score-ball-1-in-play,1966-score-ball-1-in-play,703449,703449,1,,3
 1967,score-ball-1-in-play,1967-score-ball-1-in-play,703466,703466,1,,592
 1968,score-ball-1-in-play,1968-score-ball-1-in-play,703583,703733,3,,592
@@ -3632,7 +3632,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3631,score-ball-2-in-play,3631-score-ball-2-in-play,1093916,1093949,2,,3631
 3632,score-ball-2-in-play,3632-score-ball-2-in-play,1093966,1120783,173,,3632
 3633,score-ball-2-drained,3633-score-ball-2-drained,1120966,1120966,1,,3633
-3634,score-ball-2-drained,3634-score-ball-2-drained,1121050,1122183,5,,244
+3634,score-ball-2-drained,3634-score-ball-2-drained,1121050,1122183,5,1 2,244
 3635,score-ball-2-drained,3635-score-ball-2-drained,1122216,1122233,2,,3635
 3636,score-ball-2-drained,3636-score-ball-2-drained,1122266,1122383,3,,3636
 3637,score-ball-2-drained,3637-score-ball-2-drained,1122433,1122433,1,,3637
@@ -3729,7 +3729,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3728,score-ball-3-in-play,3728-score-ball-3-in-play,1143983,1143983,1,,209
 3729,score-ball-3-in-play,3729-score-ball-3-in-play,1144066,1144066,1,,13
 3730,score-ball-3-in-play,3730-score-ball-3-in-play,1144116,1144116,1,,209
-3731,score-ball-3-in-play,3731-score-ball-3-in-play,1144166,1144416,2,,3731
+3731,score-ball-3-in-play,3731-score-ball-3-in-play,1144166,1144416,2,1 2,3731
 3732,score-ball-3-in-play,3732-score-ball-3-in-play,1144450,1144450,1,,3732
 3733,score-ball-3-in-play,3733-score-ball-3-in-play,1144466,1144466,1,,3
 3734,score-ball-3-in-play,3734-score-ball-3-in-play,1144500,1144500,1,,592
@@ -3759,7 +3759,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3758,score-ball-3-in-play,3758-score-ball-3-in-play,1151316,1151316,1,,209
 3759,score-ball-3-in-play,3759-score-ball-3-in-play,1151400,1151400,1,,13
 3760,score-ball-3-in-play,3760-score-ball-3-in-play,1151450,1151466,2,,209
-3761,score-ball-3-in-play,3761-score-ball-3-in-play,1151500,1151766,4,,3761
+3761,score-ball-3-in-play,3761-score-ball-3-in-play,1151500,1151766,4,1 2,3761
 3762,score-ball-3-in-play,3762-score-ball-3-in-play,1151783,1151800,2,,3762
 3763,score-ball-3-in-play,3763-score-ball-3-in-play,1151816,1151816,1,,3
 3764,score-ball-3-in-play,3764-score-ball-3-in-play,1151850,1151850,1,,592
@@ -3793,7 +3793,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3792,score-ball-3-in-play,3792-score-ball-3-in-play,1158650,1158650,1,,209
 3793,score-ball-3-in-play,3793-score-ball-3-in-play,1158733,1158733,1,,13
 3794,score-ball-3-in-play,3794-score-ball-3-in-play,1158783,1158783,1,,209
-3795,score-ball-3-in-play,3795-score-ball-3-in-play,1158850,1159083,2,,3795
+3795,score-ball-3-in-play,3795-score-ball-3-in-play,1158850,1159083,2,1 2,3795
 3796,score-ball-3-in-play,3796-score-ball-3-in-play,1159116,1159116,1,,3
 3797,score-ball-3-in-play,3797-score-ball-3-in-play,1159150,1159150,1,,592
 3798,score-ball-3-in-play,3798-score-ball-3-in-play,1159250,1159250,1,,593
@@ -3926,7 +3926,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3925,score-ball-3-in-play,3925-score-ball-3-in-play,1187983,1187983,1,,209
 3926,score-ball-3-in-play,3926-score-ball-3-in-play,1188066,1188066,1,,13
 3927,score-ball-3-in-play,3927-score-ball-3-in-play,1188116,1188116,1,,209
-3928,score-ball-3-in-play,3928-score-ball-3-in-play,1188166,1188416,2,,3731
+3928,score-ball-3-in-play,3928-score-ball-3-in-play,1188166,1188416,2,1 2,3731
 3929,score-ball-3-in-play,3929-score-ball-3-in-play,1188450,1188450,1,,3929
 3930,score-ball-3-in-play,3930-score-ball-3-in-play,1188466,1188466,1,,3
 3931,score-ball-3-in-play,3931-score-ball-3-in-play,1188500,1188500,1,,592
@@ -3956,7 +3956,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3955,score-ball-3-in-play,3955-score-ball-3-in-play,1195316,1195316,1,,209
 3956,score-ball-3-in-play,3956-score-ball-3-in-play,1195400,1195400,1,,13
 3957,score-ball-3-in-play,3957-score-ball-3-in-play,1195450,1195466,2,,209
-3958,score-ball-3-in-play,3958-score-ball-3-in-play,1195500,1195766,4,,3958
+3958,score-ball-3-in-play,3958-score-ball-3-in-play,1195500,1195766,4,1 2,3958
 3959,score-ball-3-in-play,3959-score-ball-3-in-play,1195783,1195816,3,,592
 3960,score-ball-3-in-play,3960-score-ball-3-in-play,1195933,1195933,1,,593
 3961,score-ball-3-in-play,3961-score-ball-3-in-play,1196066,1196066,1,,592
@@ -3987,7 +3987,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 3986,score-ball-3-in-play,3986-score-ball-3-in-play,1202650,1202650,1,,209
 3987,score-ball-3-in-play,3987-score-ball-3-in-play,1202733,1202733,1,,13
 3988,score-ball-3-in-play,3988-score-ball-3-in-play,1202783,1202783,1,,209
-3989,score-ball-3-in-play,3989-score-ball-3-in-play,1202850,1203083,2,,3989
+3989,score-ball-3-in-play,3989-score-ball-3-in-play,1202850,1203083,2,1 2,3989
 3990,score-ball-3-in-play,3990-score-ball-3-in-play,1203116,1203116,1,,3
 3991,score-ball-3-in-play,3991-score-ball-3-in-play,1203150,1203150,1,,592
 3992,score-ball-3-in-play,3992-score-ball-3-in-play,1203250,1203250,1,,593
@@ -4119,7 +4119,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4118,score-ball-3-in-play,4118-score-ball-3-in-play,1231983,1231983,1,,209
 4119,score-ball-3-in-play,4119-score-ball-3-in-play,1232066,1232066,1,,13
 4120,score-ball-3-in-play,4120-score-ball-3-in-play,1232116,1232116,1,,209
-4121,score-ball-3-in-play,4121-score-ball-3-in-play,1232166,1232416,2,,3731
+4121,score-ball-3-in-play,4121-score-ball-3-in-play,1232166,1232416,2,1 2,3731
 4122,score-ball-3-in-play,4122-score-ball-3-in-play,1232450,1232450,1,,4122
 4123,score-ball-3-in-play,4123-score-ball-3-in-play,1232466,1232466,1,,3
 4124,score-ball-3-in-play,4124-score-ball-3-in-play,1232500,1232500,1,,592
@@ -4149,7 +4149,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4148,score-ball-3-in-play,4148-score-ball-3-in-play,1239316,1239316,1,,209
 4149,score-ball-3-in-play,4149-score-ball-3-in-play,1239400,1239400,1,,13
 4150,score-ball-3-in-play,4150-score-ball-3-in-play,1239450,1239466,2,,209
-4151,score-ball-3-in-play,4151-score-ball-3-in-play,1239500,1239766,4,,4151
+4151,score-ball-3-in-play,4151-score-ball-3-in-play,1239500,1239766,4,1 2,4151
 4152,score-ball-3-in-play,4152-score-ball-3-in-play,1239783,1239816,3,,592
 4153,score-ball-3-in-play,4153-score-ball-3-in-play,1239933,1239933,1,,593
 4154,score-ball-3-in-play,4154-score-ball-3-in-play,1240066,1240066,1,,592
@@ -4181,7 +4181,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4180,score-ball-3-in-play,4180-score-ball-3-in-play,1246650,1246650,1,,209
 4181,score-ball-3-in-play,4181-score-ball-3-in-play,1246733,1246733,1,,13
 4182,score-ball-3-in-play,4182-score-ball-3-in-play,1246783,1246783,1,,209
-4183,score-ball-3-in-play,4183-score-ball-3-in-play,1246850,1247083,2,,4183
+4183,score-ball-3-in-play,4183-score-ball-3-in-play,1246850,1247083,2,1 2,4183
 4184,score-ball-3-in-play,4184-score-ball-3-in-play,1247116,1247116,1,,3
 4185,score-ball-3-in-play,4185-score-ball-3-in-play,1247150,1247150,1,,592
 4186,score-ball-3-in-play,4186-score-ball-3-in-play,1247250,1247250,1,,593
@@ -4313,7 +4313,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4312,score-ball-3-in-play,4312-score-ball-3-in-play,1275983,1275983,1,,209
 4313,score-ball-3-in-play,4313-score-ball-3-in-play,1276066,1276066,1,,13
 4314,score-ball-3-in-play,4314-score-ball-3-in-play,1276116,1276116,1,,209
-4315,score-ball-3-in-play,4315-score-ball-3-in-play,1276166,1276416,2,,3731
+4315,score-ball-3-in-play,4315-score-ball-3-in-play,1276166,1276416,2,1 2,3731
 4316,score-ball-3-in-play,4316-score-ball-3-in-play,1276450,1276450,1,,4316
 4317,score-ball-3-in-play,4317-score-ball-3-in-play,1276466,1276466,1,,3
 4318,score-ball-3-in-play,4318-score-ball-3-in-play,1276500,1276500,1,,592
@@ -4343,7 +4343,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4342,score-ball-3-in-play,4342-score-ball-3-in-play,1283316,1283316,1,,209
 4343,score-ball-3-in-play,4343-score-ball-3-in-play,1283400,1283400,1,,13
 4344,score-ball-3-in-play,4344-score-ball-3-in-play,1283450,1283466,2,,209
-4345,score-ball-3-in-play,4345-score-ball-3-in-play,1283500,1283766,4,,4345
+4345,score-ball-3-in-play,4345-score-ball-3-in-play,1283500,1283766,4,1 2,4345
 4346,score-ball-3-in-play,4346-score-ball-3-in-play,1283783,1283783,1,,3
 4347,score-ball-3-in-play,4347-score-ball-3-in-play,1283816,1283816,1,,592
 4348,score-ball-3-in-play,4348-score-ball-3-in-play,1283933,1283933,1,,593
@@ -4375,7 +4375,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4374,score-ball-3-in-play,4374-score-ball-3-in-play,1290650,1290650,1,,209
 4375,score-ball-3-in-play,4375-score-ball-3-in-play,1290733,1290733,1,,13
 4376,score-ball-3-in-play,4376-score-ball-3-in-play,1290783,1290783,1,,209
-4377,score-ball-3-in-play,4377-score-ball-3-in-play,1290850,1291083,2,,4377
+4377,score-ball-3-in-play,4377-score-ball-3-in-play,1290850,1291083,2,1 2,4377
 4378,score-ball-3-in-play,4378-score-ball-3-in-play,1291116,1291116,1,,3
 4379,score-ball-3-in-play,4379-score-ball-3-in-play,1291150,1291150,1,,592
 4380,score-ball-3-in-play,4380-score-ball-3-in-play,1291250,1291250,1,,593
@@ -4506,7 +4506,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4505,score-ball-3-in-play,4505-score-ball-3-in-play,1319983,1319983,1,,209
 4506,score-ball-3-in-play,4506-score-ball-3-in-play,1320066,1320066,1,,13
 4507,score-ball-3-in-play,4507-score-ball-3-in-play,1320116,1320116,1,,209
-4508,score-ball-3-in-play,4508-score-ball-3-in-play,1320166,1320416,2,,3731
+4508,score-ball-3-in-play,4508-score-ball-3-in-play,1320166,1320416,2,1 2,3731
 4509,score-ball-3-in-play,4509-score-ball-3-in-play,1320450,1320450,1,,4509
 4510,score-ball-3-in-play,4510-score-ball-3-in-play,1320466,1320466,1,,3
 4511,score-ball-3-in-play,4511-score-ball-3-in-play,1320500,1320500,1,,592
@@ -4518,7 +4518,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4517,score-ball-3-in-play,4517-score-ball-3-in-play,1321233,1321233,1,,592
 4518,score-ball-3-in-play,4518-score-ball-3-in-play,1321350,1321350,1,,593
 4519,score-ball-3-in-play,4519-score-ball-3-in-play,1321483,1321483,1,,592
-4520,score-ball-3-in-play,4520-score-ball-3-in-play,1321600,1326266,43,,4520
+4520,score-ball-3-in-play,4520-score-ball-3-in-play,1321600,1326266,43,2,4520
 4521,score-ball-3-in-play,4521-score-ball-3-in-play,1326400,1326400,1,,3
 4522,score-ball-3-in-play,4522-score-ball-3-in-play,1326433,1326433,1,,13
 4523,score-ball-3-in-play,4523-score-ball-3-in-play,1326483,1326483,1,,209
@@ -4536,7 +4536,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4535,score-ball-3-in-play,4535-score-ball-3-in-play,1327316,1327316,1,,209
 4536,score-ball-3-in-play,4536-score-ball-3-in-play,1327400,1327400,1,,13
 4537,score-ball-3-in-play,4537-score-ball-3-in-play,1327450,1327466,2,,209
-4538,score-ball-3-in-play,4538-score-ball-3-in-play,1327500,1327766,4,,4538
+4538,score-ball-3-in-play,4538-score-ball-3-in-play,1327500,1327766,4,1 2,4538
 4539,score-ball-3-in-play,4539-score-ball-3-in-play,1327783,1327816,3,,592
 4540,score-ball-3-in-play,4540-score-ball-3-in-play,1327933,1327933,1,,593
 4541,score-ball-3-in-play,4541-score-ball-3-in-play,1328066,1328066,1,,592
@@ -4567,7 +4567,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4566,score-ball-3-in-play,4566-score-ball-3-in-play,1334650,1334650,1,,209
 4567,score-ball-3-in-play,4567-score-ball-3-in-play,1334733,1334733,1,,13
 4568,score-ball-3-in-play,4568-score-ball-3-in-play,1334783,1334783,1,,209
-4569,score-ball-3-in-play,4569-score-ball-3-in-play,1334850,1335083,2,,4569
+4569,score-ball-3-in-play,4569-score-ball-3-in-play,1334850,1335083,2,1 2,4569
 4570,score-ball-3-in-play,4570-score-ball-3-in-play,1335116,1335116,1,,3
 4571,score-ball-3-in-play,4571-score-ball-3-in-play,1335150,1335150,1,,592
 4572,score-ball-3-in-play,4572-score-ball-3-in-play,1335250,1335250,1,,593
@@ -4699,7 +4699,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4698,score-ball-3-in-play,4698-score-ball-3-in-play,1363983,1363983,1,,209
 4699,score-ball-3-in-play,4699-score-ball-3-in-play,1364066,1364066,1,,13
 4700,score-ball-3-in-play,4700-score-ball-3-in-play,1364116,1364116,1,,209
-4701,score-ball-3-in-play,4701-score-ball-3-in-play,1364166,1364416,2,,3731
+4701,score-ball-3-in-play,4701-score-ball-3-in-play,1364166,1364416,2,1 2,3731
 4702,score-ball-3-in-play,4702-score-ball-3-in-play,1364450,1364450,1,,4702
 4703,score-ball-3-in-play,4703-score-ball-3-in-play,1364466,1364466,1,,3
 4704,score-ball-3-in-play,4704-score-ball-3-in-play,1364500,1364500,1,,592
@@ -4729,7 +4729,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4728,score-ball-3-in-play,4728-score-ball-3-in-play,1371316,1371316,1,,209
 4729,score-ball-3-in-play,4729-score-ball-3-in-play,1371400,1371400,1,,13
 4730,score-ball-3-in-play,4730-score-ball-3-in-play,1371450,1371466,2,,209
-4731,score-ball-3-in-play,4731-score-ball-3-in-play,1371500,1371766,4,,4731
+4731,score-ball-3-in-play,4731-score-ball-3-in-play,1371500,1371766,4,1 2,4731
 4732,score-ball-3-in-play,4732-score-ball-3-in-play,1371783,1371800,2,,4732
 4733,score-ball-3-in-play,4733-score-ball-3-in-play,1371816,1371816,1,,3
 4734,score-ball-3-in-play,4734-score-ball-3-in-play,1371850,1371850,1,,592
@@ -4762,7 +4762,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4761,score-ball-3-in-play,4761-score-ball-3-in-play,1378650,1378650,1,,209
 4762,score-ball-3-in-play,4762-score-ball-3-in-play,1378733,1378733,1,,13
 4763,score-ball-3-in-play,4763-score-ball-3-in-play,1378783,1378783,1,,209
-4764,score-ball-3-in-play,4764-score-ball-3-in-play,1378850,1379083,2,,4764
+4764,score-ball-3-in-play,4764-score-ball-3-in-play,1378850,1379083,2,1 2,4764
 4765,score-ball-3-in-play,4765-score-ball-3-in-play,1379116,1379116,1,,3
 4766,score-ball-3-in-play,4766-score-ball-3-in-play,1379150,1379150,1,,592
 4767,score-ball-3-in-play,4767-score-ball-3-in-play,1379250,1379250,1,,593
@@ -4774,7 +4774,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4773,score-ball-3-in-play,4773-score-ball-3-in-play,1380150,1380150,1,,592
 4774,score-ball-3-in-play,4774-score-ball-3-in-play,1380250,1380250,1,,593
 4775,score-ball-3-in-play,4775-score-ball-3-in-play,1380400,1380400,1,,592
-4776,score-ball-3-in-play,4776-score-ball-3-in-play,1380450,1384916,39,,4776
+4776,score-ball-3-in-play,4776-score-ball-3-in-play,1380450,1384916,39,2,4776
 4777,score-ball-3-in-play,4777-score-ball-3-in-play,1385083,1385083,1,,3
 4778,score-ball-3-in-play,4778-score-ball-3-in-play,1385100,1385100,1,,13
 4779,score-ball-3-in-play,4779-score-ball-3-in-play,1385166,1385166,1,,209
@@ -4809,7 +4809,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4808,score-ball-3-in-play,4808-score-ball-3-in-play,1387333,1387333,1,,593
 4809,score-ball-3-in-play,4809-score-ball-3-in-play,1387466,1387466,1,,592
 4810,score-ball-3-in-play,4810-score-ball-3-in-play,1387583,1387733,3,,592
-4811,score-ball-3-in-play,4811-score-ball-3-in-play,1387783,1392250,36,,4811
+4811,score-ball-3-in-play,4811-score-ball-3-in-play,1387783,1392250,36,2,4811
 4812,score-ball-3-in-play,4812-score-ball-3-in-play,1392400,1392400,1,,4812
 4813,score-ball-3-in-play,4813-score-ball-3-in-play,1392416,1392416,1,,13
 4814,score-ball-3-in-play,4814-score-ball-3-in-play,1392466,1392466,1,,209
@@ -4873,7 +4873,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4872,score-ball-3-in-play,4872-score-ball-3-in-play,1402166,1402166,1,,592
 4873,score-ball-3-in-play,4873-score-ball-3-in-play,1402266,1402266,1,,593
 4874,score-ball-3-in-play,4874-score-ball-3-in-play,1402400,1402400,1,,592
-4875,score-ball-3-in-play,4875-score-ball-3-in-play,1402466,1406933,39,,4875
+4875,score-ball-3-in-play,4875-score-ball-3-in-play,1402466,1406933,39,2,4875
 4876,score-ball-3-in-play,4876-score-ball-3-in-play,1407066,1407066,1,,3
 4877,score-ball-3-in-play,4877-score-ball-3-in-play,1407083,1407083,1,,13
 4878,score-ball-3-in-play,4878-score-ball-3-in-play,1407150,1407150,1,,209
@@ -4893,7 +4893,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4892,score-ball-3-in-play,4892-score-ball-3-in-play,1407983,1407983,1,,209
 4893,score-ball-3-in-play,4893-score-ball-3-in-play,1408066,1408066,1,,13
 4894,score-ball-3-in-play,4894-score-ball-3-in-play,1408116,1408116,1,,209
-4895,score-ball-3-in-play,4895-score-ball-3-in-play,1408166,1408416,2,,3731
+4895,score-ball-3-in-play,4895-score-ball-3-in-play,1408166,1408416,2,1 2,3731
 4896,score-ball-3-in-play,4896-score-ball-3-in-play,1408450,1408450,1,,4896
 4897,score-ball-3-in-play,4897-score-ball-3-in-play,1408466,1408466,1,,3
 4898,score-ball-3-in-play,4898-score-ball-3-in-play,1408500,1408500,1,,592
@@ -4905,7 +4905,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4904,score-ball-3-in-play,4904-score-ball-3-in-play,1409233,1409233,1,,592
 4905,score-ball-3-in-play,4905-score-ball-3-in-play,1409350,1409350,1,,593
 4906,score-ball-3-in-play,4906-score-ball-3-in-play,1409483,1409483,1,,592
-4907,score-ball-3-in-play,4907-score-ball-3-in-play,1409600,1414266,41,,4907
+4907,score-ball-3-in-play,4907-score-ball-3-in-play,1409600,1414266,41,2,4907
 4908,score-ball-3-in-play,4908-score-ball-3-in-play,1414400,1414400,1,,3
 4909,score-ball-3-in-play,4909-score-ball-3-in-play,1414433,1414433,1,,13
 4910,score-ball-3-in-play,4910-score-ball-3-in-play,1414483,1414483,1,,209
@@ -4923,7 +4923,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4922,score-ball-3-in-play,4922-score-ball-3-in-play,1415316,1415316,1,,209
 4923,score-ball-3-in-play,4923-score-ball-3-in-play,1415400,1415400,1,,13
 4924,score-ball-3-in-play,4924-score-ball-3-in-play,1415450,1415466,2,,209
-4925,score-ball-3-in-play,4925-score-ball-3-in-play,1415500,1415766,4,,4925
+4925,score-ball-3-in-play,4925-score-ball-3-in-play,1415500,1415766,4,1 2,4925
 4926,score-ball-3-in-play,4926-score-ball-3-in-play,1415783,1415816,3,,592
 4927,score-ball-3-in-play,4927-score-ball-3-in-play,1415933,1415933,1,,593
 4928,score-ball-3-in-play,4928-score-ball-3-in-play,1416066,1416066,1,,592
@@ -4954,7 +4954,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 4953,score-ball-3-in-play,4953-score-ball-3-in-play,1422650,1422650,1,,209
 4954,score-ball-3-in-play,4954-score-ball-3-in-play,1422733,1422733,1,,13
 4955,score-ball-3-in-play,4955-score-ball-3-in-play,1422783,1422783,1,,209
-4956,score-ball-3-in-play,4956-score-ball-3-in-play,1422850,1423083,2,,4956
+4956,score-ball-3-in-play,4956-score-ball-3-in-play,1422850,1423083,2,1 2,4956
 4957,score-ball-3-in-play,4957-score-ball-3-in-play,1423116,1423116,1,,3
 4958,score-ball-3-in-play,4958-score-ball-3-in-play,1423150,1423150,1,,592
 4959,score-ball-3-in-play,4959-score-ball-3-in-play,1423250,1423250,1,,593
@@ -5085,7 +5085,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5084,score-ball-3-in-play,5084-score-ball-3-in-play,1451983,1451983,1,,209
 5085,score-ball-3-in-play,5085-score-ball-3-in-play,1452066,1452066,1,,13
 5086,score-ball-3-in-play,5086-score-ball-3-in-play,1452116,1452116,1,,209
-5087,score-ball-3-in-play,5087-score-ball-3-in-play,1452166,1452416,2,,3731
+5087,score-ball-3-in-play,5087-score-ball-3-in-play,1452166,1452416,2,1 2,3731
 5088,score-ball-3-in-play,5088-score-ball-3-in-play,1452450,1452450,1,,5088
 5089,score-ball-3-in-play,5089-score-ball-3-in-play,1452466,1452466,1,,3
 5090,score-ball-3-in-play,5090-score-ball-3-in-play,1452500,1452500,1,,592
@@ -5116,7 +5116,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5115,score-ball-3-in-play,5115-score-ball-3-in-play,1459316,1459316,1,,209
 5116,score-ball-3-in-play,5116-score-ball-3-in-play,1459400,1459400,1,,13
 5117,score-ball-3-in-play,5117-score-ball-3-in-play,1459450,1459466,2,,209
-5118,score-ball-3-in-play,5118-score-ball-3-in-play,1459500,1459766,4,,5118
+5118,score-ball-3-in-play,5118-score-ball-3-in-play,1459500,1459766,4,1 2,5118
 5119,score-ball-3-in-play,5119-score-ball-3-in-play,1459783,1459800,2,,3762
 5120,score-ball-3-in-play,5120-score-ball-3-in-play,1459816,1459816,1,,3
 5121,score-ball-3-in-play,5121-score-ball-3-in-play,1459850,1459850,1,,592
@@ -5130,9 +5130,9 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5129,score-ball-3-in-play,5129-score-ball-3-in-play,1460833,1460833,1,,592
 5130,score-ball-3-in-play,5130-score-ball-3-in-play,1460933,1460933,1,,593
 5131,score-ball-3-in-play,5131-score-ball-3-in-play,1461083,1461083,1,,592
-5132,score-ball-3-in-play,5132-score-ball-3-in-play,1461100,1487933,176,,5132
+5132,score-ball-3-in-play,5132-score-ball-3-in-play,1461100,1487933,176,2,5132
 5133,score-ball-3-drained-gameover,5133-score-ball-3-drained-gameover,1488116,1488116,1,,5133
-5134,score-ball-3-drained-gameover,5134-score-ball-3-drained-gameover,1488233,1489350,4,,305
+5134,score-ball-3-drained-gameover,5134-score-ball-3-drained-gameover,1488233,1489350,4,1 3,305
 5135,score-ball-3-drained-gameover,5135-score-ball-3-drained-gameover,1489383,1489400,2,,5135
 5136,score-ball-3-drained-gameover,5136-score-ball-3-drained-gameover,1489433,1489550,4,,5136
 5137,score-ball-3-drained-gameover,5137-score-ball-3-drained-gameover,1489600,1489866,11,,5137
@@ -5175,11 +5175,11 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5174,score-ball-3-drained-gameover,5174-score-ball-3-drained-gameover,1491983,1491983,1,,5174
 5175,score-ball-3-drained-gameover,5175-score-ball-3-drained-gameover,1492033,1493850,22,,5175
 5176,score-recover-wait,5176-score-recover-wait,1494050,1543950,317,,5176
-5177,score-recover-plunge,5177-score-recover-plunge,1544166,1553883,66,,5177
-5178,score-recover-hits,5178-score-recover-hits,1554100,1554266,7,,5178
+5177,score-recover-plunge,5177-score-recover-plunge,1544166,1553883,66,1 3,5177
+5178,score-recover-hits,5178-score-recover-hits,1554100,1554266,7,1 3,5178
 5179,score-recover-hits,5179-score-recover-hits,1554300,1554300,1,,3
 5180,score-recover-hits,5180-score-recover-hits,1554316,1556150,29,,228
-5181,score-recover-hits,5181-score-recover-hits,1556166,1556166,1,,363
+5181,score-recover-hits,5181-score-recover-hits,1556166,1556166,1,1 3,363
 5182,score-recover-hits,5182-score-recover-hits,1556200,1556750,13,2 6.515,5182
 5183,score-recover-hits,5183-score-recover-hits,1556783,1557550,17,,5183
 5184,score-recover-hits,5184-score-recover-hits,1557600,1558400,10,,5184
@@ -5191,7 +5191,7 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5190,score-recover-drained,5190-score-recover-drained,1587016,1587016,1,,5190
 5191,score-recover-drained,5191-score-recover-drained,1587033,1587483,3,,368
 5192,score-recover-drained,5192-score-recover-drained,1588150,1589233,3,,5192
-5193,score-recover-drained,5193-score-recover-drained,1589266,1589300,2,,5193
+5193,score-recover-drained,5193-score-recover-drained,1589266,1589300,2,2,5193
 5194,score-recover-drained,5194-score-recover-drained,1590616,1590616,1,,3
 5195,score-recover-drained,5195-score-recover-drained,1590683,1590683,1,,5195
 5196,score-recover-drained,5196-score-recover-drained,1590766,1590766,1,,5196

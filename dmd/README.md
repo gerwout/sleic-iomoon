@@ -237,32 +237,38 @@ own scenes under that label, per the method above.
 
 ## Open items
 
-- **Two different score displays exist in this game, and only one of them
-  decodes.** The attract-mode high-score table is drawn in the `height=12`
-  face (table offset 75) and now decodes cleanly: `S.MOONLIGHT /
-  300.000.000 / . .`, `J.SUNSHINE / 200.000.000 / . .`, `B.STARWAY /
-  100.000.000 / . .` (scenes 51/420/5281/5674, 55/5287, 61/428). The
-  **in-play** score is a separate, larger display — shaded digits, a bright
-  (level 3) outline around a mid-tone (level 1) interior, legible by eye
-  during a gameplay capture (e.g. `2.452.230`, `3.812.237`, `1.027.571` in
-  earlier renders of this and the prior corpus) — and its face is not
-  identified. `iomoon_strings.score_glyph_bitmaps` now builds its match key
-  from both bitplanes (level = `2*plane0_bit + plane1_bit`, F13's own
-  weighting), which rules out the panel's own dithered background as the
-  cause of the original empty cells: thresholding the frame at level 3
-  (discarding the dimmer dither levels entirely) across 268 empty gameplay
-  and attract scenes recovered only 2, and the fix is confirmed
-  structurally sound against the ROM's own font-table data (the
-  decimal-point mark it now finds spans a shaded 3x3 area, not the
-  plane-0-only 2x2 box the old reading found). Applied and measured, it
-  rules out one specific candidate for the in-play display: the `(h=23,
-  W=2)` face never exact-matches a real frame anywhere in this corpus —
-  scanning all 21 of its labels against every one of the raw dump's 27,712
-  frames finds zero hits, and the closest approximate match differs in 120
-  of 368 pixels, no resemblance. What would settle which face draws the
-  in-play score: matching a rendered in-play frame, by eye, against each
-  remaining candidate face in the walked font table (`docs/dmd_graphics.md`
-  lists them).
+- ~~Two different score displays exist in this game, and only one of them
+  decodes~~ **— the in-play display is now identified too, a headerless
+  table the walked font table's own reader never reaches.** The
+  attract-mode high-score table is the `height=12` face (table offset 75)
+  and decodes cleanly: `S.MOONLIGHT / 300.000.000 / . .`, `J.SUNSHINE /
+  200.000.000 / . .`, `B.STARWAY / 100.000.000 / . .` (scenes
+  51/420/5281/5674, 55/5287, 61/428). The **in-play** score's own digit
+  table sits at flat `0x29154` (pointer `CS:052BB`), indexed by digit value
+  with a `MUL DX,0x6C` stride read directly out of the drawing routine's own
+  loop, not the walked table's `[h,w,len16]` header format at all — see
+  `docs/dmd_graphics.md`, "The in-play score digit table is headerless...",
+  for the full layout and how it was confirmed (digit `2`'s stored bitmap
+  reproduces a real captured frame byte-for-byte). The `(h=23, W=2)` face
+  this item used to name as a candidate is ruled out, unchanged from
+  before: it never exact-matches a real frame anywhere in this corpus.
+
+  **Measured against the committed corpus, the gain is real but small, and
+  it recovers isolated digits, not whole scores.** Consecutive digits in a
+  real number overlap on screen (a plain-overwrite draw order; see the doc
+  above), so an exact-bitmap matcher only recovers the digit that happens
+  to survive a frame's own draw order — usually one. Combined with the
+  player/ball-number digit (`CS:0531B`, beside the `PLAYER`/`BALL` word
+  above) and this score table, re-splitting the committed corpus recovers
+  text on 69 of the 5716 English scene occurrences that previously decoded
+  empty (5576 of them) and 67 of the 5411 Spanish ones (5349 empty) — 54 of
+  922 distinct English screens (810 empty) and 52 of 824 distinct Spanish
+  ones (783 empty). All of it is isolated one- or two-digit numbers (`1`,
+  `2`, `1 1`, `1 3`, ...), none of it the `PLAYER`/`BALL` word itself (see
+  the item above) and none of it a multi-digit score. No previously-decoded
+  cell changed. Digit `1` is not decoded at all (a sentinel byte, not a
+  stored digit, occupies its table slot — see the doc above), and a second,
+  alternating drawing path (`CS:052BF`) is not modelled.
 - **The `h=12` face is pinned (table offset 75) and now decodes the
   single most valuable text in this corpus: the attract high-score
   table**, beside the h=9 `S.MOONLIGHT`/`J.SUNSHINE`/`B.STARWAY` labels
@@ -284,24 +290,33 @@ own scenes under that label, per the method above.
   run on `svc-N`/`back-to-N` scenes** — `AA`, `AAD`, `AADC`, `AADCA`,
   `AADCAA`, ..., up to `AADCAAAADAI AE / AACABAAAAB AAB` — that grows by
   exactly one character per scene as the service-menu walk descends. This
-  is not noise: rendered directly (`dmd/en/screens/5417-svc-16/repr.txt`),
-  it is a row of 13-14 glyph-shaped tiles over a dim (level-1) bar — the
-  service menu draws a bar or level indicator out of the same `h=12` letter
-  bitmaps, filling one tile at a time, so the matches are bitmap-faithful
-  (they are the real `h=12` bitmaps, not a coincidence) and simply are not
-  text. A reader of `screens.csv` should expect a growing letter run under
+  is bitmap-faithful, not noise (rendered directly,
+  `dmd/en/screens/5417-svc-16/repr.txt`, it is a row of 13-14 real `h=12`
+  glyph shapes over a dim, level-1 bar) and simply is not text: F21
+  (`asm/baseline-2026-09/findings.md`) traces the drawing routine
+  (`sub_D0AF8`/`sub_D0ACA`) and finds no table read anywhere in it — the bar
+  is stamped column by column straight from a loop counter, so a font
+  matcher colliding with real glyph shapes at some fill levels is
+  coincidence by construction, closed to any matcher, this one or any
+  other. A reader of `screens.csv` should expect a growing letter run under
   those two labels and read it as a level indicator, not a word.
-- **`full-tilt` produces zero scenes.** The tilt sequence itself runs (ball
-  2 correctly proceeds to ball 3 afterward), but no DMD frame is captured
-  between the second tilt press and the ball's drain — not a handful of
-  near-duplicate frames, *none* at all, confirmed by checking the raw dump
-  directly (no frame between the two timestamps). F17's own account of full
-  tilt (stop the music, clear both DMD planes, play the tilt sound, disable
-  the drivers) says the screen should go blank right on that press; whether
-  the panel genuinely stops redrawing until the next real input (the drain)
-  or a frame is being produced and silently dropped somewhere upstream of
-  the dump is not settled. What would settle it: a `-debug` build with the
-  `SLEIC_TRACE_PW` probe enabled, watching for a PCS0/PCS4 write in the gap.
+- ~~`full-tilt` produces zero scenes~~ **— resolved: a mark-placement issue,
+  not a missing capture.** The TILT screen was captured all along —
+  `dmd/en/iomoont.txt.gz` holds a frame at ms 171399 (2265 lit pixels, large
+  drop-shadowed `TILT` text) — but the key script's own `full-tilt` mark sat
+  at ms 175633, 4.2 s later, so this corpus's own "a scene runs from its
+  mark to the next" rule folded the TILT frame into the preceding
+  `drop-bank-5-down` scene instead. `scripts/keyscripts/iomoon-en.keys` now
+  marks `full-tilt` at script frame 10280 (the first tilt-warning key press)
+  instead of 10540 (the second, full-tilt-triggering one); a verification
+  run confirms the mark now lands at ms 171299, 100 ms *before* the TILT
+  frame, and `full-tilt` now covers two scene occurrences, the second
+  showing the TILT screen itself. `dmd/en/iomoont.marks` carries the
+  corrected mark; the raw dump itself is unchanged, since it already had the
+  frame. The Spanish key script (`iomoon-es.keys`) has the identical
+  mark-placement bug, unfixed — its own `full-tilt` mark never has a frame
+  attached at all in the committed `dmd/es/` corpus (zero rows in
+  `screens.csv`), not just a misattributed one.
 - **The mod's SPECIAL trampoline (`D5077`) is not exercised.** `PRESS START`
   appears three times in this corpus (the boot seed screen, the normal
   end-of-game hook at `D5123` twice — once per game below); reaching
@@ -352,15 +367,30 @@ own scenes under that label, per the method above.
   `B.STARWAY`, ...); `attract` itself runs long enough to approximate a
   fuller cycle, but a single continuous "one full loop, start to repeat"
   boundary is not identified either place.
-- **The in-play `PLAYER`/`BALL` font is not in the walked font table.**
-  Every `ball-N-in-play`/`ball-N-drained` scene shows `PLAYER 1` and
-  `BALL 1` in a small, roughly 6-row-tall, single-pixel-stroke font at full
-  brightness — nothing like the bold `h=9` or `h=12` faces this decoder
-  reads. It is not among the font table's 224 entries: searching both ROMs
-  for its `P` bitmap finds no match as contiguous one byte per row, padded
-  with blank rows to a taller cell, or at a 16-byte stride inside a
-  128-pixel-wide frame buffer. See `docs/dmd_graphics.md`'s own "Open
-  items" for the full account and what would settle it.
+- ~~The in-play `PLAYER`/`BALL` font is not in the walked font table~~
+  **— found: a five-word pointer pool, not a code+offset face.** `BALL`,
+  `EXTRA BALL`, `INSERT COIN`, `PLAYERS` and `PLAYER` (both languages) are
+  whole-word bitmaps read through hard-coded far pointers at
+  `CS:0522F`-`CS:0523F` (`docs/dmd_graphics.md`, "The in-play PLAYER/BALL
+  HUD is a pointer pool of whole words, not a walked table"), confirmed both
+  by reading the letters directly off each bitmap and by the `LES
+  SI,CS:xxxx` operand at every drawing routine's own call site. Validated
+  directly against the raw capture: searching every per-ms frame of scene
+  `0198-ball-1-in-play` finds exact `PLAYER` matches on 9 frames and exact
+  `BALL` matches on 10 more, alternating — the documented flash behaviour.
+
+  **Measured against the committed corpus, the gain from this table is
+  zero.** Scanned against all 922 English and 824 Spanish distinct
+  `repr.txt` contents, `hud_message_bitmaps()` matches none of them — every
+  scene's representative frame (its own last frame, by this corpus's
+  convention) happens to land during the flashing word's off phase, even
+  though the same bitmap is confirmed present elsewhere in that same
+  scene's raw frames. The player/ball-number digit beside the word (a
+  third, separate table, `CS:0531B`) does not share this flash and is
+  recovered instead — see the score item above for the actual count. If
+  the word itself is wanted, not just its number, a scene's
+  representative would need to be chosen for that (a frame partway through
+  the scene rather than always its last), which this corpus does not do.
 - **The 38-record service-menu tree's own item/title text mostly doesn't
   render.** Beyond the root record and its first child, every deeper
   `svc-N`/`back-to-N` scene shows the `h=12` tile-glyph-bar level indicator
