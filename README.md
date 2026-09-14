@@ -42,12 +42,22 @@ This repository documents the results of an extensive reverse engineering effort
   Right: the cabinet side art. Click either for the full photograph.</em>
 </p>
 
-**The side art here carries a large red `IO` that is not on every machine.** The artwork
-underneath — the cratered moon, the comet streaks, the black slab and the space station — is
-the usual IO Moon cabinet decoration, and it is normally seen with no lettering over it. Whether
-the lettered version is a factory variant, a run for one market, or something applied to this
-cabinet later is **not established**. A second lettered machine, or SLEIC or Petaco sales
-material showing one, would settle it.
+**Two different cabinet side arts exist, and the difference is the wordmark.** Both carry the
+same underlying scene — the cratered moon, the comet streaks, the black slab and the space
+station. The usual one letters it **`IO MOON` in blue and white blocks**; the machine above
+carries a large **red `IO`** in the same position instead.
+
+<p align="center">
+  <a href="images/iomoon-side-art-standard.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-side-art-standard_thumb.jpg" alt="IO Moon cabinet side art with the blue IO MOON wordmark" width="640">
+  </a>
+  <br>
+  <em>The usual side art, with the blue and white <code>IO MOON</code> wordmark.</em>
+</p>
+
+Which is factory-standard and which is the variant is **not established** from these two
+machines. What would settle it: SLEIC or Petaco sales material showing either form, or a
+third machine.
 
 <p align="center">
   <a href="images/iomoon-cabinet.jpeg" target="_blank" rel="noopener">
@@ -67,6 +77,15 @@ material showing one, would settle it.
   </a>
   <br>
   <em>The lower playfield, unpopulated, with the insert legends readable.</em>
+</p>
+
+<p align="center">
+  <a href="images/iomoon-playfield-populated.jpeg" target="_blank" rel="noopener">
+    <img src="images/iomoon-playfield-populated_thumb.jpg" alt="IO Moon playfield, populated, in a machine" width="520">
+  </a>
+  <br>
+  <em>The same playfield built up and in a machine, for what the bare one cannot show:
+  where the ramps, the five bumpers, the drop bank and the Monolith actually sit.</em>
 </p>
 
 The bare playfield is the clearest record of the insert legends, and they match the manual's own
