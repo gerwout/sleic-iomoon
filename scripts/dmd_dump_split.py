@@ -282,38 +282,75 @@ def _scan_face(rows, bits_to_label, height, cell_w, binarize=True, min_glyphs=2)
     return lines
 
 
-def _scan_words(rows, messages):
-    """[(y, text), ...] for a table of whole-phrase bitmaps, read by exact
-    match -- iomoon_strings.hud_message_bitmaps()'s own entries (BALL,
-    PLAYER, the two-line INSERT COIN, ...), not per-character glyphs.
+def _scan_words(rows, messages, max_blank_lit_fraction=0.2):
+    """[(y, text), ...] for a table of whole-phrase bitmaps, matched on
+    their *lit* pixels only -- iomoon_strings.hud_message_bitmaps()'s own
+    entries (BALL, PLAYER, the two-line INSERT COIN, ...), not
+    per-character glyphs.
 
     Unlike _scan_face, entries here vary in both height and width (each is
     a complete rendered word), so there is no single cell size to advance
-    by on a match -- every (label, height, width, bits) entry is tried
-    independently at every (x, y), and a match advances x by *that* label's
-    own width rather than a shared constant. A single match is reported
-    on its own: a whole word's worth of lit pixels (tens to low hundreds)
-    carries none of the sparse-glyph false-positive risk _scan_face's own
-    "at least two" rule exists for, so there is no minimum-count filter
-    here.
+    by on a match -- every (label, height, width, lit_rows) entry is tried
+    independently at every (x, y), and a match advances x by *that*
+    label's own width rather than a shared constant.
 
-    `rows` must already be binarized (lit/unlit, matching how
-    iomoon_strings.hud_message_bitmaps() reads plane 0 alone) -- the caller
-    does this once for the whole frame rather than once per message.
+    This is a masked match, not an exact one, and deliberately so: an
+    exact match (blank template pixels required to be blank on screen,
+    same as every other face here) finds these words nowhere in the
+    corpus even though they are plainly on screen, because the stored
+    word's blank margins fall over the panel's own dithered background on
+    a real frame -- confirmed by rendering a frame that shows PLAYER and
+    BALL directly while an exact matcher finds neither anywhere in either
+    committed corpus. `lit_rows` (the '0'/'1' plane-0 bitmap
+    hud_message_bitmaps() already returns) says only which pixels the
+    stored word actually lights; every other pixel in the cell is,
+    *within limits* (see below), a don't-care. To keep this looser rule
+    from over-matching against a dimmer dither level rather than the word
+    itself, a lit pixel must be at **full brightness** ('3') in the frame,
+    not merely nonzero -- `rows` is therefore the frame's own raw '0'-'3'
+    level rows, not binarized.
+
+    Ignoring blank pixels entirely over-matches a different way: a large,
+    solid, near-uniformly-bright graphic (a bonus-multiplier blob, an
+    animation frame) satisfies almost any sparse lit-pixel mask trivially,
+    since nearly every candidate pixel already reads level 3 regardless of
+    the word's own shape -- caught on a real scene (`score-recover-hits`,
+    a large bright graphic overlapping a score display), where a
+    lit-pixels-only match fired for both `BALL` and `BOLA` at three
+    positions with no real word anywhere near them, alongside a fourth,
+    genuine `BALL` match elsewhere on the same frame. Measured across
+    known-true and known-false matches, the discriminator is the
+    *fraction* of the template's own blank pixels that read level 3 in the
+    frame: 0-3% for confirmed real words (`PLAYER`/`BALL` on a genuine
+    HUD row), 73-77% for the false-positive graphic -- not a close call.
+    `max_blank_lit_fraction` (default 0.2, comfortably below every measured
+    false positive and above every measured true one) rejects a candidate
+    whose blank area is mostly full-brightness anyway, without reinstating
+    the blank-must-be-blank exact match this function exists to avoid.
+
+    A whole word's worth of *required* lit pixels (tens to several dozen,
+    all at one specific brightness) plus the blank-fraction check above is
+    still specific enough that no minimum-match-count filter is applied,
+    unlike _scan_face's sparse-glyph guard.
     """
     if not rows or not messages:
         return []
     H, W = len(rows), len(rows[0])
     hits = []
-    for label, height, width, bits in messages:
+    for label, height, width, lit_rows in messages:
         if height > H or width > W:
             continue
+        lit = [(r, c) for r in range(height) for c in range(width) if lit_rows[r][c] == '1']
+        blank = [(r, c) for r in range(height) for c in range(width) if lit_rows[r][c] == '0']
+        if not lit or not blank:
+            continue
+        blank_limit = int(len(blank) * max_blank_lit_fraction)
         y = 0
         while y <= H - height:
-            window_rows = rows[y:y + height]
             x = 0
             while x <= W - width:
-                if [r[x:x + width] for r in window_rows] == bits:
+                if (all(rows[y + r][x + c] == '3' for r, c in lit)
+                        and sum(1 for r, c in blank if rows[y + r][x + c] == '3') <= blank_limit):
                     hits.append((y, x, label))
                     x += width
                 else:
@@ -357,9 +394,14 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
     Every face is scanned independently over the whole frame and their
     lines merged top to bottom, then joined with ' / '. The two
     iomoon_strings.score_glyph_bitmaps() faces and score_digits match on raw
-    pixel levels ('0'-'3', not binarized -- see _scan_face); every other
-    face matches on lit/unlit only. See _scan_face and _scan_words for the
-    matching, space and noise rules each uses.
+    pixel levels ('0'-'3', not binarized -- see _scan_face); glyphs,
+    glyphs12 and player_digits match on lit/unlit only; hud_messages
+    matches on its own lit pixels against full brightness specifically (not
+    merely nonzero) and does not require its blank margins to be blank on
+    screen -- see _scan_words for why an exact match, correct for every
+    other face here, finds these particular words nowhere in a real
+    capture. See _scan_face and _scan_words for the matching, space and
+    noise rules each uses.
 
     The h=12 face has one real ambiguity, not a bug: code 0 ('0') and code
     0x1A ('O') render the identical bitmap, so inverting code -> bitmap into
@@ -396,9 +438,10 @@ def decode_text(rows, glyphs, glyphs12=None, score_glyphs=None, small_digits=Non
         lines += _scan_face(rows, bits_to_label, heights.pop(), glyph_cell_w,
                              binarize=binarize, min_glyphs=min_glyphs)
     if hud_messages:
-        binarized = [''.join('1' if c != '0' else '0' for c in row) for row in rows]
+        # raw levels, not binarized -- _scan_words matches lit pixels
+        # against full brightness ('3') specifically, see its own comment.
         messages = [(label, h, w, tuple(bits)) for label, (h, w, bits) in hud_messages.items()]
-        lines += _scan_words(binarized, messages)
+        lines += _scan_words(rows, messages)
     lines.sort(key=lambda yt: yt[0])
     return ' / '.join(text for _, text in lines)
 

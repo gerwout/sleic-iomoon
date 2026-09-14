@@ -253,20 +253,15 @@ own scenes under that label, per the method above.
   this item used to name as a candidate is ruled out, unchanged from
   before: it never exact-matches a real frame anywhere in this corpus.
 
-  **Measured against the committed corpus, the gain is real but small, and
-  it recovers isolated digits, not whole scores.** Consecutive digits in a
-  real number overlap on screen (a plain-overwrite draw order; see the doc
+  **Measured against the committed corpus, this table's own contribution is
+  small: 15 of 645 newly-recovered English scenes and 16 of 642 Spanish
+  ones (see the `PLAYER`/`BALL` item below for the total and for the face
+  that accounts for nearly all of it).** Consecutive digits in a real
+  number overlap on screen (a plain-overwrite draw order; see the doc
   above), so an exact-bitmap matcher only recovers the digit that happens
-  to survive a frame's own draw order — usually one. Combined with the
-  player/ball-number digit (`CS:0531B`, beside the `PLAYER`/`BALL` word
-  above) and this score table, re-splitting the committed corpus recovers
-  text on 69 of the 5716 English scene occurrences that previously decoded
-  empty (5576 of them) and 67 of the 5411 Spanish ones (5349 empty) — 54 of
-  922 distinct English screens (810 empty) and 52 of 824 distinct Spanish
-  ones (783 empty). All of it is isolated one- or two-digit numbers (`1`,
-  `2`, `1 1`, `1 3`, ...), none of it the `PLAYER`/`BALL` word itself (see
-  the item above) and none of it a multi-digit score. No previously-decoded
-  cell changed. Digit `1` is not decoded at all (a sentinel byte, not a
+  to survive a frame's own draw order — usually one, which is why this
+  table alone never recovers a multi-digit score, only isolated digits
+  (`1`, `2`, ...). Digit `1` is not decoded at all (a sentinel byte, not a
   stored digit, occupies its table slot — see the doc above), and a second,
   alternating drawing path (`CS:052BF`) is not modelled.
 - **The `h=12` face is pinned (table offset 75) and now decodes the
@@ -379,18 +374,48 @@ own scenes under that label, per the method above.
   `0198-ball-1-in-play` finds exact `PLAYER` matches on 9 frames and exact
   `BALL` matches on 10 more, alternating — the documented flash behaviour.
 
-  **Measured against the committed corpus, the gain from this table is
-  zero.** Scanned against all 922 English and 824 Spanish distinct
-  `repr.txt` contents, `hud_message_bitmaps()` matches none of them — every
-  scene's representative frame (its own last frame, by this corpus's
-  convention) happens to land during the flashing word's off phase, even
-  though the same bitmap is confirmed present elsewhere in that same
-  scene's raw frames. The player/ball-number digit beside the word (a
-  third, separate table, `CS:0531B`) does not share this flash and is
-  recovered instead — see the score item above for the actual count. If
-  the word itself is wanted, not just its number, a scene's
-  representative would need to be chosen for that (a frame partway through
-  the scene rather than always its last), which this corpus does not do.
+  **An exact bitmap match against this table recovers zero scenes in the
+  committed corpus, but the cause is the stored word's own blank margins,
+  not blink timing.** The first cut of this decoder matched the whole
+  stored cell — `PLAYER`'s own bitmap is 8 rows x 40 px, lit only at rows
+  1-6, columns 4-32 — against the frame exactly, requiring every blank
+  margin pixel to also read blank on screen. It never does: those margins
+  fall over the panel's own dithered background, so an exact match finds
+  `PLAYER`/`BALL` nowhere in either corpus even on a frame that shows both
+  words plainly (rendering `dmd/en/screens/0198-ball-1-in-play`'s own raw
+  per-ms frames confirms both on screen, simultaneously, on 44 of 46 of
+  them — not alternating, the flash-timing explanation this item
+  previously gave, which was itself an artifact of the same exact-match
+  bug: two words each needing their own margins clean in the same frame at
+  once is a much rarer coincidence than either alone).
+
+  **Fixed by matching only the word's own lit pixels, at full brightness,
+  and treating everything else as don't-care** (`scripts/dmd_dump_split.py`'s
+  `_scan_words`) — the stored bitmap's `1` pixels must read level 3 in the
+  frame; its `0` pixels are unconstrained. Doing that naively over-matches a
+  different way: a large, solid, near-uniformly-bright graphic (a
+  bonus-multiplier blob, an animation frame) satisfies almost any sparse
+  word mask trivially. Caught on `score-recover-hits`, where `BALL` and
+  `BOLA` both fired against such a graphic with no real word anywhere near
+  it, alongside a genuine `BALL` match elsewhere on the same frame — the
+  fix adds a second requirement, that no more than 20% of the word's own
+  *blank* pixels may also read level 3 (measured 0-3% on confirmed real
+  matches, 73-77% on the false positive above; not a close call). Checked
+  across every resulting match in both corpora: every one falls under a
+  gameplay label (`ball-N-*`, `score-ball-N-*`, `score-recover-*`,
+  `score-start`, `drop-bank-N-down`) and none under an implausible one.
+
+  **Measured against the committed corpus with the fix applied: 645 of the
+  5716 English scene occurrences that previously decoded empty now do (548
+  of 922 distinct screens), and 642 of 5411 Spanish (544 of 824
+  distinct).** `hud_message_bitmaps()` alone accounts for 642 of the 645
+  English recoveries and 639 of the 642 Spanish ones; the rest come from
+  the player/ball-number digit (`CS:0531B`) or the score table above,
+  sometimes alongside a HUD word on the same row — this is the combined
+  total the score item above points to. No previously-decoded cell changed
+  non-additively in either corpus — checked against both the immediately
+  preceding commit and the corpus as it stood before this whole item was
+  opened.
 - **The 38-record service-menu tree's own item/title text mostly doesn't
   render.** Beyond the root record and its first child, every deeper
   `svc-N`/`back-to-N` scene shows the `h=12` tile-glyph-bar level indicator
