@@ -2,18 +2,21 @@
 
 [← Back to main README](../README.md)
 
-Three captures of `iomoont` (the PRESS START tournament ROM) make up the corpus: an
-English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), and eight targeted fault captures
-(`dmd/faults/`). `dmd/README.md` and `dmd/faults/README.md` are the narrative account of
-how each was produced and what each one found along the way; this document is the index
-— what screen is where — and the coverage gate: which of the ROM's own strings the three
-captures together do and do not put on screen, and why.
+Four captures of `iomoont` (the PRESS START tournament ROM) make up the corpus: an
+English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), eight targeted fault captures
+(`dmd/faults/`), and one probe-forced capture of the tournament mod's SPECIAL/match
+`PRESS START` hook (`dmd/special/`). `dmd/README.md`, `dmd/faults/README.md` and
+`dmd/special/README.md` are the narrative account of how each was produced and what each
+one found along the way; this document is the index — what screen is where — and the
+coverage gate: which of the ROM's own strings the captures together do and do not put on
+screen, and why.
 
 | Corpus | Scene occurrences | Distinct screens | Labels |
 |---|---|---|---|
 | `dmd/en/` | 5716 | 922 | 118 |
 | `dmd/es/` | 5411 | 824 | 52 |
 | `dmd/faults/` (8 captures) | 178 | 159 | 7 labels, shared across captures (`unlabelled`, `boot`, `credit`, `ball-1-start`, `tilt-1`, `tilt-2`, `settle`) — a fault's own text rides on one of these, not a fault-named label of its own |
+| `dmd/special/` | 300 | 246 | 12, an ordinary boot/attract/game walk's own labels — the SPECIAL/match content itself rides on `ball-3-drained-gameover`, the same label a non-matching game over uses (`dmd/special/README.md`) |
 
 "Scene occurrences" counts every visit the walk makes; "distinct screens" counts unique
 `repr.txt` content — the number that answers "how many screens does this machine draw."
@@ -69,9 +72,12 @@ dmd/
 │       ├── repr.txt              # one committed frame per distinct screen
 │       └── frame-*.txt           # every raw frame of the scene (gitignored, regenerable)
 ├── es/                          # same layout, no service-menu tree (F19)
-└── faults/
-    ├── README.md                 # which probe forced each of the 8 captures
-    └── <fault>/                  # same iomoont.txt.gz / iomoont.marks / screens.csv / screens/ layout
+├── faults/
+│   ├── README.md                 # which probe forced each of the 8 captures
+│   └── <fault>/                  # same iomoont.txt.gz / iomoont.marks / screens.csv / screens/ layout
+└── special/
+    ├── README.md                 # the SPECIAL/match (D5077) probe and the three-way PRESS START comparison
+    └── iomoont.txt.gz / iomoont.marks / screens.csv / screens/   # same layout again
 ```
 
 ## Regenerating
