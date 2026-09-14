@@ -1,0 +1,14 @@
+# Boot-only walk for the SLEIC_FORCE_FAULT captures that must NOT insert a coin or
+# press START for real (task 18): ball-missing (an empty trough plus a real serve
+# attempt risks the F15 no-timeout ball-search deadlock) and the solenoid/flipper
+# self-test probes (solenoid-short, solenoid-cut, flipper-broken), whose one-shot
+# inbound-queue injection is timed against plain attract and landed on the wrong
+# component when a coin/START's own queue traffic was interleaved with it (verified:
+# the combined credit+START script below shifted the injected byte and drew SHORT
+# where CUT OR was requested).  The single START tap at frame 40 only clears the
+# boot defaults-confirm screen (sub_D53C9 blocks on any inbound J1 byte, F10/F14);
+# it does not spend a credit or attempt to start a game.
+    40 mark boot
+    40 tap 8 KEYCODE_1
+  1400 mark settle
+  1500 quit

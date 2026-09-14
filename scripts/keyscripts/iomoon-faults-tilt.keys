@@ -1,0 +1,33 @@
+# WARNING / ONE TILT / WARNING / TWO TILTS (task 18) -- ordinary gameplay, no
+# sleic.c probe.  The factory-default tilt-warnings adjustment (NVRAM 0x42) is 1,
+# giving a zero-warning budget ([4134:0033] = NVRAM[0x42]-1, reloaded at every
+# ball start, sub_D9EBB) -- the first TILT press already fully tilts with no
+# WARNING screen at all (matches the committed en/ corpus, which presses TILT once
+# and marks it "full-tilt" straight away).  To see the two warning screens for
+# real, the NVRAM's own tilt-warnings byte has to be 3 (budget 2) BEFORE this
+# script runs -- there is no live DIP for it, only the TECHNICAL > TILTS service
+# menu record (F14) or a direct NVRAM edit:
+#
+#   python3 -c "
+#   import sys
+#   p = sys.argv[1]
+#   d = bytearray(open(p,'rb').read())
+#   d[0x42] = 3
+#   open(p,'wb').write(d)" <nvram_directory>/iomoont.nv
+#
+# applied to an ALREADY-BOOTED once .nv (a brand new file is all zero and the
+# firmware's own signature check would just rewrite it back to the factory 1 --
+# boot once with no key script, quit, patch, then run this script against that
+# same nvram_directory without wiping it.  Keys: KEYCODE_1 START, KEYCODE_5 COIN,
+# KEYCODE_T TILT (src/wpc/sims/sleic/iomoon.c, simulation.txt).
+    40 mark boot
+   200 mark credit
+   200 tap 8 KEYCODE_5
+   260 mark ball-1-start
+   260 tap 8 KEYCODE_1
+   500 mark tilt-1
+   500 tap 10 KEYCODE_T
+   900 mark tilt-2
+   900 tap 10 KEYCODE_T
+  1200 mark settle
+  1400 quit
