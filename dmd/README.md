@@ -25,9 +25,16 @@ comment for what it covers and what it found running against the real binary.
 
 `iomoont` is the PRESS START tournament MOD (country 4, Netherlands, English
 by DIP default — F11). The walk covers boot, a full attract cycle, coin and
-credit, a three-ball game exercising every playfield feature, the mod's
-PRESS START screen at the normal end-of-game hook, the post-game sequence,
-and the entire 38-record service-menu tree.
+credit, then two games and the entire 38-record service-menu tree. The
+first game is the original feature-coverage game (both ramps, the orbit
+lane, all five bumpers twice round, both bull's-eyes, the drop bank to
+2/4/5 targets, the inner bank, both holes, Jupiter's lock twice for
+multiball, two tilt warnings to a full tilt) at an ordinary, non-qualifying
+score; the second (its labels prefixed `score-`) plays purely to clear the
+high-score bar and walk the initials wheel (three balls of lane hits, the
+awarded extra ball drained for real, then the RECORD INSCRIPTION screen).
+Both games end at the mod's own PRESS START screen at the normal
+end-of-game hook (`D5123`).
 
 ## Parent differential (`iomoont` vs `iomoon`)
 
@@ -190,25 +197,50 @@ touches only the end-of-game path.
   the dump is not settled. What would settle it: a `-debug` build with the
   `SLEIC_TRACE_PW` probe enabled, watching for a PCS0/PCS4 write in the gap.
 - **The mod's SPECIAL trampoline (`D5077`) is not exercised.** `PRESS START`
-  appears twice (the boot seed screen, then the normal end-of-game hook at
-  `D5123`); a real match win, which is what reaches `D5077`, needs neither
-  score nor time forced deliberately by this walk. Tried directly: a score
-  large enough to also clear the lowest high-score preset (50,000,000) was
-  forced by hand (lanes plus a tuned run of bull's-eye hits), but every
-  score tried at or above roughly 48-52,000,000 also earns an **EXTRA
-  BALL**, and the ball simulator's fixed three-ball trough then has no
-  further ball to serve — the display sticks on "EXTRA BALL" with the score
-  frozen (checked: the panel keeps animating its own dithered background
-  the whole time, so the machine is not wedged, it simply never has a ball
-  to give back), for as long as tried (three separate plunge+drain attempts
-  per run, waits past 20,000 frames). The high-score wheel-walk (Important
-  3 of fix round 1) could not be exercised for the same reason: no run that
-  reaches the qualifying score also reaches a genuine game-over to enter it
-  at. What would settle it: either a `iomoont`/`iomoon` NVRAM edit that
-  raises the lowest high-score preset above the extra-ball threshold before
-  the run (so a qualifying score no longer also earns an extra ball), or a
-  simulator with more than three balls in its trough so an awarded extra
-  ball actually has one to serve.
+  appears three times in this corpus (the boot seed screen, the normal
+  end-of-game hook at `D5123` twice — once per game below); reaching
+  `D5077` needs an actual match win, which this walk does not force.
+
+  An earlier round of this corpus recorded, as committed fact, that every
+  score at or above roughly 50,000,000 also earns an EXTRA BALL and that
+  "the ball simulator's fixed three-ball trough then has no further ball to
+  serve." That was wrong, and the real cause is F10/F11's short-ball
+  "salida nula" replay protection: `sub_D368C`, tested at `D31D3`, replays
+  any ball — an awarded extra ball included — that scores at or below the
+  NVRAM `0x43` threshold (factory 100,000), indistinguishable from a player
+  abandoning the ball. A bare plunge immediately followed by a drain scores
+  exactly zero and loops forever under this rule; it is not specific to
+  extra balls (an ordinary drained ball with no score loops identically)
+  and it is not a fault in the ball simulator, the driver, or the firmware.
+
+  With that understood, `scripts/keyscripts/iomoon-en.keys` clears the
+  lowest high-score preset (50,000,000 at NVRAM `0x85`, F10) with margin —
+  three balls of unlit-lane hits land the score around 233,000,000 — and
+  gives the awarded recovery ball five diverse real hits (a bumper, a
+  bull's-eye, a drop target, a ramp, Jupiter) before draining it, rather
+  than a bare plunge-and-drain. Both the qualifying score and the RECORD
+  INSCRIPTION entry screen are reached cleanly this way, and the high-score
+  wheel-walk (docs/iomoon_game_rules.md 4.2: right flipper forward, left
+  flipper backward, START fixes the character shown) is captured in
+  full — `score-high-score-entry` through `wheel-c3-fixed` in
+  `screens.csv`, including one erase-symbol demonstration
+  (`wheel-c3-erase-symbol` /
+  `wheel-c3-erase-tried`) — with the selected character changing at every
+  single marked step, confirmed against the current `h=12` decoder rather
+  than assumed from the key presses alone.
+
+  What is still open is the match itself: neither the ordinary,
+  non-qualifying game played first nor the qualifying one played second in
+  this same capture shows a distinct match/lottery screen in the window
+  after their own `PRESS START` — both go straight back into the normal
+  attract cycle (S. MOONLIGHT / J.SUNSHINE / ...), not a match digit or a
+  third, differently reached `PRESS START`. Reaching `D5077` needs an
+  actual match win, i.e. the score's last digit landing on whatever this
+  walk's fixed key sequence deterministically draws, and this walk does
+  not aim for that.
+  What would settle it: tracing the match check itself with a `-debug`
+  build (there is no probe for it among the `DEBUG_SLEIC` set) rather than
+  searching for a lucky score/timing combination by hand.
 - **The pre-credit `attract` section and the post-game `attract-again`
   section are the same content, at different lengths.** `attract-again` (the
   post-game return to idle) already runs long enough to show the attract
