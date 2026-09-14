@@ -42,21 +42,37 @@ event schedule — every frame a key is pressed, every drain, every plunge — n
 
 Ten trials, one per digit, each against a freshly-wiped NVRAM. None matched: NVRAM's
 credit triple read `0` after every one of them (`scripts/nvcheck.py`), where a match would
-read `1`. This is a real, clean null result under the simplest form of the controlled
-swap the approach calls for — but it is **not** proof the counter is stable (or unstable)
-under it. A single window with no hit does not distinguish "the counter behaves and this
-window's own sampled value simply was not one of the ten offered" from a genuine
-timing-sensitivity in exactly when `sub_D4CF4` samples it. Settling that needs an
-independent read of `4000:113F` at the sampling instant, which this round could not get:
+read `1`, and the ten trials' own saved stores are byte-identical to each other.
 
-**The sharpest lead for settling this is cheaper than reading the counter.** If the counter
-is stable across the ten trials, and the trials genuinely offered all ten units digits, then
-one of them had to match — that is arithmetic, not luck. A clean null across all ten
-therefore says at least one of those two premises is false. Checking the second is easy and
-needs no debugger: record each trial's own final score and confirm its units digit is what
-the slot pattern intended. If the digits did vary as designed, the premise that fails is the
-counter's stability, and that is the answer the independent read was after. If they did not,
-the sweep never tested what it meant to test.
+**The digit-controlled game never starts, in any of the ten trials — the null is a harness
+artifact, not a finding about the counter or the sweep's own digit coverage.** The sweep
+runs its nine slots inside a *second* three-ball game, its own credit and start presses
+fired at a fixed frame offset after a throwaway warm-up game's end. The DMD frame at the
+instant that second game's own ball-1 mark fires shows the attract-mode logo screen
+(`dmd/en/screens/0008-attract/repr.txt`'s own content, `docs/iomoon_dmd_screens.md`), not
+gameplay — checked directly against three trials spanning the sweep (all-lane, all-bumper,
+and one in between) and identical, frame-for-frame, in every one. The cause is timing: the
+warm-up game's own `PRESS START` holds for several seconds and is followed by an automatic
+high-score-entry prompt — in the English corpus, `PRESS START` at ms 252699 is followed by
+`high-score-entry` beginning at ms 268799, +16100 ms later (`dmd/en/screens.csv` rows
+375-379) — and the sweep's own credit and start presses fire about 16.5 s after its own
+warm-up `PRESS START`, squarely inside that window. A coin is accepted at any time (F6's
+NMI-driven coin path), but the start press lands on the name-entry screen instead of a
+fresh game: there, per §4.2, START fixes the character currently shown rather than starting
+one. So the nine scripted slots reach a machine already back in the attract loop, the second
+game never runs, and `sub_D4CF4` never executes for any of the ten trials.
+
+This means the clean null does not speak to either premise an arithmetic argument over the
+ten trials would otherwise name (counter stability under the swap, or whether the swap
+covered all ten digits). That argument's own unstated premise — that the ten trials are ten
+completed games, each reaching the compare — is the one that is false. Neither the counter's
+stability nor the sweep's own digit coverage has been tested yet. A sweep that would test
+either needs to confirm, per trial, that the digit-controlled game has actually started —
+its own ball-1 `PLAYER BALL` HUD on screen — before relying on its final score, rather than
+firing at a fixed offset after a throwaway warm-up game.
+
+Reading the counter directly still needs a real memory watch, and that path remains blocked
+as before:
 
 - The classic MAME debugger (`build-debug/sdl3pinmame -debug`) needs a real display
   window; under this project's own headless convention, `SDL_VIDEODRIVER=dummy`, it
@@ -83,10 +99,11 @@ the sweep never tested what it meant to test.
   PinMAME's `register_zone` (`src/memory.c`) uses for this CPU does not place the byte
   where a raw content scan can find it.
 
-What would settle the stability question directly: the same digit-vs-lottery correlation
-run against a `-debug` build under a real X server (`Xvfb`/`xvfb-run`, not the dummy
-driver this project otherwise uses) with a genuine memory watch on `4000:113F`, reading
-its value at the exact instant `D4DCB` executes across several digit trials.
+What would settle the stability question directly: a corrected sweep — one that waits for
+its own digit-controlled game to actually start rather than firing at a fixed offset after
+a warm-up game — run against a `-debug` build under a real X server (`Xvfb`/`xvfb-run`, not
+the dummy driver this project otherwise uses) with a genuine memory watch on `4000:113F`,
+reading its value at the exact instant `D4DCB` executes across several digit trials.
 
 ## Reached anyway, and said so plainly
 
@@ -198,6 +215,9 @@ score irrelevant to the outcome; its own header comment states that plainly.
   shown tracks `4000:113F`'s value at the moment of the match — which needs the same
   memory-watch tooling the stability question above is still waiting on.
 - **The lottery counter's stability under the controlled digit swap is not established
-  either way** — see above. The sweep that would settle it needs a genuine breakpoint or
-  memory watch on `4000:113F`, not available headlessly with what this round had access
-  to.
+  either way** — see above. The ten-trial sweep as it stands never reaches a real compare
+  at all (its digit-controlled game never starts — see above), so it settles neither the
+  counter's stability nor its own digit coverage. What would settle it: a sweep corrected
+  to confirm its digit-controlled game has actually started before relying on it, together
+  with a genuine breakpoint or memory watch on `4000:113F`, neither available headlessly
+  with what this project has tried so far.

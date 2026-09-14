@@ -389,31 +389,35 @@ own scenes under that label, per the method above.
   confirmed by the byte actually landing on disk) and runs the SPECIAL animation through
   the same `D5076`/`D5077` trampoline the tournament mod hooks, ending at `PRESS START`.
 
-  **A controlled sweep did not land the match naturally, and that is worth stating
-  plainly rather than glossing over.** The approach `dmd/special/README.md` describes in
-  full: nine fixed press slots across a three-ball game, each slot's own frame and hold
-  duration identical in every trial, toggled only between a lane (100,000, units digit 0)
-  and a bumper/bull's-eye/inner-bank (10,001/20,001/50,001, all units digit 1 — the
-  fact every nonzero-digit award in the rules shares — docs/iomoon_game_rules.md §3.5) so
-  that a trial's own final units digit is exactly its count of nonzero-digit slots, 0
-  through 9, with the event schedule never moving. None of the ten digits matched inside
-  the window tested. This is not proof the counter is unstable under the controlled swap
-  — a null result over one window does not distinguish "the counter is fine but this
-  window's own value falls outside 0–9 relative to what was tried" from an actual
-  timing-sensitivity in the counter's own sampling instant — only that the natural route
-  did not pay off in the time available. Independently reading `4000:113F` to settle
-  which is which needs a genuine breakpoint/memory-watch tool; the debug build's own
-  classic debugger requires a real display and would not start under this project's
-  headless `SDL_VIDEODRIVER=dummy` convention (it segfaults trying to open one), and
-  MAME's own save-state file — reachable headlessly, confirmed working, format is a plain
-  `memcpy` of every `state_save_register`'d region with no per-item tag stored in the
-  payload — could not be resolved to this one byte's offset among roughly 780,000 other
-  byte positions in the ~1.15 MB save that also happen to read 0–9 (almost certainly a
-  video bitmap dominating the file), even matching against the exact predicted tick
-  sequence for several trial spacings. What would settle the stability question: the same
-  digit-vs-lottery correlation, run against a `-debug` build under a real X server
-  (`Xvfb`/`xvfb-run` rather than the dummy driver) with a genuine memory watch on
-  `4000:113F`, which this round did not reach.
+  **A controlled sweep did not land the match naturally, and the sweep itself turns out
+  not to reach a real game.** The approach `dmd/special/README.md` describes in full: nine
+  fixed press slots across a three-ball game, each slot's own frame and hold duration
+  identical in every trial, toggled only between a lane (100,000, units digit 0) and a
+  bumper/bull's-eye/inner-bank (10,001/20,001/50,001, all units digit 1 — the fact every
+  nonzero-digit award in the rules shares — docs/iomoon_game_rules.md §3.5) so that a
+  trial's own final units digit is exactly its count of nonzero-digit slots, 0 through 9,
+  with the event schedule never moving. None of the ten digits matched, and checking why
+  finds the digit-controlled game never starts: it runs as a second game, its own credit
+  and start presses fired at a fixed offset after a throwaway warm-up game, and that offset
+  (about 16.5 s after the warm-up's own `PRESS START`) lands inside the automatic
+  high-score-entry prompt that follows it (`PRESS START` to `high-score-entry` is +16100 ms
+  in `dmd/en/screens.csv`) — so the start press fixes a name-entry character (§4.2) instead
+  of starting a game, confirmed directly by the DMD showing the attract-mode logo, not
+  gameplay, at the instant the second game's own ball-1 mark fires, identically across
+  three trials checked. `sub_D4CF4` never runs in any of the ten trials, so the null
+  result says nothing about the counter's stability or the sweep's own digit coverage —
+  it says the sweep needs to confirm its own game actually started (its `PLAYER BALL` HUD
+  on screen) before relying on it. What would settle the stability question once a
+  corrected sweep does that: the same digit-vs-lottery correlation run against a `-debug`
+  build under a real X server (`Xvfb`/`xvfb-run` rather than the dummy driver) with a
+  genuine memory watch on `4000:113F` — blocked headlessly so far the same way: the debug
+  build's own classic debugger requires a real display and segfaults under this project's
+  `SDL_VIDEODRIVER=dummy` convention, and MAME's own save-state file, reachable headlessly
+  and confirmed working (a plain `memcpy` of every `state_save_register`'d region with no
+  per-item tag in the payload), could not be resolved to this one byte's offset among
+  roughly 780,000 other byte positions in the ~1.15 MB save that also happen to read 0–9
+  (almost certainly a video bitmap dominating the file), even matching against the exact
+  predicted tick sequence for several trial spacings.
 
   **Reached anyway, via the documented last resort, and said so plainly.** A one-byte
   ROM patch — physical `D4DCB`, the digit-vs-counter `JE` (`0x74`) turned into an
