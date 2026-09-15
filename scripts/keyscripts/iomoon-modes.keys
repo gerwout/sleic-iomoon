@@ -1,0 +1,83 @@
+# The two-lock and bank modes for iomoon -- the sequences the Monolith walk and
+# the multiball capture cannot reach.
+#
+# All in ONE ball, which the drop bank makes possible: it starts standing and
+# resets only at ball start (rules 3.3.6), so flattening it mid-ball is what
+# arms Special Drop Probe AND what turns the second Jupiter lock into Wonderful
+# Thing rather than Multiball (rules 3.3.7).  No drain is needed and none is
+# scripted -- a drain here would put the bank back up and undo both.
+#
+# Order, and why:
+#   1. ORBITS x6 (lane 4 then bull's-eye 1).  Jupiter retains nothing until
+#      [413C:0102] reaches its cap of 6, so every lock below depends on it.
+#   2. All five drop targets, then the inner target.  With the bank already
+#      flat, the inner target starts SPECIAL DROP PROBE: LP7, LP8 and LP9 all
+#      light for 10 s and only LP8 is left when it expires (rules 3.2.7/3.3.6).
+#   3. Jupiter lock 1, its replacement ball, then Jupiter lock 2 -- with the
+#      bank down this is WONDERFUL THING, not Multiball (rules 3.2.2), and its
+#      own distinguishing shot is Ramp 2, which lights lane 8's extra ball and
+#      releases the held balls one after another rather than together.
+#   4. Both shooters, which alternate LPA11 / LPA12, Lagrange Scape and
+#      Lagrange Orbit -- the Monolith pair that is never cashed (rules 3.3.4).
+#
+# Needs a seeded NVRAM with credits -- see dmd/multiball/README.md.
+500 mark boot
+560 tap 12 KEYCODE_1
+620 mark start
+900 tap 8 KEYCODE_SPACE
+960 mark plunge
+1200 tap 6 KEYCODE_S
+1208 mark orbits-lane4-1
+1260 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1268 mark orbits-letter-1
+1350 tap 6 KEYCODE_S
+1358 mark orbits-lane4-2
+1410 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1418 mark orbits-letter-2
+1500 tap 6 KEYCODE_S
+1508 mark orbits-lane4-3
+1560 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1568 mark orbits-letter-3
+1650 tap 6 KEYCODE_S
+1658 mark orbits-lane4-4
+1710 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1718 mark orbits-letter-4
+1800 tap 6 KEYCODE_S
+1808 mark orbits-lane4-5
+1860 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1868 mark orbits-letter-5
+1950 tap 6 KEYCODE_S
+1958 mark orbits-lane4-6
+2010 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+2018 mark orbits-letter-6
+2100 mark orbits-complete
+2250 mark bank-start
+2250 tap 6 KEYCODE_Z
+2258 mark drop-target-1
+2340 tap 6 KEYCODE_X
+2348 mark drop-target-2
+2430 tap 6 KEYCODE_C
+2438 mark drop-target-3
+2520 tap 6 KEYCODE_V
+2528 mark drop-target-4
+2610 tap 6 KEYCODE_N
+2618 mark drop-target-5
+2820 tap 6 KEYCODE_I
+2828 mark special-drop-probe
+3620 mark probe-expired
+3770 tap 6 KEYCODE_J
+3778 mark wonderful-lock-1
+4070 tap 8 KEYCODE_SPACE
+4078 mark wonderful-replacement-1
+4330 tap 6 KEYCODE_J
+4338 mark wonderful-thing-lock-2
+4650 tap 8 KEYCODE_SPACE
+4658 mark wonderful-replacement-2
+4930 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+4938 mark wonderful-ramp2
+5630 tap 6 KEYCODE_LCONTROL,KEYCODE_MINUS
+5638 mark shooter-left-lagrange
+5890 tap 6 KEYCODE_RCONTROL,KEYCODE_MINUS
+5898 mark shooter-right-lagrange
+6390 mark end
+6540 quit

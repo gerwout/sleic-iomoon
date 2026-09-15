@@ -218,6 +218,19 @@ present anywhere else in this corpus**. `dmd/monolith/README.md` has the
 mechanism, the coverage argument and what it does not yet establish — the
 screens are traceable to a round and stage, not yet labelled per named award.
 
+## Wonderful Thing and the bank (`modes/`), captured against `iomoon`
+
+The sequences the Monolith walk and the multiball capture cannot reach, all in
+one ball because the drop bank resets only at ball start: ORBITS, the bank
+cleared, **Special Drop Probe**, **Wonderful Thing** and the Lagrange pair.
+
+123 distinct screens, **50 new to the corpus**. Every sequence is confirmed from
+the firmware's own state rather than from the script — `[413C:0102]` reaching 6,
+`LP7`/`LP8`/`LP9` lit together for the Probe, and the lock counter `[4134:0030]`
+going 1 → 2 and then back down **2 → 1 → 0 in two steps**, which is §3.2.2's
+staged release and is what separates Wonderful Thing from Multiball.
+`dmd/modes/README.md` has the table.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game

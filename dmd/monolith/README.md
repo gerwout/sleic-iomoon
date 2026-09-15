@@ -82,6 +82,35 @@ stage of every round, so a screen can be traced to what produced it:
 | `play-scoop2-N` | 12 |
 | `shooter-left-lagrange`, `shooter-right-lagrange` | the `LPA11`/`LPA12` pair |
 
+## Which award each round cashed
+
+Read from the lamp matrix, not guessed. F18 puts the Monolith cycle on lamp
+column 3 bits 0-7 (`LC2`-`LC9` = LPA1-LPA8) and column 4 bits 0-1 (`LC10`,
+`LC11` = LPA9, LPA10); the Lagrange pair `LPA11`/`LPA12` is column 4 bits 2-3
+and is read separately, since it is lit all the time and would otherwise mask
+the cycle. The position **chases** rather than resting, so what a round cashes
+is whichever lamp is lit as the ball enters the scoop:
+
+| Round | Monolith at the scoop | Award |
+|---|---|---|
+| `cash-1` | LPA2 | 3,000,000 |
+| `cash-2` | LPA7 | Impact Count |
+| `cash-3` | LPA4 | 6,000,000 |
+| `cash-4` | LPA9 | Special Drop Target |
+| `cash-5` | LPA6 | 9,000,000 |
+| `cash-6` | LPA1 | Extra Ball |
+| `cash-7` | LPA8 | Orbit Flip |
+| `cash-8` | LPA5 | Special |
+| `cash-9` | LPA10 | Star Ride |
+| `cash-10` | LPA7 | Impact Count |
+| `cash-11` | LPA4 | 6,000,000 |
+| `cash-12` | LPA9 | Special Drop Target |
+
+**Nine of the ten positions were cashed.** The missing one is `LPA3`, Little
+Multiball, and its absence is correct rather than a gap: §3.3.3 lights `LPA3`
+only while the ORBITS lights are on, and this walk never spells ORBITS. The
+`modes/` capture does, and covers the Jupiter side of it.
+
 ## What this does and does not establish
 
 It establishes that the simulator can **drive every input the twelve positions
@@ -89,8 +118,8 @@ need** — bumpers, lane 6, both scoops, both ramps, all five drop targets and
 both shooters — and that each produces screens; and that a twelve-round walk of
 a ten-position cycle cashes every position at least once.
 
-It does **not** yet label each screen with the named award it belongs to. Doing
-that needs either the lamp matrix (F18 puts the Monolith on `LC2`–`LC13`) read
-alongside the frames, or the per-screen DMD text decoded and matched against the
-award names. Until then the marks say which round and stage a screen came from,
-not which of the ten awards was showing.
+Each round is now labelled with the award it cashed, from the lamp matrix, so a
+`cash-N` screen has a name. What is still unlabelled is the **play** stages: a
+`play-ramp1-7` screen belongs to whatever mode round 7 started, which the table
+above gives, but a screen inside a 20-hit bumper burst may belong to the mode or
+to ordinary play, and nothing here separates those.

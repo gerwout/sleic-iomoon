@@ -809,6 +809,22 @@ drop bank.
 Special Drop Probe is the one mode at 10 seconds rather than 15; §3.2.7 and
 §3.3.6 state it independently and agree.
 
+**Three of these are confirmed against the firmware's own state**, captured in
+[`../dmd/modes/`](../dmd/modes/) and [`../dmd/monolith/`](../dmd/monolith/):
+
+- **Special Drop Probe** lights `LP7`, `LP8` and `LP9` together — lamp column 5
+  bits 4-6 (F18) — after the inner target with the bank already flat, and the
+  bank cleared on its own leaves `LP8` alone beforehand, exactly as §3.3.6 says.
+- **Wonderful Thing's staged release is visible in the lock counter.**
+  `[4134:0030]` goes 1 → 2 as the two balls are locked with the bank down, then
+  comes back down **2 → 1 → 0 in two separate steps** rather than at once —
+  §3.2.2's "released slowly, one after another", against Multiball's
+  simultaneous release.
+- **The Monolith chases rather than resting.** Its cycle lamps (column 3 bits
+  0-7, column 4 bits 0-1) run continuously, so what a scoop cashes is whichever
+  position is lit at that instant; `LPA11`/`LPA12` sit on column 4 bits 2-3 and
+  are lit independently of the cycle.
+
 **Special Drop Target is worth the least with the bank already flat**, because
 five of its seven eligible targets are drop targets that do not come back up
 during the ball — see [the bank](#the-drop-target-bank--bancada).

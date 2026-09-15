@@ -1,0 +1,591 @@
+# Grand tour for iomoon -- every mode, award and sequence the rules describe,
+# in the order the machine allows them.
+#
+# TWO BALLS, because the drop bank resets only at ball start (rules 3.3.6): a
+# drop-dependent award started with the bank already flat cannot be completed,
+# and Special Drop Probe needs five STANDING targets to knock down, while
+# Special Drop Target wants them standing too.  So ball 1 leaves the bank alone
+# and ball 2 flattens it deliberately.
+#
+# BALL 1 -- ORBITS, then the Monolith cycle
+#   Six lane-4 / bull's-eye-1 pairs put [413C:0102] at its cap of 6.  That gates
+#   three things (rules 3.3.7/3.3.3): Jupiter retaining a ball at all, LPA3
+#   (Little Multiball) being lightable on the Monolith, and lane 10's larger
+#   award.  Without it LPA3 never lights and the cycle can only ever show nine
+#   of its ten positions.
+#   Then fourteen rounds of {lane 6 to arm, one bumper to step, scoop 1 to
+#   cash, play}.  The burst is 20 bumper hits (Impact Count wants 20 inside its
+#   15 s, and 20 is cycle-neutral so the walk stays aligned), both ramps and
+#   scoop 2.  Ramp 1 during Orbit Flip is what lights LBH, Black Hole Power.
+#   Deliberately NO drop targets in this burst: they would flatten the bank and
+#   make Special Drop Target worthless for the rest of the ball.
+#   Then a Jupiter lock and scoop 1, which is how LPA3 pays out -- Little
+#   Multiball is awarded at Jupiter, not at the scoop (rules 3.3.3/3.2.6).
+#
+# BALL 2 -- the bank, and the two-lock modes
+#   ORBITS again, then all five drop targets plus the inner target, which with
+#   the bank already flat is what starts Special Drop Probe (rules 3.2.7).
+#   Then two Jupiter locks with the bank DOWN, which is Wonderful Thing rather
+#   than Multiball (rules 3.3.7) -- the one two-lock mode the multiball capture
+#   does not cover, since that one leaves the bank standing.
+#   Finally both shooters, which alternate LPA11 / LPA12 (Lagrange Scape /
+#   Lagrange Orbit), the pair that is never cashed.
+#
+# Needs a seeded NVRAM with credits -- see dmd/multiball/README.md.
+500 mark boot
+560 tap 12 KEYCODE_1
+620 mark b1-start
+900 tap 8 KEYCODE_SPACE
+960 mark b1-plunge
+1200 tap 6 KEYCODE_S
+1208 mark b1-orbits-lane4-1
+1255 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1263 mark b1-orbits-letter-1
+1330 tap 6 KEYCODE_S
+1338 mark b1-orbits-lane4-2
+1385 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1393 mark b1-orbits-letter-2
+1460 tap 6 KEYCODE_S
+1468 mark b1-orbits-lane4-3
+1515 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1523 mark b1-orbits-letter-3
+1590 tap 6 KEYCODE_S
+1598 mark b1-orbits-lane4-4
+1645 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1653 mark b1-orbits-letter-4
+1720 tap 6 KEYCODE_S
+1728 mark b1-orbits-lane4-5
+1775 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1783 mark b1-orbits-letter-5
+1850 tap 6 KEYCODE_S
+1858 mark b1-orbits-lane4-6
+1905 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1913 mark b1-orbits-letter-6
+1980 mark b1-orbits-complete
+2060 tap 6 KEYCODE_L
+2068 mark arm-1
+2130 tap 6 KEYCODE_W
+2138 mark step-1
+2210 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+2222 mark cash-1
+2340 mark play-bumpers-1
+2340 tap 5 KEYCODE_W
+2366 tap 5 KEYCODE_E
+2392 tap 5 KEYCODE_D
+2418 tap 5 KEYCODE_F
+2444 tap 5 KEYCODE_G
+2470 tap 5 KEYCODE_W
+2496 tap 5 KEYCODE_E
+2522 tap 5 KEYCODE_D
+2548 tap 5 KEYCODE_F
+2574 tap 5 KEYCODE_G
+2600 tap 5 KEYCODE_W
+2626 tap 5 KEYCODE_E
+2652 tap 5 KEYCODE_D
+2678 tap 5 KEYCODE_F
+2704 tap 5 KEYCODE_G
+2730 tap 5 KEYCODE_W
+2756 tap 5 KEYCODE_E
+2782 tap 5 KEYCODE_D
+2808 tap 5 KEYCODE_F
+2834 tap 5 KEYCODE_G
+2910 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+2918 mark play-ramp1-1
+3010 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+3018 mark play-ramp2-1
+3110 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+3118 mark play-scoop2-1
+3330 tap 6 KEYCODE_L
+3338 mark arm-2
+3400 tap 6 KEYCODE_W
+3408 mark step-2
+3480 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+3492 mark cash-2
+3610 mark play-bumpers-2
+3610 tap 5 KEYCODE_W
+3636 tap 5 KEYCODE_E
+3662 tap 5 KEYCODE_D
+3688 tap 5 KEYCODE_F
+3714 tap 5 KEYCODE_G
+3740 tap 5 KEYCODE_W
+3766 tap 5 KEYCODE_E
+3792 tap 5 KEYCODE_D
+3818 tap 5 KEYCODE_F
+3844 tap 5 KEYCODE_G
+3870 tap 5 KEYCODE_W
+3896 tap 5 KEYCODE_E
+3922 tap 5 KEYCODE_D
+3948 tap 5 KEYCODE_F
+3974 tap 5 KEYCODE_G
+4000 tap 5 KEYCODE_W
+4026 tap 5 KEYCODE_E
+4052 tap 5 KEYCODE_D
+4078 tap 5 KEYCODE_F
+4104 tap 5 KEYCODE_G
+4180 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+4188 mark play-ramp1-2
+4280 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+4288 mark play-ramp2-2
+4380 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+4388 mark play-scoop2-2
+4600 tap 6 KEYCODE_L
+4608 mark arm-3
+4670 tap 6 KEYCODE_W
+4678 mark step-3
+4750 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+4762 mark cash-3
+4880 mark play-bumpers-3
+4880 tap 5 KEYCODE_W
+4906 tap 5 KEYCODE_E
+4932 tap 5 KEYCODE_D
+4958 tap 5 KEYCODE_F
+4984 tap 5 KEYCODE_G
+5010 tap 5 KEYCODE_W
+5036 tap 5 KEYCODE_E
+5062 tap 5 KEYCODE_D
+5088 tap 5 KEYCODE_F
+5114 tap 5 KEYCODE_G
+5140 tap 5 KEYCODE_W
+5166 tap 5 KEYCODE_E
+5192 tap 5 KEYCODE_D
+5218 tap 5 KEYCODE_F
+5244 tap 5 KEYCODE_G
+5270 tap 5 KEYCODE_W
+5296 tap 5 KEYCODE_E
+5322 tap 5 KEYCODE_D
+5348 tap 5 KEYCODE_F
+5374 tap 5 KEYCODE_G
+5450 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+5458 mark play-ramp1-3
+5550 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+5558 mark play-ramp2-3
+5650 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+5658 mark play-scoop2-3
+5870 tap 6 KEYCODE_L
+5878 mark arm-4
+5940 tap 6 KEYCODE_W
+5948 mark step-4
+6020 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+6032 mark cash-4
+6150 mark play-bumpers-4
+6150 tap 5 KEYCODE_W
+6176 tap 5 KEYCODE_E
+6202 tap 5 KEYCODE_D
+6228 tap 5 KEYCODE_F
+6254 tap 5 KEYCODE_G
+6280 tap 5 KEYCODE_W
+6306 tap 5 KEYCODE_E
+6332 tap 5 KEYCODE_D
+6358 tap 5 KEYCODE_F
+6384 tap 5 KEYCODE_G
+6410 tap 5 KEYCODE_W
+6436 tap 5 KEYCODE_E
+6462 tap 5 KEYCODE_D
+6488 tap 5 KEYCODE_F
+6514 tap 5 KEYCODE_G
+6540 tap 5 KEYCODE_W
+6566 tap 5 KEYCODE_E
+6592 tap 5 KEYCODE_D
+6618 tap 5 KEYCODE_F
+6644 tap 5 KEYCODE_G
+6720 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+6728 mark play-ramp1-4
+6820 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+6828 mark play-ramp2-4
+6920 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+6928 mark play-scoop2-4
+7140 tap 6 KEYCODE_L
+7148 mark arm-5
+7210 tap 6 KEYCODE_W
+7218 mark step-5
+7290 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+7302 mark cash-5
+7420 mark play-bumpers-5
+7420 tap 5 KEYCODE_W
+7446 tap 5 KEYCODE_E
+7472 tap 5 KEYCODE_D
+7498 tap 5 KEYCODE_F
+7524 tap 5 KEYCODE_G
+7550 tap 5 KEYCODE_W
+7576 tap 5 KEYCODE_E
+7602 tap 5 KEYCODE_D
+7628 tap 5 KEYCODE_F
+7654 tap 5 KEYCODE_G
+7680 tap 5 KEYCODE_W
+7706 tap 5 KEYCODE_E
+7732 tap 5 KEYCODE_D
+7758 tap 5 KEYCODE_F
+7784 tap 5 KEYCODE_G
+7810 tap 5 KEYCODE_W
+7836 tap 5 KEYCODE_E
+7862 tap 5 KEYCODE_D
+7888 tap 5 KEYCODE_F
+7914 tap 5 KEYCODE_G
+7990 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+7998 mark play-ramp1-5
+8090 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+8098 mark play-ramp2-5
+8190 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+8198 mark play-scoop2-5
+8410 tap 6 KEYCODE_L
+8418 mark arm-6
+8480 tap 6 KEYCODE_W
+8488 mark step-6
+8560 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+8572 mark cash-6
+8690 mark play-bumpers-6
+8690 tap 5 KEYCODE_W
+8716 tap 5 KEYCODE_E
+8742 tap 5 KEYCODE_D
+8768 tap 5 KEYCODE_F
+8794 tap 5 KEYCODE_G
+8820 tap 5 KEYCODE_W
+8846 tap 5 KEYCODE_E
+8872 tap 5 KEYCODE_D
+8898 tap 5 KEYCODE_F
+8924 tap 5 KEYCODE_G
+8950 tap 5 KEYCODE_W
+8976 tap 5 KEYCODE_E
+9002 tap 5 KEYCODE_D
+9028 tap 5 KEYCODE_F
+9054 tap 5 KEYCODE_G
+9080 tap 5 KEYCODE_W
+9106 tap 5 KEYCODE_E
+9132 tap 5 KEYCODE_D
+9158 tap 5 KEYCODE_F
+9184 tap 5 KEYCODE_G
+9260 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+9268 mark play-ramp1-6
+9360 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+9368 mark play-ramp2-6
+9460 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+9468 mark play-scoop2-6
+9680 tap 6 KEYCODE_L
+9688 mark arm-7
+9750 tap 6 KEYCODE_W
+9758 mark step-7
+9830 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+9842 mark cash-7
+9960 mark play-bumpers-7
+9960 tap 5 KEYCODE_W
+9986 tap 5 KEYCODE_E
+10012 tap 5 KEYCODE_D
+10038 tap 5 KEYCODE_F
+10064 tap 5 KEYCODE_G
+10090 tap 5 KEYCODE_W
+10116 tap 5 KEYCODE_E
+10142 tap 5 KEYCODE_D
+10168 tap 5 KEYCODE_F
+10194 tap 5 KEYCODE_G
+10220 tap 5 KEYCODE_W
+10246 tap 5 KEYCODE_E
+10272 tap 5 KEYCODE_D
+10298 tap 5 KEYCODE_F
+10324 tap 5 KEYCODE_G
+10350 tap 5 KEYCODE_W
+10376 tap 5 KEYCODE_E
+10402 tap 5 KEYCODE_D
+10428 tap 5 KEYCODE_F
+10454 tap 5 KEYCODE_G
+10530 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+10538 mark play-ramp1-7
+10630 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+10638 mark play-ramp2-7
+10730 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+10738 mark play-scoop2-7
+10950 tap 6 KEYCODE_L
+10958 mark arm-8
+11020 tap 6 KEYCODE_W
+11028 mark step-8
+11100 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+11112 mark cash-8
+11230 mark play-bumpers-8
+11230 tap 5 KEYCODE_W
+11256 tap 5 KEYCODE_E
+11282 tap 5 KEYCODE_D
+11308 tap 5 KEYCODE_F
+11334 tap 5 KEYCODE_G
+11360 tap 5 KEYCODE_W
+11386 tap 5 KEYCODE_E
+11412 tap 5 KEYCODE_D
+11438 tap 5 KEYCODE_F
+11464 tap 5 KEYCODE_G
+11490 tap 5 KEYCODE_W
+11516 tap 5 KEYCODE_E
+11542 tap 5 KEYCODE_D
+11568 tap 5 KEYCODE_F
+11594 tap 5 KEYCODE_G
+11620 tap 5 KEYCODE_W
+11646 tap 5 KEYCODE_E
+11672 tap 5 KEYCODE_D
+11698 tap 5 KEYCODE_F
+11724 tap 5 KEYCODE_G
+11800 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+11808 mark play-ramp1-8
+11900 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+11908 mark play-ramp2-8
+12000 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+12008 mark play-scoop2-8
+12220 tap 6 KEYCODE_L
+12228 mark arm-9
+12290 tap 6 KEYCODE_W
+12298 mark step-9
+12370 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+12382 mark cash-9
+12500 mark play-bumpers-9
+12500 tap 5 KEYCODE_W
+12526 tap 5 KEYCODE_E
+12552 tap 5 KEYCODE_D
+12578 tap 5 KEYCODE_F
+12604 tap 5 KEYCODE_G
+12630 tap 5 KEYCODE_W
+12656 tap 5 KEYCODE_E
+12682 tap 5 KEYCODE_D
+12708 tap 5 KEYCODE_F
+12734 tap 5 KEYCODE_G
+12760 tap 5 KEYCODE_W
+12786 tap 5 KEYCODE_E
+12812 tap 5 KEYCODE_D
+12838 tap 5 KEYCODE_F
+12864 tap 5 KEYCODE_G
+12890 tap 5 KEYCODE_W
+12916 tap 5 KEYCODE_E
+12942 tap 5 KEYCODE_D
+12968 tap 5 KEYCODE_F
+12994 tap 5 KEYCODE_G
+13070 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+13078 mark play-ramp1-9
+13170 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+13178 mark play-ramp2-9
+13270 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+13278 mark play-scoop2-9
+13490 tap 6 KEYCODE_L
+13498 mark arm-10
+13560 tap 6 KEYCODE_W
+13568 mark step-10
+13640 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+13652 mark cash-10
+13770 mark play-bumpers-10
+13770 tap 5 KEYCODE_W
+13796 tap 5 KEYCODE_E
+13822 tap 5 KEYCODE_D
+13848 tap 5 KEYCODE_F
+13874 tap 5 KEYCODE_G
+13900 tap 5 KEYCODE_W
+13926 tap 5 KEYCODE_E
+13952 tap 5 KEYCODE_D
+13978 tap 5 KEYCODE_F
+14004 tap 5 KEYCODE_G
+14030 tap 5 KEYCODE_W
+14056 tap 5 KEYCODE_E
+14082 tap 5 KEYCODE_D
+14108 tap 5 KEYCODE_F
+14134 tap 5 KEYCODE_G
+14160 tap 5 KEYCODE_W
+14186 tap 5 KEYCODE_E
+14212 tap 5 KEYCODE_D
+14238 tap 5 KEYCODE_F
+14264 tap 5 KEYCODE_G
+14340 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+14348 mark play-ramp1-10
+14440 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+14448 mark play-ramp2-10
+14540 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+14548 mark play-scoop2-10
+14760 tap 6 KEYCODE_L
+14768 mark arm-11
+14830 tap 6 KEYCODE_W
+14838 mark step-11
+14910 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+14922 mark cash-11
+15040 mark play-bumpers-11
+15040 tap 5 KEYCODE_W
+15066 tap 5 KEYCODE_E
+15092 tap 5 KEYCODE_D
+15118 tap 5 KEYCODE_F
+15144 tap 5 KEYCODE_G
+15170 tap 5 KEYCODE_W
+15196 tap 5 KEYCODE_E
+15222 tap 5 KEYCODE_D
+15248 tap 5 KEYCODE_F
+15274 tap 5 KEYCODE_G
+15300 tap 5 KEYCODE_W
+15326 tap 5 KEYCODE_E
+15352 tap 5 KEYCODE_D
+15378 tap 5 KEYCODE_F
+15404 tap 5 KEYCODE_G
+15430 tap 5 KEYCODE_W
+15456 tap 5 KEYCODE_E
+15482 tap 5 KEYCODE_D
+15508 tap 5 KEYCODE_F
+15534 tap 5 KEYCODE_G
+15610 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+15618 mark play-ramp1-11
+15710 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+15718 mark play-ramp2-11
+15810 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+15818 mark play-scoop2-11
+16030 tap 6 KEYCODE_L
+16038 mark arm-12
+16100 tap 6 KEYCODE_W
+16108 mark step-12
+16180 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+16192 mark cash-12
+16310 mark play-bumpers-12
+16310 tap 5 KEYCODE_W
+16336 tap 5 KEYCODE_E
+16362 tap 5 KEYCODE_D
+16388 tap 5 KEYCODE_F
+16414 tap 5 KEYCODE_G
+16440 tap 5 KEYCODE_W
+16466 tap 5 KEYCODE_E
+16492 tap 5 KEYCODE_D
+16518 tap 5 KEYCODE_F
+16544 tap 5 KEYCODE_G
+16570 tap 5 KEYCODE_W
+16596 tap 5 KEYCODE_E
+16622 tap 5 KEYCODE_D
+16648 tap 5 KEYCODE_F
+16674 tap 5 KEYCODE_G
+16700 tap 5 KEYCODE_W
+16726 tap 5 KEYCODE_E
+16752 tap 5 KEYCODE_D
+16778 tap 5 KEYCODE_F
+16804 tap 5 KEYCODE_G
+16880 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+16888 mark play-ramp1-12
+16980 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+16988 mark play-ramp2-12
+17080 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+17088 mark play-scoop2-12
+17300 tap 6 KEYCODE_L
+17308 mark arm-13
+17370 tap 6 KEYCODE_W
+17378 mark step-13
+17450 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+17462 mark cash-13
+17580 mark play-bumpers-13
+17580 tap 5 KEYCODE_W
+17606 tap 5 KEYCODE_E
+17632 tap 5 KEYCODE_D
+17658 tap 5 KEYCODE_F
+17684 tap 5 KEYCODE_G
+17710 tap 5 KEYCODE_W
+17736 tap 5 KEYCODE_E
+17762 tap 5 KEYCODE_D
+17788 tap 5 KEYCODE_F
+17814 tap 5 KEYCODE_G
+17840 tap 5 KEYCODE_W
+17866 tap 5 KEYCODE_E
+17892 tap 5 KEYCODE_D
+17918 tap 5 KEYCODE_F
+17944 tap 5 KEYCODE_G
+17970 tap 5 KEYCODE_W
+17996 tap 5 KEYCODE_E
+18022 tap 5 KEYCODE_D
+18048 tap 5 KEYCODE_F
+18074 tap 5 KEYCODE_G
+18150 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+18158 mark play-ramp1-13
+18250 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+18258 mark play-ramp2-13
+18350 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+18358 mark play-scoop2-13
+18570 tap 6 KEYCODE_L
+18578 mark arm-14
+18640 tap 6 KEYCODE_W
+18648 mark step-14
+18720 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+18732 mark cash-14
+18850 mark play-bumpers-14
+18850 tap 5 KEYCODE_W
+18876 tap 5 KEYCODE_E
+18902 tap 5 KEYCODE_D
+18928 tap 5 KEYCODE_F
+18954 tap 5 KEYCODE_G
+18980 tap 5 KEYCODE_W
+19006 tap 5 KEYCODE_E
+19032 tap 5 KEYCODE_D
+19058 tap 5 KEYCODE_F
+19084 tap 5 KEYCODE_G
+19110 tap 5 KEYCODE_W
+19136 tap 5 KEYCODE_E
+19162 tap 5 KEYCODE_D
+19188 tap 5 KEYCODE_F
+19214 tap 5 KEYCODE_G
+19240 tap 5 KEYCODE_W
+19266 tap 5 KEYCODE_E
+19292 tap 5 KEYCODE_D
+19318 tap 5 KEYCODE_F
+19344 tap 5 KEYCODE_G
+19420 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+19428 mark play-ramp1-14
+19520 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+19528 mark play-ramp2-14
+19620 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+19628 mark play-scoop2-14
+19840 mark monolith-walk-done
+19940 tap 6 KEYCODE_J
+19948 mark b1-jupiter-lock
+20220 tap 8 KEYCODE_SPACE
+20228 mark b1-replacement
+20420 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+20428 mark little-multiball-scoop1
+20920 mark b1-drain
+20940 tap 8 KEYCODE_Q
+21420 tap 8 KEYCODE_SPACE
+21428 mark b2-plunge
+21620 tap 6 KEYCODE_S
+21628 mark b2-orbits-lane4-1
+21675 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+21683 mark b2-orbits-letter-1
+21750 tap 6 KEYCODE_S
+21758 mark b2-orbits-lane4-2
+21805 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+21813 mark b2-orbits-letter-2
+21880 tap 6 KEYCODE_S
+21888 mark b2-orbits-lane4-3
+21935 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+21943 mark b2-orbits-letter-3
+22010 tap 6 KEYCODE_S
+22018 mark b2-orbits-lane4-4
+22065 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+22073 mark b2-orbits-letter-4
+22140 tap 6 KEYCODE_S
+22148 mark b2-orbits-lane4-5
+22195 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+22203 mark b2-orbits-letter-5
+22270 tap 6 KEYCODE_S
+22278 mark b2-orbits-lane4-6
+22325 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+22333 mark b2-orbits-letter-6
+22400 mark b2-orbits-complete
+22480 mark b2-bank-start
+22480 tap 6 KEYCODE_Z
+22488 mark drop-target-1
+22550 tap 6 KEYCODE_X
+22558 mark drop-target-2
+22620 tap 6 KEYCODE_C
+22628 mark drop-target-3
+22690 tap 6 KEYCODE_V
+22698 mark drop-target-4
+22760 tap 6 KEYCODE_N
+22768 mark drop-target-5
+22890 tap 6 KEYCODE_I
+22898 mark special-drop-probe
+23590 tap 6 KEYCODE_J
+23598 mark wonderful-lock-1
+23870 tap 8 KEYCODE_SPACE
+23878 mark wonderful-replacement-1
+24090 tap 6 KEYCODE_J
+24098 mark wonderful-thing-lock-2
+24390 tap 8 KEYCODE_SPACE
+24398 mark wonderful-replacement-2
+24640 tap 6 KEYCODE_RCONTROL,KEYCODE_R
+24648 mark wonderful-ramp2
+25240 tap 6 KEYCODE_LCONTROL,KEYCODE_MINUS
+25248 mark shooter-left-lagrange
+25480 tap 6 KEYCODE_RCONTROL,KEYCODE_MINUS
+25488 mark shooter-right-lagrange
+25880 mark end
+26030 quit

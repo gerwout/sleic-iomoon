@@ -1,0 +1,170 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,666,3,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,699,699,1,BALLS OK,2
+3,unlabelled,0003-unlabelled,1783,1783,1,,3
+4,unlabelled,0004-unlabelled,1916,1949,2,,4
+5,unlabelled,0005-unlabelled,1966,8283,268,,5
+6,boot,0006-boot,8316,9316,38,,6
+7,boot,0007-boot,9349,9349,1,,7
+8,boot,0008-boot,9383,9383,1,,8
+9,boot,0009-boot,9400,9400,1,1 1 / PLAYER BALL,9
+10,boot,0010-boot,9433,9433,1,PLAYER BALL,10
+11,boot,0011-boot,9483,9500,2,PLAYER BALL,11
+12,boot,0012-boot,9550,9550,1,PLAYER BALL,12
+13,boot,0013-boot,9600,9866,11,PLAYER BALL,13
+14,boot,0014-boot,9883,9883,1,BALL,14
+15,boot,0015-boot,9933,9983,2,BALL,15
+16,boot,0016-boot,10000,10000,1,PLAYER BALL,16
+17,boot,0017-boot,10050,10050,1,PLAYER BALL,17
+18,boot,0018-boot,10100,10100,1,PLAYER BALL,18
+19,boot,0019-boot,10166,10166,1,BALL,19
+20,boot,0020-boot,10216,10216,1,BALL,20
+21,boot,0021-boot,10266,10266,1,PLAYER BALL,21
+22,start,0022-start,10316,10316,1,PLAYER BALL,22
+23,start,0023-start,10383,10383,1,BALL,23
+24,start,0024-start,10433,10433,1,BALL,24
+25,start,0025-start,10483,10483,1,PLAYER BALL,25
+26,start,0026-start,10550,10550,1,PLAYER BALL,26
+27,start,0027-start,10600,10600,1,BALL,27
+28,start,0028-start,10650,10650,1,PLAYER BALL,28
+29,start,0029-start,10700,10700,1,PLAYER BALL,29
+30,start,0030-start,10766,10766,1,PLAYER BALL,30
+31,start,0031-start,10816,10816,1,PLAYER BALL,31
+32,start,0032-start,10866,10866,1,PLAYER BALL,32
+33,start,0033-start,10933,10933,1,PLAYER BALL,33
+34,start,0034-start,10983,10983,1,PLAYER BALL,34
+35,start,0035-start,11033,11033,1,PLAYER BALL,35
+36,start,0036-start,11083,11083,1,PLAYER BALL,36
+37,start,0037-start,11150,11150,1,BALL,37
+38,start,0038-start,11200,11200,1,PLAYER BALL,38
+39,start,0039-start,11250,11250,1,PLAYER BALL,39
+40,start,0040-start,11316,11316,1,PLAYER BALL,40
+41,start,0041-start,11366,11366,1,PLAYER BALL,41
+42,start,0042-start,11416,11416,1,PLAYER BALL,42
+43,start,0043-start,11466,11483,2,PLAYER BALL,43
+44,start,0044-start,11533,11550,2,PLAYER BALL,44
+45,start,0045-start,11583,11600,2,PLAYER BALL,45
+46,start,0046-start,11633,11650,2,PLAYER BALL,46
+47,start,0047-start,11700,11850,6,PLAYER BALL,47
+48,start,0048-start,11866,11933,3,PLAYER BALL,48
+49,start,0049-start,11983,11983,1,PLAYER BALL,49
+50,start,0050-start,12033,15783,50,1 1 / PLAYER BALL,50
+51,plunge,0051-plunge,15983,20066,26,1 1 / PLAYER BALL,51
+52,orbits-lane4-1,0052-orbits-lane4-1,20249,21016,5,1 1 / PLAYER BALL,52
+53,orbits-lane4-1,0053-orbits-lane4-1,21049,21049,1,,53
+54,orbits-lane4-1,0054-orbits-lane4-1,21083,21083,1,,3
+55,orbits-letter-1,0055-orbits-letter-1,21099,21233,2,,55
+56,orbits-lane4-2,0056-orbits-lane4-2,23233,23549,4,1 1 / PLAYER BALL,56
+57,orbits-lane4-2,0057-orbits-lane4-2,23566,23566,1,,3
+58,orbits-lane4-2,0058-orbits-lane4-2,23583,23583,1,,58
+59,orbits-letter-2,0059-orbits-letter-2,23599,23866,5,,59
+60,orbits-lane4-3,0060-orbits-lane4-3,25699,25699,1,,60
+61,orbits-lane4-3,0061-orbits-lane4-3,25716,25716,1,,61
+62,orbits-lane4-3,0062-orbits-lane4-3,25733,25933,3,1 1 / PLAYER BALL,62
+63,orbits-lane4-3,0063-orbits-lane4-3,26083,26083,1,,3
+64,orbits-letter-3,0064-orbits-letter-3,26099,26516,4,,64
+65,orbits-lane4-4,0065-orbits-lane4-4,28249,28466,3,1 1 / PLAYER BALL,65
+66,orbits-lane4-4,0066-orbits-lane4-4,28549,28549,1,,66
+67,orbits-lane4-4,0067-orbits-lane4-4,28583,28583,1,,67
+68,orbits-letter-4,0068-orbits-letter-4,28716,29133,4,,68
+69,orbits-lane4-5,0069-orbits-lane4-5,30733,30733,1,,69
+70,orbits-lane4-5,0070-orbits-lane4-5,30766,30949,2,1 1 / PLAYER BALL,70
+71,orbits-lane4-5,0071-orbits-lane4-5,31066,31066,1,,3
+72,orbits-lane4-5,0072-orbits-lane4-5,31083,31083,1,,67
+73,orbits-letter-5,0073-orbits-letter-5,31233,31783,6,,73
+74,orbits-lane4-6,0074-orbits-lane4-6,33233,33233,1,,74
+75,orbits-lane4-6,0075-orbits-lane4-6,33266,33566,4,1 1 / PLAYER BALL,56
+76,orbits-lane4-6,0076-orbits-lane4-6,33583,33583,1,,3
+77,orbits-letter-6,0077-orbits-letter-6,33599,34433,10,,77
+78,orbits-complete,0078-orbits-complete,35716,35716,1,,78
+79,orbits-complete,0079-orbits-complete,35733,37299,12,1 1 / PLAYER BALL,79
+80,bank-start,0080-bank-start,37483,37566,3,6.519 / 1 1 / PLAYER BALL,80
+81,drop-target-1,0081-drop-target-1,37599,38433,23,1 1 / PLAYER BALL,81
+82,drop-target-1,0082-drop-target-1,38466,39066,5,95 0 2 / 1 1 / PLAYER BALL,82
+83,drop-target-1,0083-drop-target-1,39083,39083,1,1 1 / PLAYER BALL,83
+84,drop-target-2,0084-drop-target-2,39150,39933,24,1 1 / PLAYER BALL,84
+85,drop-target-2,0085-drop-target-2,39950,40550,5,1 1 / PLAYER BALL,85
+86,drop-target-2,0086-drop-target-2,40583,40583,1,1 1 / PLAYER BALL,86
+87,drop-target-3,0087-drop-target-3,40633,41400,15,1 1 / PLAYER BALL,87
+88,drop-target-3,0088-drop-target-3,41433,42083,8,00 0 8 / 1 1 / PLAYER BALL,88
+89,drop-target-4,0089-drop-target-4,42100,42933,16,1 1 / PLAYER BALL,89
+90,drop-target-4,0090-drop-target-4,42950,43550,5,02 5 1 / 1 1 / PLAYER BALL,90
+91,drop-target-4,0091-drop-target-4,43583,43583,1,1 1 / PLAYER BALL,91
+92,drop-target-5,0092-drop-target-5,43600,44416,21,1 1 / PLAYER BALL,92
+93,drop-target-5,0093-drop-target-5,44450,46950,18,1 1 / PLAYER BALL,93
+94,drop-target-5,0094-drop-target-5,47066,47066,1,,3
+95,drop-target-5,0095-drop-target-5,47083,47083,1,,95
+96,special-drop-probe,0096-special-drop-probe,47200,48933,18,,96
+97,special-drop-probe,0097-special-drop-probe,49050,49050,1,- -,97
+98,special-drop-probe,0098-special-drop-probe,49083,49083,1,,98
+99,special-drop-probe,0099-special-drop-probe,49100,60283,489,,99
+100,probe-expired,0100-probe-expired,60316,62900,110,,100
+101,wonderful-lock-1,0101-wonderful-lock-1,62933,63283,14,,101
+102,wonderful-lock-1,0102-wonderful-lock-1,63316,63316,1,,102
+103,wonderful-lock-1,0103-wonderful-lock-1,63333,63366,2,1 1 / PLAYER BALL,9
+104,wonderful-lock-1,0104-wonderful-lock-1,63383,63383,1,,3
+105,wonderful-lock-1,0105-wonderful-lock-1,63400,63400,1,,105
+106,wonderful-lock-1,0106-wonderful-lock-1,63500,63900,8,,105
+107,wonderful-lock-1,0107-wonderful-lock-1,64016,64016,1,,107
+108,wonderful-lock-1,0108-wonderful-lock-1,64150,64150,1,,105
+109,wonderful-lock-1,0109-wonderful-lock-1,64250,64250,1,,107
+110,wonderful-lock-1,0110-wonderful-lock-1,64400,64400,1,,105
+111,wonderful-lock-1,0111-wonderful-lock-1,64500,64500,1,,107
+112,wonderful-lock-1,0112-wonderful-lock-1,64633,64633,1,,105
+113,wonderful-lock-1,0113-wonderful-lock-1,64750,64750,1,,107
+114,wonderful-lock-1,0114-wonderful-lock-1,64883,64883,1,,105
+115,wonderful-lock-1,0115-wonderful-lock-1,65000,65000,1,,107
+116,wonderful-lock-1,0116-wonderful-lock-1,65100,67850,22,1 1 / PLAYER BALL,116
+117,wonderful-replacement-1,0117-wonderful-replacement-1,68033,72233,30,1 1 / PLAYER BALL,117
+118,wonderful-thing-lock-2,0118-wonderful-thing-lock-2,72316,72500,2,1 1 / PLAYER BALL,118
+119,wonderful-thing-lock-2,0119-wonderful-thing-lock-2,72666,72666,1,,3
+120,wonderful-thing-lock-2,0120-wonderful-thing-lock-2,72700,72700,1,,105
+121,wonderful-thing-lock-2,0121-wonderful-thing-lock-2,72800,72800,1,,107
+122,wonderful-thing-lock-2,0122-wonderful-thing-lock-2,72933,72933,1,,105
+123,wonderful-thing-lock-2,0123-wonderful-thing-lock-2,73050,73050,1,,107
+124,wonderful-thing-lock-2,0124-wonderful-thing-lock-2,73183,73183,1,,105
+125,wonderful-thing-lock-2,0125-wonderful-thing-lock-2,73300,73300,1,,107
+126,wonderful-thing-lock-2,0126-wonderful-thing-lock-2,73433,73433,1,,105
+127,wonderful-thing-lock-2,0127-wonderful-thing-lock-2,73550,73800,5,,107
+128,wonderful-thing-lock-2,0128-wonderful-thing-lock-2,73933,73933,1,,105
+129,wonderful-thing-lock-2,0129-wonderful-thing-lock-2,74050,74050,1,,107
+130,wonderful-thing-lock-2,0130-wonderful-thing-lock-2,74183,74183,1,,105
+131,wonderful-thing-lock-2,0131-wonderful-thing-lock-2,74300,74300,1,,107
+132,wonderful-thing-lock-2,0132-wonderful-thing-lock-2,74433,74433,1,PLAYER BALL,132
+133,wonderful-thing-lock-2,0133-wonderful-thing-lock-2,74466,74466,1,,3
+134,wonderful-thing-lock-2,0134-wonderful-thing-lock-2,74483,74483,1,,134
+135,wonderful-thing-lock-2,0135-wonderful-thing-lock-2,74600,74600,1,,135
+136,wonderful-thing-lock-2,0136-wonderful-thing-lock-2,74733,74733,1,,134
+137,wonderful-thing-lock-2,0137-wonderful-thing-lock-2,74850,74850,1,,135
+138,wonderful-thing-lock-2,0138-wonderful-thing-lock-2,74983,74983,1,,134
+139,wonderful-thing-lock-2,0139-wonderful-thing-lock-2,75083,75083,1,,135
+140,wonderful-thing-lock-2,0140-wonderful-thing-lock-2,75233,75233,1,,134
+141,wonderful-thing-lock-2,0141-wonderful-thing-lock-2,75333,75333,1,,135
+142,wonderful-thing-lock-2,0142-wonderful-thing-lock-2,75466,75466,1,,134
+143,wonderful-thing-lock-2,0143-wonderful-thing-lock-2,75583,75833,5,,143
+144,wonderful-thing-lock-2,0144-wonderful-thing-lock-2,75850,75850,1,,135
+145,wonderful-thing-lock-2,0145-wonderful-thing-lock-2,75983,75983,1,,134
+146,wonderful-thing-lock-2,0146-wonderful-thing-lock-2,76083,76083,1,,135
+147,wonderful-thing-lock-2,0147-wonderful-thing-lock-2,76233,76233,1,,134
+148,wonderful-thing-lock-2,0148-wonderful-thing-lock-2,76333,76333,1,,135
+149,wonderful-thing-lock-2,0149-wonderful-thing-lock-2,76450,77450,8,1 1 / PLAYER BALL,149
+150,wonderful-replacement-2,0150-wonderful-replacement-2,77616,82233,34,1 1 / PLAYER BALL,150
+151,wonderful-ramp2,0151-wonderful-ramp2,82300,82683,3,1 1 / PLAYER BALL,151
+152,wonderful-ramp2,0152-wonderful-ramp2,82733,82733,1,,152
+153,wonderful-ramp2,0153-wonderful-ramp2,82766,82766,1,,3
+154,wonderful-ramp2,0154-wonderful-ramp2,82783,82783,1,,154
+155,wonderful-ramp2,0155-wonderful-ramp2,82983,86050,44,,155
+156,wonderful-ramp2,0156-wonderful-ramp2,86133,86133,1,,156
+157,wonderful-ramp2,0157-wonderful-ramp2,86216,86216,1,,157
+158,wonderful-ramp2,0158-wonderful-ramp2,86300,86300,1,,158
+159,wonderful-ramp2,0159-wonderful-ramp2,86383,86383,1,,159
+160,wonderful-ramp2,0160-wonderful-ramp2,86466,86466,1,,160
+161,wonderful-ramp2,0161-wonderful-ramp2,86550,86550,1,,161
+162,wonderful-ramp2,0162-wonderful-ramp2,86616,86616,1,,162
+163,wonderful-ramp2,0163-wonderful-ramp2,86700,86700,1,,163
+164,wonderful-ramp2,0164-wonderful-ramp2,86783,86866,2,,164
+165,wonderful-ramp2,0165-wonderful-ramp2,86983,86983,1,,165
+166,wonderful-ramp2,0166-wonderful-ramp2,89216,93916,24,1 1 / PLAYER BALL,166
+167,shooter-left-lagrange,0167-shooter-left-lagrange,93983,98166,31,1 1 / PLAYER BALL,167
+168,shooter-right-lagrange,0168-shooter-right-lagrange,98350,106300,51,1 1 / PLAYER BALL,168
+169,end,0169-end,106483,108833,16,1 1 / PLAYER BALL,169
