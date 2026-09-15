@@ -13,8 +13,8 @@ screen, and why.
 
 | Corpus | Scene occurrences | Distinct screens | Labels |
 |---|---|---|---|
-| `dmd/en/` | 5715 | 921 | 118 |
-| `dmd/es/` | 5410 | 823 | 52 |
+| `dmd/en/` | 5714 | 920 | 119 |
+| `dmd/es/` | 5410 | 823 | 53 |
 | `dmd/faults/` (8 captures) | 178 | 159 | 7 labels, shared across captures (`unlabelled`, `boot`, `credit`, `ball-1-start`, `tilt-1`, `tilt-2`, `settle`) — a fault's own text rides on one of these, not a fault-named label of its own |
 | `dmd/special/` | 313 | 259 | 13 — an ordinary boot/attract/game walk's labels plus `lottery` for the draw and `special-press-start` for the `D5077` screen the match reaches (`dmd/special/README.md`) |
 
@@ -125,7 +125,6 @@ one example of decoded text where any exists. Numbered families (`ball-1-*`,
 | `press-start-normal` | 4/4 | 4/4 | `PRESS START` — the tournament mod's end-of-game hook (`D5123`) |
 | `score-attract-again` (same idle cycle, second game) | 149/172 | 86/76 | `S.` |
 | `score-credit` (same as `credit`, second game) | 5/6 | 5/6 | empty |
-| `score-lottery` (the second game's own mark; it sits in the post-game idle cycle rather than on that game's draw — `dmd/README.md`, Open items) | 8/6 | 8/6 | empty |
 
 ### Game
 
@@ -156,8 +155,10 @@ themselves.
 | `ball-3-drained-gameover` | 7/7 | 7/7 | empty — the last drain and the score wrap-up, up to the draw |
 | `lottery` | 3/3 | 3/3 | empty — the post-game draw (§3.5): a Monolith/train graphic, then the final score above a full-panel digit, and **that digit is the drawn number**, equal to the counter `4000:113F` the match compares against (`dmd/special/README.md`). Drawn at the end of every game, matching or not |
 | `high-score-entry` | 7/7 | 6/6 | empty |
-| `wheel-cN-*` (12 label families — `fixed`/`fwd-00..04`/`refwd-00..03`/`erase-*` — across wheels 1-3, 17 raw labels) | 20/19 | matches occ (each a distinct redraw) | `N N / 0D` (the selected character plus its wheel position) |
-| `score-post-entry-wait` (holds after fixing the last initial, before returning to attract) | 3/18 | 3/7 | empty |
+| `score-lottery` (the second game's own draw) | 1/1 | 1/1 | empty — the same reveal, but **after** name entry rather than before it: that game's compare runs at ms 1628730, and the digit drawn is `7`, the counter's value there (`dmd/special/README.md`) |
+| `score-press-start-normal` | 1/1 | 1/1 | `PRESS START` — the second game's own `D5123` ending |
+| `wheel-cN-*` (12 label families — `fixed`/`fwd-00..04`/`refwd-00..03`/`erase-*` — across wheels 1-3, 17 raw labels) | 18/18 | matches occ (each a distinct redraw) | `N N / 0D` (the selected character plus its wheel position) |
+| `score-post-entry-wait` (holds after the second game's own `PRESS START`, before returning to attract) | 10/23 | 9/11 | empty |
 | `score-ball-3-drained-gameover` (same as `ball-3-drained-gameover`, second game) | 43/42 | 43/42 | empty |
 | `score-high-score-entry` (same as `high-score-entry`, second game) | 1/1 | 1/1 | `N N` |
 

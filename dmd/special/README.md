@@ -60,8 +60,12 @@ either a lane (`KEYCODE_Y`, 100,000 — every lane's award ends in zero,
 `docs/iomoon_game_rules.md` §3.3.1) or the inner bank / *Fondo Bancada* (`KEYCODE_I`,
 50,001, §3.3.6). Measured at the compare, `[413C:0016]` equals the number of inner-bank
 slots **exactly**, for every count from 0 to 12: at 10, 11 and 12 slots it reads 10, 11 and
-12, and the match lands against counter `0`, `1` and `2`. So the cell is a raw units-digit
-accumulator that `sub_D4CF4` reduces itself, which is why it divides rather than compares.
+12, and the match lands against counter `0`, `1` and `2`. So what the cell holds is the units
+digit **unreduced**, which is why `sub_D4CF4` divides rather than compares. A watch on the
+cell shows it is not incremented in place during play: it is cleared at `DCA08` and set at
+`DCA82`, once at each ball's end and again at game over, then read immediately by a drawing
+routine at `F0A87` — the score line the draw puts above the digit. What `DCA82` computes it
+from is not established.
 Four slots per ball also keeps every ball above the 100,000 short-ball replay threshold
 (F10 `0x43`) whichever key each slot takes — four inner banks still score 200,004.
 
@@ -111,12 +115,24 @@ three scenes below appear in an ordinary ending too:
 | 167399-171949 | `0312-lottery` | the final score, and below it a full-panel digit |
 | 172199 | `0313-special-press-start` | `PRESS START` |
 
-**The full-panel digit is the lottery number, and it is the counter's own value.** Four
-observations, one per drawn digit: counter `5` here draws `5`; a second matching game
-(nine inner-bank slots, five-frame shift) reads counter `9` and draws `9`; a non-matching
-game — all-lane slots, no shift — reads counter `5` and draws `5`; and `dmd/en/`'s own
-`0374-lottery`, from an unaimed ordinary game, draws `4`. Nothing else on
-the panel differs between the matching and non-matching runs but the score line.
+**The full-panel digit is the lottery number, and it is the counter's own value.** Five
+games, each with its counter read at its own compare and its panel then read back:
+
+| Game | Counter at the compare | Digit drawn |
+|---|---|---|
+| this capture | `5` | `5` (`dmd/special/screens/0312-lottery`) |
+| nine inner-bank slots, five-frame shift (also a match) | `9` | `9` |
+| all-lane slots, no shift (no match) | `5` | `5` |
+| `dmd/en/`'s own first game, ms 246038 | `4` | `4` (`dmd/en/screens/0374-lottery`) |
+| `dmd/en/`'s own second game, ms 1628730 | `7` | `7` (`dmd/en/screens/5219-score-lottery`) |
+
+The last two are decisive because that capture was made before any of this work and aimed
+at nothing: the counter simply landed where it landed, and the panel followed it. Nothing
+else on the panel differs between the matching and non-matching runs but the score line.
+
+**In a game that qualifies for a high score the draw runs *after* name entry, not before
+it.** `dmd/en/`'s second game ends, walks the name-entry wheels, and only then reaches its
+compare at ms 1628730 and its draw at ms 1628800 — the opposite order to its first game's.
 
 **What a match does change on the panel is when `PRESS START` arrives:** ms 172199 here,
 250 ms after the digit reveal ends, against ms 173299 — 1.35 s after it — in the all-lane,
@@ -215,14 +231,44 @@ panel content changes, which is why a screen the machine holds still is one fram
 scene occurrence, and `screens/<NNNN-label>/repr.txt` is one representative frame per
 distinct screen — committed; `frame-*.txt` is not (`.gitignore`).
 
+## Why the `D5077` screen never releases
+
+Settled, by watching `4000:1147`, `4000:1150` and the inbound FIFO at `4000:1220` (F6)
+across a matching and a non-matching game driven by the same presses.
+
+The mod's code cave releases only when `ES:[1147h]` is non-zero *and* the byte at
+`ES:[[1150h]]` reads `0x40`, the START switch code
+(`scripts/io_moon_press_start_patch.py`); otherwise it clears `[1147h]` and loops.
+`[4000:1150]` is the inbound FIFO's **read cursor**, and the two sides of it move on
+different threads: the NMI resets it to `0x1220` when it appends to an empty FIFO
+(`D01BE`, then `D01C0` stores the byte), while only main-loop code advances it past a byte
+it has consumed (`D74EF`, `D8006`).
+
+- **Non-matching game.** The main loop is still draining when the game ends — the cursor
+  last moves at ms 170782 — so the FIFO is empty when START arrives at ms 175000. The NMI
+  resets the cursor to `0x1220` and writes `0x40` there; the cave reads `0x40` and returns.
+- **Matching game.** The last cursor motion is at ms 164014, where the NMI put a `0xFF`
+  at `4000:1220`. The main loop never consumes it — it goes into `sub_D4FDC` and then into
+  the cave — so the cursor stays on that `0xFF`. START at ms 175001 is received (the NMI
+  sets `[1147h]` to `0xFF` at `D01C9`, and does so again for every later press) but its
+  `0x40` is appended at `4000:1223`, three slots past where the cave looks. The cave reads
+  `0xFF`, rejects it, clears `[1147h]` and loops.
+
+So the presses are not missed: they are read and rejected, every time. It is a deadlock by
+construction rather than a timing accident — once the cave holds the main loop with a
+byte other than `0x40` under the cursor, nothing can advance the cursor, and no press can
+ever satisfy the test.
+
+This is reproducible here on every run, and the FIFO discipline it turns on is the
+firmware's own. Whether a real tournament machine hangs the same way on a matched free
+game has not been checked on hardware.
+
 ## Open
 
-- **Why the `D5077` `PRESS START` does not release on a START press, where the `D5123` one
-  does, is not established.** Both run the same code cave. The cave's own release condition
-  needs two things at once: `ES:[1147h]` non-zero *and* the byte at `ES:[[1150h]]` reading
-  `0x40`, the START switch code (`scripts/io_moon_press_start_patch.py`); if it does not,
-  the cave clears `[1147h]` and spins. On this path it apparently never does. What would
-  settle it: tracing what leaves `[1150h]` pointing at on each of the two paths.
+- **Whether a real tournament machine hangs on a matched free game the way this one does is
+  not established.** The cause above is firmware logic, but the byte traffic that leaves the
+  FIFO unconsumed comes from the Z80 over J1, and that half is modelled. What would settle
+  it: matching the lottery on a real machine and seeing whether START clears the screen.
 - **Whether real hardware drops timer-0 ticks at the same rate is not established** — see
   the counter section. What would settle it: timing the lottery digit's advance on a real
   machine against its own clock, or a scope on the timer-0 interrupt line.
