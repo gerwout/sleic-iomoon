@@ -15,6 +15,7 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 Early version/` | An earlier v1.3 ROM set — see its [README](1.3%20Early%20version/README.md) |
 | `PIC16C57/` | IC23 DMD-raster PIC dump, recovered from the locked chip by a recovery lab — see its [README](PIC16C57/README.md) |
 | `PAL20L10/` | IC7 80188 bus-decode PAL, recovered from the locked chip on a DuPAL V3 rig — see its [README](PAL20L10/README.md) |
+| `PAL16L8/` | IC8 Z80 bus-decode PAL, same rig — verified against the chip but missing the memory selects, see its [README](PAL16L8/README.md) |
 | `related-machines/` | ROM images of other SLEIC machines (Sleic Pin-Ball, Bike Race, Doña Elvira 2) — see its [README](related-machines/README.md) |
 | `related-machines/bike-race/v4.1/` | The six socketed chips of a Bike Race machine running V4.1, one of them a **bad dump** — see its [README](related-machines/bike-race/v4.1/README.md) |
 | `pinmame/` | These images repackaged as PinMAME-loadable `.zip` sets, plus the six Bike Race clone chips held only there — see its [README](pinmame/README.md) |
@@ -38,6 +39,9 @@ together with its MD5 checksum for quick integrity verification.
 | `PAL20L10/pal20l10_truthtable.txt` | 1,556,853 bytes | `f882e77f625cef41ab5491db3f13c0b2` | IC7 PAL20L10 truth table — 16384 rows, the exhaustive bench measurement |
 | `PAL20L10/pal20l10.pld` | 742 bytes | `1bf466d505a025409872bc106bc74548` | IC7 PAL20L10 minimised equations (GALasm source) |
 | `PAL20L10/pal20l10.jed` | 1,097 bytes | `a93bc2eddd25fc6a4308445805df3be7` | IC7 PAL20L10 JEDEC fuse map, `QF5892`, GAL22V10 / ATF22V10C target |
+| `PAL16L8/pal16l8_truthtable.txt` | 153,911 bytes | `28a0514a59260ffd7a27f44ac113636f` | IC8 PAL16L8 truth table — 2048 rows, 11 in / 6 out |
+| `PAL16L8/pal16l8.pld` | 619 bytes | `928a52736f3a5bb05f1bae4e96af5edb` | IC8 PAL16L8 minimised equations (GALasm source) |
+| `PAL16L8/pal16l8.jed` | 546 bytes | `7f36726022a4a7f6d52313f2519ef472` | IC8 PAL16L8 JEDEC fuse map, `QF2194`, GAL16V8 simple-mode target |
 
 ## MD5 checksums — related SLEIC machines
 

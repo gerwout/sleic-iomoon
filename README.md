@@ -139,9 +139,9 @@ The IO Moon uses a **three-CPU architecture**:
 | Sound ROM             | 2× 27C040 (IC52 `1003`, IC53 `1004`; 1 MB total) on board 011-029A                      |
 | NVRAM                 | Microchip 28C64A EEPROM — IC14 on board 011-029A (8 KB)                                 |
 | Music balance         | Xicor X9C503P digital potentiometer — IC63 on board 011-029A                            |
-| I/O CPU               | Goldstar Z8400A PS Z80A (4 MHz grade; X10 board crystal 8 MHz) — IC1 on board 011-030A   |
+| I/O CPU               | Goldstar Z8400A PS Z80A clocked at **4 MHz** (X10 8 MHz halved by IC11A) — IC1 on board 011-030A |
 | Z80 work RAM          | Goldstar GM76C28-10 2 K × 8 SRAM — IC7 on board 011-030A                                |
-| Z80 I/O decode PAL    | AMD PAL16L8A-2CN — IC8 on board 011-030A (**undumped**)                                 |
+| Z80 I/O decode PAL    | AMD PAL16L8A-2CN — IC8 on board 011-030A (dumped; [`roms/PAL16L8/`](roms/PAL16L8/))     |
 | Z80 reset / watchdog  | Analog Devices ADM699AN supervisor — IC15 on board 011-030A                             |
 | Z80 ROM               | 27C256 — IC5 (`1005`, 32 KB) on board 011-030A                                          |
 | Driver arrays         | 2× ULN2803 — IC41 / IC51 on board 011-030A (lamp / solenoid current drive)              |
@@ -284,6 +284,11 @@ sleic-io-moon/
 │   │   ├── pal20l10_truthtable.txt    # 16384-row bench measurement, 14 in / 8 out
 │   │   ├── pal20l10.pld               # minimised equations (GALasm source)
 │   │   └── pal20l10.jed               # JEDEC fuse map, GAL22V10 / ATF22V10C target
+│   ├── PAL16L8/                       # IC8 Z80 bus-decode PAL — verified read, conflict open
+│   │   ├── README.md
+│   │   ├── pal16l8_truthtable.txt     # 2048-row bench measurement, 11 in / 6 out
+│   │   ├── pal16l8.pld                # minimised equations (GALasm source)
+│   │   └── pal16l8.jed                # JEDEC fuse map, GAL16V8 simple mode
 │   ├── 1.3 Early version/             # Early ROM set
 │   │   ├── README.md
 │   │   ├── V1 3_01.bin                # Display ROM 1 (80188)

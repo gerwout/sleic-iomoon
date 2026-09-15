@@ -1,0 +1,30 @@
+GAL16V8
+PAL16L8
+
+I1 I2 I3 I4 I5 I6 I7 I8 I9 GND
+I11 NC I13 O14 O15 O16 O17 O18 O19 VCC
+
+
+; IC pin 19 -- 1/7 product terms
+/O19 = I13 * I3 * /I2 * /I1
+
+; IC pin 18 -- 1/7 product terms
+/O18 = /I7 * /I6 * I5 * I4 * I1
+
+; IC pin 17 -- 1/7 product terms
+/O17 = /I13 * /I3 * I2 * /I1
+
+; IC pin 16 -- 1/7 product terms
+/O16 = /I1
+
+; IC pin 15 -- 1/7 product terms
+/O15 = /I5 * I4 * /I3 * I2 * I1
+
+; IC pin 14 -- 1/7 product terms
+/O14 = /I4 * /I3 * I2 * I1
+
+
+DESCRIPTION
+Reconstructed from a dpdumper sweep of a PAL16L8.
+Target device is a GAL16V8 (pin-compatible).
+Equations are active-low (espresso minimised the OFF-set).

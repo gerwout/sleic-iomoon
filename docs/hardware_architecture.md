@@ -98,7 +98,7 @@ Neither ROM states any clock rate, so the figures below come from the board itse
 
 The 80188's CLKOUT is **10 MHz**, and this one is read rather than inferred: OSC1 is a 4-pin can oscillator marked `KXO-31-1 / 20.0000MHz / 9303 JAPAN`, and the 80C188 halves its oscillator input, so CLKOUT = 20 / 2 = 10 MHz. That agrees with the `-10` speed grade of the `N80C188-10` at IC1, and it makes the boot table's timer-0 programming (max count `0x6276` at CLKOUT/4) come out at 2 500 000 / 25206 = **99.18 Hz**, the rate the firmware's delay counters are written around. No ROM states the clock; the crystal does.
 
-The Z80 on board `011-030A` gets its periodic IRQ from a divider chain on the **16-bit** board: two cascaded `74LS393` dual counters (IC20, IC21) feeding a `74LS27` triple NOR (IC22), positioned next to OSC1, delivered to the Z80 board over the J3 ribbon. The chain yields 8 MHz ÷ 8192 = **977 Hz**, which matches the rate the Z80 firmware's lamp-refresh state machine implies in [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md). The YM3812's φM (`YACLK`) and the OKI's clock (`OKCLK`) are taken off the same chain, as are the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23; the individual taps are read from the schematic net names rather than measured.
+The Z80 on board `011-030A` generates its own periodic IRQ, and sheet `011-030-02` shows the whole chain. X10 (8 MHz) oscillates around IC10A/IC10B and is halved twice by IC11A and IC11B (74LS74): the first stage is **`GCLK` = 4 MHz, the Z80's clock**, the second is **`ZCLK` = 2 MHz**. `ZCLK` clocks IC12, a CD4040 whose `RST` is tied to ground, so it free-runs; all twelve outputs feed IC13, a 13-input NAND (the thirteenth input tied high) that pulses low at terminal count. That pulse sets the cross-coupled IC14A/IC14B latch, whose output is the Z80's `/INT`; IC8's `/RI` resets it. One pulse every 4096 `ZCLK` cycles gives **2 000 000 / 4096 = 488.28 Hz**, which puts the firmware's eight-column lamp refresh at 61 Hz per column. The YM3812's φM (`YACLK`) and the OKI's clock (`OKCLK`) are taken off the same chain, as are the DMD raster clocks (DOTCLK, RCLK, COLLAT) fed to the PIC at IC23; the individual taps are read from the schematic net names rather than measured.
 
 #### Board placement (from figure 7-1)
 
@@ -147,7 +147,7 @@ The Z80 board itself does not generate its own periodic IRQ — the 977 Hz rate 
 | Reference | Component | Notes |
 |-----------|-----------|-------|
 | SW40 | DIP switch block, 8-position | See DIP table below |
-| X10  | 8 MHz crystal                | Board timing source. The Z80A at IC1 is a 4 MHz-grade part, so the CPU clock is a division of X10 rather than X10 itself; the divisor is not established from the ROM or the inventory. |
+| X10  | 8 MHz crystal                | Board timing source, oscillating around IC10A/IC10B (74LS04). IC11A and IC11B (74LS74) halve it twice: `GCLK` = **4 MHz** is the Z80's own clock at IC1 pin 6, and `ZCLK` = 2 MHz clocks the IC12 interrupt counter. Read from sheet `011-030-02`, and it agrees with the 4 MHz speed grade of the Z8400A. |
 
 #### Connectors (manual section 7.2.2.2)
 

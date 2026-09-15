@@ -62,7 +62,8 @@ or pin/function-compatible parts with the same pinout and behaviour:
 
 ### Programmable logic (PALs)
 
-IC7 is dumped — [`../roms/PAL20L10/`](../roms/PAL20L10/). IC8 is not; see
+Both are dumped — IC7 at [`../roms/PAL20L10/`](../roms/PAL20L10/), IC8 at
+[`../roms/PAL16L8/`](../roms/PAL16L8/), the latter with an open conflict. See
 [`../docs/chips_to_dump.md`](../docs/chips_to_dump.md).
 
 | File | Part(s) documented | Used at | Source |

@@ -30,6 +30,26 @@ of [`findings.md`](../asm/baseline-2026-09/findings.md).
 (`0422`, `0429`), which is what makes `1` = off and a cleared bit = a fired
 driver.
 
+## The hardware behind the map
+
+The table above is read out of the firmware. Schematic sheet `011-030-02`
+shows the decode that produces it, and the two agree exactly:
+
+- **`A7` alone separates IN from OUT.** Two 74LS138s take `A0`-`A2` as their
+  select lines. IC16, the input decoder, is enabled by `A7` **low** plus
+  `/CEI`; IC17, the output decoder, by `A7` **high** plus `/CEO`. `/CEI` and
+  `/CEO` come from the PAL at IC8 and are simply "I/O read" and "I/O write"
+  (excluding the interrupt-acknowledge cycle) — [`../roms/PAL16L8/`](../roms/PAL16L8/).
+- **The decode is complete, and there is nothing behind it.** IC16 has only
+  `Y0`-`Y4` wired, as `I0`-`I4`; IC17 has all eight, as `O0`-`O7`. So the board
+  physically decodes **five input ports and eight output ports** — exactly
+  `0x00`-`0x04` and `0x80`-`0x87`, the ports the firmware uses, with no spare
+  strobe. No peripheral sits at an address this ROM never touches.
+- Only `A0`-`A2` and `A7` reach the decoders, so `A3`-`A6` are don't-cares and
+  every port mirrors every 8 within its half of the I/O space — `0x00` also
+  answers at `0x08`, `0x10` … `0x78`, and `0x80` at `0x88` … `0xF8`. The
+  firmware always addresses them at their base, so the aliases never show.
+
 ---
 
 ## Port 0x81 control bits

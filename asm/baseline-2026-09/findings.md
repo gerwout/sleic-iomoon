@@ -563,6 +563,13 @@ The six **cabinet** codes were identified on 2026-09-03 from what consumes
 them (F11, F14): `0x32` the coin mechanism, `0x3E` tilt, `0x3F` test /
 service-menu, `0x40` START, `0x41`/`0x42` the flipper buttons.
 
+**The IN-port list is confirmed complete from the hardware.** Sheet
+`011-030-02` shows IC16, the 74LS138 that decodes the Z80's input ports,
+enabled by `A7` low and by IC8's `/CEI` (an I/O-read decode, from the bench
+read at [`../../roms/PAL16L8/`](../../roms/PAL16L8/)), with only `Y0`-`Y4`
+wired, as `I0`-`I4`. Five input ports are all the board has, so `0x00`-`0x04`
+is not merely all this ROM uses — it is all there is.
+
 **Disposition:** hypothesis **confirmed**. `0x41496` is right, and is now
 pinned to its symbolic form `413C:00D6` with the routine that writes it. Note
 this is a *firmware RAM variable*, not a hardware mailbox — the driver must
@@ -739,6 +746,13 @@ Commands `0xAD-0xB7` load one of sixteen data blocks in `38CC-4FD4`
 the lamp-sequence player at `C11A`/`C11B`/`C11E` — canned lamp animations.
 Commands `0xF7`/`0xF8` enter and leave test mode (`2DC4` sets `C068`;
 `2DD9` clears it and `JP boot`, rebooting the Z80).
+
+**The OUT-port list is confirmed complete from the hardware.** Sheet
+`011-030-02` shows IC17, the 74LS138 that decodes the Z80's output ports,
+enabled by `A7` high and by IC8's `/CEO` (an I/O-write decode, from the bench
+read at [`../../roms/PAL16L8/`](../../roms/PAL16L8/)), with all eight outputs
+wired as `O0`-`O7`. Eight output ports are all the board has, so `0x80`-`0x87`
+is the whole OUT space and no ninth strobe exists.
 
 **Confidence:** confirmed.
 
@@ -1749,10 +1763,15 @@ and every bit of those eight is accounted for: `$80`/`$81` J1 (F6), `$82`
 the switch-column strobe, `$83`/`$84` the lamp matrix (F7), `$85`/`$86` the
 16 channels above, `$87` the direct-input index plus bits 4 and 5 set and
 cleared individually (`port87_bit5_clear`/`port87_bit5_set` at `27B3`/`27C0`,
-and the bit-4 pair at `2831`/`2851`). IC7, the 80188-side PAL, is dumped and
-rules itself out — none of its eight outputs leaves the 16-bit board. Dumping
-IC8 (the Z80 decode PAL) would settle whether the expansion board's channels
-are addressed some other way this ROM never exercises.
+and the bit-4 pair at `2831`/`2851`). **Settled on the Z80 side:** schematic
+sheet `011-030-02` shows IC17, the 74LS138 that decodes the output ports,
+wiring all eight of its outputs as `O0`-`O7` and nothing more, enabled by `A7`
+and by IC8's `/CEO` — so eight output ports is the whole of the Z80's OUT
+space, and there is no ninth strobe for an expansion board to hang off. IC7,
+the 80188-side PAL, is dumped and rules itself out too: none of its eight
+outputs leaves the 16-bit board. **Neither CPU can address the expansion board
+at all**, so whatever drives coils 17-21 is fed from one of the sixteen
+channels above or from the 011-033A connector itself.
 
 **Confidence:** confirmed for the bit map, the fire-routine shape and the
 manual cross-reference; the expansion-board wiring rests on the manual alone

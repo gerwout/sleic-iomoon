@@ -3,10 +3,16 @@
 **Question:** What frequency should the Z80's RST 38h IRQ fire at in the
 PinMAME driver?
 
-**Answer:** **`8000000/8192`** — about **977 Hz**. The 8 MHz is the board crystal
-X10, not the Z80's own clock (the Z8400A at IC1 is a 4 MHz-grade part), and the
-divider is on the 16-bit board, not this one — see §5. This is the rate the
-PinMAME `SLEIC2` driver uses.
+**Answer:** **`2000000/4096`** — **488.28 Hz**, generated on the Z80 board
+itself. Schematic sheet `011-030-02` carries the whole chain: X10 (8 MHz) is
+halved twice, giving `GCLK` = 4 MHz (the Z80's own clock) and `ZCLK` = 2 MHz;
+`ZCLK` clocks a free-running CD4040 at IC12; all twelve of its outputs feed the
+13-input NAND at IC13, which pulses at terminal count and sets the IC14A/IC14B
+latch that drives `/INT`; IC8's `/RI` clears it. See §5.
+
+**The PinMAME `SLEIC2` driver currently runs 977 Hz — a factor of two too
+fast** — and its Z80 core runs at 2.5 MHz where the board says 4 MHz. Both are
+driver changes waiting to be made; neither is made here.
 
 ---
 
@@ -19,9 +25,10 @@ From the service manual (§7.2.2.1, p.95) and the board inventory:
 | Z80 part | GoldStar `Z0840004PSC` (Z80A, 4 MHz grade) — IC1 on board 011-030A |
 | Crystal | X10 = **8 MHz** (HC-49 can, bottom-right of board) — the board timing source, divided down for the CPU |
 | ROM IC5 | 27C256, 32 KB |
-| Watchdog | ADM699 (IC15) — **reset-only**, no clock output |
-| PAL | IC8 (PAL16L8) — purely combinatorial, **cannot generate an IRQ** |
-| Timer chip | **none** (no PIT, no CTC, no 8253) |
+| Z80 clock | `GCLK` = **4 MHz** — X10 halved once by IC11A (74LS74), sheet `011-030-02` |
+| Watchdog | ADM699 (IC15) — reset and brownout; its `WDI` takes the `WATCH` net |
+| PAL | IC8 (PAL16L8) — purely combinatorial, **cannot generate** an IRQ, but it **clears** one: its `/RI` output resets the latch |
+| Timer | IC12 CD4040 (12-stage ripple counter, `RST` grounded, clocked by `ZCLK` = 2 MHz) + IC13 74S133 13-input NAND decoding terminal count |
 
 The Z80 uses **Interrupt Mode 1** (`im 1` at `0x0002`, repeated in `main_init`
 at `0x0401`) which fires RST 38h on `/INT` assertion.  The vector at `0x0038`
@@ -33,18 +40,16 @@ unconditionally jumps to `irq_service_main` at `0x0A42`:
 
 There is **no `OUT (port),A` in the boot sequence that programs a counter
 chip** — `boot_port_init` (0x041B–0x0459) only writes initial values to ports
-0x80–0x87.  The periodic IRQ therefore comes from outside this board: the
-divider chain is on the **16-bit** board — two cascaded 74LS393 counters
-(IC20, IC21) into a 74LS27 (IC22), next to OSC1 — and the result reaches the Z80
-over the J3 ribbon.  See [`../docs/hardware_architecture.md`](../docs/hardware_architecture.md).
+0x80–0x87.  Nothing needs to: the timer is hard-wired ripple logic with its
+reset tied to ground, so it starts at power-on and never stops.  The rate is
+therefore fixed by the divider chain alone:
 
-The most natural divider chains for an 8 MHz source are:
-
-| Divider | IRQ rate | Notes |
-|---------|----------|-------|
-| ÷8192   | 976.6 Hz | One stage 74HC4040/4060 |
-| ÷4096   | 1953  Hz | Slightly fast for safety |
-| ÷16384  | 488.3 Hz | Plausible but borderline for lamps |
+| Stage | Divisor | Result |
+|-------|---------|--------|
+| X10 crystal | — | 8 MHz |
+| IC11A (74LS74) | ÷2 | `GCLK` = 4 MHz — **the Z80's clock** |
+| IC11B (74LS74) | ÷2 | `ZCLK` = 2 MHz — clocks IC12 |
+| IC12 (CD4040) + IC13 (74S133) | ÷4096 | **488.28 Hz** — the IRQ |
 
 ## 2. What the IRQ handler does each call
 
@@ -126,14 +131,27 @@ same Spanish-pinball engineering style.
 
 ## 5. The IRQ source
 
-The Z80 board has no PIT, no CTC, and an ADM699 whose only output is `/RESET`,
-so the periodic `/INT` cannot originate here.  It comes from the divider chain
-on the 16-bit board: IC20 and IC21 (74LS393 dual counters) cascaded into IC22
-(74LS27), positioned beside OSC1, with the result carried over the J3 ribbon
-([`../docs/board_011-029A_ics.md`](../docs/board_011-029A_ics.md)).  8 MHz ÷ 8192
-= **977 Hz** is the tap that lands in the range §2 requires (400 Hz–5 kHz) and
-matches the JP/Peyper convention for the same job.  The exact tap is read off the
-counter chain rather than measured.
+The Z80 board has no PIT and no CTC, but it does have a timer: **IC12 + IC13**,
+which the board inventory used to describe as a watchdog. Sheet `011-030-02`
+shows otherwise. IC12 is a CD4040 12-stage ripple counter with `CLK` ← `ZCLK`
+and `RST` tied to **ground** — it free-runs and nothing ever clears it. All
+twelve outputs `Q1`–`Q12` go to IC13, a 13-input NAND whose thirteenth input is
+tied high, so IC13's output drops for one `ZCLK` period each time the counter
+reaches `0xFFF`: **once every 4096 clocks**.
+
+That pulse is the *set* input of a cross-coupled NAND latch built from IC14A
+and IC14B (74LS00). The latch's output is the Z80's **`/INT`**. Its *reset*
+input is **`/RI`**, an output of the PAL at IC8 — which is why a combinational
+PAL appears in an interrupt path at all: it does not generate the interrupt, it
+clears it. The bench read of IC8 recovers an interrupt-acknowledge decode
+(`/M1` and `/IOREQ` together), which is exactly the right shape for that job:
+the Z80 runs in interrupt mode 1, so its INTACK cycle fetches no vector and its
+only purpose is to acknowledge ([`../roms/PAL16L8/`](../roms/PAL16L8/)).
+
+With `ZCLK` = 2 MHz the rate is **2 000 000 / 4096 = 488.28 Hz**. That lands
+just inside the range §2 requires and puts each lamp column at 61 Hz, the
+conventional refresh figure. The watchdog is separate: IC15's `WDI` takes the
+`WATCH` net, which also gates the work RAM's chip enable through IC14C/D.
 
 ## 6. What the driver uses
 
@@ -141,15 +159,11 @@ counter chain rather than measured.
 MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 8000000/8192.)   /* ~977 Hz */
 ```
 
-stated as `8000000/8192` rather than as a constant so the derivation stays
-visible.  At 977 Hz each lamp column refreshes at **122 Hz**, well above the
-flicker threshold.
-
-The Z80's own clock is a separate question and is **not** 8 MHz: IC1 is a
-`Z0840004`, a 4 MHz-grade Z80A, so X10 is divided for the CPU.  The PinMAME
-driver still runs the emulated Z80 at the 2.5 MHz figure inherited from the
-sister machines, with 4 MHz noted as the likely correction; changing it re-times
-every J1 measurement at once, so it is a step of its own.
+That is **twice the board's rate** and should become `2000000/4096.` — 488.28
+Hz — with each lamp column refreshing at 61 Hz rather than 122 Hz. The Z80 core
+likewise still runs at the 2.5 MHz figure inherited from the sister machines
+where the board says **4 MHz**. Both corrections re-time every J1 measurement at
+once, so each is a step of its own and neither is made here.
 
 ---
 
@@ -167,4 +181,6 @@ every J1 measurement at once, so it is a step of its own.
 * `/home/gerwout/iomoon/pinmame/src/wpc/inder.c:317–320, 547, 931`  — Inder 250 / 180 / 225 Hz
 * `/home/gerwout/iomoon/pinmame/src/wpc/spinbgames.c:36` and `spinb.c:881` — Spinb 175 Hz
 * `pinmame/src/wpc/sleic.c` — `MACHINE_DRIVER_START(SLEIC2)`, `8000000/8192.`
-* [`../docs/board_011-030A_ics.md`](../docs/board_011-030A_ics.md) — X10 = 8 MHz crystal, ADM699 (reset-only), IC8 = PAL16L8
+* [`../docs/board_011-030A_ics.md`](../docs/board_011-030A_ics.md) — X10 = 8 MHz crystal, the IC11 divider pair, IC12/IC13 interrupt timer, IC14 latch, IC15 ADM699, IC8 = PAL16L8
+* IO Moon service manual, schematic sheets `011-030-01` (Z80, EPROMs, RAM, IC8 symbol) and `011-030-02` (clock chain, IC12/IC13/IC14 interrupt latch, IC15, the IC16/IC17 port decoders) — [`../manuals/sleic_io_moon_manual_es.pdf`](../manuals/sleic_io_moon_manual_es.pdf)
+* [`../roms/PAL16L8/`](../roms/PAL16L8/) — the IC8 bench read, including the interrupt-acknowledge decode on the `/RI` path

@@ -272,9 +272,12 @@ as channels TA/TB/TC 1-8 (manual figura 7-10). **No Z80 port drives them**:
 every `OUT` in `iomoon_z80.lst` (105 instructions) resolves to exactly eight
 ports, `0x80`–`0x87`, and every bit of those eight is already accounted for —
 J1, the switch and lamp strobes, the 16 coils above, and the direct-input
-index (**F17**). IC7, the 80188-side PAL, is now dumped
-([`../roms/PAL20L10/`](../roms/PAL20L10/)) and rules itself out: its eight
-outputs are `/PRCS`, `/RAM1`, `/RAM2`, `/EECE`, `/WRVRAM`, `/OKCS`, `/OOE` and
-`/TEST`, none of which leaves the 16-bit board. IC8, the Z80 decode PAL, is
-still undumped and would settle whether the expansion board is addressed some
-other way this ROM never exercises.
+index (**F17**). **Both PALs now rule themselves out.** IC7's eight outputs
+([`../roms/PAL20L10/`](../roms/PAL20L10/)) are `/PRCS`, `/RAM1`, `/RAM2`,
+`/EECE`, `/WRVRAM`, `/OKCS`, `/OOE` and `/TEST`, none of which leaves the
+16-bit board. And on the Z80 side, sheet `011-030-02` shows IC17 — the 74LS138
+that decodes the output ports, enabled by `A7` and IC8's `/CEO` — wiring all
+eight of its outputs and no more, so eight output ports is the whole OUT space
+and there is no undecoded ninth strobe. **Neither CPU can reach the expansion
+board**, and coils 17-21 must be fed from one of the sixteen channels above or
+from the 011-033A connector itself.
