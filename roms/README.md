@@ -36,12 +36,20 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 Early version/V1 3_04.bin` | 524,288 bytes (512 KB) | `7393923e265050a4adb706d7477bd4fd` | Sound ROM 2 (OKI MSM6376 ADPCM) |
 | `1.3 Early version/V1 3_05.bin` | 32,768 bytes (32 KB) | `da674b87ca562221ce5a63568b8cec1e` | Z80 CPU ROM (27C256) |
 | `PIC16C57/PIC16F57-DIP28-1D05-20260815.bin` | 8,192 bytes (8 KB) | `a244f2d8060c2d92a814e20bdd55ecfe` | IC23 PIC16C57 DMD raster coprocessor (16F57-adjusted, cracked from locked original) |
-| `PAL20L10/pal20l10_truthtable.txt` | 1,556,853 bytes | `f882e77f625cef41ab5491db3f13c0b2` | IC7 PAL20L10 truth table — 16384 rows, the exhaustive bench measurement |
+| `PAL20L10/pal20l10.bin` | 16,384 bytes | `e3a32aaed374ba47146d1ef4f10ac42d` | IC7 PAL20L10 raw sweep — 16384 rows, the measurement itself |
+| `PAL20L10/pal20l10_hiz.bin` | 16,384 bytes | `ce338fe6899778aacfc28414f2d9498b` | IC7 PAL20L10 Hi-Z mask, all zero |
+| `PAL20L10/pal20l10_truthtable.txt` | 1,556,853 bytes | `f882e77f625cef41ab5491db3f13c0b2` | IC7 PAL20L10 truth table — the same measurement as labelled text |
 | `PAL20L10/pal20l10.pld` | 742 bytes | `1bf466d505a025409872bc106bc74548` | IC7 PAL20L10 minimised equations (GALasm source) |
 | `PAL20L10/pal20l10.jed` | 1,097 bytes | `a93bc2eddd25fc6a4308445805df3be7` | IC7 PAL20L10 JEDEC fuse map, `QF5892`, GAL22V10 / ATF22V10C target |
-| `PAL16L8/pal16l8_truthtable.txt` | 153,911 bytes | `28a0514a59260ffd7a27f44ac113636f` | IC8 PAL16L8 truth table — 2048 rows, 11 in / 6 out |
+| `PAL16L8/pal16l8.bin` | 2,048 bytes | `69860d22fbf32693f60ee554d8000917` | IC8 PAL16L8 raw sweep — 2048 rows, 11 in / 6 out |
+| `PAL16L8/pal16l8_hiz.bin` | 2,048 bytes | `c99a74c555371a433d121f551d6c6398` | IC8 PAL16L8 Hi-Z mask, all zero |
+| `PAL16L8/pal16l8_truthtable.txt` | 153,911 bytes | `28a0514a59260ffd7a27f44ac113636f` | IC8 PAL16L8 truth table — the same measurement as labelled text |
 | `PAL16L8/pal16l8.pld` | 619 bytes | `928a52736f3a5bb05f1bae4e96af5edb` | IC8 PAL16L8 minimised equations (GALasm source) |
 | `PAL16L8/pal16l8.jed` | 546 bytes | `7f36726022a4a7f6d52313f2519ef472` | IC8 PAL16L8 JEDEC fuse map, `QF2194`, GAL16V8 simple-mode target |
+| `PAL16L8/pal16l8_xcheck_8out.bin` | 1,024 bytes | `7bcd4e3e0bc9ea4297e248fda027ff86` | IC8 cross-check — pins 12-19 all read, 1024 rows |
+| `PAL16L8/pal16l8_xcheck_8out_hiz.bin` | 1,024 bytes | `bbe64bf7a66b6312b65f57d2249e54a7` | Its Hi-Z mask — pins 12/13 flagged in all 1024 states, 17/19 in 128 |
+| `PAL16L8/pal16l8_xcheck_pin13.bin` | 2,048 bytes | `aa7cb2aad36cdd2d6f38a9967d157168` | IC8 cross-check — pin 13 driven as an eleventh address bit, 2048 rows |
+| `PAL16L8/pal16l8_xcheck_pin13_hiz.bin` | 2,048 bytes | `80f85f4cb6ebbc7ba22f5329979085fd` | Its Hi-Z mask — pin 12 flagged in all 2048 states |
 
 ## MD5 checksums — related SLEIC machines
 

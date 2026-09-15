@@ -281,14 +281,17 @@ sleic-io-moon/
 │   │   └── PIC16F57-DIP28-1D05-20260815.bin
 │   ├── PAL20L10/                      # IC7 80188 bus-decode PAL, recovered from the locked part
 │   │   ├── README.md
-│   │   ├── pal20l10_truthtable.txt    # 16384-row bench measurement, 14 in / 8 out
+│   │   ├── pal20l10.bin               # raw 16384-row sweep + its Hi-Z mask
+│   │   ├── pal20l10_truthtable.txt    # the same measurement as labelled text, 14 in / 8 out
 │   │   ├── pal20l10.pld               # minimised equations (GALasm source)
 │   │   └── pal20l10.jed               # JEDEC fuse map, GAL22V10 / ATF22V10C target
 │   ├── PAL16L8/                       # IC8 Z80 bus-decode PAL — verified read, conflict open
 │   │   ├── README.md
-│   │   ├── pal16l8_truthtable.txt     # 2048-row bench measurement, 11 in / 6 out
+│   │   ├── pal16l8.bin                # raw 2048-row sweep + its Hi-Z mask
+│   │   ├── pal16l8_truthtable.txt     # the same measurement as labelled text, 11 in / 6 out
 │   │   ├── pal16l8.pld                # minimised equations (GALasm source)
-│   │   └── pal16l8.jed                # JEDEC fuse map, GAL16V8 simple mode
+│   │   ├── pal16l8.jed                # JEDEC fuse map, GAL16V8 simple mode
+│   │   └── pal16l8_xcheck_*.bin       # two cross-check sweeps + Hi-Z masks
 │   ├── 1.3 Early version/             # Early ROM set
 │   │   ├── README.md
 │   │   ├── V1 3_01.bin                # Display ROM 1 (80188)

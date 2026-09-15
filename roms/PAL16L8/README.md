@@ -17,15 +17,51 @@ fuse map that reproduces it.
 
 | File | What |
 |------|------|
-| [`pal16l8_truthtable.txt`](pal16l8_truthtable.txt) | the measurement — 2048 rows, 11 inputs × 6 outputs, pin-labelled |
+| [`pal16l8.bin`](pal16l8.bin) | the raw sweep — 2048 rows, one byte each, pins 1-9, 11, 13 driven and 14-19 read |
+| [`pal16l8_hiz.bin`](pal16l8_hiz.bin) | its Hi-Z mask, all zero |
+| [`pal16l8_truthtable.txt`](pal16l8_truthtable.txt) | the same measurement as labelled text — 2048 rows, 11 inputs × 6 outputs |
 | [`pal16l8.pld`](pal16l8.pld) | the minimised equations, GALasm source |
 | [`pal16l8.jed`](pal16l8.jed) | JEDEC fuse map, `QF2194`, target **GAL16V8**, simple mode |
+| [`pal16l8_xcheck_8out.bin`](pal16l8_xcheck_8out.bin) | cross-check — pins 1-9, 11 driven, **12-19 read**, 1024 rows |
+| [`pal16l8_xcheck_8out_hiz.bin`](pal16l8_xcheck_8out_hiz.bin) | its Hi-Z mask |
+| [`pal16l8_xcheck_pin13.bin`](pal16l8_xcheck_pin13.bin) | cross-check — pin 13 driven as an eleventh address bit, **12 and 14-19 read**, 2048 rows |
+| [`pal16l8_xcheck_pin13_hiz.bin`](pal16l8_xcheck_pin13_hiz.bin) | its Hi-Z mask |
 
-| File | Size | MD5 |
-|------|------|-----|
-| `pal16l8_truthtable.txt` | 153,911 bytes | `28a0514a59260ffd7a27f44ac113636f` |
-| `pal16l8.pld`            | 619 bytes     | `928a52736f3a5bb05f1bae4e96af5edb` |
-| `pal16l8.jed`            | 546 bytes     | `7f36726022a4a7f6d52313f2519ef472` |
+The part is soldered back onto the board, so the raw dumps are archived
+alongside the derived files: they are the measurement, and they are not
+repeatable.
+
+| File | Size | MD5 | SHA1 |
+|------|------|-----|------|
+| `pal16l8.bin` | 2,048 | `69860d22fbf32693f60ee554d8000917` | `7d7da99a370c58d455334c15ecc2894c6a149f41` |
+| `pal16l8_hiz.bin` | 2,048 | `c99a74c555371a433d121f551d6c6398` | `605db3fdbaff4ba13729371ad0c4fbab3889378e` |
+| `pal16l8_truthtable.txt` | 153,911 | `28a0514a59260ffd7a27f44ac113636f` | — |
+| `pal16l8.pld` | 619 | `928a52736f3a5bb05f1bae4e96af5edb` | — |
+| `pal16l8.jed` | 546 | `7f36726022a4a7f6d52313f2519ef472` | — |
+| `pal16l8_xcheck_8out.bin` | 1,024 | `7bcd4e3e0bc9ea4297e248fda027ff86` | `f76007f249c3844c0de63e85a2c91889a6ba2427` |
+| `pal16l8_xcheck_8out_hiz.bin` | 1,024 | `bbe64bf7a66b6312b65f57d2249e54a7` | `80e784a680ec9825907f1e5cdd42d4fdf40c2700` |
+| `pal16l8_xcheck_pin13.bin` | 2,048 | `aa7cb2aad36cdd2d6f38a9967d157168` | `3a218fdcb939b73e02484fc736df78575cb93724` |
+| `pal16l8_xcheck_pin13_hiz.bin` | 2,048 | `80f85f4cb6ebbc7ba22f5329979085fd` | `26ad4b31297bba77aef87b93bf185e908d26b101` |
+
+## File format
+
+Each dump is one byte per input state. The state index is the driven pins in the
+order below, `A0` first; the byte holds the read pins in the order below, bit 0
+first. A Hi-Z mask has the same layout as its dump, one byte per state, with a
+set bit meaning that pin read as high-impedance there.
+
+| File | state index, `A0` → | byte, bit 0 → |
+|---|---|---|
+| `pal16l8.bin` | pins 1-9, 11, 13 | pins 14, 15, 16, 17, 18, 19 |
+| `pal16l8_xcheck_8out.bin` | pins 1-9, 11 | pins 12, 13, 14, 15, 16, 17, 18, 19 |
+| `pal16l8_xcheck_pin13.bin` | pins 1-9, 11, 13 | pins 12, 14, 15, 16, 17, 18, 19 |
+
+Decoded that way, `pal16l8.bin` reproduces
+[`pal16l8_truthtable.txt`](pal16l8_truthtable.txt) on all 2048 rows,
+`pal16l8_hiz.bin` is all zero, `pal16l8_xcheck_pin13_hiz.bin` flags pin 12 in
+all 2048 states, and `pal16l8_xcheck_8out_hiz.bin` flags pins 12 and 13 in all
+1024 states and pins 17 and 19 in 128 each — the numbers the pin-direction
+argument below rests on.
 
 ## Provenance
 
@@ -43,7 +79,7 @@ force that pin high or the chip is never powered.
 The sweep treats the device as 11 inputs and 6 outputs: pins 1-9, 11 and 13
 driven, pins 14-19 read.
 
-- Dump SHA1 `7d7da99a370c58d455334c15ecc2894c6a149f41`.
+- Dump [`pal16l8.bin`](pal16l8.bin), SHA1 `7d7da99a370c58d455334c15ecc2894c6a149f41`.
 - Hi-Z mask **all-zero over all 2048 entries**: none of the six read outputs
   ever floats.
 - **Pin 12 never drives**, in any of the 2048 combinations. On a PAL16L8 pins
@@ -135,10 +171,22 @@ could move between passes; its result rests on the other three configurations.
 
 Driving pin 13 as an address bit across the full 2048-state space is what
 covers an enable conditioned on `ROM2` **high**, which a sweep leaving pin 13
-at logic 0 cannot see (dump SHA1
-`3a218fdcb939b73e02484fc736df78575cb93724`). The eight-output configuration
-reproduces this file's six outputs **bit for bit across all 1024 rows**, zero
-mismatches (dump SHA1 `f76007f249c3844c0de63e85a2c91889a6ba2427`).
+at logic 0 cannot see: in
+[`pal16l8_xcheck_pin13.bin`](pal16l8_xcheck_pin13.bin) pin 12 follows the pull
+in all 2048 rows and its Hi-Z mask flags it in all 2048, while outputs 14-19
+match the archived table exactly.
+
+[`pal16l8_xcheck_8out.bin`](pal16l8_xcheck_8out.bin) reads pins 12 **and 13**
+rather than driving 13, and reproduces the six overlapping outputs **bit for
+bit across all 1024 rows**. The comparison is against the pin-13-low half of
+the archived table: pin 13 is undriven in that configuration and sits at 0, its
+readback is 0 in every row, and the outputs follow — which is the same result
+from the other direction, the array tracking a level the chip is not setting.
+Compared against the pin-13-high half the same rows differ in 256 places, so an
+audit that picks the wrong half will see mismatches that are not there.
+
+Its Hi-Z mask is the sharpest statement of the contrast: pins 12 and 13 are
+flagged in **1024 of 1024** states, pins 17 and 19 in **128 of 1024**.
 
 `/ROM2` on pin 13 carries weight in the array — `/RD` requires it high and
 `/CEO` requires it low. That the outputs follow a level the rig imposes is the
@@ -251,13 +299,13 @@ pin 14, marked `/RI`, and the interrupt acknowledge on pin 17, marked `/CEO`.
 The results here do not all rest on the same thing, and a meter reading that
 contradicts one group leaves the other untouched.
 
-**From the archived truth table**, reproducible by anyone holding
-[`pal16l8_truthtable.txt`](pal16l8_truthtable.txt) and nothing else: the
-recovered equations, the support sets, the assertion rates, the pin-13 gating
-counts and the split-minimisation, the pin-direction result across four
-configurations, the `--check_hiz` signature at 128 of 1024 states, and the two
-cross-check dumps. These have been derived twice, independently, from the same
-archived file.
+**From the archived measurements**, recomputable from the files in this
+directory and nothing else: the recovered equations, the support sets, the
+assertion rates, the pin-13 gating counts and the split-minimisation all come
+from [`pal16l8_truthtable.txt`](pal16l8_truthtable.txt); the pin-direction
+result, the `--check_hiz` signature at 128 of 1024 states and the bit-for-bit
+agreement come from the two cross-check dumps and their Hi-Z masks. Every one
+has been derived twice, independently, from these same files.
 
 **From schematic sheets 011-030-01 and 011-030-02, and from the machine's
 behaviour**: every net name, the IC5/IC6/IC7 connections, the IC16/IC17 enable

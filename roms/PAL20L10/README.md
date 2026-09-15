@@ -10,15 +10,31 @@ fuse map that reproduces it.
 
 | File | What |
 |------|------|
-| [`pal20l10_truthtable.txt`](pal20l10_truthtable.txt) | the measurement — 16384 rows, 14 inputs × 8 outputs, one row per input combination, pin-labelled |
+| [`pal20l10.bin`](pal20l10.bin) | the raw sweep — 16384 rows, one byte each |
+| [`pal20l10_hiz.bin`](pal20l10_hiz.bin) | its Hi-Z mask, all zero |
+| [`pal20l10_truthtable.txt`](pal20l10_truthtable.txt) | the same measurement as labelled text — 16384 rows, 14 inputs × 8 outputs |
 | [`pal20l10.pld`](pal20l10.pld) | the minimised equations, GALasm source |
 | [`pal20l10.jed`](pal20l10.jed) | JEDEC fuse map, `QF5892`, target **GAL22V10 / ATF22V10C** |
 
-| File | Size | MD5 |
-|------|------|-----|
-| `pal20l10_truthtable.txt` | 1,556,853 bytes | `f882e77f625cef41ab5491db3f13c0b2` |
-| `pal20l10.pld`            | 742 bytes       | `1bf466d505a025409872bc106bc74548` |
-| `pal20l10.jed`            | 1,097 bytes     | `a93bc2eddd25fc6a4308445805df3be7` |
+The part is soldered back onto the board, so the raw dump is archived alongside
+the derived files: it is the measurement, and it is not repeatable.
+
+| File | Size | MD5 | SHA1 |
+|------|------|-----|------|
+| `pal20l10.bin` | 16,384 | `e3a32aaed374ba47146d1ef4f10ac42d` | `34e48f2b5de5e8b5a13392b996e4e7c7c9487d61` |
+| `pal20l10_hiz.bin` | 16,384 | `ce338fe6899778aacfc28414f2d9498b` | `897256b6709e1a4da9daba92b6bde39ccfccd8c1` |
+| `pal20l10_truthtable.txt` | 1,556,853 | `f882e77f625cef41ab5491db3f13c0b2` | — |
+| `pal20l10.pld` | 742 | `1bf466d505a025409872bc106bc74548` | — |
+| `pal20l10.jed` | 1,097 | `a93bc2eddd25fc6a4308445805df3be7` | — |
+
+## File format
+
+`pal20l10.bin` is one byte per input state: the state index is pins 1-11, 13,
+15, 16 with pin 1 as `A0`, and the byte holds pins 14, 17, 18, 19, 20, 21, 22,
+23 with pin 14 as bit 0. `pal20l10_hiz.bin` has the same layout, a set bit
+meaning that pin read as high-impedance in that state; it is all zero. Decoded
+that way the dump reproduces
+[`pal20l10_truthtable.txt`](pal20l10_truthtable.txt) on all 16384 rows.
 
 ## Provenance
 
@@ -40,7 +56,7 @@ outputs**, not the 12-and-10 its package position suggests.
 The sweep therefore covers all 2¹⁴ = 16384 combinations of pins
 1-11, 13, 15, 16, reading pins 14, 17-23.
 
-- Dump SHA1 `34e48f2b5de5e8b5a13392b996e4e7c7c9487d61`, reproducible.
+- Dump [`pal20l10.bin`](pal20l10.bin), SHA1 `34e48f2b5de5e8b5a13392b996e4e7c7c9487d61`.
 - Hi-Z mask **all-zero over all 16384 entries**: none of the eight outputs ever
   floats, so no output carries a live enable term and no bus-sharing is hidden
   in the part.
