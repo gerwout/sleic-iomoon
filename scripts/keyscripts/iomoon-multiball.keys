@@ -1,0 +1,67 @@
+# Multiball for iomoon, at the Netherlands country default (SW40-2/3/4 =
+# country 4, English text, F11).  The screens the other corpora do not have:
+# the en/ and es/ walks press J twice intending a lock, but the simulator
+# filled the Jupiter device from C44, a contact the Z80 reports no code for,
+# so nothing was ever locked and no multiball screen was drawn.
+#
+# What the firmware needs, and what this script produces:
+#   1. ORBITS complete.  Lane 4 (S) lights LD1; bull's-eye 1 (LCtrl+B) then
+#      takes one letter.  Six pairs put [413C:0102] at its cap of 6, which is
+#      the gate on Jupiter retaining a ball at all (rules 3.3.7).
+#   2. Two Jupiter locks (J).  A ball on C46 is reported as remapped code
+#      0x44, dispatched through CS:0527 entry 54 to sub_D9D04, which counts
+#      into [4134:0030]: 1 arms Little Multiball, 2 starts Multiball (D9DBD).
+#      The firmware serves a replacement ball after each lock, which is the
+#      Space between them.
+#   3. The drop bank is left standing, which is what selects Multiball over
+#      Wonderful Thing (rules 3.3.7).
+#
+# Needs a seeded NVRAM with credits: on a store the firmware has not yet
+# written, its own default seeding zeroes the credit triple, so coins banked
+# during that first boot do not stick.  See dmd/multiball/README.md.
+#
+# Keys: S lane 4; LCtrl+B bull's-eye 1; J Jupiter; Space plunge; 1 start.
+500 mark boot
+560 tap 12 KEYCODE_1
+620 mark start
+900 tap 8 KEYCODE_SPACE
+960 mark plunge
+1200 tap 6 KEYCODE_S
+1210 mark orbits-lane4-1
+1260 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1270 mark orbits-letter-1
+1350 tap 6 KEYCODE_S
+1360 mark orbits-lane4-2
+1410 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1420 mark orbits-letter-2
+1500 tap 6 KEYCODE_S
+1510 mark orbits-lane4-3
+1560 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1570 mark orbits-letter-3
+1650 tap 6 KEYCODE_S
+1660 mark orbits-lane4-4
+1710 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1720 mark orbits-letter-4
+1800 tap 6 KEYCODE_S
+1810 mark orbits-lane4-5
+1860 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1870 mark orbits-letter-5
+1950 tap 6 KEYCODE_S
+1960 mark orbits-lane4-6
+2010 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+2020 mark orbits-letter-6
+2100 mark orbits-complete
+2220 tap 6 KEYCODE_J
+2230 mark jupiter-lock-1
+2470 tap 8 KEYCODE_SPACE
+2480 mark replacement-ball-1
+2670 tap 6 KEYCODE_J
+2680 mark jupiter-lock-2-multiball
+2920 tap 8 KEYCODE_SPACE
+2930 mark replacement-ball-2
+3120 tap 6 KEYCODE_Y
+3130 mark multiball-play
+3420 tap 6 KEYCODE_U
+3430 mark multiball-play-2
+3820 mark end
+3970 quit

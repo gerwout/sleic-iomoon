@@ -185,6 +185,22 @@ screens** under **52 labels**. `du -sh dmd/es` is 297M before committing
 service-menu tail is accounted for — not wildly larger, so nothing here
 is looping.
 
+## Multiball (`multiball/`), captured against `iomoon`
+
+The lock and mode screens neither `en/` nor `es/` contains. Both walks press
+`J` twice intending a Jupiter lock, but the simulator filled the device from
+C44 — a contact the Z80 reports no code for — so nothing was ever locked and
+none of these screens was drawn. The device reports only on **C46**, as the
+remapped code `0x44`, which the 80188 counts in `[4134:0030]` through
+`sub_D9D04`: 1 arms Little Multiball, 2 starts Multiball at `D9DBD`.
+
+916 frames, 366 scene occurrences, **91 distinct screens**, including
+**BALL LOCKED FOR MULTIBALL** (alternating outline and filled) and the
+full-height **MULTIBALL** with its wipe. Captured on the parent set rather
+than `iomoont`, and it needs a PinMAME fix that is not upstream —
+`dmd/multiball/README.md` has the conditions, the commands and the NVRAM
+seeding this capture depends on.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game

@@ -711,6 +711,42 @@ Scoop 1 is kicked out by coil 13 (*Taca*) then coil 8; scoop 2 has no coil
 
 All three need the ORBITS spelling complete, because all three start at Jupiter.
 
+### How the firmware counts a lock
+
+The three Jupiter contacts are a counted device, and only **C46** reports: the
+Z80 sends no code at all for C44 and C45, and sends the remapped code **`0x44`**
+for C46 rather than its own `0x2C` — the same treatment the trough's entry
+contact gets, where C6 reports `0x43` instead of `0x0A`. Measured by pulsing
+every bit of Z80 column 4 in turn: bits 3-7 give `0x2D`-`0x31`, bits 0 and 1
+give nothing, bit 2 gives `0x44`.
+
+`0x44` is what the game acts on. The in-game dispatcher at `D7661` indexes the
+jump table at `CS:0527` by `code − 0x0E`, and entry 54 reaches **`sub_D9D04`**:
+
+| | |
+|---|---|
+| `D9D0A` | gate on `[4134:0022]`; non-zero takes the pass-through branch (`INC [4134:0026]`, sound `0x0A`, Z80 command `0xEE`) |
+| `D9D29` | **`INC [4134:0030]`** — the lock counter |
+| `D9D31` | count 1 → `D9D41`: sound `0x14`, `fm_song_select(0)` then `(3)`, and the DMD text at `F000:1F02` / `F000:1FAC` through `sub_DAAAF` |
+| `D9D36` | count 2 → **`D9DBD`**, the Multiball path |
+
+Codes `0x2A`-`0x2C` reach dispatcher entries 28-30, all of which are the
+do-nothing default at `0x0523`, so the other two contacts carry no game logic.
+
+The device count `[413C:00F8]` is a different thing and is **not** how a lock is
+registered: it is filled by `sub_DC194` from command `0xEB`'s reply, and `0xEB`
+is issued from exactly two sites (`DC4D4`, `DC547`), both ball-serve paths. It
+is inventory — how many balls are accounted for at a serve, read at `DC4F1` and
+`DC564` to decide whether a ball search is needed, and at `DC2DA` where
+`sub_DC2A6` calls `sub_D92C0` once per held ball.
+
+The Jupiter *entrance* contact C50 (`0x31`) is not part of the lock: its handler
+`sub_D9CCE` adds 100,000 to the score and plays OKI phrase `0x17`, and nothing
+else.
+
+Screens for the first lock and for Multiball starting are captured in
+[`../dmd/multiball/`](../dmd/multiball/).
+
 ### Multiball (§3.2.1, §3.3.7)
 
 **Starts** when the **second** ball is locked in Jupiter **and the five bank
