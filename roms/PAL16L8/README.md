@@ -3,13 +3,17 @@
 [← Back to ROM index](../README.md) · [Chip background](../../docs/chips_to_dump.md)
 
 A bench read of **IC8**, the AMD **PAL16L8A-2CN** on the IO Moon Z80 board
-(011-030A). The part is soldered, bipolar and security-locked, so what is
-archived here is its measured behaviour and a fuse map that reproduces it.
+(011-030A), desoldered from the board and read in a socket. The part is bipolar
+and security-locked, so what is archived here is its measured behaviour and a
+fuse map that reproduces it.
 
-> **Read the *What does not add up* section before using this.** The
-> measurement is exhaustive, reproduces byte for byte on an independent run of
-> the pipeline, and has pin direction established four ways — but the memory
-> chip selects the board needs are not in it, and that is unresolved.
+> **Read *What this device decodes* before using this.** The measurement is
+> exhaustive, reproduces byte for byte on an independent run of the pipeline,
+> and has pin direction established four ways. The device is a **bus-cycle
+> decoder**: three of the five address lines wired to it reach no output at
+> all, and it generates no memory chip select and no memory read or write
+> strobe. The nets schematic sheet 011-030-01 puts on pins 12, 16, 18 and 19
+> are therefore not what the board has there.
 
 | File | What |
 |------|------|
@@ -24,6 +28,10 @@ archived here is its measured behaviour and a fuse map that reproduces it.
 | `pal16l8.jed`            | 546 bytes     | `7f36726022a4a7f6d52313f2519ef472` |
 
 ## Provenance
+
+The device is the one desoldered from this machine's own 011-030A board, and
+the machine runs — which is what makes the gap between the measurement and the
+schematic a statement about the board rather than about the part.
 
 Read on a **dupico (DuPAL V3)** board with the PAL POD, using `dpdumper` →
 `dpdump2tab` → `espresso` → `galasm`, the same rig and pipeline that recovered
@@ -93,8 +101,8 @@ those three (sheet 011-030-02):
   nothing spare.
 - **Interrupt acknowledge** (`/M1` and `/IOREQ` together). The Z80 runs in
   interrupt mode 1, so an INTACK cycle fetches no vector — its only job is to
-  clear the request, which is exactly what the `/RI` net does at the latch
-  described below.
+  clear the request, which is what the `/RI` net does at the IC14A/IC14B latch
+  ([`../../research/z80_irq_timing.md`](../../research/z80_irq_timing.md)).
 
 Two of those three sit on the other's pin relative to the symbol: the I/O-write
 decode is on pin 14, labelled `/RI`, and the interrupt-acknowledge decode on pin
@@ -102,27 +110,10 @@ decode is on pin 14, labelled `/RI`, and the interrupt-acknowledge decode on pin
 the POD's hard-wired ground and IC pin 20 on its switched supply — so the two
 pins are not interchangeable at the rig.
 
-## What does not add up
+## Pin direction
 
-**The memory chip selects are missing, and the board cannot work without
-them.** From sheet 011-030-01 and -02:
-
-- `/ROM1` (pin 12) is the `/CE` of **IC5**, the 27C256 program EPROM. Pin 12
-  never drives.
-- `/RAM` (pin 16) feeds IC14D and IC14C (74LS00), which gate it with the
-  supervisor's `WATCH` line to produce `/CRAM`, the `/CE` of **IC7**, the 6116
-  work RAM. Pin 16 reduces to `/M1`.
-- `/RD` (pin 19) is the `/OE` of IC5, IC6 and IC7 and gates the IC4 74LS245
-  data-bus transceiver. It comes out as an opcode-fetch decode, so data reads
-  would never enable the ROM, the RAM or the bus buffer.
-- `/WR` (pin 18) is the `/WE` of IC7. It comes out as a term that is true only
-  when *no* strobe is active.
-
-A Z80 board whose IC8 behaved this way could not fetch an instruction or reach
-its RAM. IO Moon's does both.
-
-**Pin direction is established four ways.** Pins 12 and 13 read permanently
-high-impedance in every one of these:
+Pins 12 and 13 do not drive. They read permanently high-impedance in four
+configurations:
 
 | Configuration | Pin 12 | Pin 13 |
 |---|---|---|
@@ -131,19 +122,28 @@ high-impedance in every one of these:
 | `data = [12,14..19]`, pin 13 driven as an address bit, 2048 combinations | always Hi-Z | — |
 | `data = [12,13,14..19]`, 1024 combinations | always Hi-Z | always Hi-Z |
 
-The single-pin sweep of **pin 12 is structurally decisive**: pin 12 has no
+The physics is what makes these readings mean something. This is a bipolar
+PAL16L8 sourcing and sinking tens of milliamps; the rig pulls through about
+10 kΩ, roughly 0.5 mA. **The rig cannot override a driven output**, so a pin
+whose level follows the pull is a pin the chip is not driving.
+
+The single-pin sweep of **pin 12 is decisive on its own**: pin 12 has no
 feedback path into the AND array, so pulling it high in one pass and low in the
 other cannot change what the array sees, and both passes present identical
-inputs. A driven pin 12 would read the same value in both. Pins 14-19 register
-as driving under the same electrical conditions, which is the control that shows
-the rig's pull is weak enough for a real output to override it.
+inputs. Pin 13 does feed back, so in principle a self-dependent enable term
+could move between passes; its result rests on the other three configurations.
 
-Driving pin 13 as an address bit across the full 2048-state space is what covers
-an enable conditioned on `ROM2` **high**, which a sweep leaving pin 13 at logic
-0 cannot see (dump SHA1 `3a218fdcb939b73e02484fc736df78575cb93724`). The
-eight-output configuration reproduces this file's six outputs **bit for bit
-across all 1024 rows**, zero mismatches (dump SHA1
-`f76007f249c3844c0de63e85a2c91889a6ba2427`).
+Driving pin 13 as an address bit across the full 2048-state space is what
+covers an enable conditioned on `ROM2` **high**, which a sweep leaving pin 13
+at logic 0 cannot see (dump SHA1
+`3a218fdcb939b73e02484fc736df78575cb93724`). The eight-output configuration
+reproduces this file's six outputs **bit for bit across all 1024 rows**, zero
+mismatches (dump SHA1 `f76007f249c3844c0de63e85a2c91889a6ba2427`).
+
+`/ROM2` on pin 13 carries weight in the array — `/RD` requires it high and
+`/CEO` requires it low. That the outputs follow a level the rig imposes is the
+same measurement as the Hi-Z test restated, not a second line of evidence, but
+it is consistent: pin 13 is an input.
 
 **`--check_hiz` reports false Hi-Z on this part, and the effect is partial.**
 `dpdumper` drives every data pin high in one pass and low in the other; six of
@@ -152,30 +152,79 @@ inputs move between the passes and a driven output can be reported as floating.
 On this device, in the eight-output configuration, pins 17 and 19 are reported
 Hi-Z in **128 of 1024** states, where the eleven-input sweep has both driving in
 all 2048. The effect appears only in states where the chip is not driving, so it
-produces state-dependent false Hi-Z, not the all-states reading that pins 12 and
-13 give. Resolve direction one pin at a time, and prefer a pin with no feedback
-path, before trusting the mask.
+produces state-dependent false Hi-Z, never the all-states reading that pins 12
+and 13 give. Resolve direction one pin at a time, and prefer a pin with no
+feedback path, before trusting the mask.
 
-`/ROM2` on pin 13 carries weight in the array — `/RD` requires it high and
-`/CEO` requires it low — so the logic reads that pin. With the Hi-Z measurements
-above, which say the PAL is not what drives it, pin 13 is an input.
+## What this device decodes, and what it does not
+
+Every output's support set, taken by exhaustive single-bit flips over all 2048
+rows rather than read off the minimised equations — `D` marks an input the
+output actually depends on:
+
+| Output | `/M1` | `/MREQ` | `/IOREQ` | `/PWR` | `/PRD` | `A15` | `A14` | `A13` | `A12` | `A7` | `/ROM2` |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `/RI` (14)  | D | D | D | D | . | . | . | . | . | . | . |
+| `/CEI` (15) | D | D | D | D | D | . | . | . | . | . | . |
+| `/RAM` (16) | D | . | . | . | . | . | . | . | . | . | . |
+| `/CEO` (17) | D | D | D | . | . | . | . | . | . | . | D |
+| `/WR` (18)  | D | . | . | D | D | D | D | . | . | . | . |
+| `/RD` (19)  | D | D | D | . | . | . | . | . | . | . | D |
+
+Assertion rates over the same 2048 rows: `/RI` 128, `/CEI` 64, `/RAM` 1024,
+`/CEO` 128, `/WR` 64, `/RD` 128. Every pair is mutually exclusive except
+`/RAM`, which overlaps `/CEO` and `/RD` at 128 each — the pattern of a signal
+passed through rather than a select.
+
+**This part is a bus-cycle decoder.** `A13`, `A12` and `A7` are wired to it and
+no output depends on any of them. Exactly one output touches the address bus at
+all, and only two of the five address lines present. Four of the six are pure
+decodes over the control signals; the fifth, pin 16, follows a single control
+signal — it depends on `/M1` alone and asserts in exactly half the input space.
+
+So the memory-map decode is not in this device, and the reason is structural
+rather than a gap in the read: a part that ignores three of the five address
+inputs wired to it is not selecting memory with them. Concretely, none of the
+six outputs can be:
+
+- **A ROM select** — it would have to be true for every memory cycle with `A15`
+  low. Pin 16 is true only during `M1`, pin 19 only during an opcode fetch, pin
+  18 only while no strobe is active, and pins 14, 15 and 17 all require
+  `/IOREQ`.
+- **A RAM select** — it would have to be true for `A15`=1 · `A14`=1 · `A13`=0.
+  `A13` is in no support set, and the only output using `A15` and `A14`
+  requires both **low**.
+- **A memory read or write strobe** — every output that responds to `/PRD` or
+  `/PWR` also requires `/IOREQ`, so none is true during a memory cycle.
+
+Pin 18 is a static address-range decode of the bottom 16 KB qualified by "no
+strobe active". It is not a refresh decode: `/MREQ` is not in its support set,
+and a refresh strobe has to be gated on `/RFSH` or at least `/MREQ` or it fires
+through idle bus states.
+
+**What follows for the board.** The part read is the device desoldered from
+this machine's own 011-030A board, and the machine runs, so IC5's chip enable,
+IC7's chip enable and the memory read and write strobes are generated somewhere
+other than IC8 — which is not what schematic sheet 011-030-01 shows on pins 12,
+16, 18 and 19. What IC8 does supply is the I/O half of the decode and the
+interrupt acknowledge: the enables for IC16 and IC17, and the pulse that clears
+the `/INT` latch.
+
+Two of those three also sit on each other's label: the I/O-write decode is on
+pin 14, marked `/RI`, and the interrupt acknowledge on pin 17, marked `/CEO`.
 
 ## What would settle it
 
-The measurement and the sheet disagree, and nothing further at the rig
-discriminates between them. Three checks on the hardware do:
+Three measurements on the board, in order of value:
 
-1. **Continuity from IC8 pin 12 to IC5 pin 20.** If there is no trace — if
-   IC5's `/CE` is strapped rather than decoded — a `/ROM1` that never drives is
-   harmless.
-2. **A scope on IC8 pin 16 against `/M1`** during normal operation. `/RAM`
-   becomes IC7's `/CRAM` through IC14C/D, so a chip enable following `/M1` would
-   leave the work RAM selected only during opcode fetches.
-3. **The provenance of the part that was read** — whether it is the device
-   desoldered from this board, or another. Doña Elvira 2's CPU board is clave
-   `011-030`, drawn on the same sheet number with the same IC8 symbol, and Bike
-   Race shares the board generation
-   ([`../../docs/sleic_board_family.md`](../../docs/sleic_board_family.md)), so
-   the position exists on more than one machine.
+1. **Trace IC5 pin 20 (`/CE`) and IC7 pin 18 (`/CE`) back to what drives
+   them**, and the same for the `/OE` and `/WE` lines those parts take. Sheet
+   011-030-01 routes all of them from IC8, through IC14C/D in the RAM's case.
+   The measurement says IC8 drives none of them.
+2. **Continuity from IC8 pin 12 to IC5 pin 20** — the narrow form of the same
+   question.
+3. **A scope on pins 14 and 17** against an `OUT` instruction and against an
+   interrupt, to read which net each actually drives. Pin 15 is already
+   corroborated by IC16's wiring.
 
 Until then the three confirmed decodes above are the usable result.

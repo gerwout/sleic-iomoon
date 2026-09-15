@@ -153,14 +153,15 @@ ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
 
 ## What is still missing
 
-- **Which device the IC8 dump came from.** Both PALs have been read on a DuPAL
-  rig — IC7 at [`../roms/PAL20L10/`](../roms/PAL20L10/), IC8 at
-  [`../roms/PAL16L8/`](../roms/PAL16L8/). The IC8 measurement contains no memory
-  chip select, which the 011-030A board cannot work without, and the rig cannot
-  discriminate further. The IC8 position exists on more than one machine in this
-  family, at the same clave and on the same sheet number, so provenance is one
-  of the three hardware checks that would settle it. Nothing about it blocks
-  emulation; see [`chips_to_dump.md`](chips_to_dump.md).
+- **What drives the Z80 board's memory chip selects.** Both PALs have been read
+  on a DuPAL rig — IC7 at [`../roms/PAL20L10/`](../roms/PAL20L10/), IC8 at
+  [`../roms/PAL16L8/`](../roms/PAL16L8/). IC8, read off IO Moon's own 011-030A
+  board, generates the I/O decode enables and the interrupt acknowledge but no
+  memory chip select and no memory read or write strobe, so the PCB does not
+  carry the nets sheet `011-030-01` puts on those pins — a sheet this family
+  shares, since Doña Elvira 2's CPU board is the same clave and drawing number.
+  Tracing IC5's and IC7's chip enables on the board is what closes it. Nothing
+  about it blocks emulation; see [`chips_to_dump.md`](chips_to_dump.md).
 - **A re-read of Doña Elvira 2's `ELVSON3`** — `040V1U04.SOM` (sound board
   `011-065`, IC44) is missing 61,440 bytes from its middle. Three of the machine's
   68 OKI phrases are affected: 57 loses its tail, 58 is gone entirely, 59 loses its
