@@ -246,6 +246,28 @@ the `/INT` latch.
 Two of those three also sit on each other's label: the I/O-write decode is on
 pin 14, marked `/RI`, and the interrupt acknowledge on pin 17, marked `/CEO`.
 
+## How each result is grounded
+
+The results here do not all rest on the same thing, and a meter reading that
+contradicts one group leaves the other untouched.
+
+**From the archived truth table**, reproducible by anyone holding
+[`pal16l8_truthtable.txt`](pal16l8_truthtable.txt) and nothing else: the
+recovered equations, the support sets, the assertion rates, the pin-13 gating
+counts and the split-minimisation, the pin-direction result across four
+configurations, the `--check_hiz` signature at 128 of 1024 states, and the two
+cross-check dumps. These have been derived twice, independently, from the same
+archived file.
+
+**From schematic sheets 011-030-01 and 011-030-02, and from the machine's
+behaviour**: every net name, the IC5/IC6/IC7 connections, the IC16/IC17 enable
+wiring, the IC14 latch, and therefore the reading of which pin serves which job
+and the derivation of pin 13's level. The sheets are the scans in
+[`../../manuals/sleic_io_moon_manual_es.pdf`](../../manuals/sleic_io_moon_manual_es.pdf),
+read at 300 dpi; the machine running normally is reported rather than
+instrumented. If the meter contradicts this group, nothing in the first group
+changes.
+
 ## What would settle it
 
 Four measurements on the board, in order of value:
@@ -262,15 +284,22 @@ Four measurements on the board, in order of value:
    pair of non-address inputs to steer its program-ROM select
    ([`../PAL20L10/README.md`](../PAL20L10/README.md)).
 
-   **The level is fixed by what the board needs, independently of the symbol's
-   labels.** Sheet 011-030-02 ties IC17's `G2A`/`G2B` to one IC8 output and the
-   reset of the IC14A/IC14B interrupt latch to another. Only the I/O-write
-   decode can serve the first, and only the interrupt-acknowledge decode the
-   second — pin 14 and pin 17. Pin 17 is live only with **pin 13 low**, which
-   makes pin 19 the constant output. So pin 13 should measure low, and pin 19
-   should never leave its inactive level on a running machine. A high reading
-   instead means pin 17 is dead, the latch reset arrives from somewhere other
-   than IC8, and the functional analysis above needs revisiting.
+   **Which level, from the board rather than from the symbol's labels.** Sheet
+   011-030-02 puts one IC8 output on IC17's `G2A`/`G2B` and another on the
+   reset of the IC14A/IC14B interrupt latch. Of the six measured functions only
+   the I/O-write decode can serve IC17's enable — it has to assert during an
+   `OUT` and no other output does — so that is pin 14. The latch reset could
+   electrically be either pin 17 (interrupt acknowledge) or pin 14, since an
+   `OUT` would also clear the latch; pin 14 is excluded by timing rather than by
+   wiring. The counter sets the latch at 488 Hz and the Z80 issues `OUT`s
+   continuously in both the switch scan and the lamp refresh, so a reset on any
+   `OUT` would usually clear the request before the CPU reached an instruction
+   boundary, and the lamp refresh that interrupt drives would be visibly
+   erratic. That leaves pin 17, which is live only with **pin 13 low**, making
+   pin 19 the constant output. So pin 13 should measure low, and pin 19 should
+   never leave its inactive level on a running machine. A high reading instead
+   means pin 17 is dead and the latch reset arrives from somewhere other than
+   IC8.
 2. **Trace IC5 pin 20 (`/CE`) and IC7 pin 18 (`/CE`) back to what drives
    them**, and the same for the `/OE` and `/WE` lines those parts take. Sheet
    011-030-01 routes all of them from IC8, through IC14C/D in the RAM's case.
