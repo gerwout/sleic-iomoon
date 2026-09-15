@@ -161,11 +161,13 @@ ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
   68 OKI phrases are affected: 57 loses its tail, 58 is gone entirely, 59 loses its
   head. The other five EPROMs are complete.
 - **Doña Elvira 2's display PROMs** — the three 6331 bipolar PROMs at IC2, IC5 and
-  IC8 on the display board `011-064`. Its
+  IC8 on the display board `011-064`. Each is a character generator, so the
+  machine's alphabet is in them and in no ROM already dumped. Its
   [service manual](../manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
   settles what a complete set is, and it is not the IO Moon shape: the machine has
   no 16-bit board, so the archived Z80 game image is its whole game program, and a
-  second Z80 with four 27C040s of samples does all the sound.
+  second Z80 with four 27C040s of samples does all the sound. Full write-up:
+  [`dona_elvira_2.md`](dona_elvira_2.md).
 - **Doña Elvira 2 disassembly** — not started. Given the 15–18 % code overlap with
   IO Moon and Bike Race, the documented switch/lamp/coil port maps
   ([`z80_io_ports.md`](z80_io_ports.md),

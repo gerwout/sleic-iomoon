@@ -23,6 +23,10 @@ For both, the recovery path is truth-table reconstruction (DuPAL / dupico), desc
 
 Everything else on the IO Moon boards is either already archived (the 27C040 program / display / sound EPROMs and the 27C256 Z80 ROM) or runtime-mutable (the 28C64A NVRAM at IC14 on the 16-bit board). For the full board IC lists and the function of every other chip, see [`board_011-029A_ics.md`](board_011-029A_ics.md) and [`board_011-030A_ics.md`](board_011-030A_ics.md).
 
+### Other machines
+
+This document is about IO Moon's own two boards. **Doña Elvira 2** has outstanding parts of its own — a re-read of the `ELVSON3` sample EPROM, and the three `6331` character-generator PROMs on its display board, which have never been dumped. Neither is a protected part, so neither needs anything in this document's Path B; both are covered in [`dona_elvira_2.md`](dona_elvira_2.md).
+
 ## How to read this document
 
 A protectable chip can be in one of two states, and the recovery path depends on which:

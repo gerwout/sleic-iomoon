@@ -210,7 +210,8 @@ sleic-io-moon/
 │   ├── iomoon_game_rules.md           # Complete rule set (play, lights, modes, adjustables)
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
 │   ├── bikerace_boards.md             # Bike Race board photographs and IC complement
-│   └── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
+│   ├── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
+│   └── dona_elvira_2.md               # Doña Elvira 2: board complement, sound and display, what is still to dump
 ├── datasheets/                        # Offline PDF datasheets for every board IC
 │   ├── README.md                      # Datasheet catalogue (part → file → source)
 │   ├── 80c188.pdf                     # Intel 80186/80188 CPU (IC1, 011-029A)
@@ -418,6 +419,7 @@ Detailed write-ups covering the IO Moon hardware and software, based on ROM reve
 | [Complete Rule Set](docs/iomoon_game_rules.md) | How the machine plays: every contact's award, the rules section's lights reconciled to the manual's own LC numbers, the modes and their durations, and the adjustables that change them |
 | [The SLEIC Board Family](docs/sleic_board_family.md) | How IO Moon, Sleic Pin-Ball, Bike Race and Doña Elvira 2 relate: shared architecture, Z80 firmware lineage, where they diverge |
 | [Bike Race Boards](docs/bikerace_boards.md) | Photographs of the Bike Race 16-bit and Z80 boards, with the IC complement they establish |
+| [Doña Elvira 2](docs/dona_elvira_2.md) | What that machine's ROMs and manual establish: board complement, the Z80 sound CPU and its OKI sample set, the serial 7-segment display, and the parts still to dump |
 
 ---
 

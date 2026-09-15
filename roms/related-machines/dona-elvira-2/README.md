@@ -7,7 +7,10 @@ archived, so unlike the IO Moon set they cannot be cross-checked against an
 independent source.
 
 The machine's service manual is archived at [`../../../manuals/`](../../../manuals/)
-and is the source for the board and component references below.
+and is the source for the board and component references below. What these ROMs
+establish about the machine as a whole — the sound board and its OKI sample set, the
+serial 7-segment display, and everything still open — is written up in
+[`../../../docs/dona_elvira_2.md`](../../../docs/dona_elvira_2.md).
 
 ## Files
 
