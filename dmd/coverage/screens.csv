@@ -1,0 +1,502 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,666,3,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,699,699,1,BALLS OK,2
+3,unlabelled,0003-unlabelled,1783,1783,1,,3
+4,unlabelled,0004-unlabelled,1916,1949,2,,4
+5,unlabelled,0005-unlabelled,1966,8283,268,,5
+6,boot,0006-boot,8316,9316,38,,6
+7,boot,0007-boot,9349,9349,1,,7
+8,boot,0008-boot,9383,9383,1,,8
+9,boot,0009-boot,9400,9400,1,1 1 / PLAYER BALL,9
+10,boot,0010-boot,9433,9433,1,PLAYER BALL,10
+11,boot,0011-boot,9483,9500,2,PLAYER BALL,11
+12,boot,0012-boot,9550,9550,1,PLAYER BALL,12
+13,boot,0013-boot,9600,9866,11,PLAYER BALL,13
+14,boot,0014-boot,9883,9883,1,BALL,14
+15,boot,0015-boot,9933,9983,2,BALL,15
+16,boot,0016-boot,10000,10000,1,PLAYER BALL,16
+17,boot,0017-boot,10050,10050,1,PLAYER BALL,17
+18,boot,0018-boot,10100,10100,1,PLAYER BALL,18
+19,boot,0019-boot,10166,10166,1,BALL,19
+20,boot,0020-boot,10216,10216,1,BALL,20
+21,boot,0021-boot,10266,10266,1,PLAYER BALL,21
+22,start,0022-start,10316,10316,1,PLAYER BALL,22
+23,start,0023-start,10383,10383,1,BALL,23
+24,start,0024-start,10433,10433,1,BALL,24
+25,start,0025-start,10483,10483,1,PLAYER BALL,25
+26,start,0026-start,10550,10550,1,PLAYER BALL,26
+27,start,0027-start,10600,10600,1,BALL,27
+28,start,0028-start,10650,10650,1,PLAYER BALL,28
+29,start,0029-start,10700,10700,1,PLAYER BALL,29
+30,start,0030-start,10766,10766,1,PLAYER BALL,30
+31,start,0031-start,10816,10816,1,PLAYER BALL,31
+32,start,0032-start,10866,10866,1,PLAYER BALL,32
+33,start,0033-start,10933,10933,1,PLAYER BALL,33
+34,start,0034-start,10983,10983,1,PLAYER BALL,34
+35,start,0035-start,11033,11033,1,PLAYER BALL,35
+36,start,0036-start,11083,11083,1,PLAYER BALL,36
+37,start,0037-start,11150,11150,1,BALL,37
+38,start,0038-start,11200,11200,1,PLAYER BALL,38
+39,start,0039-start,11250,11250,1,PLAYER BALL,39
+40,start,0040-start,11316,11316,1,PLAYER BALL,40
+41,start,0041-start,11366,11366,1,PLAYER BALL,41
+42,start,0042-start,11416,11416,1,PLAYER BALL,42
+43,start,0043-start,11466,11483,2,PLAYER BALL,43
+44,start,0044-start,11533,11550,2,PLAYER BALL,44
+45,start,0045-start,11583,11600,2,PLAYER BALL,45
+46,start,0046-start,11633,11650,2,PLAYER BALL,46
+47,start,0047-start,11700,11850,6,PLAYER BALL,47
+48,start,0048-start,11866,11933,3,PLAYER BALL,48
+49,start,0049-start,11983,11983,1,PLAYER BALL,49
+50,start,0050-start,12033,15783,50,1 1 / PLAYER BALL,50
+51,plunge,0051-plunge,15983,20833,30,1 1 / PLAYER BALL,51
+52,plunge,0052-plunge,20966,20966,1,,52
+53,plunge,0053-plunge,20999,20999,1,,3
+54,orbits-1,0054-orbits-1,21016,21166,2,,54
+55,orbits-1,0055-orbits-1,23149,23149,1,,3
+56,orbits-1,0056-orbits-1,23166,23166,1,,56
+57,orbits-2,0057-orbits-2,23316,23449,2,,57
+58,orbits-2,0058-orbits-2,25299,25299,1,,58
+59,orbits-2,0059-orbits-2,25316,25316,1,1 1 / PLAYER BALL,9
+60,orbits-3,0060-orbits-3,25349,25349,1,,60
+61,orbits-3,0061-orbits-3,25383,25383,1,,3
+62,orbits-3,0062-orbits-3,25399,25833,6,,62
+63,orbits-3,0063-orbits-3,27466,27466,1,,3
+64,orbits-3,0064-orbits-3,27499,27499,1,,56
+65,orbits-4,0065-orbits-4,27633,29649,7,,65
+66,orbits-4,0066-orbits-4,29666,29666,1,,3
+67,orbits-5,0067-orbits-5,29683,31799,9,,67
+68,orbits-5,0068-orbits-5,31816,31816,1,,3
+69,orbits-5,0069-orbits-5,31833,31833,1,,69
+70,orbits-6,0070-orbits-6,31849,32666,7,,70
+71,orbits-complete,0071-orbits-complete,33999,33999,1,,71
+72,orbits-complete,0072-orbits-complete,34016,35066,10,1 1 / PLAYER BALL,72
+73,lm-lock-1,0073-lm-lock-1,35233,35499,4,1 1 / PLAYER BALL,73
+74,lm-lock-1,0074-lm-lock-1,35516,35516,1,,3
+75,lm-lock-1,0075-lm-lock-1,35533,35649,4,,75
+76,lm-lock-1,0076-lm-lock-1,35783,35899,3,,75
+77,lm-lock-1,0077-lm-lock-1,36033,36033,1,,77
+78,lm-lock-1,0078-lm-lock-1,36149,36149,1,,75
+79,lm-lock-1,0079-lm-lock-1,36283,36283,1,,77
+80,lm-lock-1,0080-lm-lock-1,36399,36399,1,,75
+81,lm-lock-1,0081-lm-lock-1,36533,36533,1,,77
+82,lm-lock-1,0082-lm-lock-1,36633,36633,1,,75
+83,lm-lock-1,0083-lm-lock-1,36783,36783,1,,77
+84,lm-lock-1,0084-lm-lock-1,36883,36883,1,,75
+85,lm-lock-1,0085-lm-lock-1,37016,37016,1,,77
+86,lm-lock-1,0086-lm-lock-1,37133,37133,1,,75
+87,lm-lock-1,0087-lm-lock-1,37266,40016,21,1 1 / PLAYER BALL,87
+88,lm-replacement-1,0088-lm-replacement-1,40200,44083,26,1 1 / PLAYER BALL,88
+89,lm-scoop1-1,0089-lm-scoop1-1,44283,47200,18,1 1 / PLAYER BALL,89
+90,lm-scoop1-1,0090-lm-scoop1-1,47250,47250,1,,3
+91,lm-scoop1-1,0091-lm-scoop1-1,47283,47283,1,,91
+92,lm-scoop1-1,0092-lm-scoop1-1,47333,47333,1,,92
+93,lm-scoop1-1,0093-lm-scoop1-1,47416,47433,2,,91
+94,lm-scoop1-1,0094-lm-scoop1-1,47466,47483,2,,92
+95,lm-scoop1-1,0095-lm-scoop1-1,47550,47566,2,,91
+96,lm-scoop1-1,0096-lm-scoop1-1,47616,47616,1,,92
+97,lm-scoop1-1,0097-lm-scoop1-1,47700,47700,1,,91
+98,lm-scoop1-1,0098-lm-scoop1-1,47750,47750,1,,98
+99,lm-scoop1-1,0099-lm-scoop1-1,47766,47833,2,,99
+100,lm-scoop1-1,0100-lm-scoop1-1,47850,47883,2,,100
+101,lm-scoop1-1,0101-lm-scoop1-1,47900,47900,1,,92
+102,lm-scoop1-1,0102-lm-scoop1-1,47983,47983,1,,91
+103,lm-scoop1-1,0103-lm-scoop1-1,48033,48033,1,,92
+104,lm-scoop1-1,0104-lm-scoop1-1,48116,48116,1,,91
+105,lm-scoop1-1,0105-lm-scoop1-1,48166,48166,1,,92
+106,lm-scoop1-1,0106-lm-scoop1-1,48250,48250,1,,91
+107,lm-scoop1-1,0107-lm-scoop1-1,48316,48316,1,,92
+108,lm-scoop1-1,0108-lm-scoop1-1,48400,48400,1,,91
+109,lm-scoop1-1,0109-lm-scoop1-1,48450,48450,1,,92
+110,lm-scoop1-1,0110-lm-scoop1-1,48533,48533,1,,91
+111,lm-scoop1-1,0111-lm-scoop1-1,48583,48583,1,,92
+112,lm-scoop1-1,0112-lm-scoop1-1,48666,48666,1,,91
+113,lm-scoop1-1,0113-lm-scoop1-1,48716,48716,1,,92
+114,lm-scoop1-1,0114-lm-scoop1-1,48800,48800,1,,91
+115,lm-scoop1-1,0115-lm-scoop1-1,48850,48850,1,,92
+116,lm-scoop1-1,0116-lm-scoop1-1,48933,48933,1,,91
+117,lm-scoop1-1,0117-lm-scoop1-1,49000,49000,1,,92
+118,lm-scoop1-1,0118-lm-scoop1-1,49083,49083,1,,91
+119,lm-scoop1-1,0119-lm-scoop1-1,49133,49133,1,,92
+120,lm-scoop1-1,0120-lm-scoop1-1,49216,49216,1,,91
+121,lm-scoop1-1,0121-lm-scoop1-1,49266,49266,1,,92
+122,lm-scoop1-1,0122-lm-scoop1-1,49350,49350,1,,91
+123,lm-scoop1-1,0123-lm-scoop1-1,49400,49416,2,,92
+124,lm-scoop1-1,0124-lm-scoop1-1,49483,49500,2,,91
+125,lm-scoop1-1,0125-lm-scoop1-1,49550,49550,1,,92
+126,lm-scoop1-1,0126-lm-scoop1-1,49616,49616,1,,126
+127,lm-scoop1-1,0127-lm-scoop1-1,49633,49633,1,,91
+128,lm-scoop1-1,0128-lm-scoop1-1,49683,49683,1,,128
+129,lm-scoop1-1,0129-lm-scoop1-1,49700,49700,1,,92
+130,lm-scoop1-1,0130-lm-scoop1-1,49766,49766,1,,130
+131,lm-scoop1-1,0131-lm-scoop1-1,49783,49783,1,,91
+132,lm-scoop1-1,0132-lm-scoop1-1,49816,49816,1,,132
+133,lm-scoop1-1,0133-lm-scoop1-1,49833,49900,2,,133
+134,lm-scoop1-1,0134-lm-scoop1-1,49916,49950,2,,134
+135,lm-scoop1-1,0135-lm-scoop1-1,49966,49966,1,,92
+136,lm-scoop1-1,0136-lm-scoop1-1,50050,50050,1,,91
+137,lm-scoop1-1,0137-lm-scoop1-1,50100,50100,1,,92
+138,lm-scoop1-1,0138-lm-scoop1-1,50183,50183,1,,91
+139,lm-scoop1-1,0139-lm-scoop1-1,50233,50233,1,,92
+140,lm-scoop1-1,0140-lm-scoop1-1,50316,50316,1,,91
+141,lm-scoop1-1,0141-lm-scoop1-1,50383,50383,1,,92
+142,lm-scoop1-1,0142-lm-scoop1-1,50466,50466,1,,91
+143,lm-scoop1-1,0143-lm-scoop1-1,50516,50516,1,,92
+144,lm-scoop1-1,0144-lm-scoop1-1,50600,50600,1,,91
+145,lm-scoop1-1,0145-lm-scoop1-1,50650,50650,1,,92
+146,lm-scoop1-1,0146-lm-scoop1-1,50733,50733,1,,91
+147,lm-scoop1-1,0147-lm-scoop1-1,50766,50983,3,1 1 / PLAYER BALL,147
+148,lm-lock-2,0148-lm-lock-2,51166,51666,7,1 1 / PLAYER BALL,148
+149,lm-lock-2,0149-lm-lock-2,51683,51683,1,,3
+150,lm-lock-2,0150-lm-lock-2,51700,51933,4,,150
+151,lm-lock-2,0151-lm-lock-2,51950,51950,1,,77
+152,lm-lock-2,0152-lm-lock-2,52066,52066,1,,75
+153,lm-lock-2,0153-lm-lock-2,52200,52200,1,,77
+154,lm-lock-2,0154-lm-lock-2,52316,52316,1,,75
+155,lm-lock-2,0155-lm-lock-2,52450,52450,1,,77
+156,lm-lock-2,0156-lm-lock-2,52550,52550,1,,75
+157,lm-lock-2,0157-lm-lock-2,52700,52700,1,,77
+158,lm-lock-2,0158-lm-lock-2,52800,52800,1,,75
+159,lm-lock-2,0159-lm-lock-2,52933,52933,1,,77
+160,lm-lock-2,0160-lm-lock-2,53050,53050,1,,75
+161,lm-lock-2,0161-lm-lock-2,53183,53183,1,,77
+162,lm-lock-2,0162-lm-lock-2,53300,53300,1,,75
+163,lm-lock-2,0163-lm-lock-2,53433,53433,1,,163
+164,lm-lock-2,0164-lm-lock-2,53466,53466,1,,164
+165,lm-lock-2,0165-lm-lock-2,53483,53483,1,,165
+166,lm-lock-2,0166-lm-lock-2,53500,53500,1,,3
+167,lm-lock-2,0167-lm-lock-2,53516,53533,2,,167
+168,lm-lock-2,0168-lm-lock-2,53600,53616,2,,168
+169,lm-lock-2,0169-lm-lock-2,53683,53683,1,,169
+170,lm-lock-2,0170-lm-lock-2,53700,53700,1,,167
+171,lm-lock-2,0171-lm-lock-2,53766,53766,1,,171
+172,lm-lock-2,0172-lm-lock-2,53783,53783,1,,168
+173,lm-lock-2,0173-lm-lock-2,53850,53850,1,,167
+174,lm-lock-2,0174-lm-lock-2,53933,53933,1,,168
+175,lm-lock-2,0175-lm-lock-2,54016,54016,1,,167
+176,lm-lock-2,0176-lm-lock-2,54100,54100,1,,168
+177,lm-lock-2,0177-lm-lock-2,54183,54183,1,,167
+178,lm-lock-2,0178-lm-lock-2,54266,54266,1,,168
+179,lm-lock-2,0179-lm-lock-2,54350,54350,1,,167
+180,lm-lock-2,0180-lm-lock-2,54433,54433,1,,168
+181,lm-lock-2,0181-lm-lock-2,54516,54516,1,,167
+182,lm-lock-2,0182-lm-lock-2,54600,54600,1,,168
+183,lm-lock-2,0183-lm-lock-2,54683,54683,1,,167
+184,lm-lock-2,0184-lm-lock-2,54766,54766,1,,168
+185,lm-lock-2,0185-lm-lock-2,54850,54850,1,,167
+186,lm-lock-2,0186-lm-lock-2,54933,54933,1,,168
+187,lm-lock-2,0187-lm-lock-2,55016,55016,1,,167
+188,lm-lock-2,0188-lm-lock-2,55083,55083,1,,168
+189,lm-lock-2,0189-lm-lock-2,55166,55166,1,,167
+190,lm-lock-2,0190-lm-lock-2,55250,55250,1,,168
+191,lm-lock-2,0191-lm-lock-2,55333,55333,1,,167
+192,lm-lock-2,0192-lm-lock-2,55416,55433,2,,168
+193,lm-lock-2,0193-lm-lock-2,55500,55516,2,,167
+194,lm-lock-2,0194-lm-lock-2,55583,55600,2,,168
+195,lm-lock-2,0195-lm-lock-2,55666,55666,1,,169
+196,lm-lock-2,0196-lm-lock-2,55683,55683,1,,167
+197,lm-lock-2,0197-lm-lock-2,55750,55750,1,,197
+198,lm-lock-2,0198-lm-lock-2,55766,55833,2,,198
+199,lm-lock-2,0199-lm-lock-2,55850,55916,2,,199
+200,lm-lock-2,0200-lm-lock-2,55933,55933,1,,168
+201,lm-lock-2,0201-lm-lock-2,56016,56016,1,,167
+202,lm-lock-2,0202-lm-lock-2,56083,56083,1,,168
+203,lm-replacement-2,0203-lm-replacement-2,56166,56166,1,,167
+204,lm-replacement-2,0204-lm-replacement-2,56250,56250,1,,168
+205,lm-replacement-2,0205-lm-replacement-2,56333,56333,1,,167
+206,lm-replacement-2,0206-lm-replacement-2,56416,56416,1,,168
+207,lm-replacement-2,0207-lm-replacement-2,56500,56500,1,,167
+208,lm-replacement-2,0208-lm-replacement-2,56583,56583,1,,168
+209,lm-replacement-2,0209-lm-replacement-2,56666,56666,1,,167
+210,lm-replacement-2,0210-lm-replacement-2,56750,56750,1,,168
+211,lm-replacement-2,0211-lm-replacement-2,56833,56833,1,,167
+212,lm-replacement-2,0212-lm-replacement-2,56916,56916,1,,168
+213,lm-replacement-2,0213-lm-replacement-2,57000,57000,1,,167
+214,lm-replacement-2,0214-lm-replacement-2,57083,57083,1,,168
+215,lm-replacement-2,0215-lm-replacement-2,57166,57166,1,,167
+216,lm-replacement-2,0216-lm-replacement-2,57233,57233,1,,168
+217,lm-replacement-2,0217-lm-replacement-2,57316,57316,1,,167
+218,lm-replacement-2,0218-lm-replacement-2,57400,57416,2,,168
+219,lm-replacement-2,0219-lm-replacement-2,57483,57500,2,,167
+220,lm-replacement-2,0220-lm-replacement-2,57566,57583,2,,168
+221,lm-replacement-2,0221-lm-replacement-2,57650,57650,1,,169
+222,lm-replacement-2,0222-lm-replacement-2,57666,57666,1,,167
+223,lm-replacement-2,0223-lm-replacement-2,57733,57733,1,,197
+224,lm-replacement-2,0224-lm-replacement-2,57750,57750,1,,168
+225,lm-replacement-2,0225-lm-replacement-2,57816,57816,1,,225
+226,lm-replacement-2,0226-lm-replacement-2,57833,57900,2,,226
+227,lm-replacement-2,0227-lm-replacement-2,57916,57983,2,,227
+228,lm-replacement-2,0228-lm-replacement-2,58000,58000,1,,167
+229,lm-replacement-2,0229-lm-replacement-2,58083,58083,1,,168
+230,lm-replacement-2,0230-lm-replacement-2,58166,58166,1,,167
+231,lm-replacement-2,0231-lm-replacement-2,58233,58233,1,,168
+232,lm-replacement-2,0232-lm-replacement-2,58316,58316,1,,167
+233,lm-replacement-2,0233-lm-replacement-2,58400,58400,1,,168
+234,lm-replacement-2,0234-lm-replacement-2,58483,58483,1,,167
+235,lm-replacement-2,0235-lm-replacement-2,58566,58566,1,,168
+236,lm-replacement-2,0236-lm-replacement-2,58650,58650,1,,167
+237,lm-replacement-2,0237-lm-replacement-2,58733,58733,1,,168
+238,lm-replacement-2,0238-lm-replacement-2,58816,58816,1,,167
+239,lm-replacement-2,0239-lm-replacement-2,58900,58900,1,,168
+240,lm-replacement-2,0240-lm-replacement-2,58983,58983,1,,167
+241,lm-replacement-2,0241-lm-replacement-2,59066,59066,1,,168
+242,lm-replacement-2,0242-lm-replacement-2,59150,59150,1,,167
+243,lm-replacement-2,0243-lm-replacement-2,59233,59233,1,,168
+244,lm-replacement-2,0244-lm-replacement-2,59316,59316,1,,167
+245,lm-replacement-2,0245-lm-replacement-2,59400,59400,1,,168
+246,lm-replacement-2,0246-lm-replacement-2,59466,59483,2,,167
+247,lm-replacement-2,0247-lm-replacement-2,59550,59566,2,,168
+248,lm-replacement-2,0248-lm-replacement-2,59633,59633,1,,169
+249,lm-replacement-2,0249-lm-replacement-2,59650,59650,1,,167
+250,lm-replacement-2,0250-lm-replacement-2,59716,59716,1,,197
+251,lm-replacement-2,0251-lm-replacement-2,59733,59733,1,,168
+252,lm-replacement-2,0252-lm-replacement-2,59800,59800,1,,225
+253,lm-replacement-2,0253-lm-replacement-2,59816,59883,2,,199
+254,lm-replacement-2,0254-lm-replacement-2,59900,59900,1,,168
+255,lm-replacement-2,0255-lm-replacement-2,59983,59983,1,,167
+256,lm-replacement-2,0256-lm-replacement-2,60066,60066,1,,168
+257,lm-scoop1-2,0257-lm-scoop1-2,60150,60150,1,,167
+258,lm-scoop1-2,0258-lm-scoop1-2,60233,60233,1,,168
+259,lm-scoop1-2,0259-lm-scoop1-2,60316,60316,1,,167
+260,lm-scoop1-2,0260-lm-scoop1-2,60400,60400,1,,168
+261,lm-scoop1-2,0261-lm-scoop1-2,60466,60466,1,,167
+262,lm-scoop1-2,0262-lm-scoop1-2,60550,60550,1,,168
+263,lm-scoop1-2,0263-lm-scoop1-2,60633,60633,1,,167
+264,lm-scoop1-2,0264-lm-scoop1-2,60716,60716,1,,168
+265,lm-scoop1-2,0265-lm-scoop1-2,60800,60800,1,,167
+266,lm-scoop1-2,0266-lm-scoop1-2,60883,60883,1,,168
+267,lm-scoop1-2,0267-lm-scoop1-2,60966,60966,1,,167
+268,lm-scoop1-2,0268-lm-scoop1-2,61050,61050,1,,168
+269,lm-scoop1-2,0269-lm-scoop1-2,61133,61133,1,,167
+270,lm-scoop1-2,0270-lm-scoop1-2,61216,61216,1,,168
+271,lm-scoop1-2,0271-lm-scoop1-2,61300,61300,1,,167
+272,lm-scoop1-2,0272-lm-scoop1-2,61383,61400,2,,168
+273,lm-scoop1-2,0273-lm-scoop1-2,61466,61466,1,,167
+274,lm-scoop1-2,0274-lm-scoop1-2,61550,61550,1,,168
+275,lm-scoop1-2,0275-lm-scoop1-2,61616,61616,1,,169
+276,lm-scoop1-2,0276-lm-scoop1-2,61633,61633,1,,167
+277,lm-scoop1-2,0277-lm-scoop1-2,61700,61700,1,,197
+278,lm-scoop1-2,0278-lm-scoop1-2,61716,61716,1,,168
+279,lm-scoop1-2,0279-lm-scoop1-2,61783,61783,1,,279
+280,lm-scoop1-2,0280-lm-scoop1-2,61800,61866,2,,199
+281,lm-scoop1-2,0281-lm-scoop1-2,61883,61950,2,,227
+282,lm-scoop1-2,0282-lm-scoop1-2,61966,61966,1,,167
+283,lm-scoop1-2,0283-lm-scoop1-2,62050,62050,1,,168
+284,lm-scoop1-2,0284-lm-scoop1-2,62133,62133,1,,167
+285,lm-scoop1-2,0285-lm-scoop1-2,62216,62216,1,,168
+286,lm-scoop1-2,0286-lm-scoop1-2,62300,62300,1,,167
+287,lm-scoop1-2,0287-lm-scoop1-2,62383,62383,1,,168
+288,lm-scoop1-2,0288-lm-scoop1-2,62433,62433,1,,3
+289,lm-scoop1-2,0289-lm-scoop1-2,62466,62466,1,,167
+290,lm-scoop1-2,0290-lm-scoop1-2,62550,62550,1,,168
+291,lm-scoop1-2,0291-lm-scoop1-2,62616,62616,1,,167
+292,lm-scoop1-2,0292-lm-scoop1-2,62700,62700,1,,168
+293,lm-scoop1-2,0293-lm-scoop1-2,62783,62783,1,,167
+294,lm-scoop1-2,0294-lm-scoop1-2,62866,62866,1,,168
+295,lm-scoop1-2,0295-lm-scoop1-2,62950,62950,1,,167
+296,lm-scoop1-2,0296-lm-scoop1-2,63033,63033,1,,168
+297,lm-scoop1-2,0297-lm-scoop1-2,63116,63116,1,,167
+298,lm-scoop1-2,0298-lm-scoop1-2,63200,63200,1,,168
+299,lm-scoop1-2,0299-lm-scoop1-2,63283,63283,1,,167
+300,lm-scoop1-2,0300-lm-scoop1-2,63366,63366,1,,168
+301,lm-scoop1-2,0301-lm-scoop1-2,63450,63466,2,,167
+302,lm-scoop1-2,0302-lm-scoop1-2,63533,63550,2,,168
+303,lm-scoop1-2,0303-lm-scoop1-2,63616,63616,1,,167
+304,lm-scoop1-2,0304-lm-scoop1-2,63700,63700,1,,168
+305,lm-scoop1-2,0305-lm-scoop1-2,63783,63850,2,,199
+306,lm-scoop1-2,0306-lm-scoop1-2,63866,63933,2,,227
+307,lm-scoop1-2,0307-lm-scoop1-2,63950,63950,1,,167
+308,lm-scoop1-2,0308-lm-scoop1-2,64033,64033,1,,168
+309,lm-scoop1-2,0309-lm-scoop1-2,64116,64116,1,,167
+310,lm-scoop1-2,0310-lm-scoop1-2,64200,64200,1,,168
+311,lm-scoop1-2,0311-lm-scoop1-2,64283,64283,1,,167
+312,lm-scoop1-2,0312-lm-scoop1-2,64366,64366,1,,168
+313,lm-scoop1-2,0313-lm-scoop1-2,64450,64450,1,,167
+314,lm-scoop1-2,0314-lm-scoop1-2,64533,64533,1,,168
+315,lm-scoop1-2,0315-lm-scoop1-2,64616,64616,1,,167
+316,lm-scoop1-2,0316-lm-scoop1-2,64700,64700,1,,168
+317,lm-scoop1-2,0317-lm-scoop1-2,64783,64783,1,,167
+318,lm-scoop1-2,0318-lm-scoop1-2,64850,64850,1,,168
+319,lm-scoop1-2,0319-lm-scoop1-2,64933,64933,1,,167
+320,lm-scoop1-2,0320-lm-scoop1-2,65016,65016,1,,168
+321,lm-scoop1-2,0321-lm-scoop1-2,65100,65100,1,,167
+322,lm-scoop1-2,0322-lm-scoop1-2,65183,65183,1,,168
+323,lm-scoop1-2,0323-lm-scoop1-2,65266,65266,1,,167
+324,lm-scoop1-2,0324-lm-scoop1-2,65350,65350,1,,168
+325,lm-scoop1-2,0325-lm-scoop1-2,65433,65450,2,,167
+326,lm-scoop1-2,0326-lm-scoop1-2,65516,65533,2,,168
+327,lm-scoop1-2,0327-lm-scoop1-2,65600,65616,2,,167
+328,lm-scoop1-2,0328-lm-scoop1-2,65683,65683,1,,328
+329,lm-scoop1-2,0329-lm-scoop1-2,65700,65700,1,,168
+330,lm-scoop1-2,0330-lm-scoop1-2,65766,65766,1,,279
+331,lm-scoop1-2,0331-lm-scoop1-2,65783,65783,1,,167
+332,lm-scoop1-2,0332-lm-scoop1-2,65850,65850,1,,168
+333,lm-scoop1-2,0333-lm-scoop1-2,65933,65933,1,,167
+334,lm-scoop1-2,0334-lm-scoop1-2,66016,66016,1,,168
+335,lm-scoop1-2,0335-lm-scoop1-2,66100,66100,1,,167
+336,lm-scoop1-2,0336-lm-scoop1-2,66183,66183,1,,168
+337,lm-scoop1-2,0337-lm-scoop1-2,66266,66266,1,,167
+338,lm-scoop1-2,0338-lm-scoop1-2,66350,66350,1,,168
+339,lm-scoop1-2,0339-lm-scoop1-2,66433,66433,1,,167
+340,lm-scoop1-2,0340-lm-scoop1-2,66516,66516,1,,168
+341,lm-scoop1-2,0341-lm-scoop1-2,66600,66600,1,,167
+342,lm-scoop1-2,0342-lm-scoop1-2,66683,66683,1,,168
+343,lm-scoop1-2,0343-lm-scoop1-2,66766,66766,1,,167
+344,lm-scoop1-2,0344-lm-scoop1-2,66850,66850,1,,168
+345,lm-scoop1-2,0345-lm-scoop1-2,66933,66933,1,,167
+346,lm-scoop1-2,0346-lm-scoop1-2,67016,67016,1,,168
+347,lm-scoop1-2,0347-lm-scoop1-2,67083,67083,1,,167
+348,lm-lock-3,0348-lm-lock-3,67166,67166,1,,168
+349,lm-lock-3,0349-lm-lock-3,67250,67250,1,,167
+350,lm-lock-3,0350-lm-lock-3,67333,67333,1,,168
+351,lm-lock-3,0351-lm-lock-3,67416,67433,2,,167
+352,lm-lock-3,0352-lm-lock-3,67500,67516,2,,168
+353,lm-lock-3,0353-lm-lock-3,67583,67600,2,,167
+354,lm-lock-3,0354-lm-lock-3,67666,67666,1,,328
+355,lm-lock-3,0355-lm-lock-3,67683,67683,1,,168
+356,lm-lock-3,0356-lm-lock-3,67750,67750,1,,356
+357,lm-lock-3,0357-lm-lock-3,67766,67833,2,,199
+358,lm-lock-3,0358-lm-lock-3,67850,67916,2,,198
+359,lm-lock-3,0359-lm-lock-3,67933,67933,1,,167
+360,lm-lock-3,0360-lm-lock-3,68016,68016,1,,168
+361,lm-lock-3,0361-lm-lock-3,68083,68083,1,,167
+362,lm-lock-3,0362-lm-lock-3,68166,68166,1,,168
+363,lm-lock-3,0363-lm-lock-3,68250,68250,1,,167
+364,lm-lock-3,0364-lm-lock-3,68333,68333,1,,168
+365,lm-lock-3,0365-lm-lock-3,68416,68416,1,,167
+366,lm-lock-3,0366-lm-lock-3,68500,68500,1,,168
+367,lm-lock-3,0367-lm-lock-3,68583,68583,1,,167
+368,lm-lock-3,0368-lm-lock-3,68666,68666,1,,168
+369,lm-lock-3,0369-lm-lock-3,68750,68750,1,,167
+370,lm-lock-3,0370-lm-lock-3,68833,68833,1,,168
+371,lm-lock-3,0371-lm-lock-3,68916,68916,1,,167
+372,lm-lock-3,0372-lm-lock-3,69000,69000,1,,168
+373,lm-lock-3,0373-lm-lock-3,69083,69083,1,,167
+374,lm-lock-3,0374-lm-lock-3,69166,69166,1,,168
+375,lm-lock-3,0375-lm-lock-3,69233,69233,1,,167
+376,lm-lock-3,0376-lm-lock-3,69316,69316,1,,168
+377,lm-lock-3,0377-lm-lock-3,69400,69416,2,,167
+378,lm-lock-3,0378-lm-lock-3,69483,69500,2,,168
+379,lm-lock-3,0379-lm-lock-3,69566,69583,2,,167
+380,lm-lock-3,0380-lm-lock-3,69650,69650,1,,328
+381,lm-lock-3,0381-lm-lock-3,69666,69666,1,,168
+382,lm-lock-3,0382-lm-lock-3,69733,69733,1,,356
+383,lm-lock-3,0383-lm-lock-3,69750,69750,1,,167
+384,lm-lock-3,0384-lm-lock-3,69816,69816,1,,171
+385,lm-lock-3,0385-lm-lock-3,69833,69900,2,,227
+386,lm-lock-3,0386-lm-lock-3,69916,69983,2,,226
+387,lm-lock-3,0387-lm-lock-3,70000,70000,1,,168
+388,lm-lock-3,0388-lm-lock-3,70083,70083,1,,167
+389,lm-lock-3,0389-lm-lock-3,70166,70166,1,,168
+390,lm-lock-3,0390-lm-lock-3,70233,70233,1,,167
+391,lm-lock-3,0391-lm-lock-3,70316,70316,1,,168
+392,lm-lock-3,0392-lm-lock-3,70400,70400,1,,167
+393,lm-lock-3,0393-lm-lock-3,70483,70483,1,,168
+394,lm-lock-3,0394-lm-lock-3,70566,70566,1,,167
+395,lm-lock-3,0395-lm-lock-3,70650,70650,1,,168
+396,lm-lock-3,0396-lm-lock-3,70733,70733,1,,167
+397,lm-lock-3,0397-lm-lock-3,70816,70816,1,,168
+398,lm-lock-3,0398-lm-lock-3,70900,70900,1,,167
+399,lm-lock-3,0399-lm-lock-3,70983,70983,1,,168
+400,lm-lock-3,0400-lm-lock-3,71066,71066,1,,167
+401,lm-lock-3,0401-lm-lock-3,71150,71150,1,,168
+402,lm-lock-3,0402-lm-lock-3,71233,71233,1,,167
+403,lm-lock-3,0403-lm-lock-3,71316,71316,1,,168
+404,lm-lock-3,0404-lm-lock-3,71400,71400,1,,167
+405,lm-lock-3,0405-lm-lock-3,71466,71483,2,,168
+406,lm-lock-3,0406-lm-lock-3,71550,71566,2,,167
+407,lm-lock-3,0407-lm-lock-3,71633,71633,1,,328
+408,lm-lock-3,0408-lm-lock-3,71650,71650,1,,168
+409,lm-lock-3,0409-lm-lock-3,71716,71716,1,,356
+410,lm-lock-3,0410-lm-lock-3,71733,71733,1,,167
+411,lm-lock-3,0411-lm-lock-3,71800,71800,1,,171
+412,lm-lock-3,0412-lm-lock-3,71816,71883,2,,198
+413,lm-lock-3,0413-lm-lock-3,71900,71900,1,,167
+414,lm-lock-3,0414-lm-lock-3,71983,71983,1,,168
+415,lm-lock-3,0415-lm-lock-3,72066,72066,1,,167
+416,lm-replacement-3,0416-lm-replacement-3,72150,72150,1,,168
+417,lm-replacement-3,0417-lm-replacement-3,72233,72233,1,,167
+418,lm-replacement-3,0418-lm-replacement-3,72316,72316,1,,168
+419,lm-replacement-3,0419-lm-replacement-3,72400,72400,1,,167
+420,lm-replacement-3,0420-lm-replacement-3,72466,72466,1,,168
+421,lm-replacement-3,0421-lm-replacement-3,72550,76033,26,1 1 / PLAYER BALL,421
+422,lm-scoop1-3,0422-lm-scoop1-3,76233,83066,45,1 1 / PLAYER BALL,422
+423,lm-lock-4,0423-lm-lock-4,83233,88083,30,1 1 / PLAYER BALL,423
+424,lm-replacement-4,0424-lm-replacement-4,88283,91983,24,1 1 / PLAYER BALL,424
+425,lm-scoop1-4,0425-lm-scoop1-4,92166,99066,45,1 1 / PLAYER BALL,425
+426,lm-lock-5,0426-lm-lock-5,99150,104016,34,1 1 / PLAYER BALL,426
+427,lm-replacement-5,0427-lm-replacement-5,104200,108083,26,1 1 / PLAYER BALL,427
+428,lm-scoop1-5,0428-lm-scoop1-5,108283,115083,42,1 1 / PLAYER BALL,428
+429,lm-lock-6,0429-lm-lock-6,115283,115916,8,1 1 / PLAYER BALL,429
+430,lm-lock-6,0430-lm-lock-6,115933,115933,1,,430
+431,lm-lock-6,0431-lm-lock-6,115950,115950,1,,431
+432,lm-lock-6,0432-lm-lock-6,116016,116016,1,,432
+433,lm-lock-6,0433-lm-lock-6,116033,116033,1,1 1 / PLAYER BALL,433
+434,lm-lock-6,0434-lm-lock-6,116066,116066,1,,3
+435,lm-lock-6,0435-lm-lock-6,116083,116083,1,,431
+436,lm-lock-6,0436-lm-lock-6,116150,116150,1,,436
+437,lm-lock-6,0437-lm-lock-6,116233,116233,1,,431
+438,lm-lock-6,0438-lm-lock-6,116283,116283,1,,436
+439,lm-lock-6,0439-lm-lock-6,116366,116366,1,,431
+440,lm-lock-6,0440-lm-lock-6,116416,116416,1,,436
+441,lm-lock-6,0441-lm-lock-6,116500,116500,1,,431
+442,lm-lock-6,0442-lm-lock-6,116550,116550,1,,436
+443,lm-lock-6,0443-lm-lock-6,116633,116633,1,,431
+444,lm-lock-6,0444-lm-lock-6,116700,116700,1,,436
+445,lm-lock-6,0445-lm-lock-6,116783,116783,1,,431
+446,lm-lock-6,0446-lm-lock-6,116833,116833,1,,436
+447,lm-lock-6,0447-lm-lock-6,116916,116916,1,,431
+448,lm-lock-6,0448-lm-lock-6,116966,116966,1,,436
+449,lm-lock-6,0449-lm-lock-6,117050,117050,1,,431
+450,lm-lock-6,0450-lm-lock-6,117100,117100,1,,436
+451,lm-lock-6,0451-lm-lock-6,117166,120066,13,1 1 / PLAYER BALL,451
+452,lm-replacement-6,0452-lm-replacement-6,120250,123950,27,1 1 / PLAYER BALL,452
+453,lm-scoop1-6,0453-lm-scoop1-6,124150,130933,45,1 1 / PLAYER BALL,453
+454,little-multiball-attempts-done,0454-little-multiball-attempts-done,131116,133466,15,1 1 / PLAYER BALL,454
+455,lane-1,0455-lane-1,133599,135599,14,1 1 / PLAYER BALL,455
+456,lane-2,0456-lane-2,135783,137916,14,1 1 / PLAYER BALL,456
+457,lane-3,0457-lane-3,137933,140083,16,1 1 / PLAYER BALL,457
+458,lane-4,0458-lane-4,140249,142216,14,9 / 1 1 / PLAYER BALL,458
+459,lane-5,0459-lane-5,142266,144333,15,1 1 / PLAYER BALL,459
+460,lane-6,0460-lane-6,144533,146566,16,1 1 / PLAYER BALL,460
+461,lane-7,0461-lane-7,146683,148749,15,1 1 / PLAYER BALL,461
+462,lane-8,0462-lane-8,148799,150899,16,1 1 / PLAYER BALL,462
+463,lane-9,0463-lane-9,150933,152883,14,1 1 / PLAYER BALL,463
+464,lane-9,0464-lane-9,153049,153049,1,,464
+465,lane-9,0465-lane-9,153083,153083,1,,3
+466,lane-10-orbit-with-orbits,0466-lane-10-orbit-with-orbits,153099,153099,1,,431
+467,lane-10-orbit-with-orbits,0467-lane-10-orbit-with-orbits,153166,153166,1,,436
+468,lane-10-orbit-with-orbits,0468-lane-10-orbit-with-orbits,153233,153233,1,,431
+469,lane-10-orbit-with-orbits,0469-lane-10-orbit-with-orbits,153299,153299,1,,436
+470,lane-10-orbit-with-orbits,0470-lane-10-orbit-with-orbits,153383,153399,2,,431
+471,lane-10-orbit-with-orbits,0471-lane-10-orbit-with-orbits,153433,153449,2,,436
+472,lane-10-orbit-with-orbits,0472-lane-10-orbit-with-orbits,153516,153533,2,,431
+473,lane-10-orbit-with-orbits,0473-lane-10-orbit-with-orbits,153566,153566,1,,473
+474,lane-10-orbit-with-orbits,0474-lane-10-orbit-with-orbits,153583,153583,1,,436
+475,lane-10-orbit-with-orbits,0475-lane-10-orbit-with-orbits,153649,153649,1,,475
+476,lane-10-orbit-with-orbits,0476-lane-10-orbit-with-orbits,153666,153666,1,,431
+477,lane-10-orbit-with-orbits,0477-lane-10-orbit-with-orbits,153699,153699,1,,477
+478,lane-10-orbit-with-orbits,0478-lane-10-orbit-with-orbits,153716,153716,1,,436
+479,lane-10-orbit-with-orbits,0479-lane-10-orbit-with-orbits,153783,153783,1,,479
+480,lane-10-orbit-with-orbits,0480-lane-10-orbit-with-orbits,153799,153799,1,,431
+481,lane-10-orbit-with-orbits,0481-lane-10-orbit-with-orbits,153849,153849,1,,436
+482,lane-10-orbit-with-orbits,0482-lane-10-orbit-with-orbits,153933,153983,2,,482
+483,lane-10-orbit-with-orbits,0483-lane-10-orbit-with-orbits,153999,153999,1,,436
+484,lane-10-orbit-with-orbits,0484-lane-10-orbit-with-orbits,154083,154083,1,,431
+485,lane-10-orbit-with-orbits,0485-lane-10-orbit-with-orbits,154133,154133,1,,436
+486,lane-10-orbit-with-orbits,0486-lane-10-orbit-with-orbits,154183,156416,10,1 1 / PLAYER BALL,486
+487,lane-11,0487-lane-11,156499,159016,15,1 1 / PLAYER BALL,487
+488,lane-11,0488-lane-11,159066,159066,1,0,488
+489,lane-11,0489-lane-11,159083,159083,1,4,489
+490,bull-eye-2,0490-bull-eye-2,159149,161899,43,4,490
+491,bull-eye-2,0491-bull-eye-2,161916,161916,1,,491
+492,bull-eye-2,0492-bull-eye-2,161933,161949,2,,492
+493,bull-eye-2,0493-bull-eye-2,161966,161966,1,,3
+494,bull-eye-2,0494-bull-eye-2,161999,161999,1,,91
+495,bull-eye-2,0495-bull-eye-2,162049,162083,2,,495
+496,inner-bank-standing,0496-inner-bank-standing,162099,162866,15,,496
+497,inner-bank-standing,0497-inner-bank-standing,162933,162933,1,1 1 / PLAYER BALL,497
+498,inner-bank-standing,0498-inner-bank-standing,162949,165633,20,1 1 / PLAYER BALL,498
+499,scoop-2,0499-scoop-2,165816,170483,32,1 1 / PLAYER BALL,499
+500,drain-for-bonus,0500-drain-for-bonus,170683,185616,94,1 1 / PLAYER BALL,500
+501,bonus-counted,0501-bonus-counted,185633,188149,18,1 1 / PLAYER BALL,501

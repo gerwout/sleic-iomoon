@@ -1,0 +1,111 @@
+# Coverage sweep for iomoon -- the rules sections the other captures leave out.
+#
+#   Little Multiball (rules 3.2.6).  The one Monolith position the walk never
+#     cashes: LPA3 lights only while the ORBITS lights are on, and its award is
+#     given at JUPITER, not at the scoop.  The sequence is one ball locked at
+#     Jupiter with LPA3 lit, which lights LTB12 (LC17) at scoop 1; a ball is
+#     served, and putting it into scoop 1 releases the Jupiter ball for two
+#     balls in play.  The Monolith chases, so a lock has roughly one chance in
+#     ten of landing on LPA3 -- hence six attempts of {lock, replacement,
+#     scoop 1} rather than one.
+#   All eleven lanes (rules 3.3.1), including lane 10 with ORBITS complete,
+#     which pays 5,000,000 the first time instead of 2,000,000.
+#   Bull's-eye 2 (rules 3.3.5), which the other walks never hit.
+#   The inner bank target with the bank standing, which is its ordinary 50,001
+#     rather than the Special Drop Probe path.
+#   The end-of-ball bonus countdown, which needs a real drain.
+#
+# Needs a seeded NVRAM with credits -- see dmd/multiball/README.md.
+500 mark boot
+560 tap 12 KEYCODE_1
+620 mark start
+900 tap 8 KEYCODE_SPACE
+960 mark plunge
+1200 tap 6 KEYCODE_S
+1255 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1263 mark orbits-1
+1330 tap 6 KEYCODE_S
+1385 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1393 mark orbits-2
+1460 tap 6 KEYCODE_S
+1515 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1523 mark orbits-3
+1590 tap 6 KEYCODE_S
+1645 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1653 mark orbits-4
+1720 tap 6 KEYCODE_S
+1775 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1783 mark orbits-5
+1850 tap 6 KEYCODE_S
+1905 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1913 mark orbits-6
+1980 mark orbits-complete
+2100 tap 6 KEYCODE_J
+2108 mark lm-lock-1
+2400 tap 8 KEYCODE_SPACE
+2408 mark lm-replacement-1
+2640 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+2648 mark lm-scoop1-1
+3060 tap 6 KEYCODE_J
+3068 mark lm-lock-2
+3360 tap 8 KEYCODE_SPACE
+3368 mark lm-replacement-2
+3600 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+3608 mark lm-scoop1-2
+4020 tap 6 KEYCODE_J
+4028 mark lm-lock-3
+4320 tap 8 KEYCODE_SPACE
+4328 mark lm-replacement-3
+4560 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+4568 mark lm-scoop1-3
+4980 tap 6 KEYCODE_J
+4988 mark lm-lock-4
+5280 tap 8 KEYCODE_SPACE
+5288 mark lm-replacement-4
+5520 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+5528 mark lm-scoop1-4
+5940 tap 6 KEYCODE_J
+5948 mark lm-lock-5
+6240 tap 8 KEYCODE_SPACE
+6248 mark lm-replacement-5
+6480 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+6488 mark lm-scoop1-5
+6900 tap 6 KEYCODE_J
+6908 mark lm-lock-6
+7200 tap 8 KEYCODE_SPACE
+7208 mark lm-replacement-6
+7440 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+7448 mark lm-scoop1-6
+7860 mark little-multiball-attempts-done
+8010 tap 6 KEYCODE_Y
+8018 mark lane-1
+8140 tap 6 KEYCODE_U
+8148 mark lane-2
+8270 tap 6 KEYCODE_A
+8278 mark lane-3
+8400 tap 6 KEYCODE_S
+8408 mark lane-4
+8530 tap 6 KEYCODE_M
+8538 mark lane-5
+8660 tap 6 KEYCODE_L
+8668 mark lane-6
+8790 tap 6 KEYCODE_COMMA
+8798 mark lane-7
+8920 tap 6 KEYCODE_STOP
+8928 mark lane-8
+9050 tap 6 KEYCODE_SLASH
+9058 mark lane-9
+9180 tap 6 KEYCODE_O
+9188 mark lane-10-orbit-with-orbits
+9380 tap 6 KEYCODE_K
+9388 mark lane-11
+9540 tap 6 KEYCODE_RCONTROL,KEYCODE_B
+9548 mark bull-eye-2
+9720 tap 6 KEYCODE_I
+9728 mark inner-bank-standing
+9940 tap 6 KEYCODE_RCONTROL,KEYCODE_H
+9948 mark scoop-2
+10240 mark drain-for-bonus
+10260 tap 8 KEYCODE_Q
+11140 mark bonus-counted
+11290 quit

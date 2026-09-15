@@ -231,6 +231,15 @@ going 1 → 2 and then back down **2 → 1 → 0 in two steps**, which is §3.2.
 staged release and is what separates Wonderful Thing from Multiball.
 `dmd/modes/README.md` has the table.
 
+## Coverage sweep (`coverage/`), captured against `iomoon`
+
+The rules sections the other captures leave out: **Little Multiball** arming
+(`LPA3` and `LTB12` lit, which needs ORBITS), all eleven lanes including lane 10
+with ORBITS complete, **bull's-eye 2**, the inner bank target with the bank
+standing, and the **end-of-ball bonus** countdown. 147 distinct screens, **62
+new to the corpus**. `dmd/coverage/README.md` says what is confirmed and what is
+only armed.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game
