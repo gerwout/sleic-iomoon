@@ -285,7 +285,7 @@ sleic-io-moon/
 │   │   ├── pal20l10_truthtable.txt    # the same measurement as labelled text, 14 in / 8 out
 │   │   ├── pal20l10.pld               # minimised equations (GALasm source)
 │   │   └── pal20l10.jed               # JEDEC fuse map, GAL22V10 / ATF22V10C target
-│   ├── PAL16L8/                       # IC8 Z80 bus-decode PAL — verified read, conflict open
+│   ├── PAL16L8/                       # IC8 Z80 bus-cycle decoder — verified read
 │   │   ├── README.md
 │   │   ├── pal16l8.bin                # raw 2048-row sweep + its Hi-Z mask
 │   │   ├── pal16l8_truthtable.txt     # the same measurement as labelled text, 11 in / 6 out

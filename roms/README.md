@@ -15,7 +15,7 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 Early version/` | An earlier v1.3 ROM set — see its [README](1.3%20Early%20version/README.md) |
 | `PIC16C57/` | IC23 DMD-raster PIC dump, recovered from the locked chip by a recovery lab — see its [README](PIC16C57/README.md) |
 | `PAL20L10/` | IC7 80188 bus-decode PAL, recovered from the locked chip on a DuPAL V3 rig — see its [README](PAL20L10/README.md) |
-| `PAL16L8/` | IC8 Z80 bus-decode PAL, same rig — verified against the chip but missing the memory selects, see its [README](PAL16L8/README.md) |
+| `PAL16L8/` | IC8 Z80 bus-cycle decoder, same rig — verified against the chip; it does no memory-map decoding, see its [README](PAL16L8/README.md) |
 | `related-machines/` | ROM images of other SLEIC machines (Sleic Pin-Ball, Bike Race, Doña Elvira 2) — see its [README](related-machines/README.md) |
 | `related-machines/bike-race/v4.1/` | The six socketed chips of a Bike Race machine running V4.1, one of them a **bad dump** — see its [README](related-machines/bike-race/v4.1/README.md) |
 | `pinmame/` | These images repackaged as PinMAME-loadable `.zip` sets, plus the six Bike Race clone chips held only there — see its [README](pinmame/README.md) |
