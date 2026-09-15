@@ -176,6 +176,24 @@ Assertion rates over the same 2048 rows: `/RI` 128, `/CEI` 64, `/RAM` 1024,
 `/RAM`, which overlaps `/CEO` and `/RD` at 128 each — the pattern of a signal
 passed through rather than a select.
 
+**Pin 13 hard-gates two outputs, in opposite senses, and nothing else:**
+
+| Output | asserts with pin 13 low | asserts with pin 13 high |
+|---|--:|--:|
+| `/CEO` (17) | 128 | **0** |
+| `/RD` (19)  | **0** | 128 |
+| `/RI` (14)  | 64 | 64 |
+| `/CEI` (15) | 32 | 32 |
+| `/RAM` (16) | 512 | 512 |
+| `/WR` (18)  | 32 | 32 |
+
+The gate is not standing in for `/MREQ` or `/IOREQ`, which are already mutually
+exclusive on a Z80: of the 256 opcode-fetch states (`/M1` low, `/MREQ` low,
+`/IOREQ` high) pin 19 asserts in exactly 128, every one of them with pin 13
+high; of the 256 interrupt-acknowledge states (`/M1` low, `/IOREQ` low, `/MREQ`
+high) pin 17 asserts in exactly 128, every one with pin 13 low. Pin 13 halves
+both sets independently. Pins 17 and 19 are therefore never live together.
+
 **This part is a bus-cycle decoder.** `A13`, `A12` and `A7` are wired to it and
 no output depends on any of them. Exactly one output touches the address bus at
 all, and only two of the five address lines present. Four of the six are pure
@@ -215,15 +233,29 @@ pin 14, marked `/RI`, and the interrupt acknowledge on pin 17, marked `/CEO`.
 
 ## What would settle it
 
-Three measurements on the board, in order of value:
+Four measurements on the board, in order of value:
 
-1. **Trace IC5 pin 20 (`/CE`) and IC7 pin 18 (`/CE`) back to what drives
+1. **Trace IC8 pin 13 back to its source.** It is an input, so something on the
+   board drives it, and it decides which of the two `/M1`-cycle outputs is live.
+   Two outcomes separate cleanly: a **static tie** — a pull-up, pull-down or
+   jumper — makes it a board-option strap, and one of pins 17 and 19 is then a
+   dead output on this build; a **logic output** makes it a live per-cycle
+   signal, and the device driving it is doing work this part does not.
+   The sister PAL at IC7 on the 80188 board has a comparable pair of non-address
+   inputs steering its program-ROM select
+   ([`../PAL20L10/README.md`](../PAL20L10/README.md)), so a configuration input
+   is not unusual here. Weighing against the live-signal reading: pin 13 also
+   gates the interrupt-acknowledge decode, and during a Z80 `INTACK` cycle the
+   address bus carries `PC`, so a signal derived from an address range would
+   make interrupt acknowledgement depend on where the program counter happened
+   to be.
+2. **Trace IC5 pin 20 (`/CE`) and IC7 pin 18 (`/CE`) back to what drives
    them**, and the same for the `/OE` and `/WE` lines those parts take. Sheet
    011-030-01 routes all of them from IC8, through IC14C/D in the RAM's case.
    The measurement says IC8 drives none of them.
-2. **Continuity from IC8 pin 12 to IC5 pin 20** — the narrow form of the same
+3. **Continuity from IC8 pin 12 to IC5 pin 20** — the narrow form of the same
    question.
-3. **A scope on pins 14 and 17** against an `OUT` instruction and against an
+4. **A scope on pins 14 and 17** against an `OUT` instruction and against an
    interrupt, to read which net each actually drives. Pin 15 is already
    corroborated by IC16's wiring.
 
