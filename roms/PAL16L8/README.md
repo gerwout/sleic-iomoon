@@ -63,6 +63,14 @@ all 2048 states, and `pal16l8_xcheck_8out_hiz.bin` flags pins 12 and 13 in all
 1024 states and pins 17 and 19 in 128 each — the numbers the pin-direction
 argument below rests on.
 
+The truth tables are the same measurement in human-readable form: comment lines
+start with `#`, then a column header naming the pins, a rule, and one row per
+state. **The header row is not distinguishable by its first character** — it
+begins with a pin number, so `13` on the IC8 table and `16` on the IC7 one, and
+a parser that takes any line starting with a digit as data will read it as a
+row. Select rows by requiring every field to be `0` or `1` and the field count
+to match the header.
+
 ## Provenance
 
 The device is the one desoldered from this machine's own 011-030A board, and

@@ -36,6 +36,14 @@ meaning that pin read as high-impedance in that state; it is all zero. Decoded
 that way the dump reproduces
 [`pal20l10_truthtable.txt`](pal20l10_truthtable.txt) on all 16384 rows.
 
+The truth tables are the same measurement in human-readable form: comment lines
+start with `#`, then a column header naming the pins, a rule, and one row per
+state. **The header row is not distinguishable by its first character** — it
+begins with a pin number, so `13` on the IC8 table and `16` on the IC7 one, and
+a parser that takes any line starting with a digit as data will read it as a
+row. Select rows by requiring every field to be `0` or `1` and the field count
+to match the header.
+
 ## Provenance
 
 Read on a **dupico (DuPAL V3)** board with the PAL POD, using `dpdumper`
