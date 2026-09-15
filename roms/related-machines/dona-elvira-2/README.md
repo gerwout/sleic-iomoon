@@ -99,8 +99,22 @@ The sound board `011-065` (§7.2.3.1) carries IC1 a Z80B-6, IC41 an OKI 6376 voi
 synthesiser, the five EPROMs above, IC60 a TL08x and IC61/IC62 TDA2030 amplifiers.
 
 Still undumped: the three 6331 bipolar PROMs at IC2, IC5 and IC8 on the display board
-`011-064` (§7.2.4.1). The display is 7-segment (HDSP 3901 / HDSP H101) — there is no
-DMD and no display coprocessor.
+`011-064` (§7.2.4.1). The display is 7-segment (HDSP 3901 / HDSP H101; the schematic
+sheets spell the second part `HDSP H103`) — there is no DMD and no display
+coprocessor.
+
+Schematic sheet `011-064-02` (PDF page 124) shows what those three PROMs do. The
+board takes five signals from the CPU board over J1, a 10-way ribbon: `SDATA` and
+`SCLK`, plus a four-bit `DECA`-`DECD` bus. `SDATA`/`SCLK` clock a character code into
+three 74164 serial-in/parallel-out shift registers (IC1, IC4, IC7), whose parallel
+outputs drive the five address lines `A0`-`A4` of the 6331 beside each one (IC2, IC5,
+IC8); the PROM's `O1`-`O8` then drive the segments.
+
+So each 6331 is a character generator: 32 codes in, an 8-bit segment pattern out.
+**The machine's alphabet lives in those three PROMs and nowhere else** — no ROM
+already dumped contains it, so without them the segment pattern for a given code
+cannot be known. PinMAME records the same arrangement for IDSA, another Spanish
+manufacturer of the period, at `src/wpc/idsa.c:67`.
 
 ## Identification
 

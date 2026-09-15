@@ -2011,7 +2011,7 @@ figura 7-19 TABLA DEL MUEBLS
 
 <!-- PDF page 92 -->
 
-*Esquema, juego I — Cableado general. Hoja no transcrita — ver PDF página 92.*
+*Esquema, juego II — Placa C.P.U. 8 bits (011-030). Hoja no transcrita — ver PDF página 92.*
 
 <!-- PDF page 93 -->
 
@@ -2095,15 +2095,15 @@ figura 7-19 TABLA DEL MUEBLS
 
 <!-- PDF page 113 -->
 
-*Esquema, juego IV — Placa de drivers (011-027). Hoja no transcrita — ver PDF página 113.*
+*Esquema, juego III — Placa de sonido general (011-065). Hoja no transcrita — ver PDF página 113.*
 
 <!-- PDF page 114 -->
 
-*Esquema, juego IV — Placa de drivers (011-027). Hoja no transcrita — ver PDF página 114.*
+*Esquema, juego III — Placa de sonido general (011-065). Hoja no transcrita — ver PDF página 114.*
 
 <!-- PDF page 115 -->
 
-*Esquema, juego IV — Placa de drivers (011-027). Hoja no transcrita — ver PDF página 115.*
+*Esquema, juego III — Placa de sonido general (011-065). Hoja no transcrita — ver PDF página 115.*
 
 <!-- PDF page 116 -->
 
@@ -2127,27 +2127,27 @@ figura 7-19 TABLA DEL MUEBLS
 
 <!-- PDF page 121 -->
 
-*Esquema, juego V — Placa de relés. Hoja no transcrita — ver PDF página 121.*
+*Esquema, juego V — Placa de relés (011-028). Hoja no transcrita — ver PDF página 121.*
 
 <!-- PDF page 122 -->
 
-*Esquema, juego V — Placa de relés. Hoja no transcrita — ver PDF página 122.*
+*Esquema, juego V — Placa de relés (011-028). Hoja no transcrita — ver PDF página 122.*
 
 <!-- PDF page 123 -->
 
-*Esquema, juego V — Placa de relés. Hoja no transcrita — ver PDF página 123.*
+*Esquema, juego VI — Placa de display y leds (011-064). Hoja no transcrita — ver PDF página 123.*
 
 <!-- PDF page 124 -->
 
-*Esquema, juego V — Placa de relés. Hoja no transcrita — ver PDF página 124.*
+*Esquema, juego VI — Placa de display y leds (011-064). Hoja no transcrita — ver PDF página 124.*
 
 <!-- PDF page 125 -->
 
-*Esquema, juego V — Placa de relés. Hoja no transcrita — ver PDF página 125.*
+*Esquema, juego VI — Placa de display y leds (011-064). Hoja no transcrita — ver PDF página 125.*
 
 <!-- PDF page 126 -->
 
-*Esquema, juego V — Placa de relés. Hoja no transcrita — ver PDF página 126.*
+*Esquema, juego VI — Placa de display y leds (011-064). Hoja no transcrita — ver PDF página 126.*
 
 <!-- PDF page 127 -->
 
@@ -2183,11 +2183,11 @@ figura 7-19 TABLA DEL MUEBLS
 
 <!-- PDF page 135 -->
 
-*Esquema, juego VII — Placa de alimentación de sonido (011-067). Hoja no transcrita — ver PDF página 135.*
+*Esquema, juego VI — Placa de display y leds (011-064). Hoja no transcrita — ver PDF página 135.*
 
 <!-- PDF page 136 -->
 
-*Esquema, juego VII — Placa de alimentación de sonido (011-067). Hoja no transcrita — ver PDF página 136.*
+*Esquema, juego VI — Placa de display y leds (011-064). Hoja no transcrita — ver PDF página 136.*
 
 <!-- PDF page 137 -->
 
