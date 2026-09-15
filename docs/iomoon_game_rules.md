@@ -637,9 +637,11 @@ time runs out only LP8 (Extra Ball) is left lit.
 > Drop Target's 15 seconds pay 100,000 per target, so it is worth little with
 > the bank already flat; Special Drop Probe needs five standing targets to knock
 > down in the first place. Order matters — clear the bank *after* the Monolith
-> hands you the mode, not before. What would settle the mechanism: dumping IC7
-> and IC8, which would show whether the expansion board is addressed some way
-> this ROM never exercises, or a scope on the 011-033A connector.
+> hands you the mode, not before. What would settle the mechanism: dumping IC8,
+> the Z80 decode PAL, which would show whether the expansion board is addressed
+> some way this ROM never exercises, or a scope on the 011-033A connector. IC7 is
+> dumped and rules itself out — none of its eight outputs leaves the 16-bit board
+> ([`../roms/PAL20L10/`](../roms/PAL20L10/)).
 
 The bank has its own six lamps, LC30–LC35 (bank A, B, inner, D, E, C — in that
 matrix order, F18); §2.2.2 does not give them `L`-names and the rules text does
@@ -1026,7 +1028,8 @@ Stated as open rather than guessed. Each line says what would settle it.
   §2.3.1 and §7.2.4.1, so the physical mechanism the name refers to is absent.
   Whether the firmware still drives its expansion-board channel is unknown,
   since no Z80 port reaches the expansion board at all (F17). *Settled by:*
-  dumping IC7 and IC8, or a machine with the position populated.
+  dumping IC8, or a machine with the position populated. (IC7 is dumped and
+  drives nothing off the 16-bit board.)
 - **What a Special pays** — §3.2.10 lists where Specials are available and §5.13
   caps them per game, but neither says what one gives. Elsewhere SLEIC uses
   *partida* for a free game (§3.5, §5.14). *Settled by:* the credit path in the
@@ -1045,8 +1048,9 @@ Stated as open rather than guessed. Each line says what would settle it.
 - **How the drop bank is reset, and by what** — coil 18 is on the expansion
   board and no Z80 port drives it (F17). The behaviour the rules depend on —
   reset at ball start and not again during the ball — is the machine's, not
-  something either ROM shows. *Settled by:* dumping IC7 and IC8, or a scope on
-  the 011-033A connector at ball start.
+  something either ROM shows. *Settled by:* dumping IC8, or a scope on the
+  011-033A connector at ball start. (IC7 is dumped and drives nothing off the
+  16-bit board.)
 - **What the bonus is worth, and when it is paid** — §3.3.8 labels both scoops
   *Descuento de Bonos* without saying what the count-down adds to the score, and
   the manual names no end-of-ball bonus collect anywhere, though §3.3.9 says a

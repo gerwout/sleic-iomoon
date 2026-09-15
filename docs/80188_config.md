@@ -90,8 +90,14 @@ register window: the DMD path is the staging buffer in MCS3, and the raster
 coprocessor at IC23 has no command interface at all (F13,
 [`../asm/pic16c57_annotated.asm`](../asm/pic16c57_annotated.asm)).
 
-The exact bit-level pin mapping of the PCS0 and PCS6 bytes at the OKI, and any
-further IC7 PAL sub-decode, await the IC7 dump
+The IC7 PAL sub-decode is known ([`../roms/PAL20L10/`](../roms/PAL20L10/)): it
+qualifies `/PCS6` and `/PCS4` with `/WR` to produce `/OKCS` and `/OOE`, splits
+the MCS0 block on `A15` into `/RAM1` and `/RAM2`, gates the NVRAM's `/EECE` on
+the two PCS0 interlock bits, and turns `/MCS3` · `/WR` into `/WRVRAM`. `/PCS1`,
+`/PCS2`, `/PCS3` and `/PCS5` are not IC7 inputs at all — those latches and the
+YM3812 are selected by the 80188 directly. The exact bit-level pin mapping of
+the PCS0 and PCS6 bytes at the OKI does **not** follow from IC7, which supplies
+only the IC50 latch clock; that one still wants a scope
 ([`chips_to_dump.md`](chips_to_dump.md)).
 
 ## Timers, interrupt controller and DMA

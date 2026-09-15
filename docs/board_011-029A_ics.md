@@ -36,12 +36,12 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 | IC4  | TI SN74LS373N                | PDIP-20 | [74ls373.pdf](../datasheets/74ls373.pdf) | Octal D-type transparent latch. Companion to IC2. |
 | IC5  | TI SN74LS245N                | PDIP-20 | [74ls245.pdf](../datasheets/74ls245.pdf) | Octal bus transceiver, 3-state. Data-bus buffer. |
 | IC6  | Maxim MAX699                 | DIP-8   | [max699.pdf](../datasheets/max699.pdf) | Microprocessor supervisor: power-on reset, brownout detect, watchdog timeout, NVRAM write protect. |
-| IC7  | AMD/MMI PAL20L10ACNS         | PDIP-24 | [PAL handbook](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf) | Programmable Array Logic — 80188 chip-select / bus glue. **Undumped** (see [`chips_to_dump.md`](chips_to_dump.md)). |
+| IC7  | AMD/MMI PAL20L10ACNS         | PDIP-24 | [PAL handbook](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf) | Programmable Array Logic — 80188 chip-select / bus glue. Combinational, and programmed as **14 inputs and 8 active-low outputs** (pins 15/16 are permanently high-Z, so `EEEREADY` and `/WR` come *in*). Generates `/PRCS` (program ROM, from both `/LCS` and `/UCS`), `/RAM1` / `/RAM2` (the MCS0 block split on `A15`), `/EECE` (NVRAM, behind the two-bit `EEE1`/`EEE2` interlock), `/WRVRAM` (`/MCS3` · `/WR`), `/OKCS` (`/PCS6` · `/WR`, the IC50 latch clock), `/OOE` (`/PCS4` · `/WR`) and `/TEST` (from the EEPROM ready line). **Dumped** — [`../roms/PAL20L10/`](../roms/PAL20L10/). |
 | IC8  | National DM74LS74AN          | PDIP-14 | [74ls74a.pdf](../datasheets/74ls74a.pdf) | Dual D-type positive-edge-triggered flip-flop with preset / clear. |
 | IC10 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | ROM1, sticker `1001` (`V1 3_01.bin`, 512 KB): all 80188 code plus fonts, static screens and animation data. Seen through **two** chip-selects — its low half at LMCS `0x00000`-`0x3FFFF` and its high half at UMCS `0xC0000`-`0xFFFFF`. |
 | IC11 | EPROM 27C040                 | PDIP-32 | [27c040.pdf](../datasheets/27c040.pdf) | ROM2, sticker `1002` (`V1 3_02.bin`, 512 KB): animated DMD frames, in seven populated 64 KB pages. **Banked** — one page at a time into segment `6000h`, selected by PCS0 bits 0-2. |
-| IC12 | UMC UM62256D-70LL            | PDIP-28 | [62256](../datasheets/62256_generic_as6c62256.pdf) | 32 K × 8 CMOS SRAM, 70 ns. Main 80188 work RAM. |
-| IC14 | Microchip 28C64A             | PDIP-28 | [28c64a.pdf](../datasheets/28c64a.pdf) | 8 K × 8 parallel EEPROM. NVRAM — operator settings, high scores. |
+| IC12 | UMC UM62256D-70LL            | PDIP-28 | [62256](../datasheets/62256_generic_as6c62256.pdf) | 32 K × 8 CMOS SRAM, 70 ns. Main 80188 work RAM, segment `4000h`. Selected by IC7's `/RAM1` = `/MCS0` · `A15`=0, the lower half of the 64 KB MCS0 block; IC7 also decodes `/RAM2` for the upper half (`0x48000`–`0x4FFFF`), which has no memory behind it — the vacant 32-pin socket IC13 sits in the same column. |
+| IC14 | Microchip 28C64A             | PDIP-28 | [28c64a.pdf](../datasheets/28c64a.pdf) | 8 K × 8 parallel EEPROM. NVRAM — operator settings, high scores; the segment-`5040h` window (finding F10). Chip-enabled by IC7's `/EECE`, which requires `/MCS1`, `A15`=0 and the two IC40 gate bits `EEE1`=0 / `EEE2`=1 — so a single stuck gate bit locks the store out. Its ready line returns to IC7 as `EEEREADY` and reaches the 80188's `/TEST` pin, a handshake the firmware never uses. |
 | IC20 | National DM74LS393N          | PDIP-14 | [74ls393.pdf](../datasheets/74ls393.pdf) | Dual 4-bit binary ripple counter. Part of the clock-divider chain. |
 | IC21 | National DM74LS393N          | PDIP-14 | [74ls393.pdf](../datasheets/74ls393.pdf) | Dual 4-bit binary ripple counter. |
 | IC22 | TI SN74LS27N                 | PDIP-14 | [74ls27.pdf](../datasheets/74ls27.pdf) | Triple 3-input NOR gate. |
@@ -49,7 +49,7 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 | IC24 | TI SN74LS07N                 | PDIP-14 | [74ls07.pdf](../datasheets/74ls07.pdf) | Hex buffer / driver with open-collector outputs. Voltage-level translation / open-drain interfacing. |
 | IC30 | TI SN74LS157N                | PDIP-16 | [74ls157.pdf](../datasheets/74ls157.pdf) | Quad 2-input data selector / multiplexer, non-inverting outputs. (One rotated board photo cannot distinguish this position from IC32 — see [`../research/board_inventory.md`](../research/board_inventory.md).) |
 | IC31 | TI SN74LS157N                | PDIP-16 | [74ls157.pdf](../datasheets/74ls157.pdf) | Quad 2-input data selector / multiplexer. (Same photo-position caveat as IC30.) |
-| IC33 | Goldstar GM76C28-10          | PDIP-24 | [gm76c28.pdf](../datasheets/gm76c28.pdf) | 2 K × 8 CMOS SRAM, 100 ns. Scratchpad memory (likely DMD / PIC workspace). |
+| IC33 | Goldstar GM76C28-10          | PDIP-24 | [gm76c28.pdf](../datasheets/gm76c28.pdf) | 2 K × 8 CMOS SRAM, 100 ns. The DMD staging buffer at segment `7000h` — last stage of the F13 pipeline. The 80188 writes it through IC7's `/WRVRAM` (`/MCS3` · `/WR`); the IC23 raster reads it on the `VA` lines. |
 | IC34 | TI CD74HC151E                | PDIP-16 | [74hc151.pdf](../datasheets/74hc151.pdf) | 8-to-1 data selector / multiplexer (HCMOS). |
 | IC35 | TI SN74LS245N                | PDIP-20 | [74ls245.pdf](../datasheets/74ls245.pdf) | Octal bus transceiver, 3-state. |
 | IC40 | TI SN74LS273N                | PDIP-20 | [74ls273.pdf](../datasheets/74ls273.pdf) | Octal D-type flip-flop with master reset. Output latch. |
@@ -71,7 +71,7 @@ The Z80 / sound-driver board (`011-030A`) is documented separately.
 
 | IC  | Part                   | Status                                                |
 |-----|------------------------|-------------------------------------------------------|
-| IC7  | PAL 20L10ACNS ([datasheet](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf)) | **Undumped.** See [`chips_to_dump.md`](chips_to_dump.md). |
+| IC7  | PAL 20L10ACNS ([datasheet](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf)) | **Dumped** — truth table, equations and JEDEC at [`../roms/PAL20L10/`](../roms/PAL20L10/). See [`chips_to_dump.md`](chips_to_dump.md). |
 | IC10 | EPROM 27C040           | Archived in [`../roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/). |
 | IC11 | EPROM 27C040           | Archived. |
 | IC14 | EEPROM 28C64A          | Runtime-mutable NVRAM — contents are not a useful preservation artefact. |

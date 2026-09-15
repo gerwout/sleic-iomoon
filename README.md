@@ -129,7 +129,7 @@ The IO Moon uses a **three-CPU architecture**:
 |-----------------------|----------------------------------------------------------------------------------------|
 | Main CPU              | AMD N80C188-10 (16-bit) — IC1 on board 011-029A                                         |
 | Main work RAM         | UMC UM62256D-70LL 32 K × 8 SRAM — IC12 on board 011-029A                                |
-| 80188 chip-select PAL | AMD/MMI PAL20L10ACNS — IC7 on board 011-029A (**undumped**)                             |
+| 80188 chip-select PAL | AMD/MMI PAL20L10ACNS — IC7 on board 011-029A (dumped; [`roms/PAL20L10/`](roms/PAL20L10/)) |
 | 80188 reset / watchdog | Maxim MAX699 supervisor — IC6 on board 011-029A                                        |
 | Game ROM              | 2× 27C040 (IC10 `1001`, IC11 `1002`; 1 MB total) on board 011-029A                      |
 | Display CPU           | Microchip PIC 16C57-HS/P — IC23 on board 011-029A (dumped; [`roms/PIC16C57/`](roms/PIC16C57/)) |
@@ -279,6 +279,11 @@ sleic-io-moon/
 │   ├── PIC16C57/                      # IC23 DMD coprocessor dump, recovered from the locked part
 │   │   ├── README.md
 │   │   └── PIC16F57-DIP28-1D05-20260815.bin
+│   ├── PAL20L10/                      # IC7 80188 bus-decode PAL, recovered from the locked part
+│   │   ├── README.md
+│   │   ├── pal20l10_truthtable.txt    # 16384-row bench measurement, 14 in / 8 out
+│   │   ├── pal20l10.pld               # minimised equations (GALasm source)
+│   │   └── pal20l10.jed               # JEDEC fuse map, GAL22V10 / ATF22V10C target
 │   ├── 1.3 Early version/             # Early ROM set
 │   │   ├── README.md
 │   │   ├── V1 3_01.bin                # Display ROM 1 (80188)

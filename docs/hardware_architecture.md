@@ -88,7 +88,7 @@ The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 
 
 The 80188 board carries the main 16-bit CPU (`AMD N80C188-10`), the program / display EPROMs, the sound chips (Yamaha YM3812 OPL2 + OKI MSM6376 ADPCM), the 28C64A NVRAM, and a PIC 16C57 coprocessor that drives the DMD raster.
 
-For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). The PAL at IC7 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-029A_ics.md`](board_011-029A_ics.md). The PAL at IC7 is dumped, and its decode map — `/PRCS`, `/RAM1`, `/RAM2`, `/EECE`, `/WRVRAM`, `/OKCS`, `/OOE`, `/TEST` — is at [`../roms/PAL20L10/`](../roms/PAL20L10/); the Z80 board's IC8 is not: see [`chips_to_dump.md`](chips_to_dump.md).
 
 The YM3812's chip-select is **/PCS5** (an 80188 peripheral chip-select; sheet 011-029-07) = memory address `0xA0280` (index) / `0xA0281` (data). It is driven by the 80188 directly — not by the PIC and not through any queue: the IO Moon software plays **10 FM music tracks** through it. The write primitive is `D000:0D99`, the sequencer `D000:0D37` and the song table `CS:0DE5` (finding F8) — see [`iomoon_fm_extract.md`](iomoon_fm_extract.md) and [`ym3812_pinmame_precedents.md`](ym3812_pinmame_precedents.md).
 

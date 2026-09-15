@@ -86,6 +86,19 @@ Timer 0 rate: 25206 counts at CLKOUT/4. With CLKOUT = 10 MHz (the
 N80C188-10 at IC1) that is 2.5 MHz / 25206 = **99.18 Hz**. The count is
 confirmed; the frequency depends on the crystal, which no ROM states.
 
+**The external sub-decode.** The 80188's chip-select lines are whole windows
+with no cycle qualification; the IC7 PAL narrows them, and its dump
+([`../../roms/PAL20L10/`](../../roms/PAL20L10/)) gives the map exactly.
+`/LCS` and `/UCS` both produce the same program-ROM select `/PRCS`, which is
+the hardware behind ROM1 answering in two places. `/MCS0` is split on `A15`:
+`/RAM1` for `0x40000-0x47FFF`, the 32 KB work RAM at IC12, and `/RAM2` for
+`0x48000-0x4FFFF`, which has a select and no memory behind it. `/MCS1` gated
+by `A15`=0 and the two PCS0 interlock bits becomes the NVRAM's `/EECE` (F10).
+`/MCS3` qualified by `/WR` becomes `/WRVRAM`, the write strobe into the DMD
+staging buffer (F13). `/PCS6` and `/PCS4`, likewise qualified by `/WR`, become
+`/OKCS` and `/OOE`. `/PCS1`, `/PCS2`, `/PCS3` and `/PCS5` are not IC7 inputs
+at all — the J1 latches and the YM3812 hang off the 80188's own lines.
+
 **Confidence:** confirmed (register/value table); the 99.2 Hz figure is
 inferred from an assumed 10 MHz CLKOUT.
 
@@ -218,10 +231,13 @@ register. Every write in the ROM is accounted for; the shadow is
 **Confidence:** confirmed. The page->file mapping (`page << 16`) is the
 natural reading of a 3-bit selector over a 512 KiB part and is corroborated
 by all seven populated pages carrying the header and page 7 being blank, but
-the *bit order* of the selector (whether bit 0 is A16) is **inferred** — it
-would take IC7 or a scope to prove the wiring is not reversed. A driver
-should implement it as a table of seven base offsets so a swap is a one-line
-change.
+the *bit order* of the selector (whether bit 0 is A16) is **inferred**. IC7 is
+dumped ([`../../roms/PAL20L10/`](../../roms/PAL20L10/)) and settles nothing
+here: the page bits are latched in IC40 and go to IC11's high address lines
+directly, so they never reach the PAL, whose eight outputs are `/PRCS`,
+`/RAM1`, `/RAM2`, `/EECE`, `/WRVRAM`, `/OKCS`, `/OOE` and `/TEST`. A scope, or
+tracing IC40's outputs to IC11, is what remains. A driver should implement it
+as a table of seven base offsets so a swap is a one-line change.
 
 **Disposition:** hypothesis **partly rejected, partly corrected**.
 *Rejected:* "PCS0 bits **4/5** select ROM2 frames vs ROM1 fonts **in segment
@@ -644,9 +660,11 @@ item 4). A driver that does not deliver `0x47` never leaves boot.
 
 **Confidence:** confirmed for both directions, the strobes, the gates and the
 handshake. **Inferred/unresolved:** which physical line PCS4 bits 5/6/7 and
-PCS3 bit 0 correspond to on J1 (needs IC7/IC8), and whether the two Z80
-outbound strobes reach the *same* 80188 latch. On the latter, the balance of
-evidence says yes: `0xA0100` is the only inbound read in the whole 80188 ROM,
+PCS3 bit 0 correspond to on J1, and whether the two Z80 outbound strobes reach
+the *same* 80188 latch. IC7 is dumped and does not answer the first: its only
+PCS4 involvement is `/OOE` = `/PCS4` · `/WR`, the write strobe for the block,
+which says when the byte is latched and nothing about where each bit goes.
+On the latter, the balance of evidence says yes: `0xA0100` is the only inbound read in the whole 80188 ROM,
 so if the bit-5 channel went anywhere else nothing would ever read it — and
 `inbound_byte_take_b` `D5E7A` accepts exactly the value range the `C008`
 bitmask produces (`0x50-0x64`, plus `0x7A`).
@@ -851,7 +869,11 @@ numbers. The driver is unaffected (the value only paces re-triggering).
 
 **Confidence:** confirmed for the addresses, strobe, sequences and
 dispatcher. The **bit-level meaning of the latch byte at the OKI's pins**
-is inferred and still wants the IC7 PAL.
+is inferred, and IC7 — now dumped
+([`../../roms/PAL20L10/`](../../roms/PAL20L10/)) — cannot settle it: the PAL
+supplies only `/OKCS` = `/PCS6` · `/WR`, the clock that latches the byte into
+IC50. The byte itself travels `D0`-`D7` through IC50 to the MSM6376, so this
+one wants a scope or a continuity trace of IC50's outputs.
 
 **Disposition:** hypothesis **confirmed** (`0xA0300` latch, `0xA0000` bit 5
 strobe, routines `D000:0C57`/`0C84`, table `CS:0C1F`), and completed with the
@@ -895,6 +917,18 @@ Two identifications the code makes unambiguous:
   to `0x0085` and `0x05F5E100` = **100 000 000** to `0x0096`, then copies 13
   name bytes to `0x0089+i`. Five 17-byte records at `0x85`, `0x96`, `0xA7`,
   `0xB8`, `0xC9`.
+
+**Confirmed from the hardware side.** The IC7 PAL dump
+([`../../roms/PAL20L10/`](../../roms/PAL20L10/)) contains the gate as an
+equation: `/EECE` = `/MCS1` · `A15`=0 · `EEE1`=0 · `EEE2`=1, where `EEE1` and
+`EEE2` are two bits of the PCS0 control byte latched in IC40. The store is
+chip-enabled only while those two bits hold *opposite* values, which is
+exactly what `pcs0_window_open` writes (clear bit 3, set bit 4) and
+`pcs0_window_close` undoes — so `EEE1` = PCS0 bit 3, `EEE2` = PCS0 bit 4, and
+the complementary pair is a genuine two-bit interlock in silicon rather than
+one gate bit plus a spare. `A15`=0 also places the window in the lower half of
+the MCS1 block, agreeing with segment `5040`. This is an independent
+confirmation: the firmware and the PAL were read from different artefacts.
 
 **Confidence:** confirmed for the window, the gating bits, the access widths
 and the offsets in use. **Inferred:** that the device is the 28C64A. Nothing
@@ -1715,7 +1749,8 @@ and every bit of those eight is accounted for: `$80`/`$81` J1 (F6), `$82`
 the switch-column strobe, `$83`/`$84` the lamp matrix (F7), `$85`/`$86` the
 16 channels above, `$87` the direct-input index plus bits 4 and 5 set and
 cleared individually (`port87_bit5_clear`/`port87_bit5_set` at `27B3`/`27C0`,
-and the bit-4 pair at `2831`/`2851`). Dumping IC7 (the 80188-side PAL) and
+and the bit-4 pair at `2831`/`2851`). IC7, the 80188-side PAL, is dumped and
+rules itself out — none of its eight outputs leaves the 16-bit board. Dumping
 IC8 (the Z80 decode PAL) would settle whether the expansion board's channels
 are addressed some other way this ROM never exercises.
 
@@ -2243,10 +2278,10 @@ the row it appears in.
 | # | fact | gap |
 |---|---|---|
 | 1 | F3 | the INT0 source and rate — everything time-based hangs off it; a recommended-not-confirmed starting value (~290 Hz) is given, but see the 2026-09-02 emulation result in F3: 290 Hz and 145 Hz are both unservable against the handler's measured cost, the driver ships 72.5 Hz as a serviceability constant matching no candidate, and the per-plane *source* hypothesis is weakened by the same measurement |
-| 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred |
+| 2 | F2 | the *bit order* of the PCS0 bits-0-2 page selector: the window and the seven pages are confirmed, the A16-A18 wiring is inferred. **Narrowed by the IC7 dump:** the page bits never reach the PAL, so only a scope or a trace of IC40 -> IC11 settles it |
 | 3 | F5 | the physical switch behind each code. *Narrowed 2026-09-03 to 44 of the 48 MATRIX positions:* column 0 bits 0-3, codes `0x0A`-`0x0D`, are the ball-handling contacts and are identified in **F15**; and all six cabinet codes are now identified from what consumes them — `0x32` coin mech, `0x3E` tilt, `0x3F` test, `0x40` START, `0x41`/`0x42` the flipper buttons. Note `0x41`/`0x42` are emitted **only in test mode** (gated on `C068`/`C069`); in play those two bits fire the port-`0x85` coil pairs at `sub_05C7`/`sub_05ED` and send nothing. |
 | 4 | F6 | whether the Z80's two outbound strobes reach one 80188 latch |
-| 5 | F9 | the OKI latch bit-to-pin mapping |
+| 5 | F9 | the OKI latch bit-to-pin mapping. **Narrowed by the IC7 dump:** the PAL supplies only the IC50 latch clock (`/OKCS` = `/PCS6` · `/WR`), so the byte's path to the OKI's pins wants a scope or a trace of IC50 |
 | 6 | F9 | the OKI duration-table extent past sample ~28 |
 | ~~7~~ | ~~F11~~ | ~~the credit-*balance* NVRAM cell~~ — **closed 2026-09-03**: it is the F10 triple `0x83`/`0x116`/`0x20C` with the sub-credit remainder in `0x84`/`0x117`/`0x20D`, cached in `413C:00D4`; the coin path is code `0x32` -> `4000:1144` -> `sub_D800A` -> the per-country pricing routine. See the section added to F11. |
 

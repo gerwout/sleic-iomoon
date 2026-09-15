@@ -60,7 +60,10 @@ or pin/function-compatible parts with the same pinout and behaviour:
 | [`gm76c28.pdf`](gm76c28.pdf) | Goldstar GM76C28A 2 K × 8 CMOS SRAM | IC33 (011-029A), IC7 (011-030A) | [silicon-ark.co.uk](https://www.silicon-ark.co.uk/datasheets/gm76c28a-datasheet-gs.pdf) |
 | [`28c64a.pdf`](28c64a.pdf) | Atmel AT28C64 8 K × 8 parallel EEPROM (= Microchip 28C64A) | IC14 (011-029A) | [ww1.microchip.com](https://ww1.microchip.com/downloads/en/devicedoc/doc0270.pdf) |
 
-### Programmable logic (PALs — undumped on the board)
+### Programmable logic (PALs)
+
+IC7 is dumped — [`../roms/PAL20L10/`](../roms/PAL20L10/). IC8 is not; see
+[`../docs/chips_to_dump.md`](../docs/chips_to_dump.md).
 
 | File | Part(s) documented | Used at | Source |
 |---|---|---|---|

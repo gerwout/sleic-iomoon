@@ -1,0 +1,37 @@
+GAL22V10
+PAL20L10
+
+I1 I2 I3 I4 I5 I6 I7 I8 I9 I10 I11 GND
+I13 O14 I15 I16 O17 O18 O19 O20 O21 O22 O23 VCC
+
+
+; IC pin 23 -- 2/8 product terms
+/O23 = /I8 * /I7 * /I1
+       + I8 * I7 * /I2
+
+; IC pin 22 -- 1/10 product terms
+/O22 = /I11 * /I3
+
+; IC pin 21 -- 1/12 product terms
+/O21 = I11 * /I3
+
+; IC pin 20 -- 1/14 product terms
+/O20 = /I16 * /I6
+
+; IC pin 19 -- 1/16 product terms
+/O19 = /I16 * /I5
+
+; IC pin 18 -- 1/16 product terms
+/O18 = /I11 * I10 * /I9 * /I4
+
+; IC pin 17 -- 1/14 product terms
+/O17 = I15
+
+; IC pin 14 -- 1/8 product terms
+/O14 = /I16 * /I13
+
+
+DESCRIPTION
+Reconstructed from a dpdumper sweep of a PAL20L10.
+Target device is a GAL22V10/ATF22V10C (pin-compatible).
+Equations are active-low (espresso minimised the OFF-set).

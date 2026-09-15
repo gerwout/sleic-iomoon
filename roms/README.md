@@ -14,6 +14,7 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 IPDB latest/Start-Tournament-Patch/` | PRESS START tournament patch for the IPDB set — see its [README](1.3%20IPDB%20latest/Start-Tournament-Patch/README.md) |
 | `1.3 Early version/` | An earlier v1.3 ROM set — see its [README](1.3%20Early%20version/README.md) |
 | `PIC16C57/` | IC23 DMD-raster PIC dump, recovered from the locked chip by a recovery lab — see its [README](PIC16C57/README.md) |
+| `PAL20L10/` | IC7 80188 bus-decode PAL, recovered from the locked chip on a DuPAL V3 rig — see its [README](PAL20L10/README.md) |
 | `related-machines/` | ROM images of other SLEIC machines (Sleic Pin-Ball, Bike Race, Doña Elvira 2) — see its [README](related-machines/README.md) |
 | `related-machines/bike-race/v4.1/` | The six socketed chips of a Bike Race machine running V4.1, one of them a **bad dump** — see its [README](related-machines/bike-race/v4.1/README.md) |
 | `pinmame/` | These images repackaged as PinMAME-loadable `.zip` sets, plus the six Bike Race clone chips held only there — see its [README](pinmame/README.md) |
@@ -34,6 +35,9 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 Early version/V1 3_04.bin` | 524,288 bytes (512 KB) | `7393923e265050a4adb706d7477bd4fd` | Sound ROM 2 (OKI MSM6376 ADPCM) |
 | `1.3 Early version/V1 3_05.bin` | 32,768 bytes (32 KB) | `da674b87ca562221ce5a63568b8cec1e` | Z80 CPU ROM (27C256) |
 | `PIC16C57/PIC16F57-DIP28-1D05-20260815.bin` | 8,192 bytes (8 KB) | `a244f2d8060c2d92a814e20bdd55ecfe` | IC23 PIC16C57 DMD raster coprocessor (16F57-adjusted, cracked from locked original) |
+| `PAL20L10/pal20l10_truthtable.txt` | 1,556,853 bytes | `f882e77f625cef41ab5491db3f13c0b2` | IC7 PAL20L10 truth table — 16384 rows, the exhaustive bench measurement |
+| `PAL20L10/pal20l10.pld` | 742 bytes | `1bf466d505a025409872bc106bc74548` | IC7 PAL20L10 minimised equations (GALasm source) |
+| `PAL20L10/pal20l10.jed` | 1,097 bytes | `a93bc2eddd25fc6a4308445805df3be7` | IC7 PAL20L10 JEDEC fuse map, `QF5892`, GAL22V10 / ATF22V10C target |
 
 ## MD5 checksums — related SLEIC machines
 

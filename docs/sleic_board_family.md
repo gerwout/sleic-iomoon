@@ -153,9 +153,11 @@ ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
 
 ## What is still missing
 
-- **The two PALs on the IO Moon boards** — IC7 (80188 chip-select glue) and IC8
-  (Z80 decode), both with the security fuse blown. Neither blocks emulation; see
-  [`chips_to_dump.md`](chips_to_dump.md) for exactly what each would settle.
+- **IC8, the Z80 decode PAL on IO Moon's 011-030A board** — security fuse blown,
+  so it needs the same DuPAL bench read that recovered its sister part IC7 (the
+  80188 chip-select glue, now dumped: [`../roms/PAL20L10/`](../roms/PAL20L10/)).
+  It does not block emulation; see [`chips_to_dump.md`](chips_to_dump.md) for what
+  it would settle.
 - **A re-read of Doña Elvira 2's `ELVSON3`** — `040V1U04.SOM` (sound board
   `011-065`, IC44) is missing 61,440 bytes from its middle. Three of the machine's
   68 OKI phrases are affected: 57 loses its tail, 58 is gone entirely, 59 loses its
