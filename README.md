@@ -315,9 +315,14 @@ sleic-io-moon/
 │       │   ├── bkcpu05.bin            # 80188 graphics ROM (MCS2 0x40000)
 │       │   ├── bkcpu06.bin            # 80188 graphics ROM (MCS1 0x20000)
 │       │   └── bkio07.bin             # Z80 I/O CPU ROM
-│       └── dona-elvira-2/             # Doña Elvira 2 (1996) — partial, Z80 ROM only
+│       └── dona-elvira-2/             # Doña Elvira 2 (1996) — all six EPROMs
 │           ├── README.md
-│           └── ST27C256-z80.bin       # Z80 I/O CPU ROM
+│           ├── 010v1u01.som           # Z80 sound CPU program (ELVSONO)
+│           ├── 040V1U02.SOM           # OKI samples chip 0 (ELVSON1) — phrase table
+│           ├── 040V1U03.SOM           # OKI samples chip 1 (ELVSON2)
+│           ├── 040V1U04.SOM           # OKI samples chip 2 (ELVSON3) — short 0xF000
+│           ├── 040V1U05.SOM           # OKI samples chip 3 (ELVSON4)
+│           └── 256v1u06.pro           # Z80 game CPU ROM
 ├── images/                            # Screenshots and board photographs
 │   ├── dmd_single_frame.png
 │   ├── dmd_static_screen.png
@@ -477,7 +482,7 @@ by cross-checking against them. Their ROM images are archived under
 |---------|------|----------------|-------------|
 | [Sleic Pin-Ball](roms/related-machines/sleic-pin-ball/) | 1993 | `SLEIC1` | complete (4 ROMs) |
 | [Bike Race](roms/related-machines/bike-race/) | 1992 | `SLEIC3` | complete (7 ROMs) |
-| [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | **partial — Z80 game CPU ROM only** |
+| [Doña Elvira 2](roms/related-machines/dona-elvira-2/) | 1996 | — | all 6 EPROMs; **`ELVSON3` short `0xF000`** |
 
 Bike Race matters most: it runs the same 80188 firmware family as IO Moon, with
 the same PACS peripheral base and a byte-identical timer-0 setup, so it is a live
@@ -485,14 +490,21 @@ cross-check on the shared hardware model. Its display coprocessor is an I8039
 where IO Moon's is a PIC16C57; both are dumped, and both turn out to be pure
 one-way rasterizers.
 
-The Doña Elvira 2 Z80 ROM is a rare partial dump of a machine with no publicly
-available ROM images that we know of. It self-identifies as `SLEIC-PETACO DONA
-ELVIRA 2 / (C) SLEIC 1996`, and code-window analysis places its firmware firmly in
-the IO Moon / Bike Race Z80 lineage rather than the older Sleic Pin-Ball one. Its
+Doña Elvira 2 is a machine with no publicly available ROM images that we know of.
+All six of its EPROMs are archived here — the Z80 game CPU, the Z80 sound CPU, and
+four 27C040s of OKI MSM6376 samples. The game ROM self-identifies as `SLEIC-PETACO
+DONA ELVIRA 2 / (C) SLEIC 1996`, and code-window analysis places its firmware firmly
+in the IO Moon / Bike Race Z80 lineage rather than the older Sleic Pin-Ball one. Its
 [service manual](manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
-is archived here, and shows that this Z80 board is the machine's *game* CPU: Doña
-Elvira 2 has no 16-bit board at all, a second Z80 for sound, and a 7-segment display
-rather than a DMD.
+is archived here with an [OCR transcription](manuals/sleic_dona_elvira_2_manual_es.md),
+and shows that this Z80 board is the machine's *game* CPU: Doña Elvira 2 has no
+16-bit board at all, a second Z80 for sound, and a 7-segment display rather than a
+DMD. With no FM chip, its music is streamed ADPCM, which is what the four sample
+ROMs are for.
+
+One sample ROM, `ELVSON3`, is short by `0xF000` bytes lost from its middle and needs
+a re-read; three of its 68 phrases are affected. The display board's three 6331
+PROMs are still undumped.
 
 See [The SLEIC Board Family](docs/sleic_board_family.md) for the full comparison.
 

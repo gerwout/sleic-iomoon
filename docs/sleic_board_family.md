@@ -16,12 +16,11 @@ where they diverge, and what is still missing.
 | Sleic Pin-Ball | 1993 | `SLEIC1` | [`roms/related-machines/sleic-pin-ball/`](../roms/related-machines/sleic-pin-ball/) | complete (4) |
 | IO Moon | 1996 | `SLEIC2` | [`roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/), [`roms/1.3 Early version/`](../roms/1.3%20Early%20version/) | complete (5), two versions |
 | Bike Race | 1992 | `SLEIC3` | [`roms/related-machines/bike-race/`](../roms/related-machines/bike-race/), [`.../v4.1/`](../roms/related-machines/bike-race/v4.1/) | complete (7), plus a six-chip V4.1 set |
-| Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | **partial — Z80 game CPU ROM only** |
+| Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | [`roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/) | all 6 EPROMs; **`ELVSON3` short `0xF000`** |
 
 The PinMAME family numbers are driver-registration order, not chronology: Bike
 Race (`SLEIC3`) is the oldest machine of the three that PinMAME knows about.
-No PinMAME driver for Doña Elvira 2 is known to us — one ROM is not enough to run
-it in any case.
+No PinMAME driver for Doña Elvira 2 is known to us.
 
 Bike Race is the only sibling whose boards are photographed here:
 [`bikerace_boards.md`](bikerace_boards.md) has the 16-bit and Z80 boards at full
@@ -79,7 +78,7 @@ Code volume agrees with that grouping:
 |-----|------|-----------:|-----|
 | Sleic Pin-Ball `sp04-1_1.rom` | 27C256 | 8,763 | `0x00` |
 | Bike Race `bkio07.bin` | 27C256 | 18,635 | `0xFF` |
-| Doña Elvira 2 `ST27C256-z80.bin` | 27C256 | 18,678 | `0xFF` |
+| Doña Elvira 2 `256v1u06.pro` | 27C256 | 18,678 | `0xFF` |
 | IO Moon `V1 3_05.bin` | 27C256 | 20,437 | `0xFF` |
 
 Reset/vector blocks share one shape across all four — `NOP NOP DI` fill, three
@@ -94,7 +93,7 @@ Reproduce the table with:
 ```python
 import itertools
 files = {
-    'de2':      'roms/related-machines/dona-elvira-2/ST27C256-z80.bin',
+    'de2':      'roms/related-machines/dona-elvira-2/256v1u06.pro',
     'iomoon':   'roms/1.3 IPDB latest/V1 3_05.bin',
     'bikerace': 'roms/related-machines/bike-race/bkio07.bin',
     'sleicpin': 'roms/related-machines/sleic-pin-ball/sp04-1_1.rom',
@@ -157,12 +156,16 @@ ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
 - **The two PALs on the IO Moon boards** — IC7 (80188 chip-select glue) and IC8
   (Z80 decode), both with the security fuse blown. Neither blocks emulation; see
   [`chips_to_dump.md`](chips_to_dump.md) for exactly what each would settle.
-- **Doña Elvira 2's sound and display ROMs** — its
+- **A re-read of Doña Elvira 2's `ELVSON3`** — `040V1U04.SOM` (sound board
+  `011-065`, IC44) is missing 61,440 bytes from its middle. Three of the machine's
+  68 OKI phrases are affected: 57 loses its tail, 58 is gone entirely, 59 loses its
+  head. The other five EPROMs are complete.
+- **Doña Elvira 2's display PROMs** — the three 6331 bipolar PROMs at IC2, IC5 and
+  IC8 on the display board `011-064`. Its
   [service manual](../manuals/SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
   settles what a complete set is, and it is not the IO Moon shape: the machine has
-  no 16-bit board, so the archived Z80 image is its whole game program. What is
-  missing is the sound board's five EPROMs (`011-065`: IC5 `27C10`, IC42–IC45
-  `27C40`) and the display board's three 6331 PROMs (`011-064`).
+  no 16-bit board, so the archived Z80 game image is its whole game program, and a
+  second Z80 with four 27C040s of samples does all the sound.
 - **Doña Elvira 2 disassembly** — not started. Given the 15–18 % code overlap with
   IO Moon and Bike Race, the documented switch/lamp/coil port maps
   ([`z80_io_ports.md`](z80_io_ports.md),

@@ -57,7 +57,12 @@ together with its MD5 checksum for quick integrity verification.
 | `related-machines/bike-race/v4.1/bk06.bin` | 131,072 bytes (128 KB) | `014c57279281526e71914fe4eb833c67` | 80188 graphics ROM, MCS1 `0x20000` — V4.1's ROM 06, **confirmed by a re-dump**; CRC `9db436d4`, byte-identical to `bkcpu06.bin` |
 | `related-machines/bike-race/v4.1/bk06.baddump.bin` | 131,072 bytes (128 KB) | `c42b2e81b987cbe63145eefda647da93` | **BAD DUMP** of V4.1's ROM 06 (CRC32 `ad48a30a`) — archived as evidence, do not use |
 | `related-machines/bike-race/v4.1/bk07.bin` | 32,768 bytes (32 KB) | `244271a47eb206f3c3fc30c1f7d8fb17` | Z80 I/O CPU ROM (V4.1) |
-| `related-machines/dona-elvira-2/ST27C256-z80.bin` | 32,768 bytes (32 KB) | `358bd508dd8232bbfe9d8d14465015d3` | Z80 game CPU ROM (**only ROM dumped**) |
+| `related-machines/dona-elvira-2/256v1u06.pro` | 32,768 bytes (32 KB) | `358bd508dd8232bbfe9d8d14465015d3` | Z80 game CPU ROM (was archived as `ST27C256-z80.bin`) |
+| `related-machines/dona-elvira-2/010v1u01.som` | 131,072 bytes (128 KB) | `1afd7bf6944044f04e07990599c45452` | Z80 sound CPU ROM, `ELVSONO` — 1,480 bytes used |
+| `related-machines/dona-elvira-2/040V1U02.SOM` | 524,288 bytes (512 KB) | `e6a6c7156b55afc42f0978f3ed936572` | OKI MSM6376 samples chip 0, `ELVSON1` — carries the phrase table |
+| `related-machines/dona-elvira-2/040V1U03.SOM` | 524,288 bytes (512 KB) | `17aa046c89d78aaf1e58f4161c744af0` | OKI MSM6376 samples chip 1, `ELVSON2` |
+| `related-machines/dona-elvira-2/040V1U04.SOM` | 462,848 bytes | `a0ed355c16435c5443b680d912585e00` | OKI MSM6376 samples chip 2, `ELVSON3` — **INCOMPLETE**, missing `0xF000` at chip offset `0x43063`; needs a re-read |
+| `related-machines/dona-elvira-2/040V1U05.SOM` | 524,288 bytes (512 KB) | `d5d1dee50970b609297f4cc3e8389f47` | OKI MSM6376 samples chip 3, `ELVSON4` — data to `0x21B52` |
 
 ### Notes
 
@@ -71,8 +76,10 @@ together with its MD5 checksum for quick integrity verification.
 - A second, physically distinct IO Moon board was dumped in August 2026; all five
   images came out **byte-identical to the `1.3 IPDB latest` set**, so that set is
   confirmed by two independent boards and the duplicate dump was not archived.
-- The Doña Elvira 2 dump is **partial** — its Z80 game CPU ROM only; the sound
-  board's five EPROMs and the display board's three PROMs are undumped. See its
+- All six Doña Elvira 2 EPROMs are archived, but `040V1U04.SOM` (`ELVSON3`, IC44)
+  is **incomplete**: 61,440 bytes are missing from its middle, not its end, so the
+  data past the hole sits `0xF000` early in the file. It needs a re-read. The
+  display board's three 6331 PROMs are undumped. See its
   [README](related-machines/dona-elvira-2/README.md).
 
 To regenerate these checksums for every ROM image in this directory:
