@@ -194,6 +194,21 @@ high; of the 256 interrupt-acknowledge states (`/M1` low, `/IOREQ` low, `/MREQ`
 high) pin 17 asserts in exactly 128, every one with pin 13 low. Pin 13 halves
 both sets independently. Pins 17 and 19 are therefore never live together.
 
+**Pin 13 selects which of those two is live, and does nothing else.** Split the
+2048 rows on pin 13 and compare the two 1024-row halves as functions of the
+other ten inputs: pins 14, 15, 16 and 18 are **bit-identical** under both, and
+pins 17 and 19 each go permanently inactive in one half. So the part reduces to
+one of two fixed devices —
+
+| | pin 13 low | pin 13 high |
+|---|---|---|
+| pin 17 | interrupt acknowledge | never asserts |
+| pin 19 | never asserts | opcode fetch |
+| pins 14, 15, 16, 18 | identical | identical |
+
+— which is a build option rather than a cycle qualifier: a signal qualifying
+bus cycles would be expected to shade some other output, and it shades none.
+
 **This part is a bus-cycle decoder.** `A13`, `A12` and `A7` are wired to it and
 no output depends on any of them. Exactly one output touches the address bus at
 all, and only two of the five address lines present. Four of the six are pure
@@ -235,20 +250,27 @@ pin 14, marked `/RI`, and the interrupt acknowledge on pin 17, marked `/CEO`.
 
 Four measurements on the board, in order of value:
 
-1. **Trace IC8 pin 13 back to its source.** It is an input, so something on the
-   board drives it, and it decides which of the two `/M1`-cycle outputs is live.
-   Two outcomes separate cleanly: a **static tie** — a pull-up, pull-down or
-   jumper — makes it a board-option strap, and one of pins 17 and 19 is then a
-   dead output on this build; a **logic output** makes it a live per-cycle
-   signal, and the device driving it is doing work this part does not.
-   The sister PAL at IC7 on the 80188 board has a comparable pair of non-address
-   inputs steering its program-ROM select
-   ([`../PAL20L10/README.md`](../PAL20L10/README.md)), so a configuration input
-   is not unusual here. Weighing against the live-signal reading: pin 13 also
-   gates the interrupt-acknowledge decode, and during a Z80 `INTACK` cycle the
-   address bus carries `PC`, so a signal derived from an address range would
-   make interrupt acknowledgement depend on where the program counter happened
-   to be.
+1. **Trace IC8 pin 13 back to its source, and read its level.** It is an
+   input, so something on the board drives it. Whatever that is must hold it
+   effectively constant while interrupts are enabled: pin 13 gates the
+   interrupt-acknowledge decode, and the Z80's address bus carries `PC` during
+   an `INTACK` cycle, so anything varying with an address range would tie
+   interrupt acknowledgement to wherever the program counter happened to be. A
+   hard tie — pull-up, pull-down or jumper — is the simplest member of that
+   class; a latched mode bit or a decode that never changes in practice would
+   serve equally. The sister PAL at IC7 on the 80188 board takes a comparable
+   pair of non-address inputs to steer its program-ROM select
+   ([`../PAL20L10/README.md`](../PAL20L10/README.md)).
+
+   **The level is fixed by what the board needs, independently of the symbol's
+   labels.** Sheet 011-030-02 ties IC17's `G2A`/`G2B` to one IC8 output and the
+   reset of the IC14A/IC14B interrupt latch to another. Only the I/O-write
+   decode can serve the first, and only the interrupt-acknowledge decode the
+   second — pin 14 and pin 17. Pin 17 is live only with **pin 13 low**, which
+   makes pin 19 the constant output. So pin 13 should measure low, and pin 19
+   should never leave its inactive level on a running machine. A high reading
+   instead means pin 17 is dead, the latch reset arrives from somewhere other
+   than IC8, and the functional analysis above needs revisiting.
 2. **Trace IC5 pin 20 (`/CE`) and IC7 pin 18 (`/CE`) back to what drives
    them**, and the same for the `/OE` and `/WE` lines those parts take. Sheet
    011-030-01 routes all of them from IC8, through IC14C/D in the RAM's case.
