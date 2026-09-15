@@ -132,8 +132,7 @@ same Spanish-pinball engineering style.
 ## 5. The IRQ source
 
 The Z80 board has no PIT and no CTC, but it does have a timer: **IC12 + IC13**,
-which the board inventory used to describe as a watchdog. Sheet `011-030-02`
-shows otherwise. IC12 is a CD4040 12-stage ripple counter with `CLK` ← `ZCLK`
+on sheet `011-030-02`. IC12 is a CD4040 12-stage ripple counter with `CLK` ← `ZCLK`
 and `RST` tied to **ground** — it free-runs and nothing ever clears it. All
 twelve outputs `Q1`–`Q12` go to IC13, a 13-input NAND whose thirteenth input is
 tied high, so IC13's output drops for one `ZCLK` period each time the counter

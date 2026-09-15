@@ -153,13 +153,14 @@ ROM with a 512 KB graphics ROM that is too big to map flat: it is **banked** one
 
 ## What is still missing
 
-- **A clean re-read of IC8, the Z80 decode PAL on IO Moon's 011-030A board.**
-  Both PALs have been dumped on a DuPAL rig — IC7 at
-  [`../roms/PAL20L10/`](../roms/PAL20L10/), IC8 at
-  [`../roms/PAL16L8/`](../roms/PAL16L8/) — but the IC8 read comes back without
-  a memory chip select, which the board cannot work without, so two of its pin
-  directions need re-measuring. Nothing about it blocks emulation; see
-  [`chips_to_dump.md`](chips_to_dump.md).
+- **Which device the IC8 dump came from.** Both PALs have been read on a DuPAL
+  rig — IC7 at [`../roms/PAL20L10/`](../roms/PAL20L10/), IC8 at
+  [`../roms/PAL16L8/`](../roms/PAL16L8/). The IC8 measurement contains no memory
+  chip select, which the 011-030A board cannot work without, and the rig cannot
+  discriminate further. The IC8 position exists on more than one machine in this
+  family, at the same clave and on the same sheet number, so provenance is one
+  of the three hardware checks that would settle it. Nothing about it blocks
+  emulation; see [`chips_to_dump.md`](chips_to_dump.md).
 - **A re-read of Doña Elvira 2's `ELVSON3`** — `040V1U04.SOM` (sound board
   `011-065`, IC44) is missing 61,440 bytes from its middle. Three of the machine's
   68 OKI phrases are affected: 57 loses its tail, 58 is gone entirely, 59 loses its
