@@ -5212,31 +5212,31 @@ id,label,dir,first_ms,last_ms,frames,text,repr_id
 5211,wheel-c3-refwd-03,5211-wheel-c3-refwd-03,1617633,1622616,190,INSCRIPCI0N / :0I8MA / JUG 1:,5211
 5212,wheel-c3-fixed,5212-wheel-c3-fixed,1622650,1628700,232,INSCRIPCI0N / :0I8MA / JU 1:,5212
 5213,wheel-c3-fixed,5213-wheel-c3-fixed,1628716,1628716,1,,3
-5214,wheel-c3-fixed,5214-wheel-c3-fixed,1628800,1634566,110,PRESS START,5214
-5215,score-post-entry-wait,5215-score-post-entry-wait,1656033,1656033,1,,3
-5216,score-post-entry-wait,5216-score-post-entry-wait,1656066,1656066,1,,5216
-5217,score-post-entry-wait,5217-score-post-entry-wait,1656116,1656116,1,,5217
-5218,score-post-entry-wait,5218-score-post-entry-wait,1656200,1656200,1,,5216
-5219,score-post-entry-wait,5219-score-post-entry-wait,1656250,1656250,1,,5217
-5220,score-post-entry-wait,5220-score-post-entry-wait,1656333,1656333,1,,5216
-5221,score-post-entry-wait,5221-score-post-entry-wait,1656400,1656400,1,,5217
-5222,score-post-entry-wait,5222-score-post-entry-wait,1656466,1656466,1,,5216
-5223,score-post-entry-wait,5223-score-post-entry-wait,1656533,1656533,1,,5217
-5224,score-post-entry-wait,5224-score-post-entry-wait,1656616,1656616,1,,5216
-5225,score-post-entry-wait,5225-score-post-entry-wait,1656666,1656666,1,,5217
-5226,score-post-entry-wait,5226-score-post-entry-wait,1656750,1656750,1,,5216
-5227,score-post-entry-wait,5227-score-post-entry-wait,1656800,1656800,1,,5217
-5228,score-post-entry-wait,5228-score-post-entry-wait,1656883,1656883,1,,5228
-5229,score-post-entry-wait,5229-score-post-entry-wait,1656916,1656916,1,,5229
-5230,score-post-entry-wait,5230-score-post-entry-wait,1659083,1659083,1,,3
-5231,score-post-entry-wait,5231-score-post-entry-wait,1659200,1659200,1,,6
-5232,score-post-entry-wait,5232-score-post-entry-wait,1659250,1665950,294,,5232
-5233,score-lottery,5233-score-lottery,1665966,1668116,93,,8
-5234,score-lottery,5234-score-lottery,1668150,1668150,1,,3
-5235,score-lottery,5235-score-lottery,1668166,1669616,3,,10
-5236,score-lottery,5236-score-lottery,1671033,1673900,3,,5236
-5237,score-lottery,5237-score-lottery,1673916,1673916,1,,12
-5238,score-lottery,5238-score-lottery,1675333,1675333,1,,13
+5214,score-lottery,5214-score-lottery,1628800,1634316,108,,5214
+5215,score-press-start-normal,5215-score-press-start-normal,1634550,1634566,2,PRESS START,5215
+5216,score-post-entry-wait,5216-score-post-entry-wait,1656033,1656033,1,,3
+5217,score-post-entry-wait,5217-score-post-entry-wait,1656066,1656066,1,,5217
+5218,score-post-entry-wait,5218-score-post-entry-wait,1656116,1656116,1,,5218
+5219,score-post-entry-wait,5219-score-post-entry-wait,1656200,1656200,1,,5217
+5220,score-post-entry-wait,5220-score-post-entry-wait,1656250,1656250,1,,5218
+5221,score-post-entry-wait,5221-score-post-entry-wait,1656333,1656333,1,,5217
+5222,score-post-entry-wait,5222-score-post-entry-wait,1656400,1656400,1,,5218
+5223,score-post-entry-wait,5223-score-post-entry-wait,1656466,1656466,1,,5217
+5224,score-post-entry-wait,5224-score-post-entry-wait,1656533,1656533,1,,5218
+5225,score-post-entry-wait,5225-score-post-entry-wait,1656616,1656616,1,,5217
+5226,score-post-entry-wait,5226-score-post-entry-wait,1656666,1656666,1,,5218
+5227,score-post-entry-wait,5227-score-post-entry-wait,1656750,1656750,1,,5217
+5228,score-post-entry-wait,5228-score-post-entry-wait,1656800,1656800,1,,5218
+5229,score-post-entry-wait,5229-score-post-entry-wait,1656883,1656883,1,,5229
+5230,score-post-entry-wait,5230-score-post-entry-wait,1656916,1656916,1,,5230
+5231,score-post-entry-wait,5231-score-post-entry-wait,1659083,1659083,1,,3
+5232,score-post-entry-wait,5232-score-post-entry-wait,1659200,1659200,1,,6
+5233,score-post-entry-wait,5233-score-post-entry-wait,1659250,1668116,387,,8
+5234,score-post-entry-wait,5234-score-post-entry-wait,1668150,1668150,1,,3
+5235,score-post-entry-wait,5235-score-post-entry-wait,1668166,1669616,3,,10
+5236,score-post-entry-wait,5236-score-post-entry-wait,1671033,1673900,3,,5236
+5237,score-post-entry-wait,5237-score-post-entry-wait,1673916,1673916,1,,12
+5238,score-post-entry-wait,5238-score-post-entry-wait,1675333,1675333,1,,13
 5239,score-attract-again,5239-score-attract-again,1676750,1676750,1,,3
 5240,score-attract-again,5240-score-attract-again,1676783,1676933,4,,16
 5241,score-attract-again,5241-score-attract-again,1677000,1677166,4,,16

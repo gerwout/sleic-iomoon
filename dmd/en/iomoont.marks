@@ -30,7 +30,6 @@
 92640 1543966 score-recover-plunge
 93240 1553966 score-recover-hits
 95140 1585633 score-recover-drained
-95500 1591633 score-press-start-normal
 95500 1591633 score-high-score-entry
 95590 1593133 wheel-c1-fwd-00
 95680 1594633 wheel-c1-fwd-01
@@ -49,8 +48,9 @@
 96970 1616133 wheel-c3-refwd-02
 97060 1617633 wheel-c3-refwd-03
 97360 1622633 wheel-c3-fixed
+97729 1628783 score-lottery
+98146 1635733 score-press-start-normal
 99360 1655966 score-post-entry-wait
-99960 1665966 score-lottery
 100560 1675966 score-attract-again
 106560 1775966 svc-0
 109560 1825966 svc-1

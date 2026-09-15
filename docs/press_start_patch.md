@@ -117,10 +117,16 @@ The end-of-game flow has two distinct paths that both need interception:
 SPECIAL path's does not: in a captured match (`dmd/special/`, a real lottery win on
 `iomoont`) four START presses over 62 s of emulated time, and nine over 140 s in a longer
 run, leave the panel on `PRESS START` and never reach the match animation behind it. The
-cave's release condition needs `ES:[1147h]` non-zero *and* the byte at `ES:[[1150h]]` to
-read `0x40`, the START switch code; on the SPECIAL path it apparently never does, and the
-cave clears `[1147h]` and spins. Which of the two the pointer at `[1150h]` is left pointing
-at on each path is not established.
+cave releases only when `ES:[1147h]` is non-zero *and* the byte at `ES:[[1150h]]` reads
+`0x40`, the START switch code. `[1150h]` is the inbound FIFO's read cursor: the NMI resets
+it to `1220h` when it appends to an empty FIFO, and only main-loop code advances it past a
+consumed byte. On the normal path the main loop has drained the FIFO by the time the screen
+is up, so the press lands under the cursor and the cave returns. On the SPECIAL path the
+cave is entered with a byte still unconsumed at `1220h`, and since the cave itself is the
+main loop, nothing can advance the cursor: every press is received (`[1147h]` is set) and
+every press is rejected, because its `0x40` is appended past where the cave looks. It is a
+deadlock by construction rather than a timing accident. `sleic-iomoon/dmd/special/README.md`
+carries the trace; whether hardware behaves the same has not been checked.
 
 ---
 ## Validation

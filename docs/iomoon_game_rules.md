@@ -902,9 +902,9 @@ Two things this settles about the paragraph above. The bonus, whatever the
 manual leaves out about its values, **ends in zero**: across games whose only
 non-zero-digit awards were inner-target hits, `413C:0016` at the compare read
 exactly the number of those hits, so nothing else contributed to the units
-digit. And the cell is a raw accumulator rather than a reduced digit — it reads
-10, 11 or 12 after that many such hits — which is why the firmware divides
-rather than compares. Measured win rate over 104 complete games driven to known
+digit. And the cell holds that digit **unreduced** — it reads 10, 11 or 12
+after that many such hits — which is why the firmware divides rather than
+compares. Measured win rate over 104 complete games driven to known
 digits: 11.5%, against §3.5's own "roughly 20%"; the mechanism itself implies
 10%. `dmd/special/README.md` has the measurements and what drove them.
 

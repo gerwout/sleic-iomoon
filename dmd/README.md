@@ -316,10 +316,11 @@ own scenes under that label, per the method above.
   frame, and `full-tilt` now covers two scene occurrences, the second
   showing the TILT screen itself. `dmd/en/iomoont.marks` carries the
   corrected mark; the raw dump itself is unchanged, since it already had the
-  frame. The Spanish key script (`iomoon-es.keys`) has the identical
-  mark-placement bug, unfixed — its own `full-tilt` mark never has a frame
-  attached at all in the committed `dmd/es/` corpus (zero rows in
-  `screens.csv`), not just a misattributed one.
+  frame. The Spanish key script carries the same corrected mark and `dmd/es/`
+  shows the same two `full-tilt` occurrences; its second is the Spanish
+  equivalent screen, a large drop-shadowed word of 2531 lit pixels against the
+  English `TILT`'s 2265 (`dmd/es/screens/0302-full-tilt/repr.txt`), and like the
+  English one it is legible by eye but matched by no walked face.
 - **The record-inscription (wheel-walk) screen decodes: `captured, not read`
   is fixed for its header and player label, and confirmed against the ROM's
   own stored strings, not just bitmap matching.** The header reads
@@ -419,22 +420,29 @@ own scenes under that label, per the method above.
   (`dmd/special/screens/0311-*`, byte-identical to `dmd/en/screens/0373-*`) and the digit —
   runs at the end of every game. What a match changes on the panel is only *when* `PRESS
   START` arrives (250 ms after the reveal ends, against 1.35 s), and that this occurrence
-  does not release on a START press where the `D5123` one does. `dmd/special/README.md` has
-  the full account: the sweep's own table, the four digit observations, the three-way
-  `PRESS START` comparison, and the reverted watch the counter measurements came from.
+  does not release on a START press where the `D5123` one does — that one is settled too:
+  the cave is entered with a byte still unconsumed under the inbound FIFO's read cursor,
+  which only the main loop it is holding could advance, so every press is received and
+  rejected. `dmd/special/README.md` has the full account: the sweep's own table, the five
+  digit observations, the three-way `PRESS START` comparison, the FIFO trace, and the
+  reverted watch every measurement came from.
 
-- **The second game's own `score-lottery` and `score-press-start-normal` marks do not sit
-  on the screens they name.** The first game's do: `lottery` covers the draw — the
-  Monolith/train graphic and then the final score above the drawn digit — and
-  `press-start-normal` starts on the `PRESS START` frame itself. The second game's ending
-  runs differently: it takes the awarded extra ball (`score-recover-*`), its own
-  `PRESS START` frame lands at ms 1635783, **after** the name-entry wheel walk rather than
-  before it (`dmd/en/screens.csv`, under `wheel-c3-fixed`), and between its last drain
-  (ms 1585633) and its name entry (ms 1591633) nothing like the first game's 30-frame and
-  61-frame draw pair appears — every scene in that window is one to four frames. So the two
-  marks are left where they are rather than moved to a guess. What would settle it:
-  identifying that game's own draw frames, if it draws any, against the raw dump across
-  that window, and whether the awarded extra ball reorders the end-of-game path.
+- ~~The second game's own `score-lottery` and `score-press-start-normal` marks do not sit
+  on the screens they name~~ **— fixed, and the reason they were hard to place is a real
+  difference between the two endings.** A read watch on `4000:113F` across the whole English
+  walk catches the compare (`D4DC4`) exactly twice, once per game: at ms 246038 with the
+  counter reading `4`, and at ms **1628730** with it reading `7`. The second game's draw
+  therefore runs *after* the name-entry wheel walk, not before it — the opposite order to
+  the first game's — which is why nothing resembling a draw appears between that game's last
+  drain and its name entry. `score-lottery` now marks the draw itself (ms 1628800-1634466 in
+  `en`, 1628800-1634316 in `es`) and `score-press-start-normal` the `PRESS START` frame that
+  follows it (ms 1635783 in `en`, 1634566 in `es`, where it previously had no frame at all).
+
+  The same run confirms the drawn digit independently, on captures made before any of this
+  work: the first game's counter is `4` and `dmd/en/screens/0374-lottery/repr.txt` draws a
+  `4`; the second game's is `7` and `dmd/en/screens/5219-score-lottery/repr.txt` draws a `7`.
+  Neither game matched — their score digits at the compare were `7` and `6` — so the walk's
+  closing credit is an unspent coin, not an award.
 - **The pre-credit `attract` section and the post-game `attract-again`
   section are the same content, at different lengths.** `attract-again` (the
   post-game return to idle) already runs long enough to show the attract

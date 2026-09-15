@@ -1720,7 +1720,7 @@
  95140 mark score-recover-drained
  95140 tap 10 KEYCODE_Q
  95200 tap 10 KEYCODE_DOWN
- 95500 mark score-press-start-normal
+ 98146 mark score-press-start-normal
  95500 mark score-high-score-entry
  95500 tap 10 KEYCODE_RSHIFT
  95590 mark wheel-c1-fwd-00
@@ -1758,7 +1758,7 @@
  97360 mark wheel-c3-fixed
  99360 mark score-post-entry-wait
  99360 tap 10 KEYCODE_1
- 99960 mark score-lottery
+ 97729 mark score-lottery
 100560 mark score-attract-again
 106560 mark svc-0
 106560 tap 10 KEYCODE_7
