@@ -40,6 +40,7 @@ against.
 ## Doña Elvira 2 — 1996 Spanish service manual
 
 📄 [`SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf`](SLEIC_1996_Dona_Elvira_2_Spanish_Service_Manual_with_schematics.pdf)
+📝 [`sleic_dona_elvira_2_manual_es.md`](sleic_dona_elvira_2_manual_es.md) — OCR transcription
 
 142 pages, a scan with no text layer. Eight sections: machine description, the
 playfield tables (contacts, lamps, coils), gameplay and scoring, the programmable
@@ -50,6 +51,14 @@ The schematics (PDF pages 88–141) are separately paginated in seven board sets
 cableado general (I), placa CPU 8 bits (II, PDF 93–104), placa de sonido general
 (III), placa de drivers (IV), placa de relés (V), placa de display (VI) and placa de
 alimentación de sonido (VII).
+
+[`sleic_dona_elvira_2_manual_es.md`](sleic_dona_elvira_2_manual_es.md) is a Spanish
+OCR transcription of the scan (`pdftoppm -r 300 -gray` into `tesseract -l spa
+--psm 3`). It is **uncorrected**: the 59 text pages carry recognition errors, tables
+lose their column layout, and the 24 figure pages, 54 schematic sheets and 5 blank
+pages are marked rather than transcribed. `<!-- PDF page N -->` markers run through
+it so any passage can be checked against the PDF, which stays the authority for
+every exact value.
 
 This is the only manual here for a machine whose ROMs are not fully dumped
 ([`../roms/related-machines/dona-elvira-2/`](../roms/related-machines/dona-elvira-2/)),
