@@ -116,6 +116,23 @@ already dumped contains it, so without them the segment pattern for a given code
 cannot be known. PinMAME records the same arrangement for IDSA, another Spanish
 manufacturer of the period, at `src/wpc/idsa.c:67`.
 
+The three 74164s are daisy-chained — `QH` of each feeds the `A`/`B` inputs of the
+next — so the board is one 24-bit shift register clocked by `SCLK`, and only the low
+five outputs of each stage (`QA`-`QE`, pins 3, 4, 5, 6, 10) reach its PROM. `/CE`
+(pin 15) is tied to ground on all three, so they are permanently enabled.
+
+**Reading them.** `6331` is the generic 32 × 8 bipolar PROM; equivalents are
+`82S123`, `74S288`, `Am27S19` (AMD, tri-state — `Am27S18` is the open-collector
+sibling, and the schematic wants tri-state) and `HM-6331`. All are 16-pin DIP with
+the pinout the schematic shows: `O1`-`O8` on pins 1-7 and 9, GND on 8, `A0`-`A4` on
+10-14, `/CE` on 15, VCC on 16. Unlike the IO Moon PICs and PALs in
+[`../../../docs/chips_to_dump.md`](../../../docs/chips_to_dump.md), these parts have
+**no security fuse and cannot be locked** — every fuse in them is a data bit, and a
+read always returns the real contents. What they do need is a programmer that
+supports bipolar fusible-link PROMs, which many modern USB programmers do not; and
+because grown-back fuses are a known ageing failure in this technology, each part is
+worth reading several times and comparing.
+
 ## Identification
 
 The game ROM self-identifies in plain ASCII:
