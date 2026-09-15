@@ -1,0 +1,433 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,666,3,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,699,699,1,BALLS OK,2
+3,unlabelled,0003-unlabelled,1783,1783,1,,3
+4,unlabelled,0004-unlabelled,1916,1949,2,,4
+5,unlabelled,0005-unlabelled,1966,8283,268,,5
+6,boot,0006-boot,8316,9316,38,,6
+7,boot,0007-boot,9349,9349,1,,7
+8,boot,0008-boot,9383,9383,1,,8
+9,boot,0009-boot,9400,9400,1,1 1 / PLAYER BALL,9
+10,boot,0010-boot,9433,9433,1,PLAYER BALL,10
+11,boot,0011-boot,9483,9500,2,PLAYER BALL,11
+12,boot,0012-boot,9550,9550,1,PLAYER BALL,12
+13,boot,0013-boot,9600,9866,11,PLAYER BALL,13
+14,boot,0014-boot,9883,9883,1,BALL,14
+15,boot,0015-boot,9933,9983,2,BALL,15
+16,boot,0016-boot,10000,10000,1,PLAYER BALL,16
+17,boot,0017-boot,10050,10050,1,PLAYER BALL,17
+18,boot,0018-boot,10100,10100,1,PLAYER BALL,18
+19,boot,0019-boot,10166,10166,1,BALL,19
+20,boot,0020-boot,10216,10216,1,BALL,20
+21,boot,0021-boot,10266,10266,1,PLAYER BALL,21
+22,start,0022-start,10316,10316,1,PLAYER BALL,22
+23,start,0023-start,10383,10383,1,BALL,23
+24,start,0024-start,10433,10433,1,BALL,24
+25,start,0025-start,10483,10483,1,PLAYER BALL,25
+26,start,0026-start,10550,10550,1,PLAYER BALL,26
+27,start,0027-start,10600,10600,1,BALL,27
+28,start,0028-start,10650,10650,1,PLAYER BALL,28
+29,start,0029-start,10700,10700,1,PLAYER BALL,29
+30,start,0030-start,10766,10766,1,PLAYER BALL,30
+31,start,0031-start,10816,10816,1,PLAYER BALL,31
+32,start,0032-start,10866,10866,1,PLAYER BALL,32
+33,start,0033-start,10933,10933,1,PLAYER BALL,33
+34,start,0034-start,10983,10983,1,PLAYER BALL,34
+35,start,0035-start,11033,11033,1,PLAYER BALL,35
+36,start,0036-start,11083,11083,1,PLAYER BALL,36
+37,start,0037-start,11150,11150,1,BALL,37
+38,start,0038-start,11200,11200,1,PLAYER BALL,38
+39,start,0039-start,11250,11250,1,PLAYER BALL,39
+40,start,0040-start,11316,11316,1,PLAYER BALL,40
+41,start,0041-start,11366,11366,1,PLAYER BALL,41
+42,start,0042-start,11416,11416,1,PLAYER BALL,42
+43,start,0043-start,11466,11483,2,PLAYER BALL,43
+44,start,0044-start,11533,11550,2,PLAYER BALL,44
+45,start,0045-start,11583,11600,2,PLAYER BALL,45
+46,start,0046-start,11633,11650,2,PLAYER BALL,46
+47,start,0047-start,11700,11850,6,PLAYER BALL,47
+48,start,0048-start,11866,11933,3,PLAYER BALL,48
+49,start,0049-start,11983,11983,1,PLAYER BALL,49
+50,start,0050-start,12033,15783,50,1 1 / PLAYER BALL,50
+51,plunge,0051-plunge,15983,20083,27,1 1 / PLAYER BALL,51
+52,arm-1,0052-arm-1,20249,21216,6,1 1 / PLAYER BALL,52
+53,arm-1,0053-arm-1,21399,21399,1,,53
+54,arm-1,0054-arm-1,21416,21416,1,,3
+55,arm-1,0055-arm-1,21433,21433,1,,55
+56,step-1,0056-step-1,21516,22849,20,,56
+57,step-1,0057-step-1,22899,22899,1,,3
+58,step-1,0058-step-1,22933,22933,1,,58
+59,cash-1,0059-cash-1,23066,23366,13,,59
+60,play-bumpers-1,0060-play-bumpers-1,25083,25949,11,1 1 / PLAYER BALL,60
+61,play-bumpers-1,0061-play-bumpers-1,25966,25983,2,,61
+62,play-bumpers-1,0062-play-bumpers-1,25999,29183,52,3,62
+63,play-bumpers-1,0063-play-bumpers-1,29266,30099,17,,63
+64,play-bumpers-1,0064-play-bumpers-1,30216,35399,80,,64
+65,play-ramp1-1,0065-play-ramp1-1,35466,35733,8,,65
+66,play-ramp1-1,0066-play-ramp1-1,35783,35833,4,,66
+67,play-ramp1-1,0067-play-ramp1-1,35849,35849,1,,67
+68,play-ramp1-1,0068-play-ramp1-1,36399,36399,1,,3
+69,play-ramp1-1,0069-play-ramp1-1,36416,36933,2,1 1 / PLAYER BALL,69
+70,play-ramp1-1,0070-play-ramp1-1,36966,37233,4,1 1 / PLAYER BALL,70
+71,play-ramp2-1,0071-play-ramp2-1,37349,37733,3,1 1 / PLAYER BALL,71
+72,play-ramp2-1,0072-play-ramp2-1,37749,37749,1,,72
+73,play-ramp2-1,0073-play-ramp2-1,37766,37766,1,,73
+74,play-ramp2-1,0074-play-ramp2-1,37783,38933,25,,74
+75,play-drops-1,0075-play-drops-1,38983,39066,3,755,75
+76,play-drops-1,0076-play-drops-1,39083,39733,19,1 1 / PLAYER BALL,76
+77,play-drops-1,0077-play-drops-1,39750,39766,2,1 1 / PLAYER BALL,77
+78,play-drops-1,0078-play-drops-1,39783,40333,14,1 1 / PLAYER BALL,78
+79,play-drops-1,0079-play-drops-1,40400,40400,1,1 1 / PLAYER BALL,79
+80,play-drops-1,0080-play-drops-1,40416,40450,2,9. 81 / 1 1 / PLAYER BALL,80
+81,play-drops-1,0081-play-drops-1,40466,41050,12,1 1 / PLAYER BALL,81
+82,play-drops-1,0082-play-drops-1,41083,41083,1,. . / 1 1 / PLAYER BALL,82
+83,play-drops-1,0083-play-drops-1,41100,41100,1,5. 4 / 1 1 / PLAYER BALL,83
+84,play-drops-1,0084-play-drops-1,41133,41700,16,1 1 / PLAYER BALL,84
+85,play-drops-1,0085-play-drops-1,41733,41750,2,1 1 / PLAYER BALL,85
+86,play-drops-1,0086-play-drops-1,41766,41766,1,1 1 / PLAYER BALL,86
+87,play-drops-1,0087-play-drops-1,41783,41783,1,1 1 / PLAYER BALL,87
+88,play-drops-1,0088-play-drops-1,41800,42566,17,1 1 / PLAYER BALL,88
+89,play-drops-1,0089-play-drops-1,42616,42616,1,1 1 / PLAYER BALL,89
+90,play-drops-1,0090-play-drops-1,42650,43433,6,1 1 / PLAYER BALL,90
+91,play-scoop2-1,0091-play-scoop2-1,43616,47316,22,1 1 / PLAYER BALL,91
+92,arm-2,0092-arm-2,47500,48666,9,1 1 / PLAYER BALL,92
+93,arm-2,0093-arm-2,48716,48716,1,,93
+94,arm-2,0094-arm-2,48750,48750,1,,55
+95,step-2,0095-step-2,48833,50316,25,,95
+96,cash-2,0096-cash-2,50400,50733,5,,96
+97,cash-2,0097-cash-2,50850,51933,19,,97
+98,cash-2,0098-cash-2,51983,52283,7,PLAYER BALL,98
+99,play-bumpers-2,0099-play-bumpers-2,52333,52333,1,PLAYER BALL,99
+100,play-bumpers-2,0100-play-bumpers-2,52400,52400,1,,100
+101,play-bumpers-2,0101-play-bumpers-2,52416,56500,71,,101
+102,play-bumpers-2,0102-play-bumpers-2,56616,62783,98,,96
+103,play-ramp1-2,0103-play-ramp1-2,62900,63066,3,,103
+104,play-ramp1-2,0104-play-ramp1-2,63116,63116,1,1 1 / PLAYER BALL,104
+105,play-ramp1-2,0105-play-ramp1-2,63150,63150,1,,105
+106,play-ramp1-2,0106-play-ramp1-2,63166,63716,2,,106
+107,play-ramp1-2,0107-play-ramp1-2,63733,63750,2,,107
+108,play-ramp1-2,0108-play-ramp1-2,63766,64283,2,1 1 / PLAYER BALL,108
+109,play-ramp1-2,0109-play-ramp1-2,64316,64550,3,1 1 / PLAYER BALL,109
+110,play-ramp2-2,0110-play-ramp2-2,64700,64883,2,1 1 / PLAYER BALL,110
+111,play-ramp2-2,0111-play-ramp2-2,65083,65083,1,,3
+112,play-ramp2-2,0112-play-ramp2-2,65100,65100,1,,112
+113,play-ramp2-2,0113-play-ramp2-2,65166,66266,27,,74
+114,play-drops-2,0114-play-drops-2,66316,68150,38,,114
+115,play-drops-2,0115-play-drops-2,68233,68883,9,,115
+116,play-drops-2,0116-play-drops-2,68966,68966,1,,116
+117,play-drops-2,0117-play-drops-2,69433,70616,10,1 1 / PLAYER BALL,117
+118,play-scoop2-2,0118-play-scoop2-2,70816,74700,25,1 1 / PLAYER BALL,110
+119,arm-3,0119-arm-3,74900,75866,8,1 1 / PLAYER BALL,119
+120,arm-3,0120-arm-3,76066,76066,1,,120
+121,arm-3,0121-arm-3,76083,76083,1,,55
+122,step-3,0122-step-3,76166,77650,21,,122
+123,cash-3,0123-cash-3,77666,78083,10,,96
+124,cash-3,0124-cash-3,78183,79250,14,,97
+125,cash-3,0125-cash-3,79283,79600,11,PLAYER BALL,125
+126,play-bumpers-3,0126-play-bumpers-3,79633,79716,4,1 1 / PLAYER BALL,126
+127,play-bumpers-3,0127-play-bumpers-3,79733,79733,1,,3
+128,play-bumpers-3,0128-play-bumpers-3,79750,88033,136,,128
+129,play-bumpers-3,0129-play-bumpers-3,88150,89300,16,,129
+130,play-bumpers-3,0130-play-bumpers-3,89383,90050,14,,130
+131,play-ramp1-3,0131-play-ramp1-3,90133,90133,1,,96
+132,play-ramp1-3,0132-play-ramp1-3,90233,90400,3,,103
+133,play-ramp1-3,0133-play-ramp1-3,90483,90516,2,,133
+134,play-ramp1-3,0134-play-ramp1-3,91066,91066,1,,3
+135,play-ramp1-3,0135-play-ramp1-3,91083,91616,2,,135
+136,play-ramp1-3,0136-play-ramp1-3,91633,91933,14,PLAYER BALL,136
+137,play-ramp2-3,0137-play-ramp2-3,91983,92366,8,1 1 / PLAYER BALL,137
+138,play-ramp2-3,0138-play-ramp2-3,92416,92416,1,,3
+139,play-ramp2-3,0139-play-ramp2-3,92450,92450,1,,112
+140,play-ramp2-3,0140-play-ramp2-3,92500,93616,23,,74
+141,play-drops-3,0141-play-drops-3,93650,95483,40,,114
+142,play-drops-3,0142-play-drops-3,95550,96233,14,,115
+143,play-drops-3,0143-play-drops-3,96316,96316,1,,116
+144,play-drops-3,0144-play-drops-3,96783,97966,12,1 1 / PLAYER BALL,144
+145,play-scoop2-3,0145-play-scoop2-3,98166,102050,24,1 1 / PLAYER BALL,145
+146,arm-4,0146-arm-4,102233,103200,6,1 1 / PLAYER BALL,146
+147,arm-4,0147-arm-4,103400,103400,1,,120
+148,arm-4,0148-arm-4,103416,103416,1,,55
+149,step-4,0149-step-4,103500,104916,23,,149
+150,cash-4,0150-cash-4,105000,105400,6,,96
+151,cash-4,0151-cash-4,105516,106600,18,,97
+152,cash-4,0152-cash-4,106616,106616,1,1 1 / PLAYER BALL,9
+153,cash-4,0153-cash-4,106650,106933,6,PLAYER BALL,153
+154,play-bumpers-4,0154-play-bumpers-4,106983,107033,2,1 1 / PLAYER BALL,154
+155,play-bumpers-4,0155-play-bumpers-4,107066,107066,1,,3
+156,play-bumpers-4,0156-play-bumpers-4,107083,114466,120,,156
+157,play-bumpers-4,0157-play-bumpers-4,114550,117383,47,,130
+158,play-ramp1-4,0158-play-ramp1-4,117466,117466,1,,96
+159,play-ramp1-4,0159-play-ramp1-4,117566,117783,7,,159
+160,play-ramp1-4,0160-play-ramp1-4,117800,117816,2,1 1 / PLAYER BALL,160
+161,play-ramp1-4,0161-play-ramp1-4,117833,117833,1,,161
+162,play-ramp1-4,0162-play-ramp1-4,117850,117850,1,,162
+163,play-ramp1-4,0163-play-ramp1-4,118400,118400,1,,3
+164,play-ramp1-4,0164-play-ramp1-4,118433,118950,2,1 1 / PLAYER BALL,164
+165,play-ramp1-4,0165-play-ramp1-4,118983,119233,3,1 1 / PLAYER BALL,165
+166,play-ramp2-4,0166-play-ramp2-4,119366,119750,4,1 1 / PLAYER BALL,166
+167,play-ramp2-4,0167-play-ramp2-4,119766,119766,1,,3
+168,play-ramp2-4,0168-play-ramp2-4,119783,120933,25,,74
+169,play-drops-4,0169-play-drops-4,121000,122816,40,,114
+170,play-drops-4,0170-play-drops-4,122900,123650,13,,116
+171,play-drops-4,0171-play-drops-4,124066,124066,1,BALL,171
+172,play-drops-4,0172-play-drops-4,124083,125450,10,1 1 / PLAYER BALL,172
+173,play-scoop2-4,0173-play-scoop2-4,125616,129316,25,1 1 / PLAYER BALL,173
+174,arm-5,0174-arm-5,129516,130683,10,1 1 / PLAYER BALL,174
+175,arm-5,0175-arm-5,130733,130733,1,,3
+176,arm-5,0176-arm-5,130766,130766,1,,55
+177,step-5,0177-step-5,130849,132249,23,,149
+178,cash-5,0178-cash-5,132333,132749,6,,96
+179,cash-5,0179-cash-5,132849,133983,18,,179
+180,cash-5,0180-cash-5,133999,134233,7,PLAYER BALL,180
+181,play-bumpers-5,0181-play-bumpers-5,134299,134349,2,PLAYER BALL,181
+182,play-bumpers-5,0182-play-bumpers-5,134399,134399,1,,3
+183,play-bumpers-5,0183-play-bumpers-5,134433,144716,167,,130
+184,play-ramp1-5,0184-play-ramp1-5,144799,144799,1,,96
+185,play-ramp1-5,0185-play-ramp1-5,144916,145083,3,,103
+186,play-ramp1-5,0186-play-ramp1-5,145099,145099,1,1 1 / PLAYER BALL,186
+187,play-ramp1-5,0187-play-ramp1-5,145133,145133,1,,187
+188,play-ramp1-5,0188-play-ramp1-5,145166,145166,1,,3
+189,play-ramp1-5,0189-play-ramp1-5,145183,146566,12,1 1 / PLAYER BALL,189
+190,play-ramp2-5,0190-play-ramp2-5,146683,147066,3,1 1 / PLAYER BALL,190
+191,play-ramp2-5,0191-play-ramp2-5,147083,147083,1,,3
+192,play-ramp2-5,0192-play-ramp2-5,147116,147116,1,,192
+193,play-ramp2-5,0193-play-ramp2-5,147166,147166,1,,193
+194,play-ramp2-5,0194-play-ramp2-5,147249,147249,1,,192
+195,play-ramp2-5,0195-play-ramp2-5,147316,147316,1,,193
+196,play-ramp2-5,0196-play-ramp2-5,147399,147399,1,,192
+197,play-ramp2-5,0197-play-ramp2-5,147449,147466,2,,193
+198,play-ramp2-5,0198-play-ramp2-5,147533,147549,2,,192
+199,play-ramp2-5,0199-play-ramp2-5,147583,147599,2,,193
+200,play-ramp2-5,0200-play-ramp2-5,147666,147666,1,,200
+201,play-ramp2-5,0201-play-ramp2-5,147683,147683,1,,192
+202,play-ramp2-5,0202-play-ramp2-5,147716,147716,1,,202
+203,play-ramp2-5,0203-play-ramp2-5,147733,147733,1,,193
+204,play-ramp2-5,0204-play-ramp2-5,147799,147799,1,,204
+205,play-ramp2-5,0205-play-ramp2-5,147816,147849,2,,205
+206,play-ramp2-5,0206-play-ramp2-5,147866,147933,2,,206
+207,play-ramp2-5,0207-play-ramp2-5,147949,147949,1,,192
+208,play-ramp2-5,0208-play-ramp2-5,148016,148016,1,,193
+209,play-ramp2-5,0209-play-ramp2-5,148083,148083,1,,192
+210,play-ramp2-5,0210-play-ramp2-5,148149,148149,1,,193
+211,play-ramp2-5,0211-play-ramp2-5,148233,148233,1,,192
+212,play-ramp2-5,0212-play-ramp2-5,148283,148283,1,,193
+213,play-drops-5,0213-play-drops-5,148366,148366,1,,192
+214,play-drops-5,0214-play-drops-5,148416,148416,1,,193
+215,play-drops-5,0215-play-drops-5,148499,148499,1,,192
+216,play-drops-5,0216-play-drops-5,148549,148549,1,,193
+217,play-drops-5,0217-play-drops-5,148633,148633,1,,192
+218,play-drops-5,0218-play-drops-5,148699,148699,1,,193
+219,play-drops-5,0219-play-drops-5,148783,148783,1,,192
+220,play-drops-5,0220-play-drops-5,148833,148833,1,,193
+221,play-drops-5,0221-play-drops-5,148916,148916,1,,192
+222,play-drops-5,0222-play-drops-5,148966,148966,1,,193
+223,play-drops-5,0223-play-drops-5,149049,149049,1,,192
+224,play-drops-5,0224-play-drops-5,149099,149099,1,,193
+225,play-drops-5,0225-play-drops-5,149183,149183,1,,192
+226,play-drops-5,0226-play-drops-5,149233,149233,1,,193
+227,play-drops-5,0227-play-drops-5,149316,149316,1,,192
+228,play-drops-5,0228-play-drops-5,149383,149399,2,,193
+229,play-drops-5,0229-play-drops-5,149466,149466,1,,192
+230,play-drops-5,0230-play-drops-5,149516,149533,2,,193
+231,play-drops-5,0231-play-drops-5,149599,149616,2,,192
+232,play-drops-5,0232-play-drops-5,149649,149649,1,,232
+233,play-drops-5,0233-play-drops-5,149666,149666,1,,193
+234,play-drops-5,0234-play-drops-5,149733,149733,1,,234
+235,play-drops-5,0235-play-drops-5,149749,149749,1,,192
+236,play-drops-5,0236-play-drops-5,149783,149783,1,,236
+237,play-drops-5,0237-play-drops-5,149799,149866,2,,237
+238,play-drops-5,0238-play-drops-5,149883,149883,1,,192
+239,play-drops-5,0239-play-drops-5,149933,149933,1,,193
+240,play-drops-5,0240-play-drops-5,150016,150016,1,,192
+241,play-drops-5,0241-play-drops-5,150083,150083,1,,193
+242,play-drops-5,0242-play-drops-5,150166,150166,1,,192
+243,play-drops-5,0243-play-drops-5,150216,150216,1,,193
+244,play-drops-5,0244-play-drops-5,150299,150299,1,,192
+245,play-drops-5,0245-play-drops-5,150349,150349,1,,193
+246,play-drops-5,0246-play-drops-5,150433,150433,1,,192
+247,play-drops-5,0247-play-drops-5,150483,150483,1,,193
+248,play-drops-5,0248-play-drops-5,150566,150566,1,BALL,248
+249,play-drops-5,0249-play-drops-5,150599,152749,16,1 1 / PLAYER BALL,249
+250,play-scoop2-5,0250-play-scoop2-5,152916,156616,25,1 1 / PLAYER BALL,190
+251,arm-6,0251-arm-6,156799,157966,10,1 1 / PLAYER BALL,251
+252,arm-6,0252-arm-6,158083,158083,1,,3
+253,arm-6,0253-arm-6,158099,158099,1,,55
+254,step-6,0254-step-6,158183,159599,20,,149
+255,cash-6,0255-cash-6,159666,160083,10,,96
+256,cash-6,0256-cash-6,160199,161266,14,,97
+257,cash-6,0257-cash-6,161299,161616,9,PLAYER BALL,257
+258,play-bumpers-6,0258-play-bumpers-6,161649,161733,5,1 1 / PLAYER BALL,258
+259,play-bumpers-6,0259-play-bumpers-6,161749,161749,1,,3
+260,play-bumpers-6,0260-play-bumpers-6,161766,161766,1,,260
+261,play-bumpers-6,0261-play-bumpers-6,161783,166783,81,,261
+262,play-bumpers-6,0262-play-bumpers-6,166866,172066,87,,130
+263,play-ramp1-6,0263-play-ramp1-6,172149,172149,1,,96
+264,play-ramp1-6,0264-play-ramp1-6,172249,172449,4,,264
+265,play-ramp1-6,0265-play-ramp1-6,172466,172466,1,9 / PLAYER BALL,265
+266,play-ramp1-6,0266-play-ramp1-6,172499,172499,1,,3
+267,play-ramp1-6,0267-play-ramp1-6,172533,173083,2,1 1 / PLAYER BALL,267
+268,play-ramp1-6,0268-play-ramp1-6,173099,173916,10,1 1 / PLAYER BALL,268
+269,play-ramp2-6,0269-play-ramp2-6,174083,174266,2,1 1 / PLAYER BALL,269
+270,play-ramp2-6,0270-play-ramp2-6,174399,174399,1,,270
+271,play-ramp2-6,0271-play-ramp2-6,174433,174433,1,,112
+272,play-ramp2-6,0272-play-ramp2-6,174483,175599,24,,74
+273,play-drops-6,0273-play-drops-6,175633,177466,39,,114
+274,play-drops-6,0274-play-drops-6,177549,178216,14,,115
+275,play-drops-6,0275-play-drops-6,178299,178766,2,,275
+276,play-drops-6,0276-play-drops-6,178783,179949,11,1 1 / PLAYER BALL,269
+277,play-scoop2-6,0277-play-scoop2-6,180149,184033,26,1 1 / PLAYER BALL,277
+278,arm-7,0278-arm-7,184233,185383,7,1 1 / PLAYER BALL,278
+279,arm-7,0279-arm-7,185399,185399,1,,3
+280,arm-7,0280-arm-7,185433,185433,1,,55
+281,step-7,0281-step-7,185516,186933,21,,149
+282,cash-7,0282-cash-7,187016,187416,6,,96
+283,cash-7,0283-cash-7,187533,188616,17,,97
+284,cash-7,0284-cash-7,188633,188916,7,PLAYER BALL,284
+285,play-bumpers-7,0285-play-bumpers-7,188966,189049,3,,285
+286,play-bumpers-7,0286-play-bumpers-7,189083,189083,1,,3
+287,play-bumpers-7,0287-play-bumpers-7,189099,189433,5,,287
+288,play-bumpers-7,0288-play-bumpers-7,189516,199399,163,,130
+289,play-ramp1-7,0289-play-ramp1-7,199466,199483,2,,96
+290,play-ramp1-7,0290-play-ramp1-7,199583,199766,6,,103
+291,play-ramp1-7,0291-play-ramp1-7,199783,199833,4,,291
+292,play-ramp1-7,0292-play-ramp1-7,199849,199849,1,- -,292
+293,play-ramp1-7,0293-play-ramp1-7,199866,200399,3,1 1 / PLAYER BALL,293
+294,play-ramp1-7,0294-play-ramp1-7,200416,201233,6,1 1 / PLAYER BALL,294
+295,play-ramp2-7,0295-play-ramp2-7,201383,201733,5,- - / 1 1 / PLAYER BALL,295
+296,play-ramp2-7,0296-play-ramp2-7,201749,201749,1,,3
+297,play-ramp2-7,0297-play-ramp2-7,201766,201766,1,,297
+298,play-ramp2-7,0298-play-ramp2-7,201783,202933,25,,74
+299,play-drops-7,0299-play-drops-7,202983,204799,40,,114
+300,play-drops-7,0300-play-drops-7,204883,205633,11,,116
+301,play-drops-7,0301-play-drops-7,206049,207433,10,1 1 / PLAYER BALL,301
+302,play-scoop2-7,0302-play-scoop2-7,207616,211316,22,1 1 / PLAYER BALL,302
+303,arm-8,0303-arm-8,211499,212666,9,1 1 / PLAYER BALL,303
+304,arm-8,0304-arm-8,212716,212716,1,,120
+305,arm-8,0305-arm-8,212749,212749,1,,55
+306,step-8,0306-step-8,212833,214316,25,,95
+307,cash-8,0307-cash-8,214399,214733,5,,96
+308,cash-8,0308-cash-8,214849,215933,19,,97
+309,cash-8,0309-cash-8,215983,216283,7,PLAYER BALL,309
+310,play-bumpers-8,0310-play-bumpers-8,216333,216333,1,PLAYER BALL,310
+311,play-bumpers-8,0311-play-bumpers-8,216399,216399,1,,100
+312,play-bumpers-8,0312-play-bumpers-8,216416,220499,71,,312
+313,play-bumpers-8,0313-play-bumpers-8,220616,225966,87,6,313
+314,play-bumpers-8,0314-play-bumpers-8,226049,226783,10,,96
+315,play-ramp1-8,0315-play-ramp1-8,226899,227066,3,,103
+316,play-ramp1-8,0316-play-ramp1-8,227149,227149,1,1 1 / PLAYER BALL,316
+317,play-ramp1-8,0317-play-ramp1-8,227166,227166,1,,3
+318,play-ramp1-8,0318-play-ramp1-8,227199,228583,12,1 1 / PLAYER BALL,318
+319,play-ramp2-8,0319-play-ramp2-8,228716,228916,2,1 1 / PLAYER BALL,319
+320,play-ramp2-8,0320-play-ramp2-8,229083,229083,1,,3
+321,play-ramp2-8,0321-play-ramp2-8,229099,229099,1,,112
+322,play-ramp2-8,0322-play-ramp2-8,229166,230266,27,,74
+323,play-drops-8,0323-play-drops-8,230316,232149,38,,114
+324,play-drops-8,0324-play-drops-8,232233,232883,9,,115
+325,play-drops-8,0325-play-drops-8,232966,233416,3,,325
+326,play-drops-8,0326-play-drops-8,233433,234783,12,1 1 / PLAYER BALL,326
+327,play-scoop2-8,0327-play-scoop2-8,234983,238683,26,1 1 / PLAYER BALL,327
+328,arm-9,0328-arm-9,238866,240033,10,1 1 / PLAYER BALL,328
+329,arm-9,0329-arm-9,240066,240066,1,,3
+330,arm-9,0330-arm-9,240083,240083,1,,55
+331,step-9,0331-step-9,240166,241649,21,,122
+332,cash-9,0332-cash-9,241666,242083,10,,96
+333,cash-9,0333-cash-9,242183,243249,14,,333
+334,cash-9,0334-cash-9,243283,243599,10,PLAYER BALL,334
+335,play-bumpers-9,0335-play-bumpers-9,243633,243716,4,1 1 / PLAYER BALL,335
+336,play-bumpers-9,0336-play-bumpers-9,243733,243733,1,,3
+337,play-bumpers-9,0337-play-bumpers-9,243749,254049,166,,130
+338,play-ramp1-9,0338-play-ramp1-9,254133,254133,1,,96
+339,play-ramp1-9,0339-play-ramp1-9,254233,254399,3,,103
+340,play-ramp1-9,0340-play-ramp1-9,254483,254483,1,,3
+341,play-ramp1-9,0341-play-ramp1-9,254516,255033,2,1 1 / PLAYER BALL,341
+342,play-ramp1-9,0342-play-ramp1-9,255066,255933,27,1 1 / PLAYER BALL,342
+343,play-ramp2-9,0343-play-ramp2-9,255983,256366,8,1 1 / PLAYER BALL,343
+344,play-ramp2-9,0344-play-ramp2-9,256416,256416,1,,3
+345,play-ramp2-9,0345-play-ramp2-9,256449,256449,1,,112
+346,play-ramp2-9,0346-play-ramp2-9,256499,257616,23,,74
+347,play-drops-9,0347-play-drops-9,257649,259483,40,,114
+348,play-drops-9,0348-play-drops-9,259549,260233,14,,115
+349,play-drops-9,0349-play-drops-9,260316,260316,1,,116
+350,play-drops-9,0350-play-drops-9,260783,261966,12,1 1 / PLAYER BALL,350
+351,play-scoop2-9,0351-play-scoop2-9,262166,266049,24,1 1 / PLAYER BALL,351
+352,arm-10,0352-arm-10,266233,267199,6,1 1 / PLAYER BALL,352
+353,arm-10,0353-arm-10,267399,267399,1,,3
+354,arm-10,0354-arm-10,267416,267416,1,,55
+355,step-10,0355-step-10,267499,268916,23,,149
+356,cash-10,0356-cash-10,268999,269399,6,,96
+357,cash-10,0357-cash-10,269516,270599,18,,97
+358,cash-10,0358-cash-10,270616,270616,1,1 1 / PLAYER BALL,9
+359,cash-10,0359-cash-10,270649,270933,6,PLAYER BALL,359
+360,play-bumpers-10,0360-play-bumpers-10,270983,271033,2,1 1 / PLAYER BALL,360
+361,play-bumpers-10,0361-play-bumpers-10,271066,271066,1,,3
+362,play-bumpers-10,0362-play-bumpers-10,271083,279366,132,,362
+363,play-bumpers-10,0363-play-bumpers-10,279466,281383,34,,130
+364,play-ramp1-10,0364-play-ramp1-10,281466,281466,1,,96
+365,play-ramp1-10,0365-play-ramp1-10,281566,281816,9,1 1 / PLAYER BALL,365
+366,play-ramp1-10,0366-play-ramp1-10,281833,281833,1,,105
+367,play-ramp1-10,0367-play-ramp1-10,281849,281849,1,,3
+368,play-ramp1-10,0368-play-ramp1-10,281866,281866,1,- -,292
+369,play-ramp1-10,0369-play-ramp1-10,281883,282399,2,1 1 / PLAYER BALL,369
+370,play-ramp1-10,0370-play-ramp1-10,282433,283233,6,1 1 / PLAYER BALL,370
+371,play-ramp2-10,0371-play-ramp2-10,283399,283749,4,1 1 / PLAYER BALL,371
+372,play-ramp2-10,0372-play-ramp2-10,283766,283766,1,,3
+373,play-ramp2-10,0373-play-ramp2-10,283783,284933,25,,74
+374,play-drops-10,0374-play-drops-10,284999,286816,40,,114
+375,play-drops-10,0375-play-drops-10,286899,287649,13,,116
+376,play-drops-10,0376-play-drops-10,288083,289266,8,1 1 / PLAYER BALL,376
+377,play-scoop2-10,0377-play-scoop2-10,289466,293349,23,1 1 / PLAYER BALL,377
+378,arm-11,0378-arm-11,293549,294699,8,1 1 / PLAYER BALL,378
+379,arm-11,0379-arm-11,294733,294733,1,,3
+380,arm-11,0380-arm-11,294766,294766,1,,55
+381,step-11,0381-step-11,294849,296249,23,,149
+382,cash-11,0382-cash-11,296333,296749,6,,96
+383,cash-11,0383-cash-11,296849,297983,18,,383
+384,cash-11,0384-cash-11,297999,298233,6,PLAYER BALL,384
+385,play-bumpers-11,0385-play-bumpers-11,298299,298349,2,PLAYER BALL,385
+386,play-bumpers-11,0386-play-bumpers-11,298399,298399,1,,3
+387,play-bumpers-11,0387-play-bumpers-11,298433,308716,167,,130
+388,play-ramp1-11,0388-play-ramp1-11,308799,308799,1,,96
+389,play-ramp1-11,0389-play-ramp1-11,308916,309083,3,,103
+390,play-ramp1-11,0390-play-ramp1-11,309099,309099,1,1 1 / PLAYER BALL,9
+391,play-ramp1-11,0391-play-ramp1-11,309133,309133,1,. . / . . / PLAYER BALL,391
+392,play-ramp1-11,0392-play-ramp1-11,309166,309166,1,,3
+393,play-ramp1-11,0393-play-ramp1-11,309183,310566,10,1 1 / PLAYER BALL,393
+394,play-ramp2-11,0394-play-ramp2-11,310683,311066,3,1 1 / PLAYER BALL,394
+395,play-ramp2-11,0395-play-ramp2-11,311083,311083,1,,3
+396,play-ramp2-11,0396-play-ramp2-11,311116,311116,1,,112
+397,play-ramp2-11,0397-play-ramp2-11,311166,312283,26,,74
+398,play-drops-11,0398-play-drops-11,312333,314166,38,,114
+399,play-drops-11,0399-play-drops-11,314233,314899,9,,115
+400,play-drops-11,0400-play-drops-11,314983,314983,1,,116
+401,play-drops-11,0401-play-drops-11,315449,316633,11,1 1 / PLAYER BALL,401
+402,play-scoop2-11,0402-play-scoop2-11,316833,320716,27,1 1 / PLAYER BALL,402
+403,arm-12,0403-arm-12,320916,321883,9,1 1 / PLAYER BALL,403
+404,arm-12,0404-arm-12,322083,322083,1,,3
+405,arm-12,0405-arm-12,322099,322099,1,,55
+406,step-12,0406-step-12,322183,323599,20,,149
+407,cash-12,0407-cash-12,323666,324083,10,,96
+408,cash-12,0408-cash-12,324199,325266,14,,97
+409,cash-12,0409-cash-12,325299,325616,9,PLAYER BALL,409
+410,play-bumpers-12,0410-play-bumpers-12,325649,325733,5,1 1 / PLAYER BALL,410
+411,play-bumpers-12,0411-play-bumpers-12,325749,325749,1,,3
+412,play-bumpers-12,0412-play-bumpers-12,325766,325766,1,,260
+413,play-bumpers-12,0413-play-bumpers-12,325783,336066,169,,130
+414,play-ramp1-12,0414-play-ramp1-12,336149,336149,1,,96
+415,play-ramp1-12,0415-play-ramp1-12,336249,336449,4,,264
+416,play-ramp1-12,0416-play-ramp1-12,336466,336466,1,PLAYER BALL,416
+417,play-ramp1-12,0417-play-ramp1-12,336499,336499,1,,3
+418,play-ramp1-12,0418-play-ramp1-12,336533,337049,2,,418
+419,play-ramp1-12,0419-play-ramp1-12,337083,337916,9,1 1 / PLAYER BALL,419
+420,play-ramp2-12,0420-play-ramp2-12,338049,338383,4,1 1 / PLAYER BALL,420
+421,play-ramp2-12,0421-play-ramp2-12,338399,338399,1,,421
+422,play-ramp2-12,0422-play-ramp2-12,338433,338433,1,,112
+423,play-ramp2-12,0423-play-ramp2-12,338483,339599,24,,74
+424,play-drops-12,0424-play-drops-12,339633,341466,39,,114
+425,play-drops-12,0425-play-drops-12,341549,342216,14,,115
+426,play-drops-12,0426-play-drops-12,342299,342299,1,,116
+427,play-drops-12,0427-play-drops-12,342783,343983,9,1 1 / PLAYER BALL,420
+428,play-scoop2-12,0428-play-scoop2-12,344166,347866,26,1 1 / PLAYER BALL,428
+429,monolith-walk-done,0429-monolith-walk-done,348066,350083,15,1 1 / PLAYER BALL,429
+430,shooter-left-lagrange,0430-shooter-left-lagrange,350183,354399,29,1 1 / PLAYER BALL,430
+431,shooter-right-lagrange,0431-shooter-right-lagrange,354466,360849,41,1 1 / PLAYER BALL,431
+432,end,0432-end,361049,363399,14,1 1 / PLAYER BALL,432

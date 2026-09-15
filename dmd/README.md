@@ -201,6 +201,23 @@ than `iomoont`, and it needs a PinMAME fix that is not upstream —
 `dmd/multiball/README.md` has the conditions, the commands and the NVRAM
 seeding this capture depends on.
 
+## Monolith awards (`monolith/`), captured against `iomoon`
+
+Every position the Monolith can cash, and every mode played rather than just
+announced: Extra Ball, 3/6/9 millions, Special, Little Multiball, Impact Count,
+Orbit Flip, Special Drop Target and Star Ride, plus the Lagrange Scape /
+Lagrange Orbit pair the shooters alternate.
+
+Twelve rounds of {lane 6 to arm, one bumper to step, scoop 1 to cash, then a
+play burst}. Twelve single steps around a ten-position cycle reach every
+position wherever it starts, and the burst is exactly twenty bumper hits so the
+cycle stays aligned while Impact Count gets the twenty it wants.
+
+5044 frames, 432 scene occurrences, **237 distinct screens, 184 of them not
+present anywhere else in this corpus**. `dmd/monolith/README.md` has the
+mechanism, the coverage argument and what it does not yet establish — the
+screens are traceable to a round and stage, not yet labelled per named award.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game
