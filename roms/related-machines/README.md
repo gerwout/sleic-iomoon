@@ -17,7 +17,7 @@ the four machines relate.
 |-----------|---------|------|----------------|-------------|
 | [`sleic-pin-ball/`](sleic-pin-ball/) | Sleic Pin-Ball | 1994 | `SLEIC1` | complete (4 ROMs) |
 | [`bike-race/`](bike-race/) | Bike Race | 1992 | `SLEIC3` | complete (7 ROMs), plus a six-chip [V4.1 set](bike-race/v4.1/) |
-| [`dona-elvira-2/`](dona-elvira-2/) | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | **partial — Z80 game CPU ROM only** |
+| [`dona-elvira-2/`](dona-elvira-2/) | Doña Elvira 2 (SLEIC-Petaco) | 1996 | — | all 6 EPROMs; **`ELVSON3` short `0xF000`** |
 
 IO Moon itself is `SLEIC2`; its ROM sets live one level up in
 [`../1.3 IPDB latest/`](../1.3%20IPDB%20latest/) and
@@ -32,12 +32,15 @@ IO Moon itself is `SLEIC2`; its ROM sets live one level up in
   chips of one V4.1 machine, pulled together off its two backbox boards, which are
   photographed in [`../../docs/bikerace_boards.md`](../../docs/bikerace_boards.md).
   Filenames are the chips' own (`bk02.bin` … `bk07.bin`), not PinMAME's.
-- **Doña Elvira 2** — read off the Z80 CPU board's 27C256 EPROM (an ST27C256,
-  hence the filename). No public dump of this machine was known to us when it was
-  archived here, which is also why it cannot be cross-checked against a second
-  source the way the IO Moon set could. Its service manual is archived in
-  [`../../manuals/`](../../manuals/), and is what the board complement in that
-  machine's README is read from.
+- **Doña Elvira 2** — all six EPROMs of one machine: the Z80 game CPU's 27C256, the
+  Z80 sound CPU's 27C010, and the four 27C040s of OKI samples. Filenames are the
+  dumper's own, where the numeric prefix is the EPROM type and the extension the
+  board (`.som` = *sonido*, `.pro` = *programa*); the `uNN` numbers are a dump
+  sequence, not the board's IC numbers. No public dump of this machine was known to
+  us when these were archived, which is also why they cannot be cross-checked
+  against a second source the way the IO Moon set could. Its service manual is
+  archived in [`../../manuals/`](../../manuals/), and is what the board complement
+  and the IC assignments in that machine's README are read from.
 
 ## Checksums
 
