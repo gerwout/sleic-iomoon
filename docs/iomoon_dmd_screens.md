@@ -2,15 +2,15 @@
 
 [← Back to main README](../README.md)
 
-Twelve capture directories make up the corpus. Five are of `iomoont`, the PRESS START
+Thirteen capture directories make up the corpus. Five are of `iomoont`, the PRESS START
 tournament ROM — an English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), the Spanish
 service menu (`dmd/es-menu/`), eight targeted fault captures (`dmd/faults/`) and one
-capture of the mod's SPECIAL/match `PRESS START` hook (`dmd/special/`). The other seven are of the parent `iomoon`, and cover play the
+capture of the mod's SPECIAL/match `PRESS START` hook (`dmd/special/`). The other eight are of the parent `iomoon`, and cover play the
 two language walks never reach: the Jupiter lock and Multiball (`dmd/multiball/`), every
 Monolith award (`dmd/monolith/`), Wonderful Thing and the bank (`dmd/modes/`), the
 rules sections those leave out (`dmd/coverage/`), Little Multiball in isolation
-(`dmd/little-multiball/`), the three lit-lane awards (`dmd/lanes/`) and a four-player
-game (`dmd/players/`).
+(`dmd/little-multiball/`), the three lit-lane awards (`dmd/lanes/`), a four-player
+game (`dmd/players/`) and the Jackpot and Superjackpot (`dmd/jackpot/`).
 
 Each directory's own README is the narrative account of how it was produced and what it
 found; this document is the index — what screen is where — and the coverage gate: which
@@ -29,9 +29,10 @@ of the ROM's own strings the captures together do and do not put on screen, and 
 | `dmd/little-multiball/` | 158 | 90 | 23 |
 | `dmd/lanes/` | 352 | 194 | 12 |
 | `dmd/players/` | 400 | 219 | 45 |
+| `dmd/jackpot/` | 475 | 223 | 27 |
 | `dmd/es-menu/` | 57 | 40 | 33 |
 
-**Corpus-wide that is 3,302 committed representative frames covering 2,235 distinct
+**Corpus-wide that is 3,525 committed representative frames covering 2,271 distinct
 screens** — distinct by `repr.txt` content across every capture, so a screen two walks
 both reach is counted once.
 
@@ -235,6 +236,7 @@ rather than a full label index.
 | `modes/` | ORBITS, the bank cleared, **Special Drop Probe**, **Wonderful Thing** and its staged release, the Lagrange pair | 169 | 123 |
 | `coverage/` | Little Multiball arming, all eleven lanes, lane 10 with ORBITS complete, bull's-eye 2, the inner target with the bank standing, the end-of-ball bonus countdown | 501 | 147 |
 | `little-multiball/` | one lock taken on the frame `LPA3` is lit, `LTB12` at scoop 1, eight scoop-1 collects | 158 | 90 |
+| `jackpot/` | Multiball driven to a running mode, then the **Jackpot** at bull's-eye 2 and the **Superjackpot** at Ramp 2, each collected twice to show it is one-shot | 475 | 223 |
 | `lanes/` | **Bonus ×10** at lane 9, **Special** at lane 7, **Extra Ball** at lane 8, each with its own lamp confirmed lit up to the press | 352 | 194 |
 | `players/` | a **four-player** game, twelve balls, and the four-player score display | 400 | 219 |
 
@@ -245,9 +247,11 @@ announcements — `BALL LOCKED FOR MULTIBALL`, `MULTIBALL`, the award banners �
 legible by eye in their `repr.txt` and matched by no walked face, the same class as the
 full-tilt `TILT` screen (`dmd/README.md`, Open items).
 
-**Jackpot and Superjackpot are not here**, and no key script can reach them: Multiball
-announces but does not engage, so `LD2` and `LR21` never light. `dmd/README.md`'s Open
-items has the measurement and F22 the firmware side.
+**Jackpot and Superjackpot are in `dmd/jackpot/`**, collected and paid — the Jackpot
+40,050,001, the Superjackpot 80,000,000, both one-shot per Multiball. Reaching them
+needed a simulator fix (`pinmame` `dfba2385`): the 80188 counts a Jupiter lock from C46
+but the Z80 releases from C44, so the mode used to announce and never start. F22 has
+the firmware side.
 
 ### Faults (`dmd/faults/`, 8 captures)
 

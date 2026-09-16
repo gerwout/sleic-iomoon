@@ -1,32 +1,39 @@
 # Jackpot and Superjackpot for iomoon, at the country default (4, Netherlands, English
-# text, F11).  The two awards no other capture in this corpus attempts: the multiball
-# capture reaches Multiball and then presses only lanes 1 and 2, so LD2 and LR21 are lit
-# through the whole mode and neither is ever collected.
+# text, F11).  The two awards no other capture in this corpus collects: both are lit only
+# while Multiball runs (3.2.1), and the multiball capture presses lanes throughout.
 #
-# What the firmware needs (docs/iomoon_game_rules.md 3.2.1, 3.3.2, 3.3.5):
-#   1. Multiball running.  ORBITS complete (six lane-4 / bull's-eye-1 pairs put
-#      [413C:0102] at its cap of 6), then two Jupiter locks with the drop bank left
-#      STANDING -- a flattened bank would give Wonderful Thing instead (3.3.7).
-#   2. LD2 lit at bull's-eye 2 and LR21 lit at Ramp 2.  Both light when Multiball starts
-#      and go out when it ends, which is what makes these Multiball-only awards.
-#   3. The released ball has to reach a SCOOP.  sub_DC6AC releases a Jupiter ball with
-#      Z80 command 0xEE and then polls sub_DC675, which accepts only switch code 0x21 or
-#      0x22 -- Tragabolas 2 or Tragabolas 1.  Until one arrives it re-issues 0xEE every
-#      five seconds for ever, and LD2/LR21 are never lit.  Hence the LCtrl+H below.
-#   4. Then hit them: bull's-eye 2 (RCtrl+B, C38 code 0x2E) pays the JPOT value, and
-#      Ramp 2 (RCtrl+R, C39/C47) pays double it.
+# Multiball needs the PinMAME fix that rests a locked ball on C44 (commit dfba2385).  The
+# 80188 counts a lock from C46, but the Z80's release keys on C44, so before that fix the
+# mode announced and never started -- F22.
+#
+# THE SHEPHERDING IS THE HARD PART, and it is why this script looks the way it does.  The
+# multiball start is a chain of blocking waits (F22), each needing a ball event, and the
+# simulator's keys act on ONE ball at a time -- the current one, and only while it is on
+# the playfield.  Down steps to the next ball, so every wait below is answered by first
+# stepping to the ball that can answer it:
+#
+#   * after each lock the held ball is no longer on the playfield, so Down moves to the
+#     ball the firmware just served, which is then plunged;
+#   * sub_DC6AC releases a Jupiter ball with command 0xEE and waits for it to report at a
+#     SCOOP -- code 0x21 or 0x22 only, a lane will not do -- re-issuing 0xEE every five
+#     seconds for ever otherwise.  Two Downs step to the released ball and LCtrl+H puts it
+#     in Tragabolas 1;
+#   * sub_DC47E serves with 0xE9 and waits for the reply, so the served ball is plunged;
+#   * sub_DB457 and then DB7E5 each wait for one dispatched switch event, which the two
+#     Downs and the Y (lane 1) answer;
+#   * the SECOND held ball is then released the same way and wants its own scoop report,
+#     which is the second LCtrl+H.
+#
+# Only past all of that does DB822 light LD2 and LR21, and the last four presses collect:
+# bull's-eye 2 (RCtrl+B) pays the Jackpot, Ramp 2 (RCtrl+R) pays double it, and the repeat
+# of each pays only its own base value, because both are one-shot per Multiball.
 #
 # Credits come from six coins in this run rather than a pre-seeded store: one coin does
 # not buy a credit under country 4's own preset, and a coin pressed during the first
-# attract cycle is lost.  Nothing outside this file is needed.
+# attract cycle is lost.
 #
-# Down follows the next ball after each lock: the simulator's keys act on the CURRENT
-# ball only, and a ball held at Jupiter is not on the playfield, so without it the second
-# J press has no ball to send and the lock counter stops at 1.
-#
-# Keys: 5 coin, 1 start, Space plunge, Down follow next ball, S lane 4,
-#       LCtrl+B bull's-eye 1, RCtrl+B bull's-eye 2, J Jupiter, LCtrl+H scoop 1,
-#       RCtrl+R ramp 2, Y lane 1.
+# Keys: 5 coin, 1 start, Space plunge, Down follow next ball, S lane 4, LCtrl+B bull's-eye
+#       1, RCtrl+B bull's-eye 2, J Jupiter, LCtrl+H scoop 1, RCtrl+R ramp 2, Y lane 1.
     40 tap 8 KEYCODE_1
   6641 tap 10 KEYCODE_5
   6721 tap 10 KEYCODE_5
@@ -81,16 +88,15 @@
  10220 tap 10 KEYCODE_DOWN
  10300 mark multiball-running
  10310 tap 10 KEYCODE_Y
- 10560 tap 10 KEYCODE_DOWN
- 10600 mark jackpot-1
- 10610 tap 10 KEYCODE_RCONTROL,KEYCODE_B
- 10860 tap 10 KEYCODE_DOWN
- 10900 mark superjackpot-1
- 10910 tap 10 KEYCODE_RCONTROL,KEYCODE_R
- 11160 tap 10 KEYCODE_DOWN
- 11200 mark jackpot-2
- 11210 tap 10 KEYCODE_RCONTROL,KEYCODE_B
- 11460 tap 10 KEYCODE_DOWN
- 11500 mark superjackpot-2
- 11510 tap 10 KEYCODE_RCONTROL,KEYCODE_R
- 11800 mark end
+ 10500 mark scoop-1-takes-the-second-released-ball
+ 10510 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+ 10700 tap 40 KEYCODE_SPACE
+ 10900 mark jackpot-1
+ 10910 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+ 11200 mark superjackpot-1
+ 11210 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+ 11500 mark jackpot-2
+ 11510 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+ 11800 mark superjackpot-2
+ 11810 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+ 12100 mark end

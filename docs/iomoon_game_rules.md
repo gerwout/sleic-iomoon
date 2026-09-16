@@ -503,7 +503,10 @@ Ramp 2 pays whatever its lit lamp says. It has three.
 | LR21 (LC56, Superjackpot) **and** Multiball running | **Superjackpot** — double the Jackpot value |
 
 Superjackpot requires both the lamp and Multiball: LR21 is lit when Multiball
-starts and goes out when it ends (§3.2.1).
+starts and goes out when it ends (§3.2.1). **Measured at 80,000,000** — exactly
+double the factory Jackpot, as §3.3.2 says — and one-shot the same way: a second
+run of Ramp 2 pays only its ordinary 11,111
+([`../dmd/jackpot/`](../dmd/jackpot/)).
 
 §3.3.2 says only "one of the upper lanes' lights" for the non-Wonderful-Thing
 case, but the manual identifies which three elsewhere: §3.2.4 calls LP7, LP8 and
@@ -603,6 +606,12 @@ The *dianas* maximum is the **DIANAS** adjustable, factory **10** (§5.10); the
 Jackpot value is **JPOT**, factory **40,000,000** (§5.13). LD2 is lit when
 Multiball starts and goes out when it ends (§3.2.1), so the Jackpot is a
 Multiball award.
+
+**Measured, from the firmware's own score accumulator** (`413C:00F0`/`00F2`,
+[`../dmd/jackpot/`](../dmd/jackpot/)): collecting it adds **40,050,001** — the
+factory `JPOT` **on top of** bull's-eye 2's own 50,001, not instead of it — and
+it is **one-shot**: a second hit inside the same Multiball pays the bare 50,001,
+so LD2 is cleared as the award is taken rather than when the mode ends.
 
 ---
 

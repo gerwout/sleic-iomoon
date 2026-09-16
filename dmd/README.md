@@ -208,6 +208,16 @@ than `iomoont`, and it needs a PinMAME fix that is not upstream —
 `dmd/multiball/README.md` has the conditions, the commands and the NVRAM
 seeding this capture depends on.
 
+## Jackpot and Superjackpot (`jackpot/`), captured against `iomoon`
+
+The two Multiball-only awards, collected and paid: **223 distinct screens, 36 new
+to the corpus**. The Jackpot pays 40,050,001 (§5.13's factory `JPOT` plus
+bull's-eye 2's own 50,001), the Superjackpot 80,000,000, exactly double, and each
+is one-shot — the repeat pays base only. Needs `pinmame` `dfba2385`, and most of
+its key script is ball-shepherding: the multiball start is a chain of blocking
+waits and the released ball must report at a **scoop**, not a lane.
+`dmd/jackpot/README.md` has the measured values and the wait-by-wait table.
+
 ## Monolith awards (`monolith/`), captured against `iomoon`
 
 Every position the Monolith can cash, and every mode played rather than just
@@ -337,27 +347,18 @@ own scenes under that label, per the method above.
 
 ## Open items
 
-- ~~Jackpot and Superjackpot cannot be captured, because Multiball announces
-  but does not engage~~ **— cause found and fixed; Multiball now starts.** The
-  two CPUs use different Jupiter contacts: the 80188 counts a lock from C46,
-  but the Z80's release, command `0xEE` (`sub_2B86`), keys on **C44**, and the
-  matrix is active low, so it returned "nothing to release" on every one of the
-  nine `0xEE` issues a measured run made. PinMAME rested both locked balls on
-  C46 and C45, leaving C44 empty for ever. It now rolls a ball **over** C46 —
-  which is what the 80188 counts — and rests it on **C44**, the second on C45,
-  rolling down as C44 empties (`pinmame` commit `dfba2385`). With that, coil 16
-  fires, the balls release, the mode cell `[413C:00F4]` goes 9 → 0 and
-  `sub_DB716` runs to its end, where `LD2` and `LR21` are lit. **F22** has the
-  full sequence.
-
-  **Still to capture.** The start is a chain of four blocking waits (F22), each
-  needing a ball event: the released ball must report at a **scoop**, the serve
-  must be answered, and two further switch events must be dispatched.
-  `scripts/keyscripts/iomoon-jackpot.keys` drives all four and reaches a running
-  Multiball; what it does not yet do is keep a ball available to hit bull's-eye
-  2 and Ramp 2 afterwards, which is what the capture needs. The simulator's keys
-  act on one ball at a time, so the script has to follow the right ball with
-  `Down` at each step.
+- ~~Jackpot and Superjackpot cannot be captured~~ **— captured, in
+  [`jackpot/`](jackpot/README.md), and both award values measured.** The blocker
+  was a simulator defect: the 80188 counts a Jupiter lock from **C46**, but the
+  Z80's release keys on **C44** and the matrix is active low, so with both locked
+  balls resting on C46/C45 it answered every `0xEE` with "nothing to release",
+  coil 16 never fired and the mode never started. A ball now rolls over C46 and
+  rests on C44 (`pinmame` `dfba2385`). The Jackpot pays **40,050,001** — §5.13's
+  factory `JPOT` of 40,000,000 on top of bull's-eye 2's own 50,001 — the
+  Superjackpot **80,000,000**, exactly double, and both are **one-shot per
+  Multiball**: the repeat of each pays only its base value. **F22** has the
+  firmware side and the chain of blocking waits that makes the mode hard to
+  drive.
 
 - ~~Two different score displays exist in this game, and only one of them
   decodes~~ **— the in-play display is now identified too, a headerless
