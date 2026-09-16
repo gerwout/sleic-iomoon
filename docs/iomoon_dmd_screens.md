@@ -2,7 +2,7 @@
 
 [← Back to main README](../README.md)
 
-Sixteen capture directories make up the corpus. Five are of `iomoont`, the PRESS START
+Eighteen capture directories make up the corpus. Five are of `iomoont`, the PRESS START
 tournament ROM — an English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), the Spanish
 service menu (`dmd/es-menu/`), eight targeted fault captures (`dmd/faults/`) and one
 capture of the mod's SPECIAL/match `PRESS START` hook (`dmd/special/`). The other eight are of the parent `iomoon`, and cover play the
@@ -33,9 +33,11 @@ of the ROM's own strings the captures together do and do not put on screen, and 
 | `dmd/contacts/` (2 languages) | 151 | 137 | 48 |
 | `dmd/credits/` (8 countries) | 240 | 36 | 6 |
 | `dmd/solenoid-test/` (84 captures) | 840 | 96 | 5 |
+| `dmd/es-menu-full/` | 70 | 51 | 42 |
+| `dmd/es-tilt/` | 218 | 152 | 8 |
 | `dmd/es-menu/` | 57 | 40 | 33 |
 
-**Corpus-wide that is 4,281 committed representative frames covering 2,357 distinct
+**Corpus-wide that is 4,484 committed representative frames covering 2,441 distinct
 screens** — distinct by `repr.txt` content across every capture, so a screen two walks
 both reach is counted once.
 
@@ -357,8 +359,8 @@ still contribute nothing to a text-match count, for either reason 2 or reason 3.
 | | Count |
 |---|---|
 | Strings named (tier 1 / tier 2 / tier 3) | 275 / 0 / 166 = 441 |
-| Present (whole-field match, anywhere in the corpus) | 209 |
-| Missing | 232 |
+| Present (whole-field match, anywhere in the corpus) | 214 |
+| Missing | 227 |
 
 **Computed over every capture**, all sixteen directories, in one run:
 
@@ -374,7 +376,7 @@ python3 scripts/dmd_dump_split.py --coverage \
 long way. `dmd/en`, `dmd/es`, `dmd/faults` and `dmd/special` alone give 404 missing; the
 seven gameplay captures add nothing to that; `dmd/es-menu/` takes it to 399, and then
 `dmd/contacts/` (the machine's own switch test, 93 strings) and `dmd/solenoid-test/`
-(every coil-group and fuse page, 74) take it to **232**. Where a machine keeps its text
+(every coil-group and fuse page, 74) take it to **227**, with the Spanish tilt warnings and the Spanish menu walk closing the rest of what language alone was hiding. Where a machine keeps its text
 is now clear from the numbers: in the service menu, not in play. That is a real result about where this machine's text lives rather than a
 shortfall in those captures: they hold 1,101 distinct screens between them, but what
 is on those screens is mode announcements and award banners drawn in faces the decoder
@@ -532,7 +534,7 @@ exactly one.
 | Spanish SOLENOID/LIGHT/SEND-REC test chrome | 11 | `SI`, `ENVIA`, `RECIBE`, `L. CONTROLADAS`, `LUCES FIJAS`, `TEST FUSIBLES`, `FIN FUSIBLES`, `ERROR BOBINAS`, `PULSE TEST`, `PONIENDO VALORES`, `FABRICA DE PAIS` | **Doubly gated, mechanism moot.** No Spanish service-menu tree at all (F19) already fully explains every one of these regardless of whether its English counterpart's own record turns out to be an image, glyph-based, or unresolved. |
 | Per-country CREDITS denominations (English) | 20 | `OF 1OF CRED:`, `OF 5DM CRED:`, `OF 2ML CRED:`, `OF 20K CRED:`, `OF 50F CRED:`, `OF 200 CRED:`, `OF 50E CRED:`, … (every English denomination row except the Netherlands' own `OF 10`/`OF 50`/`OF 1PD CRED:`, which are tier 1 and also missing — see above) | **Matching-rule limit, not a capture gap — all seven countries are now captured** (`dmd/credits/`). These strings are **templates**: the ROM stores `OF 5DM CRED:`, and the live page draws `1 OF 5DM CRED:8`, prepending the coin count and appending the credit count, so it can never whole-field-match however often it is captured. Same class as `LIGHT: LC`. The screens themselves are legible and decoded — `1 OF 1PD CRED:5` (United Kingdom), `1 OF 2DM CRED:3` (Germany), `1 DE 100 CRED:3` (Spain, which renders the whole page in Spanish) — and `dmd/credits/README.md` has the table. |
 | Spanish fault/boot messages | 17 | `FALLO MEM. CPU8`, `ERROR SAL. BOLAS`, `FALTAN BOLAS`, `ATENCION`, `UNA FALTA`, `DOS FALTAS`, `SEPARADO O ROTO`, `FALLO EEPROM`, `ESTABLECIENDO`, `VALORES FABRICA`, `PULSE START`, `FALLO BOBINA`, `EN CORTO`, `IMPOSIBLE SEGUIR`, `CORTADOS O`, `ESPERANDO`, `CPU 8 BITS` | **Capture gap.** These are the Spanish-language counterparts of the twelve strings `dmd/faults/README.md` already captures in English; every fault probe in that corpus ran under the default (English) country. Extending each `SLEIC_FORCE_FAULT` capture with the Spanish `iomoont-spain.cfg` (`dmd/README.md`'s own Spanish-corpus method) would recover these, exactly the way `dmd/es/` reused `dmd/en/`'s own game section under Spain's cfg. |
-| Trough/ball-serve status | 8 | `SACA BOLA 1`, `SACA BOLA 2`, `SACA BOLA 3`, `UNA BOLA`, `DOS BOLAS`, `TRES BOLAS`, `SALIDA BOLAS`, `JUPITER` | **Unreachable under this corpus's simulator setup, not dead code.** This is F15's ball-serve/search status text (commands `0xE9`/`0xEF`), shown while balls are actively being ejected from the trough one at a time. `iomoont`'s registered simulator seeds a full trough by default (`SLEIC2_SIM_INPUT_PORTS_START`), so the multi-ball serve sequence this text narrates never runs during an ordinary boot. **What would settle it:** a probe holding the trough short by one or more balls at boot (the same technique `dmd/faults/ball-missing` already uses, extended to a *partial* rather than fully-empty trough) and capturing the resulting serve sequence. |
+| Trough/ball-serve status | 8 | `SACA BOLA 1`, `SACA BOLA 2`, `SACA BOLA 3`, `UNA BOLA`, `DOS BOLAS`, `TRES BOLAS`, `SALIDA BOLAS`, `JUPITER` | **Open, and the obvious hypothesis is refuted.** It was read as F15's ball-serve/search narration, to be reached by holding the trough short. It is not: a throwaway probe that masks trough optos off *after* the simulator fills them (the existing `SLEIC_TROUGH` can only OR bits in, which cannot take a ball away) was run three ways — short at boot with masks `0x04`, `0x06` and `0x07`, and short from mid-game after the ball is in play. Short at boot draws `BALL MISSING` and blocks the game before it ever serves; short mid-game changes nothing visible, the HUD simply continues. None of the eight strings appeared in any run. What the words themselves suggest — `SACA BOLA 1`-`3` ("eject ball 1-3"), `UNA`/`DOS`/`TRES BOLAS`, and the two device names `SALIDA BOLAS` and `JUPITER` — is a **ball-location diagnostic page** in the service menu rather than in-play narration, which would put it on one of the records the walks only ever see as F21's depth bar. Settling it wants the drawing routine traced from the Spanish/English string tables, not another capture. |
 | Gameplay feature-progress hints (English + Spanish) | 6 | `ORBITS LEFT TO`, `TARGETS LEFT TO`, `LIT EXTRA BALL`; `ORBITAS PARA`, `DIANAS PARA`, `LUZ BOLA EXTRA` | **Decoder limit, not a capture gap.** `dmd/en/`'s own walk exercises both the orbit lane and the drop-target bank (`dmd/README.md`'s English-corpus description), so these progress messages plausibly did render during the captured game. They are gameplay-only text, drawn during the same in-play state the HUD `PLAYER`/`BALL` words are — but not the same font or table: the HUD words are now decoded (`docs/dmd_graphics.md`, "The in-play PLAYER/BALL HUD..."), and these six strings are not among its entries, so they sit in a still-unlocated font or table of their own. Not independently confirmed frame-by-frame the way `svc-2` was above; still open. |
 
 **`boot-setting-country` never shows
