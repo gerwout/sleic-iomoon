@@ -42,15 +42,23 @@ Multiball, which is `[4134:0030]` reaching 2 (§3.3.7).
 releasing the Jupiter ball for two balls in play; across eight scoop-1 collects
 after the lock, `[4134:0030]` stays at 1 and `core_getSol(16)` is never true.
 
-That is consistent with the rules' own open question on coil 16
-([`../../docs/iomoon_game_rules.md`](../../docs/iomoon_game_rules.md), *Open
-questions*): whether *Sueltabolas de Júpiter* fires in normal play is not
-established, and it was not observed in single-ball play either. This capture
-narrows it rather than settling it — the coil does not fire for a **single**
-lock with `LPA3` lit, which is exactly the case §3.2.6 says should release.
+**Re-verified after the Jupiter rest model was corrected**, which matters because
+the first measurement was taken when the release could not fire at all: PinMAME
+rested locked balls on C46, and the Z80's release keys on C44 (**F22**), so coil 16
+was unreachable by construction. With a ball resting on C44 — the arrangement that
+demonstrably works for Multiball, where the same coil now fires and both balls are
+released ([`../jackpot/`](../jackpot/README.md)) — a single lock with `LPA3` lit
+still does not release: the lock registers (code `0x44`, `[4134:0030]` = 1), two
+scoop-1 collects register (code `0x22`) with `LTB12` armed, and `core_getSol(16)`
+is never true.
 
-What would settle it is the firmware side: find the writers of the coil-16
-wrapper and what gates them, in the same way the `0x44` lock path was traced.
+So this is now a **specific, isolated discrepancy with §3.2.6**, not a symptom of
+the broken model: the firmware drives the release from the Multiball start
+(`sub_DB716` → `sub_DC6AC`, F22) and no equivalent path is reached from scoop 1
+with `LTB12` lit. What would settle it: trace what scoop 1's handler `sub_D9B91`
+does with `LTB12` lit — its `D9C61` branch tests `[413C:010F]` and `[4134:0027]`
+before reaching `sub_DB503`, the routine that lights `LD2`/`LR21` — and find which
+of those gates is not satisfied here.
 
 ## Capture
 

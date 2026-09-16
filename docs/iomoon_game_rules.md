@@ -1105,6 +1105,15 @@ Stated as open rather than guessed. Each line says what would settle it.
   released ball to report at a **scoop** (`0x21`/`0x22`), re-issuing `0xEE`
   every five seconds until it does. So the two CPUs use different Jupiter
   contacts: the 80188 counts a lock from C46, the Z80 releases from C44.
+- **Little Multiball's own release is not reproduced** — §3.2.6 has scoop 1
+  releasing the held ball for two balls in play, and that does not happen in
+  emulation. It is not the Jupiter-rest problem F22 describes, which is fixed and
+  which the Multiball release now demonstrably clears: re-tested with the ball
+  resting on C44, a single lock with `LPA3` lit registers (`[4134:0030]` = 1), two
+  scoop-1 collects register with `LTB12` armed, and coil 16 is never fired
+  ([`../dmd/little-multiball/`](../dmd/little-multiball/)). *Settled by:* tracing
+  scoop 1's handler `sub_D9B91` past its `D9C61` branch — which tests `[413C:010F]`
+  and `[4134:0027]` before reaching `sub_DB503` — to find which gate is unmet.
 - **What frees a ball sitting in scoop 2** — scoop 2 has no coil (F17 addendum),
   and the firmware's ball-recovery sweep does not treat *Taca* as a
   ball-freeing device either, yet §3.3.8 gives scoop 2 a full set of awards.
