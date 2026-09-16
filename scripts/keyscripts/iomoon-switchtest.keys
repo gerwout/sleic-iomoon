@@ -1,0 +1,131 @@
+# The CONTACTOS / SWITCH TEST page with contacts actually closing, which is the only
+# place the firmware's own contact names render (F16).  No other capture here closes a
+# matrix switch while the page is open, so all 45 names were missing from the corpus.
+#
+# Two things make it work.  The service menu needs no credits, so the walk is just TEST
+# and eight navigation presses: F14's tree reaches record 32 (record 26's child) by
+# scroll, scroll, select, select, scroll, scroll, select, select.  And inside the menu
+# there is no ball in play, so the simulator's own shot keys do nothing -- Del toggles
+# PinMAME's "Switch/Simulator" bit (SIM_PORTS), which hands the keyboard to the driver's
+# matrix test keys instead, and those close a matrix position directly.
+#
+# The key-to-position map is iomoon_pf_keys in src/wpc/sleic.c: column 0 is QWERYUIO,
+# column 1 ASDFGHJK, column 2 ZXCVBNML, column 3 the numeric keypad 0-7, column 4 is
+# 0 2 3 4 6 8 - 9, and column 5's four fitted positions are = and keypad 8 9 -.
+# Column 5's other four positions do not exist on the machine (F16).
+#
+# Each position is held for half a second with its own mark, so screens.csv has one
+# scene per contact name.
+#
+# Two CABINET inputs are added at the end.  They are not matrix positions, so the matrix
+# keys do not reach them, but CORE_PORTS' own cabinet keys stay live through the Del
+# toggle and neither of these two navigates the menu: 5 is the coin (code 0x33 in test
+# mode, F16) and T the tilt pendulum (0x3E).  The other four cabinet inputs -- START, TEST
+# and the two flipper buttons -- are the menu's own navigation keys (F14), so pressing
+# them here moves the menu instead of naming a contact.
+    40 tap 8 KEYCODE_1
+  1400 mark open-menu
+  1410 tap 12 KEYCODE_7
+  1600 tap 12 KEYCODE_LSHIFT
+  1730 tap 12 KEYCODE_LSHIFT
+  1860 tap 12 KEYCODE_RSHIFT
+  1990 tap 12 KEYCODE_RSHIFT
+  2120 tap 12 KEYCODE_LSHIFT
+  2250 tap 12 KEYCODE_LSHIFT
+  2380 tap 12 KEYCODE_RSHIFT
+  2510 tap 12 KEYCODE_RSHIFT
+  2640 mark svc-32-switch-test
+  2840 tap 10 KEYCODE_DEL
+  3040 mark contact-c0b0
+  3050 tap 30 KEYCODE_Q
+  3190 mark contact-c0b1
+  3200 tap 30 KEYCODE_W
+  3340 mark contact-c0b2
+  3350 tap 30 KEYCODE_E
+  3490 mark contact-c0b3
+  3500 tap 30 KEYCODE_R
+  3640 mark contact-c0b4
+  3650 tap 30 KEYCODE_Y
+  3790 mark contact-c0b5
+  3800 tap 30 KEYCODE_U
+  3940 mark contact-c0b6
+  3950 tap 30 KEYCODE_I
+  4090 mark contact-c0b7
+  4100 tap 30 KEYCODE_O
+  4240 mark contact-c1b0
+  4250 tap 30 KEYCODE_A
+  4390 mark contact-c1b1
+  4400 tap 30 KEYCODE_S
+  4540 mark contact-c1b2
+  4550 tap 30 KEYCODE_D
+  4690 mark contact-c1b3
+  4700 tap 30 KEYCODE_F
+  4840 mark contact-c1b4
+  4850 tap 30 KEYCODE_G
+  4990 mark contact-c1b5
+  5000 tap 30 KEYCODE_H
+  5140 mark contact-c1b6
+  5150 tap 30 KEYCODE_J
+  5290 mark contact-c1b7
+  5300 tap 30 KEYCODE_K
+  5440 mark contact-c2b0
+  5450 tap 30 KEYCODE_Z
+  5590 mark contact-c2b1
+  5600 tap 30 KEYCODE_X
+  5740 mark contact-c2b2
+  5750 tap 30 KEYCODE_C
+  5890 mark contact-c2b3
+  5900 tap 30 KEYCODE_V
+  6040 mark contact-c2b4
+  6050 tap 30 KEYCODE_B
+  6190 mark contact-c2b5
+  6200 tap 30 KEYCODE_N
+  6340 mark contact-c2b6
+  6350 tap 30 KEYCODE_M
+  6490 mark contact-c2b7
+  6500 tap 30 KEYCODE_L
+  6640 mark contact-c3b0
+  6650 tap 30 KEYCODE_0_PAD
+  6790 mark contact-c3b1
+  6800 tap 30 KEYCODE_1_PAD
+  6940 mark contact-c3b2
+  6950 tap 30 KEYCODE_2_PAD
+  7090 mark contact-c3b3
+  7100 tap 30 KEYCODE_3_PAD
+  7240 mark contact-c3b4
+  7250 tap 30 KEYCODE_4_PAD
+  7390 mark contact-c3b5
+  7400 tap 30 KEYCODE_5_PAD
+  7540 mark contact-c3b6
+  7550 tap 30 KEYCODE_6_PAD
+  7690 mark contact-c3b7
+  7700 tap 30 KEYCODE_7_PAD
+  7840 mark contact-c4b0
+  7850 tap 30 KEYCODE_0
+  7990 mark contact-c4b1
+  8000 tap 30 KEYCODE_2
+  8140 mark contact-c4b2
+  8150 tap 30 KEYCODE_3
+  8290 mark contact-c4b3
+  8300 tap 30 KEYCODE_4
+  8440 mark contact-c4b4
+  8450 tap 30 KEYCODE_6
+  8590 mark contact-c4b5
+  8600 tap 30 KEYCODE_8
+  8740 mark contact-c4b6
+  8750 tap 30 KEYCODE_MINUS
+  8890 mark contact-c4b7
+  8900 tap 30 KEYCODE_9
+  9040 mark contact-c5b0
+  9050 tap 30 KEYCODE_EQUALS
+  9190 mark contact-c5b1
+  9200 tap 30 KEYCODE_8_PAD
+  9340 mark contact-c5b2
+  9350 tap 30 KEYCODE_9_PAD
+  9490 mark contact-c5b3
+  9500 tap 30 KEYCODE_MINUS_PAD
+  9640 mark cabinet-coin
+  9650 tap 30 KEYCODE_5
+  9800 mark cabinet-tilt
+  9810 tap 30 KEYCODE_T
+  9970 mark end

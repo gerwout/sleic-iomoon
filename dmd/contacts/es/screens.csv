@@ -1,0 +1,76 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,333,2,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,416,449,2,SETTING / DEFAULT VALUES / PRESS START,2
+3,unlabelled,0003-unlabelled,699,699,1,,3
+4,unlabelled,0004-unlabelled,1133,1133,1,BOLAS OK,4
+5,unlabelled,0005-unlabelled,2233,2233,1,,3
+6,unlabelled,0006-unlabelled,2299,2299,1,,6
+7,unlabelled,0007-unlabelled,2349,11200,376,,7
+8,unlabelled,0008-unlabelled,11233,11233,1,,3
+9,unlabelled,0009-unlabelled,11250,12700,2,,9
+10,unlabelled,0010-unlabelled,14133,15566,3,,10
+11,unlabelled,0011-unlabelled,17000,17000,1,,11
+12,unlabelled,0012-unlabelled,18433,18433,1,,12
+13,unlabelled,0013-unlabelled,19849,19849,1,,13
+14,unlabelled,0014-unlabelled,19866,20033,5,,14
+15,unlabelled,0015-unlabelled,20083,20249,4,,14
+16,unlabelled,0016-unlabelled,20316,20466,4,,14
+17,unlabelled,0017-unlabelled,20533,20699,4,,14
+18,unlabelled,0018-unlabelled,20749,21466,14,,18
+19,unlabelled,0019-unlabelled,21516,21516,1,,19
+20,unlabelled,0020-unlabelled,21533,21533,1,,3
+21,unlabelled,0021-unlabelled,21549,21549,1,,21
+22,unlabelled,0022-unlabelled,22399,22399,1,,3
+23,unlabelled,0023-unlabelled,22433,22433,1,,23
+24,open-menu,0024-open-menu,23333,23533,10,,24
+25,open-menu,0025-open-menu,23549,28883,5,SONIDO/VIDEO / JUEGO / TECNICO,25
+26,open-menu,0026-open-menu,31033,31083,3,TEST TABLERO / CREDITOS / FALTAS,26
+27,open-menu,0027-open-menu,33183,33183,1,,27
+28,open-menu,0028-open-menu,33216,37549,6,BOBINAS / LUCES / CONTACTOS,28
+29,open-menu,0029-open-menu,39700,41850,5,TEST CONTACTOS / TEST ENV-REC / COLOCAR BOLAS,29
+30,open-menu,0030-open-menu,41883,41883,1,CON: C,30
+31,contact-c0b0,0031-contact-c0b0,50933,50950,2,CON: C6 / SALIDA BOLAS 1,31
+32,contact-c0b1,0032-contact-c0b1,53433,53466,2,CON: C7 / SALIDA BOLAS 2,32
+33,contact-c0b2,0033-contact-c0b2,55950,55950,1,CON: C8 / SALIDA BOLAS 3,33
+34,contact-c0b3,0034-contact-c0b3,58466,58466,1,CON: C9 / BOLA FUERA,34
+35,contact-c0b4,0035-contact-c0b4,60966,60966,1,CON: C18 / PASILLO 5,35
+36,contact-c0b5,0036-contact-c0b5,63466,63466,1,CON: C17 / PASILLO 4,36
+37,contact-c0b6,0037-contact-c0b6,66000,66000,1,CON: C11 / . . / C. FLIPPER IZQ.,37
+38,contact-c0b7,0038-contact-c0b7,68500,68500,1,CON: C10 / . . / C. FLIPPER DER.,38
+39,contact-c1b0,0039-contact-c1b0,70866,70866,1,CON: C22 / PASILLO 11,39
+40,contact-c1b2,0040-contact-c1b2,75900,75900,1,CON: C19 / . . / C.FLIPPER SUP.,40
+41,contact-c1b3,0041-contact-c1b3,78400,78400,1,CON: C16 / EXPULSOR DERECHO,41
+42,contact-c1b4,0042-contact-c1b4,80883,80916,2,CON: C15 / EXPULSOR IZQ.,42
+43,contact-c1b5,0043-contact-c1b5,83400,83416,2,CON: C14 / PASILLO 3,43
+44,contact-c1b6,0044-contact-c1b6,85916,85916,1,CON: C13 / PASILLO 2,44
+45,contact-c1b7,0045-contact-c1b7,88416,88416,1,CON: C12 / PASILLO 1,45
+46,contact-c2b0,0046-contact-c2b0,90950,90950,1,CON: C24 / PASILLO 6,46
+47,contact-c2b1,0047-contact-c2b1,93466,93466,1,CON: C25 / DIANA BANCADA A,47
+48,contact-c2b2,0048-contact-c2b2,95983,95983,1,CON: C26 / DIANA BANCADA B,48
+49,contact-c2b3,0049-contact-c2b3,98466,98483,2,CON: C27 / DIANA BANCADA C,49
+50,contact-c2b4,0050-contact-c2b4,100966,101000,2,CON: C28 / DIANA BANCADA D,50
+51,contact-c2b5,0051-contact-c2b5,103466,103466,1,CON: C29 / DIANA BANCADA E,51
+52,contact-c2b6,0052-contact-c2b6,106000,106000,1,CON: C30 / FONDO BANCADA,52
+53,contact-c2b7,0053-contact-c2b7,108500,108500,1,CON: C31 / TRAGABOLAS 2,53
+54,contact-c3b0,0054-contact-c3b0,110866,110900,2,CON: C23 / TRAGABOLAS 1,54
+55,contact-c3b1,0055-contact-c3b1,113383,113383,1,CON: C33 / BUMPER 1,55
+56,contact-c3b2,0056-contact-c3b2,115900,115900,1,CON: C32 / DIANA 1,56
+57,contact-c3b3,0057-contact-c3b3,118400,118400,1,CON: C35 / BUMPER 3,57
+58,contact-c3b4,0058-contact-c3b4,120916,120916,1,CON: C34 / BUMPER 2,58
+59,contact-c3b5,0059-contact-c3b5,123416,123416,1,CON: C37 / BUMPER 5,59
+60,contact-c3b6,0060-contact-c3b6,125933,125933,1,CON: C36 / BUMPER 4,60
+61,contact-c3b7,0061-contact-c3b7,128416,128450,2,CON: C40 / ENTRADA RAMPA 1,61
+62,contact-c4b0,0062-contact-c4b0,130949,130949,1,CON: C44 / JUPITER 1,62
+63,contact-c4b1,0063-contact-c4b1,133466,133466,1,CON: C45 / JUPITER 2,63
+64,contact-c4b2,0064-contact-c4b2,135983,135983,1,CON: C46 / JUPITER 3,64
+65,contact-c4b3,0065-contact-c4b3,138483,138483,1,CON: C39 / ENTRADA RAMPA 2,65
+66,contact-c4b4,0066-contact-c4b4,140999,140999,1,CON: C38 / DIANA 2,66
+67,contact-c4b5,0067-contact-c4b5,143499,143499,1,CON: C48 / PASILLO 10,67
+68,contact-c4b6,0068-contact-c4b6,145999,146016,2,CON: C49 / MEDIA RAMPA 1,68
+69,contact-c4b7,0069-contact-c4b7,148499,148533,2,CON: C50 / ENTRADA JUPITER,69
+70,contact-c5b0,0070-contact-c5b0,150899,150899,1,CON: C47 / SALIDA RAMPA 2,70
+71,contact-c5b1,0071-contact-c5b1,153399,153399,1,CON: C43 / PASILLO 9,71
+72,contact-c5b2,0072-contact-c5b2,155899,155933,2,CON: C42 / PASILLO 8,72
+73,contact-c5b3,0073-contact-c5b3,158399,158433,2,CON: C41 / PASILLO 7,73
+74,cabinet-coin,0074-cabinet-coin,160966,160966,1,CON: C3 / MONEDERO,74
+75,cabinet-tilt,0075-cabinet-tilt,163533,163533,1,CON: C20 / PENDULO DE FALTA,75

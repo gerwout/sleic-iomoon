@@ -1,0 +1,77 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,333,2,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,416,449,2,SETTING / DEFAULT VALUES / PRESS START,2
+3,unlabelled,0003-unlabelled,699,699,1,,3
+4,unlabelled,0004-unlabelled,1133,1133,1,BALLS OK,4
+5,unlabelled,0005-unlabelled,2233,2233,1,,3
+6,unlabelled,0006-unlabelled,2299,2299,1,,6
+7,unlabelled,0007-unlabelled,2349,11200,376,,7
+8,unlabelled,0008-unlabelled,11233,11233,1,,3
+9,unlabelled,0009-unlabelled,11250,12700,2,,9
+10,unlabelled,0010-unlabelled,14133,15566,3,,10
+11,unlabelled,0011-unlabelled,17000,17000,1,,11
+12,unlabelled,0012-unlabelled,18433,18433,1,,12
+13,unlabelled,0013-unlabelled,19849,19849,1,,13
+14,unlabelled,0014-unlabelled,19866,20033,5,,14
+15,unlabelled,0015-unlabelled,20083,20249,4,,14
+16,unlabelled,0016-unlabelled,20316,20466,4,,14
+17,unlabelled,0017-unlabelled,20533,20699,4,,14
+18,unlabelled,0018-unlabelled,20749,21466,14,,18
+19,unlabelled,0019-unlabelled,21516,21516,1,,19
+20,unlabelled,0020-unlabelled,21533,21533,1,,3
+21,unlabelled,0021-unlabelled,21549,21549,1,,21
+22,unlabelled,0022-unlabelled,22399,22399,1,,3
+23,unlabelled,0023-unlabelled,22433,22433,1,,23
+24,open-menu,0024-open-menu,23333,23516,9,,24
+25,open-menu,0025-open-menu,23533,23533,1,GAM,25
+26,open-menu,0026-open-menu,23549,28883,5,SOUND/VIDEO / GAME / TECHNICAL,26
+27,open-menu,0027-open-menu,31033,31066,2,BOARD TEST / CREDITS / TILTS,27
+28,open-menu,0028-open-menu,33183,33183,1,,28
+29,open-menu,0029-open-menu,33216,37549,6,SOLENOIDS / LIGHTS / SWITCHES,29
+30,open-menu,0030-open-menu,39700,41850,5,SWITCH TEST / SEND-REC TEST / SETTING BALLS,30
+31,open-menu,0031-open-menu,41883,41883,1,CON: C,31
+32,contact-c0b0,0032-contact-c0b0,50933,50950,2,CON: C6 / OUTHOLE 1,32
+33,contact-c0b1,0033-contact-c0b1,53433,53466,2,CON: C7 / OUTHOLE 2,33
+34,contact-c0b2,0034-contact-c0b2,55950,55950,1,CON: C8 / OUTHOLE 3,34
+35,contact-c0b3,0035-contact-c0b3,58466,58466,1,CON: C9 / BALL OUT,35
+36,contact-c0b4,0036-contact-c0b4,60966,60966,1,CON: C18 / LANE 5,36
+37,contact-c0b5,0037-contact-c0b5,63466,63466,1,CON: C17 / LANE 4,37
+38,contact-c0b6,0038-contact-c0b6,66000,66000,1,CON: C11 / . . / L.C.FLIPPER,38
+39,contact-c0b7,0039-contact-c0b7,68500,68500,1,CON: C10 / . . / R.C.FLIPPER,39
+40,contact-c1b0,0040-contact-c1b0,70866,70866,1,CON: C22 / LANE 11,40
+41,contact-c1b2,0041-contact-c1b2,75900,75900,1,CON: C19 / . . / U.C.FLIPPER,41
+42,contact-c1b3,0042-contact-c1b3,78400,78400,1,CON: C16 / RIGHT SHOOTER,42
+43,contact-c1b4,0043-contact-c1b4,80883,80916,2,CON: C15 / LEFT SHOOTER,43
+44,contact-c1b5,0044-contact-c1b5,83400,83416,2,CON: C14 / LANE 3,44
+45,contact-c1b6,0045-contact-c1b6,85916,85916,1,CON: C13 / LANE 2,45
+46,contact-c1b7,0046-contact-c1b7,88416,88416,1,CON: C12 / LANE 1,46
+47,contact-c2b0,0047-contact-c2b0,90950,90950,1,CON: C24 / LANE 6,47
+48,contact-c2b1,0048-contact-c2b1,93466,93466,1,CON: C25 / BANK A,48
+49,contact-c2b2,0049-contact-c2b2,95983,95983,1,CON: C26 / BANK B,49
+50,contact-c2b3,0050-contact-c2b3,98466,98483,2,CON: C27 / BANK C,50
+51,contact-c2b4,0051-contact-c2b4,100966,101000,2,CON: C28 / BANK D,51
+52,contact-c2b5,0052-contact-c2b5,103466,103466,1,CON: C29 / BANK E,52
+53,contact-c2b6,0053-contact-c2b6,106000,106000,1,CON: C30 / INNER BANK,53
+54,contact-c2b7,0054-contact-c2b7,108500,108500,1,CON: C31 / HOLE 2,54
+55,contact-c3b0,0055-contact-c3b0,110866,110900,2,CON: C23 / HOLE 1,55
+56,contact-c3b1,0056-contact-c3b1,113383,113383,1,CON: C33 / BUMPER 1,56
+57,contact-c3b2,0057-contact-c3b2,115900,115900,1,CON: C32 / BULL EYE 1,57
+58,contact-c3b3,0058-contact-c3b3,118400,118400,1,CON: C35 / BUMPER 3,58
+59,contact-c3b4,0059-contact-c3b4,120916,120916,1,CON: C34 / BUMPER 2,59
+60,contact-c3b5,0060-contact-c3b5,123416,123416,1,CON: C37 / BUMPER 5,60
+61,contact-c3b6,0061-contact-c3b6,125933,125933,1,CON: C36 / BUMPER 4,61
+62,contact-c3b7,0062-contact-c3b7,128416,128450,2,CON: C40 / RAMP 1 ENTRANCE,62
+63,contact-c4b0,0063-contact-c4b0,130949,130949,1,CON: C44 / JUPITER 1,63
+64,contact-c4b1,0064-contact-c4b1,133466,133466,1,CON: C45 / JUPITER 2,64
+65,contact-c4b2,0065-contact-c4b2,135983,135983,1,CON: C46 / JUPITER 3,65
+66,contact-c4b3,0066-contact-c4b3,138483,138483,1,CON: C39 / RAMP 2 ENTRANCE,66
+67,contact-c4b4,0067-contact-c4b4,140999,140999,1,CON: C38 / BULL EYE 2,67
+68,contact-c4b5,0068-contact-c4b5,143499,143499,1,CON: C48 / LANE 10,68
+69,contact-c4b6,0069-contact-c4b6,145999,146016,2,CON: C49 / RAMP 1 MIDDLE,69
+70,contact-c4b7,0070-contact-c4b7,148499,148533,2,CON: C50 / ENTRADA JUPITER,70
+71,contact-c5b0,0071-contact-c5b0,150899,150899,1,CON: C47 / RAMP 2 EXIT,71
+72,contact-c5b1,0072-contact-c5b1,153399,153399,1,CON: C43 / LANE 9,72
+73,contact-c5b2,0073-contact-c5b2,155899,155933,2,CON: C42 / LANE 8,73
+74,contact-c5b3,0074-contact-c5b3,158399,158399,1,CON: C41 / LANE 7,74
+75,cabinet-coin,0075-cabinet-coin,160966,160966,1,CON: C3 / COINS INPUT,75
+76,cabinet-tilt,0076-cabinet-tilt,163533,163533,1,CON: C20 / PLUMB TILT,76
