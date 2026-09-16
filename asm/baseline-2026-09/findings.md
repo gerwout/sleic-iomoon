@@ -2356,6 +2356,19 @@ Only past the last of those does `DB822`/`DB82A` light `LD2` and `LR21` — the
 Jackpot and Superjackpot lamps — and `sub_DC2A6` release what Jupiter still
 holds.
 
+**What this settles about §3.2.6.** Little Multiball's release — the rules'
+"putting that ball into scoop 1 releases the Jupiter ball" — **has no code
+path in this firmware**. Scoop 1's handler `sub_D9B91` reaches `sub_DB503`
+through `D9C8A` when its three gates are clear (mode `[413C:00F4]` = 0,
+`[413C:010F]` neither 1 nor 2, `[4134:0027]` = 0 — all three measured at 0
+throughout ordinary play, so the path is open, and `[413C:010F]` is read at
+`D9C66`/`D9C70` and **written nowhere in the image**). But `sub_DB503` only
+pushes `0xFE`, moves lamps and clears the mode: it issues none of the four
+commands that reach coil 16. Since those four are the complete set, no
+scoop-1 collect can release a held ball, however the gates fall. The release
+exists for the two-ball Multiball start and for ball recovery, and nowhere
+else.
+
 **Confidence:** confirmed. Every call site, table entry and wait is read
 directly from the listing and the ROM image. The behaviour is confirmed
 running as well: with a ball resting on C44 the coil fires, the lock counter
@@ -2370,6 +2383,56 @@ identified a simulator defect, since fixed — PinMAME rested locked balls on
 C46, so C44 never closed, so the Z80 answered every one of the nine `0xEE`
 issues in a measured run with "nothing to release" and the mode never
 started.
+
+---
+
+## F23 — The upper flipper is driven from the right button, and its auto-fire is unused
+
+**Statement.** The mini upper flipper has no button of its own: its coils are
+fired from inside the **right** flipper's own service routine, so it flips
+whenever the right button is pressed. The Z80 also carries commands that let the
+80188 fire any flipper by itself, and **this firmware issues none of them**.
+
+**The right button drives both.** `sub_12D8` is the right flipper's service
+routine, called from two places (`0D92` in the main loop and `2DF9` in the test
+loop), each as `IN A,($03)` / `BIT 2,A` / `CALL Z` — port `0x03` bit 2 is the
+right button, active low (F16's `0x42`). The routine handles the right flipper
+first (`12EB`-`130E`, keyed on C10's cut-out at column 0 bit 7), then falls
+straight into the **upper** flipper at `1311`: gate on `[$C05B]`, read column 1,
+`BIT 2` — C19, U.C.FLIPPER, the upper flipper's own cut-out — and fire power
+`sub_067F` with it open or hold `sub_06A5` with it closed. Nothing between the
+two sections tests a second button. `sub_1292`, the left flipper's routine
+(`BIT 3`), has no such second half.
+
+`[$C05B]` is an enable, not a trigger: the only writers are the upper-flipper
+self-test at `140E`/`1435`, which clears it, exercises the coil directly and
+sets it again, and the bulk init at `05AC`.
+
+**The auto-fire path exists and is dead.** The Z80's command table gives the
+80188 direct control of every flipper coil:
+
+| Command | Handler | Fires |
+|---|---|---|
+| `0xCB` / `0xCD` / `0xCE` | `sub_2895` / `sub_2919` / `sub_2922` | left power / hold / off |
+| `0xCC` / `0xCF` / `0xD0` | `sub_28D7` / `sub_292B` / `sub_2934` | right power / hold / off |
+| `0xD1` / `0xD3` / `0xD4` | `sub_293D` / `sub_297F` / `sub_2988` | **upper** power / hold / off |
+
+All nine are gated on `[$C068]`. **None of the nine appears anywhere in the
+80188 image**: a search of every immediate push feeding `qout_push` finds zero
+occurrences of `0xCB`-`0xD4`, against five for `0xEE`, which is known to be
+issued. So a switch-triggered auto-flip is within the I/O board's vocabulary but
+is not used by V1.3's game code. (A command pushed from a table rather than an
+immediate would not be caught by that search; no such table is known.)
+
+**Confidence:** confirmed for the button path and the command table, both read
+directly from the listing and the ROM's own 256-entry table at `$2000`. The
+"never issued" half is confirmed to the strength of an exhaustive immediate
+search, with the table caveat above.
+
+**Disposition:** new. It also corrects a driver-side assumption: because the Z80
+fires the upper flipper from the right button, PinMAME reproduces it already,
+and the absence of `FLIP_SW(FLIP_UL)` costs only the C19 cut-out switch, not the
+flipper.
 
 ---
 

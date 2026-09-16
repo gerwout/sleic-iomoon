@@ -209,6 +209,13 @@ The flipper buttons fire their coil pairs directly in the Z80 and send nothing
 over J1 during play; they emit codes `0x41`/`0x42` only in test mode (F16),
 which is why the same two buttons drive the service menu.
 
+**The upper flipper has no button of its own** (F23): its coils are fired from
+inside the **right** flipper's own service routine `sub_12D8`, after that
+routine has handled the right flipper, so the mini flipper flips whenever the
+right button is pressed. The Z80 also accepts commands `0xD1`/`0xD3`/`0xD4` that
+would let the 80188 fire it by itself — an auto-flip — but V1.3's game code
+issues none of them.
+
 See [`switch_lamp_solenoid.md`](switch_lamp_solenoid.md) for the same tables in
 full, including the four column-5 positions that do not exist.
 
@@ -1105,15 +1112,15 @@ Stated as open rather than guessed. Each line says what would settle it.
   released ball to report at a **scoop** (`0x21`/`0x22`), re-issuing `0xEE`
   every five seconds until it does. So the two CPUs use different Jupiter
   contacts: the 80188 counts a lock from C46, the Z80 releases from C44.
-- **Little Multiball's own release is not reproduced** — §3.2.6 has scoop 1
-  releasing the held ball for two balls in play, and that does not happen in
-  emulation. It is not the Jupiter-rest problem F22 describes, which is fixed and
-  which the Multiball release now demonstrably clears: re-tested with the ball
-  resting on C44, a single lock with `LPA3` lit registers (`[4134:0030]` = 1), two
-  scoop-1 collects register with `LTB12` armed, and coil 16 is never fired
-  ([`../dmd/little-multiball/`](../dmd/little-multiball/)). *Settled by:* tracing
-  scoop 1's handler `sub_D9B91` past its `D9C61` branch — which tests `[413C:010F]`
-  and `[4134:0027]` before reaching `sub_DB503` — to find which gate is unmet.
+- **§3.2.6's Little Multiball release is not in the firmware** — the rules have
+  scoop 1 releasing the held ball for two balls in play, and **F22/F23 settle that
+  no code path does it**. Coil 16 has exactly four commands that reach it, and
+  scoop 1's handler `sub_D9B91` issues none of them: with its three gates clear
+  (all measured at 0 in ordinary play) it reaches `sub_DB503`, which moves lamps
+  and clears the mode and nothing else. The release exists for the two-ball
+  Multiball start and for ball recovery, and nowhere else. What the machine
+  actually does here is worth checking on the real cabinet, since the manual and
+  the ROM disagree.
 - **What frees a ball sitting in scoop 2** — scoop 2 has no coil (F17 addendum),
   and the firmware's ball-recovery sweep does not treat *Taca* as a
   ball-freeing device either, yet §3.3.8 gives scoop 2 a full set of awards.
