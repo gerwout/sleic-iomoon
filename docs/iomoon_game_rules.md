@@ -1085,12 +1085,19 @@ Stated as open rather than guessed. Each line says what would settle it.
 
 - **"Autodrop" and "Drop Shuttle"** — lane 11's lit and unlit awards. Neither is
   defined anywhere in the manual; both appear only in that one table row.
-  *Autodrop* is at least named by its lamps (LP3 at lane 3 "lights Autodrop",
-  LP11 at lane 11 "Autodrop") and the bank's reset coil 18 is the only candidate
-  mechanism for dropping targets without shooting them, but the manual never
-  connects the two. *Drop Shuttle* has no other occurrence at all. *Settled by:*
-  lane 11's handler `sub_D890F`, reached from `sub_D7636`'s table at index `0x04`,
-  or a real machine.
+  **Lane 11's handler is now read** (`sub_D890F`), and what it does is narrower
+  than either name suggests: it plays OKI phrase `0x12`; with `[4134:002D]` = 1 it
+  lights `LTB11` and `LTB2`, the Monolith's two scoop lamps; then it branches on
+  `[413C:010D]`. With that cell 1 or 2 it adds **100,000** and stops. Otherwise it
+  turns lamp `LC36` — **LP11, Autodrop** — **off**, turns `LC16` — **LP3, the lane
+  that lights Autodrop** — back **on**, and runs a display routine. **No coil is
+  driven and no target is dropped**, which is consistent with the bank's reset coil
+  18 sitting on the expansion board that no Z80 port reaches.
+  `[413C:010D]` has exactly **one writer** in the whole image, `D9371` inside
+  `sub_D92C0`, which sets it to 1, against three readers — so once that has run the
+  100,000 branch is the one taken and the lamp handoff is unreachable. *Still open:*
+  which of the two names the manual attaches to which branch, and what the display
+  routine at `F000:1E58` draws (it is code, not a string).
 - **What the "Black Hole Power" device was meant to do** — the lamp-level effect
   is established (it lights one of LP7 / LP8 / LP9 at lanes 7–9, §3.3.2 with
   §3.2.4), but the coil of that name, 20, is marked *no conectada* in both
@@ -1121,6 +1128,22 @@ Stated as open rather than guessed. Each line says what would settle it.
   Multiball start and for ball recovery, and nowhere else. What the machine
   actually does here is worth checking on the real cabinet, since the manual and
   the ROM disagree.
+- **An auto-flipping small flipper, reported on the machine and absent from the
+  ROMs.** The owner reports that on a real cabinet — across more than one ROM set —
+  the small upper flipper auto-flips under some conditions, associated with a switch
+  sited above the Autodrop insert (the switch's own position being the only certain
+  part; whether the function relates to Autodrop is not claimed). **No such path
+  exists in any dump we hold.** F23 sets out the search: the Z80 does accept
+  commands `0xD1`/`0xD3`/`0xD4` that fire the upper flipper on the 80188's behalf,
+  and a byte-level search of all three 80188 images — for both push encodings, the
+  method validated by finding every command that must be issued — finds none of the
+  three anywhere, nor in either of the two tables that feed a variable
+  `qout_push`. On the Z80 side the upper coils are touched in exactly three places,
+  and the only callers are the right-button path, the self-test, the solenoid test
+  and the power-to-hold timer. *Settled by:* a ROM set we do not have, or a scope on
+  the upper flipper's own coil on the machine while the behaviour happens — which
+  would also say whether the drive comes from the Z80 latch at all or from the
+  expansion board.
 - **What frees a ball sitting in scoop 2** — scoop 2 has no coil (F17 addendum),
   and the firmware's ball-recovery sweep does not treat *Taca* as a
   ball-freeing device either, yet §3.3.8 gives scoop 2 a full set of awards.
