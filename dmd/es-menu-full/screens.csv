@@ -1,0 +1,71 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,333,2,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,416,449,2,SETTING / DEFAULT VALUES / PRESS START,2
+3,unlabelled,0003-unlabelled,699,699,1,,3
+4,unlabelled,0004-unlabelled,1133,1133,1,BOLAS OK,4
+5,unlabelled,0005-unlabelled,2233,2233,1,,3
+6,unlabelled,0006-unlabelled,2299,2299,1,,6
+7,unlabelled,0007-unlabelled,2349,11200,376,,7
+8,unlabelled,0008-unlabelled,11233,11233,1,,3
+9,unlabelled,0009-unlabelled,11250,12700,2,,9
+10,unlabelled,0010-unlabelled,14133,15566,3,,10
+11,unlabelled,0011-unlabelled,17000,17000,1,,11
+12,unlabelled,0012-unlabelled,18433,18433,1,,12
+13,unlabelled,0013-unlabelled,19849,19849,1,,13
+14,unlabelled,0014-unlabelled,19866,20033,5,,14
+15,unlabelled,0015-unlabelled,20083,20249,4,,14
+16,unlabelled,0016-unlabelled,20316,20466,4,,14
+17,unlabelled,0017-unlabelled,20533,20699,4,,14
+18,unlabelled,0018-unlabelled,20749,21466,14,,18
+19,unlabelled,0019-unlabelled,21516,21516,1,,19
+20,unlabelled,0020-unlabelled,21533,21533,1,,3
+21,unlabelled,0021-unlabelled,21549,21549,1,,21
+22,unlabelled,0022-unlabelled,22399,22399,1,,3
+23,unlabelled,0023-unlabelled,22433,22433,1,,23
+24,open-menu,0024-open-menu,23333,23533,10,,24
+25,open-menu,0025-open-menu,23549,23549,1,SONIDO/VIDEO / JUEGO / TECNICO,25
+26,svc-root,0026-svc-root,41700,41733,3,VOLUMEN / PUBLICIDAD,26
+27,branch-1,0027-branch-1,48366,48400,2,,27
+28,branch-1-item-1,0028-branch-1-item-1,55866,60066,5,VOLUMEN / PUBLICIDAD,28
+29,branch-1-item-1,0029-branch-1-item-1,64200,64200,1,,29
+30,branch-1-item-2,0030-branch-1-item-2,71700,80200,9,AA,30
+31,branch-1-item-3,0031-branch-1-item-3,87533,95983,9,AAA,31
+32,branch-1-item-4,0032-branch-1-item-4,103366,111866,8,AAAA,32
+33,branch-1-item-5,0033-branch-1-item-5,119200,127633,7,AAAAA,33
+34,branch-1-item-6,0034-branch-1-item-6,135033,143533,7,AAAAAA,34
+35,branch-1-item-7,0035-branch-1-item-7,150866,159366,7,AAAAAAA,35
+36,branch-1-item-8,0036-branch-1-item-8,166699,175199,7,AAAAAAAA,36
+37,branch-1-item-9,0037-branch-1-item-9,182549,191016,7,AAAAAAAAA,37
+38,branch-1-item-10,0038-branch-1-item-10,198383,206849,7,AAAAAAAAAA,38
+39,branch-1-item-11,0039-branch-1-item-11,214216,222683,7,AAAAAAAAAAA,39
+40,branch-1-item-12,0040-branch-1-item-12,230016,238383,5,AAAAAAAAAAA8A,40
+41,back-to-root-1,0041-back-to-root-1,245016,248533,6,AAAAAAAAAAA8A,40
+42,branch-2,0042-branch-2,255033,255166,3,AAAAAAAAAAA8D,42
+43,branch-2-item-1,0043-branch-2-item-1,262549,271033,7,AAAAAAAAAAA8DA,43
+44,branch-2-item-2,0044-branch-2-item-2,278383,286849,7,AAAAAAAAAAA8DA,44
+45,branch-2-item-3,0045-branch-2-item-3,294183,302683,8,AAAAAAAAAAA8DA / AA,45
+46,branch-2-item-4,0046-branch-2-item-4,310016,318516,7,AAAAAAAAAAA8DA / AAA,46
+47,branch-2-item-5,0047-branch-2-item-5,325849,334349,7,AAAAAAAAAAA8DA / AAAA,47
+48,branch-2-item-6,0048-branch-2-item-6,341683,350183,8,AAAAAAAAAAA8DA / AAAAA,48
+49,branch-2-item-7,0049-branch-2-item-7,357516,366016,9,AAAAAAAAAAA8DA / AAAAAA,49
+50,branch-2-item-8,0050-branch-2-item-8,373349,381849,8,AAAAAAAAAAA8DA / AAAAAAA,50
+51,branch-2-item-9,0051-branch-2-item-9,389183,397666,9,AAAAAAAAAAA8DA / AAAAAAAA,51
+52,branch-2-item-10,0052-branch-2-item-10,405016,413516,7,AAAAAAAAAAA8DA / AAAAAAAAA,52
+53,branch-2-item-11,0053-branch-2-item-11,420849,429316,7,AAAAAAAAAAA8DA / AAAAAAAAAA,53
+54,branch-2-item-12,0054-branch-2-item-12,436699,445016,5,AAAAAAAAAAA8DA / AAAAAAAAAA8A,54
+55,back-to-root-2,0055-back-to-root-2,451699,458516,9,AAAAAAAAAAA8DA / AAAAAAAAAA88,55
+56,branch-3,0056-branch-3,465016,465166,3,AAAAAAAAAAA8DA / AAAAAAAAAA8A,54
+57,branch-3-item-1,0057-branch-3-item-1,472533,481016,7,AAAAAAAAAAA8DA / AAAAAAAAAA8AA,57
+58,branch-3-item-2,0058-branch-3-item-2,488366,496799,7,AAAAAAAAAAA8DA / AAAAAAAAAA8AAA,58
+59,branch-3-item-3,0059-branch-3-item-3,504199,504199,1,,59
+60,branch-3-item-3,0060-branch-3-item-3,504233,508399,4,VOLUMEN / PUBLICIDAD,28
+61,branch-3-item-3,0061-branch-3-item-3,512533,512533,1,,29
+62,branch-3-item-4,0062-branch-3-item-4,520033,528466,7,AA,30
+63,branch-3-item-5,0063-branch-3-item-5,535849,544316,8,AAA,31
+64,branch-3-item-6,0064-branch-3-item-6,551699,560149,9,AAAA,32
+65,branch-3-item-7,0065-branch-3-item-7,567533,575983,8,AAAAA,33
+66,branch-3-item-8,0066-branch-3-item-8,583366,591816,8,AAAAAA,34
+67,branch-3-item-9,0067-branch-3-item-9,599199,607699,7,AAAAAAA,35
+68,branch-3-item-10,0068-branch-3-item-10,615033,623533,7,AAAAAAAA,36
+69,branch-3-item-11,0069-branch-3-item-11,630866,639366,7,AAAAAAAAA,37
+70,branch-3-item-12,0070-branch-3-item-12,646699,651016,4,AAAAAAAAA8,70

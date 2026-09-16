@@ -1,0 +1,181 @@
+# The SPANISH service-menu tree, walked in ONE entry.
+#
+# dmd/es-menu/ proved the menu is capturable in Spanish -- F19's country re-derivation
+# lives on the EXIT path, so a walk that opens the menu once and navigates with select,
+# scroll and BACK never runs it (the store still reads country 5 at the end).  That walk
+# covered three branches; this one walks the whole tree the same way.
+#
+# The traversal is mechanical rather than tree-shaped, because it does not need to know
+# the shape: for each of the root's items, enter it, then step through its own items in
+# turn -- select, dwell, back -- and back out to the root before the next.  Records that
+# do not exist under a given parent simply redraw the parent, which costs a scene and
+# nothing else.
+#
+# Navigation is F14's: 7 opens (0x3F), Right Shift selects (0x42), Left Shift scrolls
+# (0x41), 1 goes back (0x40).  TEST is never pressed again -- that is the whole point.
+#
+# Requires scripts/keyscripts/iomoont-spain.cfg copied to <cfg dir>/iomoont.cfg.
+   40 tap 8 KEYCODE_1
+ 1400 mark open-menu
+ 1410 tap 12 KEYCODE_7
+ 2200 mark svc-root
+ 2500 tap 12 KEYCODE_RSHIFT
+ 2650 mark branch-1
+ 2900 tap 12 KEYCODE_RSHIFT
+ 3050 mark branch-1-item-1
+ 3350 tap 12 KEYCODE_1
+ 3600 tap 12 KEYCODE_LSHIFT
+ 3850 tap 12 KEYCODE_RSHIFT
+ 4000 mark branch-1-item-2
+ 4300 tap 12 KEYCODE_1
+ 4550 tap 12 KEYCODE_LSHIFT
+ 4800 tap 12 KEYCODE_RSHIFT
+ 4950 mark branch-1-item-3
+ 5250 tap 12 KEYCODE_1
+ 5500 tap 12 KEYCODE_LSHIFT
+ 5750 tap 12 KEYCODE_RSHIFT
+ 5900 mark branch-1-item-4
+ 6200 tap 12 KEYCODE_1
+ 6450 tap 12 KEYCODE_LSHIFT
+ 6700 tap 12 KEYCODE_RSHIFT
+ 6850 mark branch-1-item-5
+ 7150 tap 12 KEYCODE_1
+ 7400 tap 12 KEYCODE_LSHIFT
+ 7650 tap 12 KEYCODE_RSHIFT
+ 7800 mark branch-1-item-6
+ 8100 tap 12 KEYCODE_1
+ 8350 tap 12 KEYCODE_LSHIFT
+ 8600 tap 12 KEYCODE_RSHIFT
+ 8750 mark branch-1-item-7
+ 9050 tap 12 KEYCODE_1
+ 9300 tap 12 KEYCODE_LSHIFT
+ 9550 tap 12 KEYCODE_RSHIFT
+ 9700 mark branch-1-item-8
+10000 tap 12 KEYCODE_1
+10250 tap 12 KEYCODE_LSHIFT
+10500 tap 12 KEYCODE_RSHIFT
+10650 mark branch-1-item-9
+10950 tap 12 KEYCODE_1
+11200 tap 12 KEYCODE_LSHIFT
+11450 tap 12 KEYCODE_RSHIFT
+11600 mark branch-1-item-10
+11900 tap 12 KEYCODE_1
+12150 tap 12 KEYCODE_LSHIFT
+12400 tap 12 KEYCODE_RSHIFT
+12550 mark branch-1-item-11
+12850 tap 12 KEYCODE_1
+13100 tap 12 KEYCODE_LSHIFT
+13350 tap 12 KEYCODE_RSHIFT
+13500 mark branch-1-item-12
+13800 tap 12 KEYCODE_1
+14050 tap 12 KEYCODE_LSHIFT
+14300 tap 12 KEYCODE_1
+14450 mark back-to-root-1
+14700 tap 12 KEYCODE_LSHIFT
+14900 tap 12 KEYCODE_RSHIFT
+15050 mark branch-2
+15300 tap 12 KEYCODE_RSHIFT
+15450 mark branch-2-item-1
+15750 tap 12 KEYCODE_1
+16000 tap 12 KEYCODE_LSHIFT
+16250 tap 12 KEYCODE_RSHIFT
+16400 mark branch-2-item-2
+16700 tap 12 KEYCODE_1
+16950 tap 12 KEYCODE_LSHIFT
+17200 tap 12 KEYCODE_RSHIFT
+17350 mark branch-2-item-3
+17650 tap 12 KEYCODE_1
+17900 tap 12 KEYCODE_LSHIFT
+18150 tap 12 KEYCODE_RSHIFT
+18300 mark branch-2-item-4
+18600 tap 12 KEYCODE_1
+18850 tap 12 KEYCODE_LSHIFT
+19100 tap 12 KEYCODE_RSHIFT
+19250 mark branch-2-item-5
+19550 tap 12 KEYCODE_1
+19800 tap 12 KEYCODE_LSHIFT
+20050 tap 12 KEYCODE_RSHIFT
+20200 mark branch-2-item-6
+20500 tap 12 KEYCODE_1
+20750 tap 12 KEYCODE_LSHIFT
+21000 tap 12 KEYCODE_RSHIFT
+21150 mark branch-2-item-7
+21450 tap 12 KEYCODE_1
+21700 tap 12 KEYCODE_LSHIFT
+21950 tap 12 KEYCODE_RSHIFT
+22100 mark branch-2-item-8
+22400 tap 12 KEYCODE_1
+22650 tap 12 KEYCODE_LSHIFT
+22900 tap 12 KEYCODE_RSHIFT
+23050 mark branch-2-item-9
+23350 tap 12 KEYCODE_1
+23600 tap 12 KEYCODE_LSHIFT
+23850 tap 12 KEYCODE_RSHIFT
+24000 mark branch-2-item-10
+24300 tap 12 KEYCODE_1
+24550 tap 12 KEYCODE_LSHIFT
+24800 tap 12 KEYCODE_RSHIFT
+24950 mark branch-2-item-11
+25250 tap 12 KEYCODE_1
+25500 tap 12 KEYCODE_LSHIFT
+25750 tap 12 KEYCODE_RSHIFT
+25900 mark branch-2-item-12
+26200 tap 12 KEYCODE_1
+26450 tap 12 KEYCODE_LSHIFT
+26700 tap 12 KEYCODE_1
+26850 mark back-to-root-2
+27100 tap 12 KEYCODE_LSHIFT
+27300 tap 12 KEYCODE_LSHIFT
+27500 tap 12 KEYCODE_RSHIFT
+27650 mark branch-3
+27900 tap 12 KEYCODE_RSHIFT
+28050 mark branch-3-item-1
+28350 tap 12 KEYCODE_1
+28600 tap 12 KEYCODE_LSHIFT
+28850 tap 12 KEYCODE_RSHIFT
+29000 mark branch-3-item-2
+29300 tap 12 KEYCODE_1
+29550 tap 12 KEYCODE_LSHIFT
+29800 tap 12 KEYCODE_RSHIFT
+29950 mark branch-3-item-3
+30250 tap 12 KEYCODE_1
+30500 tap 12 KEYCODE_LSHIFT
+30750 tap 12 KEYCODE_RSHIFT
+30900 mark branch-3-item-4
+31200 tap 12 KEYCODE_1
+31450 tap 12 KEYCODE_LSHIFT
+31700 tap 12 KEYCODE_RSHIFT
+31850 mark branch-3-item-5
+32150 tap 12 KEYCODE_1
+32400 tap 12 KEYCODE_LSHIFT
+32650 tap 12 KEYCODE_RSHIFT
+32800 mark branch-3-item-6
+33100 tap 12 KEYCODE_1
+33350 tap 12 KEYCODE_LSHIFT
+33600 tap 12 KEYCODE_RSHIFT
+33750 mark branch-3-item-7
+34050 tap 12 KEYCODE_1
+34300 tap 12 KEYCODE_LSHIFT
+34550 tap 12 KEYCODE_RSHIFT
+34700 mark branch-3-item-8
+35000 tap 12 KEYCODE_1
+35250 tap 12 KEYCODE_LSHIFT
+35500 tap 12 KEYCODE_RSHIFT
+35650 mark branch-3-item-9
+35950 tap 12 KEYCODE_1
+36200 tap 12 KEYCODE_LSHIFT
+36450 tap 12 KEYCODE_RSHIFT
+36600 mark branch-3-item-10
+36900 tap 12 KEYCODE_1
+37150 tap 12 KEYCODE_LSHIFT
+37400 tap 12 KEYCODE_RSHIFT
+37550 mark branch-3-item-11
+37850 tap 12 KEYCODE_1
+38100 tap 12 KEYCODE_LSHIFT
+38350 tap 12 KEYCODE_RSHIFT
+38500 mark branch-3-item-12
+38800 tap 12 KEYCODE_1
+39050 tap 12 KEYCODE_LSHIFT
+39300 tap 12 KEYCODE_1
+39450 mark back-to-root-3
+39700 mark end
