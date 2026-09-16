@@ -37,7 +37,7 @@ of the ROM's own strings the captures together do and do not put on screen, and 
 | `dmd/es-tilt/` | 218 | 152 | 8 |
 | `dmd/es-menu/` | 57 | 40 | 33 |
 
-**Corpus-wide that is 4,484 committed representative frames covering 2,441 distinct
+**Corpus-wide that is 4,484 committed representative frames covering 2,411 distinct
 screens** — distinct by `repr.txt` content across every capture, so a screen two walks
 both reach is counted once.
 
