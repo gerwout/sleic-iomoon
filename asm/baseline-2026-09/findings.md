@@ -2424,10 +2424,38 @@ issued. So a switch-triggered auto-flip is within the I/O board's vocabulary but
 is not used by V1.3's game code. (A command pushed from a table rather than an
 immediate would not be caught by that search; no such table is known.)
 
+**The "never issued" half, re-verified at byte level across all three sets.**
+The first check searched the disassembly listing, which covers only ROM1's
+upper half. Repeating it against the raw images — every byte of
+`v1_3_01.bin` (the IPDB set), `v1_3_01e.bin` and `v1_3_01t.bin`, for both
+`PUSH imm16` (`68 nn 00`) and `PUSH imm8` (`6A nn`) — finds **zero**
+occurrences of `0xD1`, `0xD3` or `0xD4` in any of them. The method is
+validated by the same search finding every command that must be issued:
+`0xC7` five times, `0xE9` twice, `0xEE` five times, `0xEF` three times.
+
+The table route is closed too. Only 14 of the 172 `qout_push` call sites push
+a variable rather than an immediate, and they read exactly two tables — the
+lamp pair at `0x0A42`/`0x0A43` and a second at `0x098E`/`0x098F` that the
+service menu's own solenoid test walks. Neither holds a flipper command;
+`0x098E`'s 32 entries run `0x01`-`0xA4` with no value above `0xA4`.
+
+**The flipper enable, and why a headless check cannot see the coupling.**
+`sub_12D8` returns at once unless `[$C06A]` is non-zero, and that byte is set
+only by command `0xC7` and cleared only by `0xC8`. `0xC7` is issued from
+`sub_DC74B`, the ball-start arm (the same routine F17's derived bank-reset
+solenoid comes from), and from `sub_DC7D7`; `0xC8` from the tilt handler
+`sub_D9EBB`, from menu entry `sub_DD253` and three others. So the flippers
+are armed at ball start and disarmed by a tilt or by opening the menu.
+Measured in this emulation, `[$C06A]` reads `00` and no flipper coil (1-6)
+ever fires, while the ball-search coils (7-16) do — the scripted runs sit in
+a ball search rather than an armed ball, so they confirm the *absence* of a
+spontaneous fire but cannot exercise the button coupling. `[$C05B]`, the
+upper flipper's own enable, reads `FF` throughout, as its boot init sets it.
+
 **Confidence:** confirmed for the button path and the command table, both read
-directly from the listing and the ROM's own 256-entry table at `$2000`. The
-"never issued" half is confirmed to the strength of an exhaustive immediate
-search, with the table caveat above.
+directly from the listing and the ROM's own 256-entry table at `$2000`, and
+for the byte-level absence of the three upper-flipper commands in all three
+sets.
 
 **Disposition:** new. It also corrects a driver-side assumption: because the Z80
 fires the upper flipper from the right button, PinMAME reproduces it already,
