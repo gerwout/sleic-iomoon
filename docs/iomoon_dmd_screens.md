@@ -2,24 +2,43 @@
 
 [← Back to main README](../README.md)
 
-Four captures of `iomoont` (the PRESS START tournament ROM) make up the corpus: an
-English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), eight targeted fault captures
-(`dmd/faults/`), and one probe-forced capture of the tournament mod's SPECIAL/match
-`PRESS START` hook (`dmd/special/`). `dmd/README.md`, `dmd/faults/README.md` and
-`dmd/special/README.md` are the narrative account of how each was produced and what each
-one found along the way; this document is the index — what screen is where — and the
-coverage gate: which of the ROM's own strings the captures together do and do not put on
-screen, and why.
+Eleven capture directories make up the corpus. Four are of `iomoont`, the PRESS START
+tournament ROM — an English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), eight targeted
+fault captures (`dmd/faults/`) and one capture of the mod's SPECIAL/match `PRESS START`
+hook (`dmd/special/`). The other seven are of the parent `iomoon`, and cover play the
+two language walks never reach: the Jupiter lock and Multiball (`dmd/multiball/`), every
+Monolith award (`dmd/monolith/`), Wonderful Thing and the bank (`dmd/modes/`), the
+rules sections those leave out (`dmd/coverage/`), Little Multiball in isolation
+(`dmd/little-multiball/`), the three lit-lane awards (`dmd/lanes/`) and a four-player
+game (`dmd/players/`).
 
-| Corpus | Scene occurrences | Distinct screens | Labels |
-|---|---|---|---|
-| `dmd/en/` | 5714 | 920 | 119 |
-| `dmd/es/` | 5410 | 823 | 53 |
+Each directory's own README is the narrative account of how it was produced and what it
+found; this document is the index — what screen is where — and the coverage gate: which
+of the ROM's own strings the captures together do and do not put on screen, and why.
+
+| Capture | Scene occurrences | Distinct screens | Labels |
+|---|--:|--:|---|
+| `dmd/en/` | 5714 | 920 | 120 |
+| `dmd/es/` | 5410 | 823 | 54 |
 | `dmd/faults/` (8 captures) | 178 | 159 | 7 labels, shared across captures (`unlabelled`, `boot`, `credit`, `ball-1-start`, `tilt-1`, `tilt-2`, `settle`) — a fault's own text rides on one of these, not a fault-named label of its own |
-| `dmd/special/` | 313 | 259 | 13 — an ordinary boot/attract/game walk's labels plus `lottery` for the draw and `special-press-start` for the `D5077` screen the match reaches (`dmd/special/README.md`) |
+| `dmd/special/` | 313 | 259 | 14 — an ordinary boot/attract/game walk's labels plus `lottery` for the draw and `special-press-start` for the `D5077` screen the match reaches (`dmd/special/README.md`) |
+| `dmd/multiball/` | 366 | 91 | 24 |
+| `dmd/monolith/` | 432 | 237 | 104 |
+| `dmd/modes/` | 169 | 123 | 33 |
+| `dmd/coverage/` | 501 | 147 | 46 |
+| `dmd/little-multiball/` | 158 | 90 | 23 |
+| `dmd/lanes/` | 352 | 194 | 12 |
+| `dmd/players/` | 400 | 219 | 45 |
+
+**Corpus-wide that is 3,185 committed representative frames covering 2,212 distinct
+screens** — distinct by `repr.txt` content across every capture, so a screen two walks
+both reach is counted once.
 
 "Scene occurrences" counts every visit the walk makes; "distinct screens" counts unique
 `repr.txt` content — the number that answers "how many screens does this machine draw."
+Both are counted from the committed files themselves, `screens.csv` rows and `repr.txt`
+files, which can differ by a scene or two from `dmd_dump_split.py`'s own console summary
+for the same dump.
 The Spanish corpus has no service-menu tree: F19 establishes that opening the menu
 re-derives the machine's tracked country from a stray byte and gets it wrong in every
 country, unconditionally landing on country 7 (Portugal) — so a Spanish menu capture
@@ -75,10 +94,23 @@ dmd/
 ├── faults/
 │   ├── README.md                 # which probe forced each of the 8 captures
 │   └── <fault>/                  # same iomoont.txt.gz / iomoont.marks / screens.csv / screens/ layout
-└── special/
-    ├── README.md                 # the SPECIAL/match (D5077) win, the lottery counter, and the three-way PRESS START comparison
-    └── iomoont.txt.gz / iomoont.marks / screens.csv / screens/   # same layout again
+├── special/
+│   ├── README.md                 # the SPECIAL/match (D5077) win, the lottery counter, and the three-way PRESS START comparison
+│   └── iomoont.txt.gz / iomoont.marks / screens.csv / screens/   # same layout again
+├── multiball/                   # the Jupiter lock and the MULTIBALL announce
+├── monolith/                    # every Monolith award, and every mode it starts
+├── modes/                       # Wonderful Thing, Special Drop Probe, the bank
+├── coverage/                    # the rules sections the others leave out
+├── little-multiball/            # LPA3 isolated with a probe that waits for the lamp
+├── lanes/                       # Bonus x10, Special and Extra Ball collected at a lit lane
+└── players/                     # a four-player game
+        # each of the seven: README.md + iomoon.txt.gz / iomoon.marks / screens.csv / screens/
 ```
+
+The seven gameplay captures are of the **parent `iomoon`**, so their dump and marks
+files are `iomoon.*` rather than `iomoont.*`. Five of them — everything that locks a
+ball at Jupiter — also need the PinMAME fix that makes the lock reachable at all
+(commit `957cf972`); each README says so.
 
 ## Regenerating
 
@@ -102,7 +134,7 @@ job, not this document's — see its "PinMAME build and capture" section.
 
 ## Screen index, by area
 
-Full per-row detail is `screens.csv` itself; this groups the corpus's 118 (`en`) / 52
+Full per-row detail is `screens.csv` itself; this groups the corpus's 120 (`en`) / 54
 (`es`) labels by area, with scene-occurrence and distinct-screen counts (`en`/`es`) and
 one example of decoded text where any exists. Numbered families (`ball-1-*`,
 `ball-2-*`, `ball-3-*`; `svc-0` .. `svc-37`; …) are collapsed to one row.
@@ -186,6 +218,33 @@ page. Three deep leaf records (33, 36, 37) are confirmed showing a pre-rendered
 full-screen image, not composed text, as their real content — no capture, however
 extended, recovers a string from those. One (24) shows no new content of any kind. See
 Coverage for the full breakdown and what each disposition means.
+
+### Gameplay (the seven `iomoon` captures)
+
+These cover play the two language walks never reach. Each capture's own README lists
+its marks and the firmware state that confirms it; this is where to look for a screen
+rather than a full label index.
+
+| Capture | What is in it | Occ | Distinct |
+|---|---|--:|--:|
+| `multiball/` | the six ORBITS letters, two Jupiter locks, **BALL LOCKED FOR MULTIBALL** and the full-height **MULTIBALL** with its wipe | 366 | 91 |
+| `monolith/` | twelve rounds of arm / step / cash, covering nine of the ten Monolith positions and playing every mode each one starts | 432 | 237 |
+| `modes/` | ORBITS, the bank cleared, **Special Drop Probe**, **Wonderful Thing** and its staged release, the Lagrange pair | 169 | 123 |
+| `coverage/` | Little Multiball arming, all eleven lanes, lane 10 with ORBITS complete, bull's-eye 2, the inner target with the bank standing, the end-of-ball bonus countdown | 501 | 147 |
+| `little-multiball/` | one lock taken on the frame `LPA3` is lit, `LTB12` at scoop 1, eight scoop-1 collects | 158 | 90 |
+| `lanes/` | **Bonus ×10** at lane 9, **Special** at lane 7, **Extra Ball** at lane 8, each with its own lamp confirmed lit up to the press | 352 | 194 |
+| `players/` | a **four-player** game, twelve balls, and the four-player score display | 400 | 219 |
+
+**Almost none of this decodes as text**, which is why the coverage numbers below do not
+move when these captures are included: across all seven, `screens.csv` decodes little
+beyond the in-play HUD's own `PLAYER`/`BALL` words and score digits. The mode
+announcements — `BALL LOCKED FOR MULTIBALL`, `MULTIBALL`, the award banners — are
+legible by eye in their `repr.txt` and matched by no walked face, the same class as the
+full-tilt `TILT` screen (`dmd/README.md`, Open items).
+
+**Jackpot and Superjackpot are not here**, and no key script can reach them: Multiball
+announces but does not engage, so `LD2` and `LR21` never light. `dmd/README.md`'s Open
+items has the measurement and F22 the firmware side.
 
 ### Faults (`dmd/faults/`, 8 captures)
 
@@ -288,17 +347,29 @@ still contribute nothing to a text-match count, for either reason 2 or reason 3.
 | | Count |
 |---|---|
 | Strings named (tier 1 / tier 2 / tier 3) | 275 / 0 / 166 = 441 |
-| Present (whole-field match, any of the three corpora) | 37 |
+| Present (whole-field match, anywhere in the corpus) | 37 |
 | Missing | 404 |
 
-Recomputed against `dmd/en` and `dmd/es` as committed after the HUD/score decoder work
-(`dmd/README.md`'s own items on the in-play `PLAYER`/`BALL` HUD and the in-play score;
-5716/5411 scene occurrences, 922/824 distinct screens — see the top of this document);
-`dmd/faults` is unchanged, so only `dmd/en`/`dmd/es`'s own rows could move the count,
-and one did (see below) — the new HUD/score-digit decoding adds hundreds of
-`PLAYER`/`BALL`/digit fields to both corpora, but almost none of them are a whole-field
-match for a *named* ROM string (most named strings are multi-word menu/fault prose; a
-bare `BALL` or a digit rarely equals one outright).
+**Computed over every capture**, all eleven directories, in one run:
+
+```bash
+python3 scripts/dmd_dump_split.py --coverage \
+        --rom ../pinmame/roms/iomoon/v1_3_01.bin \
+        dmd/*/screens.csv dmd/faults/*/screens.csv
+```
+
+**Adding the seven gameplay captures moves the count by zero** — the same 441 named,
+37 present, 404 missing as `dmd/en`, `dmd/es`, `dmd/faults` and `dmd/special` give on
+their own. That is a real result about where this machine's text lives rather than a
+shortfall in those captures: they hold 1,101 distinct screens between them, but what
+is on those screens is mode announcements and award banners drawn in faces the decoder
+does not have, plus the in-play HUD it does. A `PLAYER`, a `BALL` or a bare digit is
+rarely a whole-field match for a *named* ROM string, most of which are multi-word
+menu or fault prose.
+
+The same holds for the HUD/score decoder work before it (`dmd/README.md`'s own items on
+the in-play `PLAYER`/`BALL` HUD and the in-play score): it added hundreds of decoded
+fields to both language corpora and moved this count by one.
 
 Tier 2 contributes zero *additional* strings once tier 1 is already counted — every
 `ENGLISH_POOL`/`SPANISH_POOL` entry is also reachable through `contact_table()` or
