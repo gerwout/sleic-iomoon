@@ -1,0 +1,150 @@
+# A FOUR-PLAYER game for iomoon, at the country default (4, Netherlands, English, F11).
+# Every other capture in this corpus plays one player, so the whole multi-player side of
+# the machine has never been on screen: PLAYER 2, 3 and 4 in the in-play HUD, the
+# player-to-player handover at each drain, and the four-player end of game.  The ROM
+# carries PLAYER 1: .. PLAYER 4: as real strings (JUGADOR 1: .. 4: in Spanish); only
+# PLAYER 1 has ever been decoded from a capture.
+#
+# Four players need four credits.  A coin only sticks after the first attract cycle, and
+# one coin is not one credit under country 4's coin preset (F11): six coins buy one, so
+# twenty-four are pressed here and START is taken four times, once per player, before the
+# first ball is plunged.
+#
+# Each of the twelve balls is the same shape -- plunge, two lane hits so the ball scores,
+# drain, follow the next ball -- which keeps the walk short enough to read while still
+# giving every player its own ball-start, in-play and drained screens on all three balls.
+#
+# Keys: 5 coin, 1 start, Space plunge, Q drain, Down follow the next ball, Y/U lanes 1/2.
+    40 tap 8 KEYCODE_1
+  6641 tap 10 KEYCODE_5
+  6701 tap 10 KEYCODE_5
+  6761 tap 10 KEYCODE_5
+  6821 tap 10 KEYCODE_5
+  6881 tap 10 KEYCODE_5
+  6941 tap 10 KEYCODE_5
+  7001 tap 10 KEYCODE_5
+  7061 tap 10 KEYCODE_5
+  7121 tap 10 KEYCODE_5
+  7181 tap 10 KEYCODE_5
+  7241 tap 10 KEYCODE_5
+  7301 tap 10 KEYCODE_5
+  7361 tap 10 KEYCODE_5
+  7421 tap 10 KEYCODE_5
+  7481 tap 10 KEYCODE_5
+  7541 tap 10 KEYCODE_5
+  7601 tap 10 KEYCODE_5
+  7661 tap 10 KEYCODE_5
+  7721 tap 10 KEYCODE_5
+  7781 tap 10 KEYCODE_5
+  7841 tap 10 KEYCODE_5
+  7901 tap 10 KEYCODE_5
+  7961 tap 10 KEYCODE_5
+  8021 tap 10 KEYCODE_5
+  8100 mark credits-4
+  8200 mark start-player-1
+  8210 tap 10 KEYCODE_1
+  8400 mark start-player-2
+  8410 tap 10 KEYCODE_1
+  8600 mark start-player-3
+  8610 tap 10 KEYCODE_1
+  8800 mark start-player-4
+  8810 tap 10 KEYCODE_1
+  9000 mark four-players-up
+  9200 mark ball-1-player-1-start
+  9210 tap 40 KEYCODE_SPACE
+  9380 mark ball-1-player-1-in-play
+  9390 tap 10 KEYCODE_Y
+  9460 tap 10 KEYCODE_U
+  9600 mark ball-1-player-1-drained
+  9610 tap 10 KEYCODE_Q
+  9670 tap 10 KEYCODE_DOWN
+  9900 mark ball-1-player-2-start
+  9910 tap 40 KEYCODE_SPACE
+ 10080 mark ball-1-player-2-in-play
+ 10090 tap 10 KEYCODE_Y
+ 10160 tap 10 KEYCODE_U
+ 10300 mark ball-1-player-2-drained
+ 10310 tap 10 KEYCODE_Q
+ 10370 tap 10 KEYCODE_DOWN
+ 10600 mark ball-1-player-3-start
+ 10610 tap 40 KEYCODE_SPACE
+ 10780 mark ball-1-player-3-in-play
+ 10790 tap 10 KEYCODE_Y
+ 10860 tap 10 KEYCODE_U
+ 11000 mark ball-1-player-3-drained
+ 11010 tap 10 KEYCODE_Q
+ 11070 tap 10 KEYCODE_DOWN
+ 11300 mark ball-1-player-4-start
+ 11310 tap 40 KEYCODE_SPACE
+ 11480 mark ball-1-player-4-in-play
+ 11490 tap 10 KEYCODE_Y
+ 11560 tap 10 KEYCODE_U
+ 11700 mark ball-1-player-4-drained
+ 11710 tap 10 KEYCODE_Q
+ 11770 tap 10 KEYCODE_DOWN
+ 12000 mark ball-2-player-1-start
+ 12010 tap 40 KEYCODE_SPACE
+ 12180 mark ball-2-player-1-in-play
+ 12190 tap 10 KEYCODE_Y
+ 12260 tap 10 KEYCODE_U
+ 12400 mark ball-2-player-1-drained
+ 12410 tap 10 KEYCODE_Q
+ 12470 tap 10 KEYCODE_DOWN
+ 12700 mark ball-2-player-2-start
+ 12710 tap 40 KEYCODE_SPACE
+ 12880 mark ball-2-player-2-in-play
+ 12890 tap 10 KEYCODE_Y
+ 12960 tap 10 KEYCODE_U
+ 13100 mark ball-2-player-2-drained
+ 13110 tap 10 KEYCODE_Q
+ 13170 tap 10 KEYCODE_DOWN
+ 13400 mark ball-2-player-3-start
+ 13410 tap 40 KEYCODE_SPACE
+ 13580 mark ball-2-player-3-in-play
+ 13590 tap 10 KEYCODE_Y
+ 13660 tap 10 KEYCODE_U
+ 13800 mark ball-2-player-3-drained
+ 13810 tap 10 KEYCODE_Q
+ 13870 tap 10 KEYCODE_DOWN
+ 14100 mark ball-2-player-4-start
+ 14110 tap 40 KEYCODE_SPACE
+ 14280 mark ball-2-player-4-in-play
+ 14290 tap 10 KEYCODE_Y
+ 14360 tap 10 KEYCODE_U
+ 14500 mark ball-2-player-4-drained
+ 14510 tap 10 KEYCODE_Q
+ 14570 tap 10 KEYCODE_DOWN
+ 14800 mark ball-3-player-1-start
+ 14810 tap 40 KEYCODE_SPACE
+ 14980 mark ball-3-player-1-in-play
+ 14990 tap 10 KEYCODE_Y
+ 15060 tap 10 KEYCODE_U
+ 15200 mark ball-3-player-1-drained
+ 15210 tap 10 KEYCODE_Q
+ 15270 tap 10 KEYCODE_DOWN
+ 15500 mark ball-3-player-2-start
+ 15510 tap 40 KEYCODE_SPACE
+ 15680 mark ball-3-player-2-in-play
+ 15690 tap 10 KEYCODE_Y
+ 15760 tap 10 KEYCODE_U
+ 15900 mark ball-3-player-2-drained
+ 15910 tap 10 KEYCODE_Q
+ 15970 tap 10 KEYCODE_DOWN
+ 16200 mark ball-3-player-3-start
+ 16210 tap 40 KEYCODE_SPACE
+ 16380 mark ball-3-player-3-in-play
+ 16390 tap 10 KEYCODE_Y
+ 16460 tap 10 KEYCODE_U
+ 16600 mark ball-3-player-3-drained
+ 16610 tap 10 KEYCODE_Q
+ 16670 tap 10 KEYCODE_DOWN
+ 16900 mark ball-3-player-4-start
+ 16910 tap 40 KEYCODE_SPACE
+ 17080 mark ball-3-player-4-in-play
+ 17090 tap 10 KEYCODE_Y
+ 17160 tap 10 KEYCODE_U
+ 17300 mark ball-3-player-4-drained
+ 17310 tap 10 KEYCODE_Q
+ 17370 tap 10 KEYCODE_DOWN
+ 17600 mark game-over
+ 18500 mark end
