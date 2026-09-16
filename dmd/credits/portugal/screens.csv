@@ -1,0 +1,31 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,333,2,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,416,449,2,SETTING / DEFAULT VALUES / PRESS START,2
+3,unlabelled,0003-unlabelled,699,699,1,,3
+4,unlabelled,0004-unlabelled,1133,1133,1,BALLS OK,4
+5,unlabelled,0005-unlabelled,2233,2233,1,,3
+6,unlabelled,0006-unlabelled,2299,2299,1,,6
+7,unlabelled,0007-unlabelled,2349,11200,376,,7
+8,unlabelled,0008-unlabelled,11233,11233,1,,3
+9,unlabelled,0009-unlabelled,11250,12700,2,,9
+10,unlabelled,0010-unlabelled,14133,15566,3,,10
+11,unlabelled,0011-unlabelled,17000,17000,1,,11
+12,unlabelled,0012-unlabelled,18433,18433,1,,12
+13,unlabelled,0013-unlabelled,19849,19849,1,,13
+14,unlabelled,0014-unlabelled,19866,20033,5,,14
+15,unlabelled,0015-unlabelled,20083,20249,4,,14
+16,unlabelled,0016-unlabelled,20316,20466,4,,14
+17,unlabelled,0017-unlabelled,20533,20699,4,,14
+18,unlabelled,0018-unlabelled,20749,21466,14,,18
+19,unlabelled,0019-unlabelled,21516,21516,1,,19
+20,unlabelled,0020-unlabelled,21533,21533,1,,3
+21,unlabelled,0021-unlabelled,21549,21549,1,,21
+22,unlabelled,0022-unlabelled,22399,22399,1,,3
+23,unlabelled,0023-unlabelled,22433,22433,1,,23
+24,open-menu,0024-open-menu,23333,23516,9,,24
+25,open-menu,0025-open-menu,23533,23533,1,GAM,25
+26,open-menu,0026-open-menu,23549,28883,5,SOUND/VIDEO / GAME / TECHNICAL,26
+27,open-menu,0027-open-menu,31033,31066,2,BOARD TEST / CREDITS / TILTS,27
+28,svc-3-technical,0028-svc-3-technical,36699,36716,2,BOARD TEST / CREDITS / TILTS,28
+29,svc-3-technical,0029-svc-3-technical,40033,40033,1,,3
+30,svc-3-technical,0030-svc-3-technical,40066,40083,2,1 OF 100 CRED:3 / 1 OF 200 CRED:6,30

@@ -1,0 +1,21 @@
+# Menu record 23, CREDITOS / CREDITS -- the live coin-pricing table, which is the only
+# screen that renders a country's own denominations (F11: sub_D69CC applies the country's
+# coin preset from the seven-way table at D5D01).  The corpus ran two countries, so five
+# of the seven sets of denomination strings had never been on screen.
+#
+# The page needs no credits and no ball: TEST opens the menu, scroll twice and select
+# reaches record 3 (TECHNICAL, F14/F18's own path), then one scroll and select reaches
+# record 23.  The country is set by a saved cfg, one per country -- see the README.
+    40 tap 8 KEYCODE_1
+  1400 mark open-menu
+  1410 tap 12 KEYCODE_7
+  1600 tap 12 KEYCODE_LSHIFT
+  1730 tap 12 KEYCODE_LSHIFT
+  1860 tap 12 KEYCODE_RSHIFT
+  2100 mark svc-3-technical
+  2200 tap 12 KEYCODE_LSHIFT
+  2400 tap 12 KEYCODE_RSHIFT
+  2700 mark svc-23-credits
+  3600 mark credits-settled
+  5200 mark credits-held
+  6400 mark end
