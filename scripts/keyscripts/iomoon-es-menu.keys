@@ -1,0 +1,82 @@
+# The SPANISH service menu for iomoont, country 5 (Spain), captured in ONE menu entry.
+#
+# dmd/es/ has no service-menu tree at all, on the reading that F19 makes a Spanish menu
+# capture impossible.  F19 is about menu EXIT: exiting queues 0xF8 (which reboots the
+# Z80), and the rebooting Z80's own 0xFF state announcement wins the race against the
+# real 0xF9 DIP reply, so sub_D5C3E accepts 0xFF and (0xFF AND 0x0E) - 2 decodes to
+# country 7.  A walk that opens the menu ONCE and never exits and re-enters never runs
+# that path, and the machine stays on its DIP country for the whole walk -- the store
+# still reads country 5 at the end of this run, and the records render in Spanish.
+#
+# Requires scripts/keyscripts/iomoont-spain.cfg copied to <cfg dir>/iomoont.cfg, the
+# same way dmd/es/ sets the country (a saved cfg, not a live DIP sequence).
+#
+# Navigation is F14's: 7 opens (0x3F), Right Shift selects (0x42), Left Shift scrolls
+# (0x41), 1 goes back (0x40).  The walk alternates select and scroll to descend, and
+# backs up to the root between branches -- never TEST, which would exit.
+   40 tap 8 KEYCODE_1
+  900 mark attract
+ 1400 mark open-menu
+ 1410 tap 12 KEYCODE_7
+ 2200 mark svc-root
+ 2500 tap 12 KEYCODE_RSHIFT
+ 2620 mark svc-branch-1-enter
+ 2900 tap 12 KEYCODE_LSHIFT
+ 3020 mark svc-branch-1-item-1
+ 3250 tap 12 KEYCODE_LSHIFT
+ 3370 mark svc-branch-1-item-2
+ 3600 tap 12 KEYCODE_LSHIFT
+ 3720 mark svc-branch-1-item-3
+ 3950 tap 12 KEYCODE_LSHIFT
+ 4070 mark svc-branch-1-item-4
+ 4300 tap 12 KEYCODE_LSHIFT
+ 4420 mark svc-branch-1-item-5
+ 4650 tap 12 KEYCODE_RSHIFT
+ 4770 mark svc-branch-1-leaf
+ 5100 tap 12 KEYCODE_1
+ 5220 mark svc-branch-1-back
+ 5450 tap 12 KEYCODE_1
+ 5570 mark svc-back-to-root-1
+ 5850 tap 12 KEYCODE_LSHIFT
+ 5970 mark svc-root-scroll-1
+ 6150 tap 12 KEYCODE_RSHIFT
+ 6270 mark svc-branch-2-enter
+ 6550 tap 12 KEYCODE_LSHIFT
+ 6670 mark svc-branch-2-item-1
+ 6900 tap 12 KEYCODE_LSHIFT
+ 7020 mark svc-branch-2-item-2
+ 7250 tap 12 KEYCODE_LSHIFT
+ 7370 mark svc-branch-2-item-3
+ 7600 tap 12 KEYCODE_LSHIFT
+ 7720 mark svc-branch-2-item-4
+ 7950 tap 12 KEYCODE_LSHIFT
+ 8070 mark svc-branch-2-item-5
+ 8300 tap 12 KEYCODE_RSHIFT
+ 8420 mark svc-branch-2-leaf
+ 8750 tap 12 KEYCODE_1
+ 8870 mark svc-branch-2-back
+ 9100 tap 12 KEYCODE_1
+ 9220 mark svc-back-to-root-2
+ 9500 tap 12 KEYCODE_LSHIFT
+ 9620 mark svc-root-scroll-2
+ 9800 tap 12 KEYCODE_LSHIFT
+ 9920 mark svc-root-scroll-3
+10100 tap 12 KEYCODE_RSHIFT
+10220 mark svc-branch-3-enter
+10500 tap 12 KEYCODE_LSHIFT
+10620 mark svc-branch-3-item-1
+10850 tap 12 KEYCODE_LSHIFT
+10970 mark svc-branch-3-item-2
+11200 tap 12 KEYCODE_LSHIFT
+11320 mark svc-branch-3-item-3
+11550 tap 12 KEYCODE_LSHIFT
+11670 mark svc-branch-3-item-4
+11900 tap 12 KEYCODE_LSHIFT
+12020 mark svc-branch-3-item-5
+12250 tap 12 KEYCODE_RSHIFT
+12370 mark svc-branch-3-leaf
+12700 tap 12 KEYCODE_1
+12820 mark svc-branch-3-back
+13050 tap 12 KEYCODE_1
+13170 mark svc-back-to-root-3
+13450 mark end
