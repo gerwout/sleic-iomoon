@@ -2272,6 +2272,56 @@ unexplained "growing letter run" coincidentally matching real glyph bitmaps.
 
 ---
 
+## F22 — Jupiter's release coil is driven from four 80188 commands, none of them a mode
+
+**Statement.** Coil 16, *Sueltabolas de Júpiter*, is fired by one Z80 routine,
+`sub_07C3`, which has five call sites reached by exactly four 80188 commands —
+`0xE2`, `0xEE`, `0xED` and `0xEF` — plus the service solenoid walk. No mode
+path fires it: neither Multiball, nor Wonderful Thing, nor Little Multiball
+reaches any of them by itself.
+
+**The coil.** `sub_07C3` (`07C3`) reads the port-`$86` shadow `$C006`, ANDs it
+with `0x7F` and writes the result to `$C006` and `OUT ($86)`. Port `$86` is
+active LOW (F17), so clearing bit 7 fires coil 16 — F17's own `$86` bit 7. It
+also sets `$C017` to `0xFF` and `$C05F` to `0x1E`, a flag and a countdown the
+callers below test.
+
+**The five call sites, and the commands that reach them:**
+
+| Site | Routine | Reached by |
+|---|---|---|
+| `10AE` | inside `sub_1037` | the service solenoid walk — a chain of `sub_06xx`/`sub_07xx` coil routines interleaved with `sub_10E4`, the same shape as `sub_2C87` |
+| `2A0C` | its own two-instruction handler | 80188 command **`0xE2`** — a bare fire-and-return |
+| `2B97` | `sub_2B86` | 80188 command **`0xEE`** |
+| `2C54`, `2C5C` | both inside `sub_2C41` | `sub_2BC7`, command **`0xEF`** (ball search), and `sub_2BEB`, command **`0xED`** (the trough check) |
+
+Command-to-handler mapping is read from the Z80's own 256-entry table at
+`$2000`, indexed by command byte: entry `0xE2` is `0x2A0C`, `0xEE` is
+`0x2B86`, `0xEF` is `0x2BC7`, `0xED` is `0x2BEB`.
+
+**`sub_2C41` fires the coil on both arms of its own test.** It strobes switch
+column 4, ANDs the result with `0x07` — the three Jupiter contacts C44, C45
+and C46 — and compares against `0x07`. All three closed returns `0xFF`, any
+other state returns `0x00`, but `sub_07C3` is called first either way. The
+three-contact test sets the *reply*, not whether the ball is released.
+
+**`sub_2B86` (`0xEE`) keys on C44 alone, and waits for it.** It tests bit 0 of
+column 4 — C44, JUPITER 1 — and returns at once if that contact is closed.
+With C44 open it fires the coil, then spins re-strobing column 4 until bit 0
+**closes**, and only then waits on `$C017` before returning. So this command
+expects a released ball to arrive at C44, and does not return until one does.
+
+**Confidence:** confirmed for the call graph — every site and every table
+entry is read directly from the listing and the ROM image, with no inference.
+
+**Disposition:** answers half of the rules page's own open question on coil 16
+(`docs/iomoon_game_rules.md`, *Open questions*): the coil is not dead, and
+what drives it is now named. What remains open is the other half — which
+80188 code path issues `0xE2` or `0xEE`, and when — since the three mode
+paths do not reach them on their own.
+
+---
+
 ## What changed
 
 **Counting basis.** Three facts — F2, F13 and F14 — have **split

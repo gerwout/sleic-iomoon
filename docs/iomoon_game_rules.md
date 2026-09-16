@@ -1087,17 +1087,18 @@ Stated as open rather than guessed. Each line says what would settle it.
   caps them per game, but neither says what one gives. Elsewhere SLEIC uses
   *partida* for a free game (§3.5, §5.14). *Settled by:* the credit path in the
   80188 for the three lane codes, or a real machine.
-- **Whether Jupiter's release coil fires in normal play** — coil 16
-  (*Sueltabolas de Júpiter*) was not observed firing in about 46 s of
-  single-ball play, and the ball-search sweep skips it (F17 addendum). Its fire
-  routine `sub_07C3` is called from `sub_2C41` on both outcomes of that
-  routine's own three-contact test, so a genuine two-ball lock or a multiball
-  may reach it where a single ball never does. *Settled by:* the MAME debugger on
-  command `0xEB`'s handler and the coil-16 wrapper, or a real machine.
-  **Narrowed:** it does not fire for a single lock taken with `LPA3` lit, the
-  case §3.2.6 says releases the ball at scoop 1 — across eight scoop-1 collects
-  `[4134:0030]` stays at 1 and `core_getSol(16)` is never true
-  ([`../dmd/little-multiball/`](../dmd/little-multiball/)).
+- **What makes Jupiter release a ball in play** — the coil's drive path is not
+  open: **F22** names it. `sub_07C3` clears bit 7 of the active-low port `$86`,
+  and exactly four 80188 commands reach it — `0xE2`, a bare fire-and-return;
+  `0xEE`, which keys on C44 and then waits for a ball to arrive there; and
+  `0xED`/`0xEF` through `sub_2C41`, which fires on both arms of its own
+  three-contact test — plus the service solenoid walk. What is open is **which
+  80188 path issues `0xE2` or `0xEE` in play, and when**: none of the three mode
+  paths reaches one on its own. The coil is not observed firing for a single lock
+  with `LPA3` lit — eight scoop-1 collects, `[4134:0030]` stays at 1
+  ([`../dmd/little-multiball/`](../dmd/little-multiball/)) — nor for a two-ball
+  lock that announces Multiball, nor in single-ball play. *Settled by:* tracing
+  every writer of `0xE2` and `0xEE` into the outbound queue `qout_push`.
 - **What frees a ball sitting in scoop 2** — scoop 2 has no coil (F17 addendum),
   and the firmware's ball-recovery sweep does not treat *Taca* as a
   ball-freeing device either, yet §3.3.8 gives scoop 2 a full set of awards.

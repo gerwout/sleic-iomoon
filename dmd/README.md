@@ -254,6 +254,30 @@ collects -- which narrows the rules' own open question about *Sueltabolas de
 Júpiter* rather than settling it. `dmd/little-multiball/README.md` has the probe
 and the argument.
 
+## The lit-lane awards (`lanes/`), captured against `iomoon`
+
+The three awards a lane pays with its own lamp lit — **Bonus x10** at lane 9,
+**Special** at lane 7, **Extra Ball** at lane 8 — which no other capture here
+collects, for a structural reason: the walks that light a lane lamp press no
+lane but lane 6, and the coverage sweep, which presses all eleven, lights none
+of them first.
+
+The drop bank hands the light along (two targets to `LP9`, four to `LP7`, five
+to `LP8`, each step replacing the last), so all three collects sit inside one
+ball. 194 distinct screens, **51 new to the corpus**. Every collect is
+confirmed from the lamp rather than the script: each lamp blinks continuously
+from its own target step until within five frames of its own lane press, and
+never again. `dmd/lanes/README.md` has the timeline.
+
+## A four-player game (`players/`), captured against `iomoon`
+
+Every other capture in this corpus plays one player. Four players, three balls
+each, twelve balls: 219 distinct screens, **76 new to the corpus**. The
+four-player score display is what separates it — `screens.csv` decodes
+`1 2 / 3 4 / 1 1 / PLAYER BALL`, the four player numbers together, where `en/`
+only ever decodes `1 1`, `1 2` and `1 3`. Twelve ball-over events (`0x43`)
+confirm the player count from the machine rather than the script.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game
@@ -305,6 +329,22 @@ against it, then check every mod-only hash's label against the parent's
 own scenes under that label, per the method above.
 
 ## Open items
+
+- **Jackpot and Superjackpot cannot be captured, because Multiball announces
+  but does not engage.** Both are Multiball-only awards: `LD2` lights at
+  bull's-eye 2 and `LR21` at Ramp 2 when the mode starts, and both go out when
+  it ends (3.2.1). With ORBITS complete and the bank standing, a second Jupiter
+  lock draws the full-height MULTIBALL screen and plays its music — the frame is
+  byte-identical to `dmd/multiball/screens/0114-*` — but **neither lamp ever
+  lights**: lamp column 1 bits 5 and 6 (F18) flash only through the lock and
+  announce animations and are dark for the rest of the run, measured across
+  15,000 frames with fourteen playfield hits after the lock. **Coil 16 never
+  fires either**, so no ball is released and the mode never has three balls in
+  play. F22 establishes the firmware side — the coil is reached by exactly four
+  80188 commands and no mode path issues one — so what is missing is which path
+  should. Until that is answered the two awards are not reachable, and no key
+  script can reach them; `scripts/keyscripts/iomoon-jackpot.keys` drives
+  everything up to the point of collection and is kept for that reason.
 
 - ~~Two different score displays exist in this game, and only one of them
   decodes~~ **— the in-play display is now identified too, a headerless
