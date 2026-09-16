@@ -1129,21 +1129,44 @@ Stated as open rather than guessed. Each line says what would settle it.
   actually does here is worth checking on the real cabinet, since the manual and
   the ROM disagree.
 - **An auto-flipping small flipper, reported on the machine and absent from the
-  ROMs.** The owner reports that on a real cabinet — across more than one ROM set —
-  the small upper flipper auto-flips under some conditions, associated with a switch
-  sited above the Autodrop insert (the switch's own position being the only certain
-  part; whether the function relates to Autodrop is not claimed). **No such path
-  exists in any dump we hold.** F23 sets out the search: the Z80 does accept
-  commands `0xD1`/`0xD3`/`0xD4` that fire the upper flipper on the 80188's behalf,
-  and a byte-level search of all three 80188 images — for both push encodings, the
-  method validated by finding every command that must be issued — finds none of the
-  three anywhere, nor in either of the two tables that feed a variable
-  `qout_push`. On the Z80 side the upper coils are touched in exactly three places,
-  and the only callers are the right-button path, the self-test, the solenoid test
-  and the power-to-hold timer. *Settled by:* a ROM set we do not have, or a scope on
-  the upper flipper's own coil on the machine while the behaviour happens — which
-  would also say whether the drive comes from the Z80 latch at all or from the
-  expansion board.
+  ROMs — most likely a circuit, not code.** The owner reports that on a real
+  cabinet, across more than one ROM set, the small upper flipper auto-flips under
+  some conditions, from a switch sited above the Autodrop insert; it fires the mini
+  flipper **alone**, and not if the player has already flipped before the ball
+  reaches the switch.
+
+  **The ROM cannot do that, and the firmware path does not exist.** F23 sets out the
+  search — a byte-level scan of all three 80188 images finds none of the three
+  commands that fire the upper flipper, and the two tables feeding a variable
+  `qout_push` hold no flipper command. More telling than the absence: the Z80's own
+  path *structurally cannot* fire the mini flipper alone, because `sub_12D8` always
+  handles the right flipper first and falls into the upper second. A behaviour that
+  moves only the mini flipper is therefore not that path, whatever triggers it.
+
+  **What the manual does and does not show.** The driver board 011-027A offers two
+  coil-drive circuits, power (figure 7-11) and medium power (7-12); the upper
+  flipper's force winding runs T23 (2N5401) → T24 (BDX53C) → T25 (TIP36C), and its
+  hold winding T33 → T34. The board also carries a hardware system of its own, sheet
+  `011-027-02` **"DRIVERS - DSH SYSTEM"**, built from TIL111 optocouplers and a
+  74150 sixteen-to-one multiplexer — but that is the **VDB** sense path
+  (*Vigilancia Dinámica de Bobinas*, §2.4), which watches each driver output for a
+  shorted transistor and is what produces the `SOLENOID FAIL` / `GROUP: …` screens
+  in [`../dmd/solenoid-test/`](../dmd/solenoid-test/README.md). It monitors; it does
+  not trigger. No text in the manual describes a switch wired to a coil driver.
+
+  Two harness details worth knowing when tracing it. The general wiring sheet gives
+  the drivers board **J6 = "FLIPPER SOLS. & FLASH LIGHTS", 8 wires**, so the flipper
+  coils share one harness with the flash lamps; and the 8-bit CPU board carries
+  **SW2 = "DIRECT SWITCHES INPUTS", 8 wires** — physically wired inputs matching F5's
+  16-way direct scan, which the firmware **gates off** at port-`0x04` bit 0. A switch
+  on that harness is one the firmware never reads, which fits a behaviour the ROM
+  knows nothing about.
+
+  *Settled by:* a meter or scope on the machine, from that switch to the upper
+  flipper's own drive stage — the base of T23 or T24 on sheet `011-027-01`. If the
+  switch injects there, it fires the coil without the latch, which matches every
+  symptom reported. The schematic sheets in the service manual are images and are not
+  transcribed here.
 - **What frees a ball sitting in scoop 2** — scoop 2 has no coil (F17 addendum),
   and the firmware's ball-recovery sweep does not treat *Taca* as a
   ball-freeing device either, yet §3.3.8 gives scoop 2 a full set of awards.
