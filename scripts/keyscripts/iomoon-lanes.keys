@@ -1,0 +1,50 @@
+# The lit-lane awards for iomoon, at the country default (4, Netherlands, English, F11).
+# No other capture in this corpus collects one: the walks that light a lane lamp never
+# press that lane, and the coverage sweep presses all eleven lanes with nothing lit.
+#
+# The drop bank hands its three awards along in one ball, because it resets only at ball
+# start (3.3.6), so the whole sequence has to run inside ball 1 without draining:
+#   2 targets down -> LP9  (Bonus x10 at lane 9)   -> lane 9 collects it
+#   4 targets down -> LP7  (Special at lane 7), LP9 out  -> lane 7 collects it
+#   5 targets down -> LP8  (Extra Ball at lane 8), LP7 out -> lane 8 collects it
+# Each step REPLACES the previous light, so each lane is pressed before the next target
+# takes its lamp away.  F18 puts LP7/LP8/LP9 at lamp column 5 bits 4/5/6, which is how
+# each collect is confirmed lit rather than assumed.  Those lamps BLINK -- roughly nine
+# frames on, nine off -- so a single-frame sample says nothing; the confirmation is that
+# each one blinks continuously from its own target step until a few frames after its
+# lane is pressed, and never again.
+#
+# Credits come from six coins in this run rather than a pre-seeded store: one coin does
+# not buy a credit under country 4's preset, and a coin pressed during the first attract
+# cycle is lost.
+#
+# Keys: 5 coin, 1 start, Space plunge, Z/X/C/V/N drop targets A-E,
+#       , lane 7, . lane 8, / lane 9.
+    40 tap 8 KEYCODE_1
+  6641 tap 10 KEYCODE_5
+  6721 tap 10 KEYCODE_5
+  6801 tap 10 KEYCODE_5
+  6881 tap 10 KEYCODE_5
+  6961 tap 10 KEYCODE_5
+  7041 tap 10 KEYCODE_5
+  7200 mark credit
+  7210 tap 10 KEYCODE_1
+  7400 mark ball-1-start
+  7410 tap 40 KEYCODE_SPACE
+  7700 mark drop-target-1
+  7710 tap 10 KEYCODE_Z
+  7900 mark drop-target-2-lights-lp9
+  7910 tap 10 KEYCODE_X
+  8200 mark lane-9-bonus-x10
+  8210 tap 10 KEYCODE_SLASH
+  8500 mark drop-target-3
+  8510 tap 10 KEYCODE_C
+  8700 mark drop-target-4-lights-lp7
+  8710 tap 10 KEYCODE_V
+  9000 mark lane-7-special
+  9010 tap 10 KEYCODE_COMMA
+  9300 mark drop-target-5-lights-lp8
+  9310 tap 10 KEYCODE_N
+  9600 mark lane-8-extra-ball
+  9610 tap 10 KEYCODE_STOP
+ 10000 mark end
