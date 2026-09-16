@@ -337,21 +337,27 @@ own scenes under that label, per the method above.
 
 ## Open items
 
-- **Jackpot and Superjackpot cannot be captured, because Multiball announces
-  but does not engage.** Both are Multiball-only awards: `LD2` lights at
-  bull's-eye 2 and `LR21` at Ramp 2 when the mode starts, and both go out when
-  it ends (3.2.1). With ORBITS complete and the bank standing, a second Jupiter
-  lock draws the full-height MULTIBALL screen and plays its music — the frame is
-  byte-identical to `dmd/multiball/screens/0114-*` — but **neither lamp ever
-  lights**: lamp column 1 bits 5 and 6 (F18) flash only through the lock and
-  announce animations and are dark for the rest of the run, measured across
-  15,000 frames with fourteen playfield hits after the lock. **Coil 16 never
-  fires either**, so no ball is released and the mode never has three balls in
-  play. F22 establishes the firmware side — the coil is reached by exactly four
-  80188 commands and no mode path issues one — so what is missing is which path
-  should. Until that is answered the two awards are not reachable, and no key
-  script can reach them; `scripts/keyscripts/iomoon-jackpot.keys` drives
-  everything up to the point of collection and is kept for that reason.
+- ~~Jackpot and Superjackpot cannot be captured, because Multiball announces
+  but does not engage~~ **— cause found and fixed; Multiball now starts.** The
+  two CPUs use different Jupiter contacts: the 80188 counts a lock from C46,
+  but the Z80's release, command `0xEE` (`sub_2B86`), keys on **C44**, and the
+  matrix is active low, so it returned "nothing to release" on every one of the
+  nine `0xEE` issues a measured run made. PinMAME rested both locked balls on
+  C46 and C45, leaving C44 empty for ever. It now rolls a ball **over** C46 —
+  which is what the 80188 counts — and rests it on **C44**, the second on C45,
+  rolling down as C44 empties (`pinmame` commit `dfba2385`). With that, coil 16
+  fires, the balls release, the mode cell `[413C:00F4]` goes 9 → 0 and
+  `sub_DB716` runs to its end, where `LD2` and `LR21` are lit. **F22** has the
+  full sequence.
+
+  **Still to capture.** The start is a chain of four blocking waits (F22), each
+  needing a ball event: the released ball must report at a **scoop**, the serve
+  must be answered, and two further switch events must be dispatched.
+  `scripts/keyscripts/iomoon-jackpot.keys` drives all four and reaches a running
+  Multiball; what it does not yet do is keep a ball available to hit bull's-eye
+  2 and Ramp 2 afterwards, which is what the capture needs. The simulator's keys
+  act on one ball at a time, so the script has to follow the right ball with
+  `Down` at each step.
 
 - ~~Two different score displays exist in this game, and only one of them
   decodes~~ **— the in-play display is now identified too, a headerless

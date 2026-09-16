@@ -2289,13 +2289,14 @@ unexplained "growing letter run" coincidentally matching real glyph bitmaps.
 
 ---
 
-## F22 — Jupiter's release coil is driven from four 80188 commands, none of them a mode
+## F22 — Jupiter's release keys on C44, and the Multiball start drives it
 
 **Statement.** Coil 16, *Sueltabolas de Júpiter*, is fired by one Z80 routine,
-`sub_07C3`, which has five call sites reached by exactly four 80188 commands —
-`0xE2`, `0xEE`, `0xED` and `0xEF` — plus the service solenoid walk. No mode
-path fires it: neither Multiball, nor Wonderful Thing, nor Little Multiball
-reaches any of them by itself.
+`sub_07C3`, reached by exactly four 80188 commands — `0xE2`, `0xEE`, `0xED`
+and `0xEF` — plus the service solenoid walk. `0xEE` is the one play uses: the
+Multiball start issues it, and its handler **keys on C44**, not on C46. The
+two CPUs therefore use different Jupiter contacts — the 80188 counts a lock
+from C46, the Z80 releases from C44.
 
 **The coil.** `sub_07C3` (`07C3`) reads the port-`$86` shadow `$C006`, ANDs it
 with `0x7F` and writes the result to `$C006` and `OUT ($86)`. Port `$86` is
@@ -2322,20 +2323,53 @@ and C46 — and compares against `0x07`. All three closed returns `0xFF`, any
 other state returns `0x00`, but `sub_07C3` is called first either way. The
 three-contact test sets the *reply*, not whether the ball is released.
 
-**`sub_2B86` (`0xEE`) keys on C44 alone, and waits for it.** It tests bit 0 of
-column 4 — C44, JUPITER 1 — and returns at once if that contact is closed.
-With C44 open it fires the coil, then spins re-strobing column 4 until bit 0
-**closes**, and only then waits on `$C017` before returning. So this command
-expects a released ball to arrive at C44, and does not return until one does.
+**`sub_2B86` (`0xEE`) keys on C44 alone.** It tests bit 0 of column 4 — C44,
+JUPITER 1. **The matrix is active low**, so a set bit is an OPEN contact: the
+Z80 reads `IN ($02)` as the complement of the closed set, and `sub_2C1F`'s own
+trough test only reads as F15 describes under that polarity. The handler
+therefore returns at once when C44 is **open** — no ball there to release —
+and with a ball resting on C44 it fires the coil, spins until that contact
+**opens** (the ball has gone), and then waits for the next ball to arrive at
+C44 or for its own `$C017`/`$C05F` timeout.
 
-**Confidence:** confirmed for the call graph — every site and every table
-entry is read directly from the listing and the ROM image, with no inference.
+**What drives it in play: the Multiball start.** The lock handler's count-2
+arm (`D9E7E`) calls `sub_DB716`, which reaches `sub_DC6AC`. That routine
+issues `0xEE`, arms a ~500-tick window in `4000:1139`, and polls `sub_DC675`
+until the window runs out; on failure it **re-issues `0xEE` and repeats,
+unbounded**. `sub_DC675` accepts only two switch codes — `0x21` and `0x22`,
+TRAGABOLAS 2 and TRAGABOLAS 1 — so **a released ball is confirmed by reaching
+a scoop**; code `0x43`, the ball-over sensor, calls `sub_D92C0` and does not
+count as confirmation.
 
-**Disposition:** answers half of the rules page's own open question on coil 16
-(`docs/iomoon_game_rules.md`, *Open questions*): the coil is not dead, and
-what drives it is now named. What remains open is the other half — which
-80188 code path issues `0xE2` or `0xEE`, and when — since the three mode
-paths do not reach them on their own.
+**The start sequence is a chain of blocking waits**, each needing a ball event
+before the mode can run, which is why a released ball that goes nowhere stalls
+it indefinitely:
+
+| Where | Waits for |
+|---|---|
+| `sub_DC6AC` (from `DB7B4`) | the released ball to report at a scoop, `0x21`/`0x22` |
+| `sub_DC47E` (via `sub_DC636`) | the serve it issues with `0xE9` to answer `0x45` or `0x4A` |
+| `sub_DB457` (`DB47F`-`DB4A8`) | any dispatched switch event, during the animation |
+| `DB7E5` | one more dispatched switch event |
+
+Only past the last of those does `DB822`/`DB82A` light `LD2` and `LR21` — the
+Jackpot and Superjackpot lamps — and `sub_DC2A6` release what Jupiter still
+holds.
+
+**Confidence:** confirmed. Every call site, table entry and wait is read
+directly from the listing and the ROM image. The behaviour is confirmed
+running as well: with a ball resting on C44 the coil fires, the lock counter
+decrements on the scoop report, and the mode cell `[413C:00F4]` goes 9 to 0 —
+`sub_DB716` running to its end — where it never did while the locked balls sat
+on C46 and C45.
+
+**Disposition:** answers the rules page's own open question on coil 16
+(`docs/iomoon_game_rules.md`, *Open questions*) in full: the coil is not dead,
+it is the Multiball start that drives it, and it acts on C44. It also
+identified a simulator defect, since fixed — PinMAME rested locked balls on
+C46, so C44 never closed, so the Z80 answered every one of the nine `0xEE`
+issues in a measured run with "nothing to release" and the mode never
+started.
 
 ---
 

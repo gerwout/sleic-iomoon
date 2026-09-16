@@ -9,15 +9,24 @@
 #      STANDING -- a flattened bank would give Wonderful Thing instead (3.3.7).
 #   2. LD2 lit at bull's-eye 2 and LR21 lit at Ramp 2.  Both light when Multiball starts
 #      and go out when it ends, which is what makes these Multiball-only awards.
-#   3. Then hit them: bull's-eye 2 (RCtrl+B, C38 code 0x2E) pays the JPOT value, and
+#   3. The released ball has to reach a SCOOP.  sub_DC6AC releases a Jupiter ball with
+#      Z80 command 0xEE and then polls sub_DC675, which accepts only switch code 0x21 or
+#      0x22 -- Tragabolas 2 or Tragabolas 1.  Until one arrives it re-issues 0xEE every
+#      five seconds for ever, and LD2/LR21 are never lit.  Hence the LCtrl+H below.
+#   4. Then hit them: bull's-eye 2 (RCtrl+B, C38 code 0x2E) pays the JPOT value, and
 #      Ramp 2 (RCtrl+R, C39/C47) pays double it.
 #
 # Credits come from six coins in this run rather than a pre-seeded store: one coin does
 # not buy a credit under country 4's own preset, and a coin pressed during the first
 # attract cycle is lost.  Nothing outside this file is needed.
 #
-# Keys: 5 coin, 1 start, Space plunge, S lane 4, LCtrl+B bull's-eye 1,
-#       RCtrl+B bull's-eye 2, J Jupiter, RCtrl+R ramp 2, Y lane 1.
+# Down follows the next ball after each lock: the simulator's keys act on the CURRENT
+# ball only, and a ball held at Jupiter is not on the playfield, so without it the second
+# J press has no ball to send and the lock counter stops at 1.
+#
+# Keys: 5 coin, 1 start, Space plunge, Down follow next ball, S lane 4,
+#       LCtrl+B bull's-eye 1, RCtrl+B bull's-eye 2, J Jupiter, LCtrl+H scoop 1,
+#       RCtrl+R ramp 2, Y lane 1.
     40 tap 8 KEYCODE_1
   6641 tap 10 KEYCODE_5
   6721 tap 10 KEYCODE_5
@@ -56,20 +65,32 @@
   8900 mark orbits-complete
   9100 mark jupiter-lock-1
   9110 tap 10 KEYCODE_J
-  9500 mark replacement-ball-1
-  9510 tap 40 KEYCODE_SPACE
-  9800 mark jupiter-lock-2-multiball
-  9810 tap 10 KEYCODE_J
- 10200 mark replacement-ball-2
- 10210 tap 40 KEYCODE_SPACE
- 10500 mark multiball-running
- 10510 tap 10 KEYCODE_Y
- 10800 mark jackpot-1
- 10810 tap 10 KEYCODE_RCONTROL,KEYCODE_B
- 11200 mark superjackpot-1
- 11210 tap 10 KEYCODE_RCONTROL,KEYCODE_R
- 11600 mark jackpot-2
- 11610 tap 10 KEYCODE_RCONTROL,KEYCODE_B
- 12000 mark superjackpot-2
- 12010 tap 10 KEYCODE_RCONTROL,KEYCODE_R
- 12400 mark end
+  9280 mark replacement-ball-1
+  9290 tap 10 KEYCODE_DOWN
+  9350 tap 40 KEYCODE_SPACE
+  9500 mark jupiter-lock-2-multiball
+  9510 tap 10 KEYCODE_J
+  9700 mark follow-the-released-ball
+  9710 tap 10 KEYCODE_DOWN
+  9790 tap 10 KEYCODE_DOWN
+  9900 mark scoop-1-takes-the-released-ball
+  9910 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+ 10050 mark plunge-the-served-ball
+ 10060 tap 40 KEYCODE_SPACE
+ 10150 tap 10 KEYCODE_DOWN
+ 10220 tap 10 KEYCODE_DOWN
+ 10300 mark multiball-running
+ 10310 tap 10 KEYCODE_Y
+ 10560 tap 10 KEYCODE_DOWN
+ 10600 mark jackpot-1
+ 10610 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+ 10860 tap 10 KEYCODE_DOWN
+ 10900 mark superjackpot-1
+ 10910 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+ 11160 tap 10 KEYCODE_DOWN
+ 11200 mark jackpot-2
+ 11210 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+ 11460 tap 10 KEYCODE_DOWN
+ 11500 mark superjackpot-2
+ 11510 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+ 11800 mark end
