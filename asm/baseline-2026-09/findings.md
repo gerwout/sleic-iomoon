@@ -2117,19 +2117,36 @@ Independently verified against the disassembly above with a second country:
 country was actually running, since it does not depend on the real DIP
 value at all — only on `0xFF` itself.
 
+**The flip is session-only, and it is the menu's EXIT that causes it.** Two
+measurements bound what it costs:
+
+- **A power cycle puts it back.** The same store, booted again without a menu
+  visit, reads its DIP country again — `D664D` lets the DIP override the stored
+  value on every boot (F11). Measured: a run that opens and exits the menu takes
+  `0x1BF` from 4 to 7; the same store booted again, untouched, reads 4.
+- **A walk that opens the menu once and never re-enters keeps its country.** The
+  re-derivation lives on the exit path (`sub_DD253` -> `DD29E`), so navigating
+  with select, scroll and *back* never reaches it. Measured at country 5: the
+  store still reads 5 after a menu walk, and the records render in Spanish —
+  `SONIDO/VIDEO / JUEGO / TECNICO` and `VOLUMEN / PUBLICIDAD`
+  ([`../../dmd/es-menu/`](../../dmd/es-menu/)).
+
 **Confidence:** confirmed for the command sequence (`DD29E`-`DD2B5`, byte for
 byte), for `sub_D5C3E`'s accept test and arithmetic (`D5C49`-`D5CFD`, traced
 to the same seven-way table F11 names at `D5D01`), for the channel identity
 (F6: `C008` state bitmask vs `C0FC` event code, one inbound path), and for
-`D664D` persisting whatever `sub_D5A8B` returns (F11). Confirmed live on one
-traced repro run reproducing the exact byte sequence the static trace
-predicts. **Open:** whether a real machine's Z80/80188 pair races the same
+`D664D` persisting whatever `sub_D5A8B` returns (F11). Confirmed live on
+traced repro runs reproducing the exact byte sequence the static trace
+predicts — including on the **corrected** Z80 timing (4 MHz, IRQ 488.28 Hz),
+so the race does not depend on the two constants the driver previously
+carried. **Open:** whether a real machine's Z80/80188 pair races the same
 way — the 16-tick (F6) timeout and the INT0/8 outbound rate are this
 emulation's timing, not measured against real silicon; a logic-analyzer
 capture of J1 during a real machine's menu exit would settle it, and would
 also settle whether the real machine's own operators have ever observed a
 country/language flip after using the service menu (which this finding
-predicts they should, on every visit, in every country).
+predicts they should, on every exit, in every country, until the next
+power-up).
 
 **Disposition:** new. No prior hypothesis existed to adjudicate — this is a
 firmware behaviour, not a driver bug, and no driver change follows from it:

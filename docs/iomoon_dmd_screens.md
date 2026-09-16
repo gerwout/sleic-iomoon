@@ -2,10 +2,10 @@
 
 [← Back to main README](../README.md)
 
-Eleven capture directories make up the corpus. Four are of `iomoont`, the PRESS START
-tournament ROM — an English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), eight targeted
-fault captures (`dmd/faults/`) and one capture of the mod's SPECIAL/match `PRESS START`
-hook (`dmd/special/`). The other seven are of the parent `iomoon`, and cover play the
+Twelve capture directories make up the corpus. Five are of `iomoont`, the PRESS START
+tournament ROM — an English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), the Spanish
+service menu (`dmd/es-menu/`), eight targeted fault captures (`dmd/faults/`) and one
+capture of the mod's SPECIAL/match `PRESS START` hook (`dmd/special/`). The other seven are of the parent `iomoon`, and cover play the
 two language walks never reach: the Jupiter lock and Multiball (`dmd/multiball/`), every
 Monolith award (`dmd/monolith/`), Wonderful Thing and the bank (`dmd/modes/`), the
 rules sections those leave out (`dmd/coverage/`), Little Multiball in isolation
@@ -29,8 +29,9 @@ of the ROM's own strings the captures together do and do not put on screen, and 
 | `dmd/little-multiball/` | 158 | 90 | 23 |
 | `dmd/lanes/` | 352 | 194 | 12 |
 | `dmd/players/` | 400 | 219 | 45 |
+| `dmd/es-menu/` | 57 | 40 | 33 |
 
-**Corpus-wide that is 3,185 committed representative frames covering 2,212 distinct
+**Corpus-wide that is 3,302 committed representative frames covering 2,235 distinct
 screens** — distinct by `repr.txt` content across every capture, so a screen two walks
 both reach is counted once.
 
@@ -39,11 +40,12 @@ both reach is counted once.
 Both are counted from the committed files themselves, `screens.csv` rows and `repr.txt`
 files, which can differ by a scene or two from `dmd_dump_split.py`'s own console summary
 for the same dump.
-The Spanish corpus has no service-menu tree: F19 establishes that opening the menu
-re-derives the machine's tracked country from a stray byte and gets it wrong in every
-country, unconditionally landing on country 7 (Portugal) — so a Spanish menu capture
-would show Portugal's strings under a Spanish label, not Spain's. `dmd/README.md`'s own
-Spanish section has the full trace.
+`dmd/es/` itself has no service-menu tree, and `dmd/es-menu/` is why that is a gap in
+the walk rather than a property of the machine. F19's country re-derivation lives on the
+menu's **exit** path, so a walk that opens the menu once and navigates with select,
+scroll and *back* keeps its country: `dmd/es-menu/` stays at country 5 throughout and
+renders the records in Spanish. `dmd/README.md` and `dmd/es-menu/README.md` have the
+trace and the measurements.
 
 ## File format
 
@@ -90,7 +92,8 @@ dmd/
 │   └── screens/<NNNN-label>/
 │       ├── repr.txt              # one committed frame per distinct screen
 │       └── frame-*.txt           # every raw frame of the scene (gitignored, regenerable)
-├── es/                          # same layout, no service-menu tree (F19)
+├── es/                          # same layout; its own walk has no service-menu tree
+├── es-menu/                     # the Spanish menu, captured in one entry (F19 bites on exit)
 ├── faults/
 │   ├── README.md                 # which probe forced each of the 8 captures
 │   └── <fault>/                  # same iomoont.txt.gz / iomoont.marks / screens.csv / screens/ layout
@@ -347,8 +350,8 @@ still contribute nothing to a text-match count, for either reason 2 or reason 3.
 | | Count |
 |---|---|
 | Strings named (tier 1 / tier 2 / tier 3) | 275 / 0 / 166 = 441 |
-| Present (whole-field match, anywhere in the corpus) | 37 |
-| Missing | 404 |
+| Present (whole-field match, anywhere in the corpus) | 42 |
+| Missing | 399 |
 
 **Computed over every capture**, all eleven directories, in one run:
 
@@ -358,9 +361,10 @@ python3 scripts/dmd_dump_split.py --coverage \
         dmd/*/screens.csv dmd/faults/*/screens.csv
 ```
 
-**Adding the seven gameplay captures moves the count by zero** — the same 441 named,
-37 present, 404 missing as `dmd/en`, `dmd/es`, `dmd/faults` and `dmd/special` give on
-their own. That is a real result about where this machine's text lives rather than a
+**Adding the seven gameplay captures moves the count by zero** — the same 441 named and
+404 missing as `dmd/en`, `dmd/es`, `dmd/faults` and `dmd/special` give on their own.
+(`dmd/es-menu/`, which is not a gameplay capture, is what moves it to 399: five Spanish
+menu strings — `SONIDO/VIDEO`, `JUEGO`, `TECNICO`, `VOLUMEN`, `PUBLICIDAD`.) That is a real result about where this machine's text lives rather than a
 shortfall in those captures: they hold 1,101 distinct screens between them, but what
 is on those screens is mode announcements and award banners drawn in faces the decoder
 does not have, plus the in-play HUD it does. A `PLAYER`, a `BALL` or a bare digit is
@@ -436,7 +440,7 @@ it now demonstrably is.
 
 ### Every missing string, grouped and explained
 
-**Tier 1 — 259 missing.** No individual disposition per string; two source groups
+**Tier 1 — 254 missing.** No individual disposition per string; two source groups
 account for all of them, and item 2 splits into four distinct outcomes below.
 
 1. **F16 switch/cabinet names, 90 missing (`contact_table()`, English + Spanish, shared
@@ -449,7 +453,7 @@ account for all of them, and item 2 splits into four distinct outcomes below.
    `SLEIC_INJECT_BIT`) to trigger a few matrix switches while `svc-32` is open. Spanish
    names are additionally gated by F19 (below).
 
-2. **The 38-record menu tree's own item/title prose, 169 missing (`menu_records()`,
+2. **The 38-record menu tree's own item/title prose, 164 missing (`menu_records()`,
    English + Spanish; 10 moved to present — the 9 from the earlier recapture plus
    `EXTRA BALL`, matched coincidentally from the in-play HUD rather than from its own
    record, see "What is captured and decoded" above).** Commit `8d2c0f5` stretches every
@@ -507,7 +511,7 @@ exactly one.
 | Group | Count | Members | Disposition |
 |---|---|---|---|
 | English coil-group names | 20 | `GROUP: T29-30` .. `GROUP: TA3-B3-C3` (`T17-18-19` already captured) | **Capture gap, confirmed only via the fault probe.** Shown one at a time by the fault probe's own direct-input code (`dmd/faults/README.md`, `0x50`-`0x64`); this walk and the fault probes exercise only `T17-18-19`. Whether the record's own live `SOLEN. NUM.` entry (F14, `svc-24`) reaches the same content is now open, not assumed: every one of `svc-24`'s five occurrences, even at the 25x-longer dwell (`8d2c0f5`), matches early boot/attract content exactly, with no new content of any kind (Tier 1, above). Extending the fault probe's own injected code across `0x50`-`0x64` is the confirmed path to recover the rest. |
-| Spanish coil-group names | 21 | `GRUPO: T17-18-19` .. `GRUPO: TA3-B3-C3` | **Capture gap, doubly gated.** Same mechanism as above, plus F19 below (no Spanish service-menu tree) and the fault corpus running under the English/default country throughout. |
+| Spanish coil-group names | 21 | `GRUPO: T17-18-19` .. `GRUPO: TA3-B3-C3` | **Capture gap.** Same mechanism as above, plus the fault corpus running under the English/default country throughout. `dmd/es-menu/` shows the Spanish menu is reachable in one entry, so F19 is not a second gate here. |
 | English fuse names | 14 | `FUSE F5`..`F26` (`F4` already captured) | **Capture gap, confirmed only via the fault probe** — same caveat as the coil-group row: only `F4` was exercised, and `svc-24`'s own ordinary menu path is unconfirmed, not assumed working. |
 | Spanish fuse names | 15 | `FUSIBLE F4`..`F26` | **Capture gap, doubly gated**, same as the Spanish coil-group row. |
 | English SEND-REC/LIGHT TEST chrome — confirmed pre-rendered image | 4 | `SEND`, `RECEIVE` (record 33, SEND-REC TEST), `FIXED LIGHTS` (record 36, LIGHT TEST 2), `FLASHES` (record 37, LIGHT TEST 3) | **Pre-rendered image, confirmed (F20).** These three records are directly confirmed showing a complete pre-composed picture, not composed text, as their real content (see Tier 1, item 2, and `docs/dmd_graphics.md`). Record attribution is by ROM string order matching record order (`SEND`/`RECEIVE` at `0x2c1d`/`0x2c22`, `FIXED LIGHTS` at `0x2c38`, `FLASHES` at `0x2c45`, sequential and in the same order as records 33/36/37); the image itself has not been read letter by letter, so which of these words it depicts, if any, is not separately confirmed — only that the page they would render on is a picture. **No capture recovers these.** |

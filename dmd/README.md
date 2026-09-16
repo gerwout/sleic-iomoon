@@ -143,25 +143,23 @@ is `scripts/keyscripts/iomoon-en.keys`'s own game section, replayed
 unchanged — same keys, same relative timing — since playfield switch
 timing is not language-dependent; only the on-screen text differs, and
 the wheel-walk lands on the same score (`233,400,000`) and the same
-per-step decoder progression as the English capture. **The Spanish
-service-menu tree is not capturable through the menu at all, in
-principle, not by bad luck of this capture** — opening the menu flips
-the machine's own tracked country to 7 (Portugal) before the first
-record renders, in **every** country, regardless of which one was
-running. That is a firmware behaviour, not a driver bug and not
-something a re-timed key script can route around: see finding F19 in
-`asm/baseline-2026-09/findings.md` for the full trace. In short, menu
-exit reboots the Z80 (F14), and the rebooting Z80 announces its own
-"all inputs idle" byte (`0xFF`) over J1 before the 80188's real
-country-DIP query can get an answer; the 80188's wait loop accepts the
-first byte `>= 0xF0` it sees as the DIP report (F19), and `0xFF` decodes
-to country 7 unconditionally — not to whatever country was actually
-selected. Confirmed with `nvcheck.py` reproducing exactly this
-(country 5 to 7) across three attempts of decreasing scope, down to a
-bare TEST-key open-then-immediately-close with no other key and no
-game ever played. Capturing service-menu screens under a country that
-has already silently become Portuguese would misrepresent them as
-Spanish, so they are left out.
+per-step decoder progression as the English capture.
+
+**The Spanish menu is in [`es-menu/`](es-menu/README.md), captured
+separately, because reaching it takes a walk shaped differently from this
+one.** F19's country re-derivation lives on the menu's **exit** path:
+exiting queues `0xF8`, the Z80 reboots, and its own "all inputs idle"
+byte (`0xFF`) beats the real country-DIP reply to the 80188's wait loop,
+which accepts the first byte `>= 0xF0` it sees — and `0xFF` decodes to
+country 7 whatever country was running. A walk that opens the menu
+**once** and navigates with select, scroll and *back* never runs that
+path: `es-menu/` stays at country 5 for the whole walk, `nvcheck.py`
+reads 5 from the store it writes, and the records render in Spanish. Two
+further measurements bound the flip: it reproduces on the corrected Z80
+timing (4 MHz, IRQ 488.28 Hz), so it does not depend on the constants the
+driver previously carried, and it is session-only — the same store booted
+again without a menu visit reads its DIP country again, because `D664D`
+lets the DIP override the stored value on every boot (F11).
 
 A related, now-resolved finding along the way: reaching country 5 through
 the live DIP menu **inside** the same run that then tries to play a game
@@ -184,6 +182,15 @@ screens** under **52 labels**. `du -sh dmd/es` is 297M before committing
 (90M raw dump), comparable to `en/`'s 351M/108M once the missing
 service-menu tail is accounted for — not wildly larger, so nothing here
 is looping.
+
+## Spanish service menu (`es-menu/`), captured against `iomoont`
+
+The Spanish menu, in one entry. 40 distinct screens, **23 new to the corpus**, and the
+first five Spanish menu strings the coverage gate has ever seen on screen —
+`SONIDO/VIDEO`, `JUEGO`, `TECNICO` (record 0) and `VOLUMEN`, `PUBLICIDAD` (record 1),
+which take the gate from 404 missing to **399**. Everything deeper shows F21's
+procedural depth bar, which is exactly the depth the English walk reaches too.
+`dmd/es-menu/README.md` has what F19 does and does not block.
 
 ## Multiball (`multiball/`), captured against `iomoon`
 
