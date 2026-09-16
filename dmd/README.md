@@ -295,6 +295,22 @@ four-player score display is what separates it — `screens.csv` decodes
 only ever decodes `1 1`, `1 2` and `1 3`. Twelve ball-over events (`0x43`)
 confirm the player count from the machine rather than the script.
 
+## The service-menu captures (`contacts/`, `credits/`, `solenoid-test/`)
+
+Three captures of pages the machine draws only in its own test menus, and between them
+the largest coverage movement the corpus has had — 399 missing down to **232**.
+
+- **[`contacts/`](contacts/README.md)** — the CONTACTOS / SWITCH TEST page with contacts
+  actually closing, in both languages. 93 strings, including all 45 contact names. The
+  trick is `Del`: inside the menu no ball is in play, so the simulator's shot keys do
+  nothing, and that toggle hands the keyboard to the driver's matrix test keys instead.
+- **[`credits/`](credits/README.md)** — the live coin-pricing page in all eight DIP
+  settings. It moves the gate by nothing, and that is the finding: the ROM's strings are
+  templates (`OF 5DM CRED:`) that the live page always extends (`1 OF 5DM CRED:8`).
+- **[`solenoid-test/`](solenoid-test/README.md)** — all 42 direct-input fault codes in
+  both languages, so every coil group and every fuse the machine can blame is on screen.
+  74 strings. Needs the throwaway probe `dmd/faults/` documents, generalised.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game

@@ -2,7 +2,7 @@
 
 [← Back to main README](../README.md)
 
-Thirteen capture directories make up the corpus. Five are of `iomoont`, the PRESS START
+Sixteen capture directories make up the corpus. Five are of `iomoont`, the PRESS START
 tournament ROM — an English walk (`dmd/en/`), a Spanish walk (`dmd/es/`), the Spanish
 service menu (`dmd/es-menu/`), eight targeted fault captures (`dmd/faults/`) and one
 capture of the mod's SPECIAL/match `PRESS START` hook (`dmd/special/`). The other eight are of the parent `iomoon`, and cover play the
@@ -30,9 +30,12 @@ of the ROM's own strings the captures together do and do not put on screen, and 
 | `dmd/lanes/` | 352 | 194 | 12 |
 | `dmd/players/` | 400 | 219 | 45 |
 | `dmd/jackpot/` | 475 | 223 | 27 |
+| `dmd/contacts/` (2 languages) | 151 | 137 | 48 |
+| `dmd/credits/` (8 countries) | 240 | 36 | 6 |
+| `dmd/solenoid-test/` (84 captures) | 840 | 96 | 5 |
 | `dmd/es-menu/` | 57 | 40 | 33 |
 
-**Corpus-wide that is 3,525 committed representative frames covering 2,271 distinct
+**Corpus-wide that is 4,281 committed representative frames covering 2,357 distinct
 screens** — distinct by `repr.txt` content across every capture, so a screen two walks
 both reach is counted once.
 
@@ -354,21 +357,25 @@ still contribute nothing to a text-match count, for either reason 2 or reason 3.
 | | Count |
 |---|---|
 | Strings named (tier 1 / tier 2 / tier 3) | 275 / 0 / 166 = 441 |
-| Present (whole-field match, anywhere in the corpus) | 42 |
-| Missing | 399 |
+| Present (whole-field match, anywhere in the corpus) | 209 |
+| Missing | 232 |
 
-**Computed over every capture**, all eleven directories, in one run:
+**Computed over every capture**, all sixteen directories, in one run:
 
 ```bash
 python3 scripts/dmd_dump_split.py --coverage \
         --rom ../pinmame/roms/iomoon/v1_3_01.bin \
-        dmd/*/screens.csv dmd/faults/*/screens.csv
+        dmd/*/screens.csv dmd/faults/*/screens.csv \
+        dmd/contacts/*/screens.csv dmd/credits/*/screens.csv \
+        dmd/solenoid-test/*/*/screens.csv
 ```
 
-**Adding the seven gameplay captures moves the count by zero** — the same 441 named and
-404 missing as `dmd/en`, `dmd/es`, `dmd/faults` and `dmd/special` give on their own.
-(`dmd/es-menu/`, which is not a gameplay capture, is what moves it to 399: five Spanish
-menu strings — `SONIDO/VIDEO`, `JUEGO`, `TECNICO`, `VOLUMEN`, `PUBLICIDAD`.) That is a real result about where this machine's text lives rather than a
+**The gameplay captures move the count by zero**, and the service-menu ones move it a
+long way. `dmd/en`, `dmd/es`, `dmd/faults` and `dmd/special` alone give 404 missing; the
+seven gameplay captures add nothing to that; `dmd/es-menu/` takes it to 399, and then
+`dmd/contacts/` (the machine's own switch test, 93 strings) and `dmd/solenoid-test/`
+(every coil-group and fuse page, 74) take it to **232**. Where a machine keeps its text
+is now clear from the numbers: in the service menu, not in play. That is a real result about where this machine's text lives rather than a
 shortfall in those captures: they hold 1,101 distinct screens between them, but what
 is on those screens is mode announcements and award banners drawn in faces the decoder
 does not have, plus the in-play HUD it does. A `PLAYER`, a `BALL` or a bare digit is
