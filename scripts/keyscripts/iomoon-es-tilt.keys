@@ -1,0 +1,30 @@
+# The Spanish tilt-warning screens: ATENCION / UNA FALTA and ATENCION / DOS FALTAS.
+#
+# No probe.  sub_D9EBB, the tilt contact's own handler (F5 code 0x3E), tests the per-ball
+# warning budget [4134:0033], reloaded at each ball start from NVRAM 0x42 minus one (F10).
+# The factory default 0x42 = 1 gives a ZERO budget, so the first tilt goes straight to a
+# full tilt with no warning at all.  This capture therefore needs 0x42 = 3 (budget 2) in
+# the store BEFORE it runs -- boot once to create the file, patch the byte, then run this
+# without wiping the directory.  dmd/faults/'s own tilt capture does the same in English.
+#
+# Country 5 comes from scripts/keyscripts/iomoont-spain.cfg copied to <cfg dir>/iomoont.cfg.
+# Six coins buy the credit (one coin is not one credit under a country preset, and a coin
+# during the first attract cycle is lost).
+   40 tap 8 KEYCODE_1
+ 6641 tap 10 KEYCODE_5
+ 6721 tap 10 KEYCODE_5
+ 6801 tap 10 KEYCODE_5
+ 6881 tap 10 KEYCODE_5
+ 6961 tap 10 KEYCODE_5
+ 7041 tap 10 KEYCODE_5
+ 7200 mark credit
+ 7210 tap 10 KEYCODE_1
+ 7400 mark ball-1-start
+ 7410 tap 40 KEYCODE_SPACE
+ 7900 mark tilt-1
+ 7910 tap 12 KEYCODE_T
+ 9400 mark tilt-2
+ 9410 tap 12 KEYCODE_T
+10900 mark tilt-3-full
+10910 tap 12 KEYCODE_T
+12200 mark end
