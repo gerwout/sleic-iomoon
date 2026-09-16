@@ -57,7 +57,7 @@ wrapper and what gates them, in the same way the `0x44` lock path was traced.
 Needs the `SLEIC_LM_AUTO` probe below compiled in, `DEBUG_SLEIC` uncommented,
 and a seeded NVRAM with credits — see [`../multiball/README.md`](../multiball/README.md).
 It also needs the PinMAME fix that makes the Jupiter lock reachable at all,
-commit `957cf972`.
+commit `50b95257`.
 
 ```bash
 cd pinmame            # with the probe applied and DEBUG_SLEIC enabled

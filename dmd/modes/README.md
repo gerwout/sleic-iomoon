@@ -56,7 +56,7 @@ python3 scripts/dmd_dump_split.py dmd/modes/iomoon.txt \
 
 Like `multiball/`, this needs the PinMAME fix that makes the Jupiter lock
 reachable at all — `sleic: fill Io Moon's Jupiter lock from the contact the Z80
-reports`, commit `957cf972`.
+reports`, commit `50b95257`.
 
 ## Marks
 

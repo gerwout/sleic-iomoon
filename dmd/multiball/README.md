@@ -36,7 +36,7 @@ entries 28–30, all of which are the do-nothing default at `0x0523`.
 the simulator fills the Jupiter device from C44, a contact the Z80 reports no
 code for, so nothing is ever locked and none of these screens is drawn. The fix
 is `sleic: fill Io Moon's Jupiter lock from the contact the Z80 reports`,
-commit `957cf972` on branch `iomoon-probes`, which changes the state chain to
+commit `50b95257` on branch `iomoon-probes`, which changes the state chain to
 fill C46, C45, C44 in that order — the same "balls stack away from the entry"
 shape the trough model already uses, and for the same reason.
 

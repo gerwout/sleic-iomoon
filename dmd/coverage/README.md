@@ -41,7 +41,7 @@ Same tooling as the rest of the corpus, on `iomoon`, and it needs a
 `-nvram_directory` that already holds a store with credits — see
 [`../multiball/README.md`](../multiball/README.md). Like `multiball/` and
 `modes/` it needs the PinMAME fix that makes the Jupiter lock reachable,
-commit `957cf972`.
+commit `50b95257`.
 
 ```bash
 cd pinmame

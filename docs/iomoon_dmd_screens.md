@@ -113,7 +113,7 @@ dmd/
 The seven gameplay captures are of the **parent `iomoon`**, so their dump and marks
 files are `iomoon.*` rather than `iomoont.*`. Five of them — everything that locks a
 ball at Jupiter — also need the PinMAME fix that makes the lock reachable at all
-(commit `957cf972`); each README says so.
+(commit `50b95257`); each README says so.
 
 ## Regenerating
 
