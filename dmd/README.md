@@ -240,6 +240,20 @@ standing, and the **end-of-ball bonus** countdown. 147 distinct screens, **62
 new to the corpus**. `dmd/coverage/README.md` says what is confirmed and what is
 only armed.
 
+## Little Multiball isolated (`little-multiball/`), captured against `iomoon`
+
+The Monolith chases, so `LPA3` cannot be hit by a scripted key -- a lock lands
+on it about one time in ten. This capture uses a throwaway probe that takes the
+lock **on the frame `LPA3` is lit**, the way `faults/` uses its own probes.
+Exactly one ball locks (`[4134:0030]` = 1, not 2, which is what separates Little
+Multiball from Multiball) with `LTB12` lit at scoop 1. 90 distinct screens, 15
+new.
+
+The **release does not happen and coil 16 never fires**, across eight scoop-1
+collects -- which narrows the rules' own open question about *Sueltabolas de
+Júpiter* rather than settling it. `dmd/little-multiball/README.md` has the probe
+and the argument.
+
 ## Parent differential (`iomoont` vs `iomoon`)
 
 The mod differs from the parent (`iomoon`) in 186 bytes of the end-of-game

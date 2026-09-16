@@ -1,0 +1,159 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,666,3,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,699,699,1,BALLS OK,2
+3,unlabelled,0003-unlabelled,1783,1783,1,,3
+4,unlabelled,0004-unlabelled,1916,1949,2,,4
+5,unlabelled,0005-unlabelled,1966,8283,268,,5
+6,boot,0006-boot,8316,9316,38,,6
+7,boot,0007-boot,9349,9349,1,,7
+8,boot,0008-boot,9383,9383,1,,8
+9,boot,0009-boot,9400,9400,1,1 1 / PLAYER BALL,9
+10,boot,0010-boot,9433,9433,1,PLAYER BALL,10
+11,boot,0011-boot,9483,9500,2,PLAYER BALL,11
+12,boot,0012-boot,9550,9550,1,PLAYER BALL,12
+13,boot,0013-boot,9600,9866,11,PLAYER BALL,13
+14,boot,0014-boot,9883,9883,1,BALL,14
+15,boot,0015-boot,9933,9983,2,BALL,15
+16,boot,0016-boot,10000,10000,1,PLAYER BALL,16
+17,boot,0017-boot,10050,10050,1,PLAYER BALL,17
+18,boot,0018-boot,10100,10100,1,PLAYER BALL,18
+19,boot,0019-boot,10166,10166,1,BALL,19
+20,boot,0020-boot,10216,10216,1,BALL,20
+21,boot,0021-boot,10266,10266,1,PLAYER BALL,21
+22,start,0022-start,10316,10316,1,PLAYER BALL,22
+23,start,0023-start,10383,10383,1,BALL,23
+24,start,0024-start,10433,10433,1,BALL,24
+25,start,0025-start,10483,10483,1,PLAYER BALL,25
+26,start,0026-start,10550,10550,1,PLAYER BALL,26
+27,start,0027-start,10600,10600,1,BALL,27
+28,start,0028-start,10650,10650,1,PLAYER BALL,28
+29,start,0029-start,10700,10700,1,PLAYER BALL,29
+30,start,0030-start,10766,10766,1,PLAYER BALL,30
+31,start,0031-start,10816,10816,1,PLAYER BALL,31
+32,start,0032-start,10866,10866,1,PLAYER BALL,32
+33,start,0033-start,10933,10933,1,PLAYER BALL,33
+34,start,0034-start,10983,10983,1,PLAYER BALL,34
+35,start,0035-start,11033,11033,1,PLAYER BALL,35
+36,start,0036-start,11083,11083,1,PLAYER BALL,36
+37,start,0037-start,11150,11150,1,BALL,37
+38,start,0038-start,11200,11200,1,PLAYER BALL,38
+39,start,0039-start,11250,11250,1,PLAYER BALL,39
+40,start,0040-start,11316,11316,1,PLAYER BALL,40
+41,start,0041-start,11366,11366,1,PLAYER BALL,41
+42,start,0042-start,11416,11416,1,PLAYER BALL,42
+43,start,0043-start,11466,11483,2,PLAYER BALL,43
+44,start,0044-start,11533,11550,2,PLAYER BALL,44
+45,start,0045-start,11583,11600,2,PLAYER BALL,45
+46,start,0046-start,11633,11650,2,PLAYER BALL,46
+47,start,0047-start,11700,11850,6,PLAYER BALL,47
+48,start,0048-start,11866,11933,3,PLAYER BALL,48
+49,start,0049-start,11983,11983,1,PLAYER BALL,49
+50,start,0050-start,12033,15783,50,1 1 / PLAYER BALL,50
+51,plunge,0051-plunge,15983,20833,30,1 1 / PLAYER BALL,51
+52,plunge,0052-plunge,20966,20966,1,,52
+53,plunge,0053-plunge,20999,20999,1,,3
+54,orbits-1,0054-orbits-1,21016,21166,2,,54
+55,orbits-1,0055-orbits-1,23149,23149,1,,3
+56,orbits-1,0056-orbits-1,23166,23166,1,,56
+57,orbits-2,0057-orbits-2,23316,23449,2,,57
+58,orbits-2,0058-orbits-2,25299,25299,1,,58
+59,orbits-2,0059-orbits-2,25316,25316,1,1 1 / PLAYER BALL,9
+60,orbits-3,0060-orbits-3,25349,25349,1,,60
+61,orbits-3,0061-orbits-3,25383,25383,1,,3
+62,orbits-3,0062-orbits-3,25399,25833,6,,62
+63,orbits-3,0063-orbits-3,27466,27466,1,,3
+64,orbits-3,0064-orbits-3,27499,27499,1,,56
+65,orbits-4,0065-orbits-4,27633,29649,7,,65
+66,orbits-4,0066-orbits-4,29666,29666,1,,3
+67,orbits-5,0067-orbits-5,29683,31799,9,,67
+68,orbits-5,0068-orbits-5,31816,31816,1,,3
+69,orbits-5,0069-orbits-5,31833,31833,1,,69
+70,orbits-6,0070-orbits-6,31849,32666,7,,70
+71,orbits-complete,0071-orbits-complete,33999,33999,1,,71
+72,orbits-complete,0072-orbits-complete,34016,34849,8,1 1 / PLAYER BALL,72
+73,lock-window-opens,0073-lock-window-opens,35033,58350,151,1 1 / PLAYER BALL,73
+74,replacement-ball,0074-replacement-ball,58550,62233,25,1 1 / PLAYER BALL,74
+75,scoop1-collect-1,0075-scoop1-collect-1,62433,65533,19,1 1 / PLAYER BALL,75
+76,scoop1-collect-1,0076-scoop1-collect-1,65550,65566,2,,76
+77,scoop1-collect-1,0077-scoop1-collect-1,65583,65583,1,,3
+78,scoop1-collect-1,0078-scoop1-collect-1,65600,65616,2,,78
+79,scoop1-collect-1,0079-scoop1-collect-1,65650,65650,1,,79
+80,scoop1-collect-1,0080-scoop1-collect-1,65666,65666,1,,80
+81,scoop1-collect-1,0081-scoop1-collect-1,65733,65733,1,,81
+82,scoop1-collect-1,0082-scoop1-collect-1,65750,65750,1,,78
+83,scoop1-collect-1,0083-scoop1-collect-1,65783,65783,1,,83
+84,scoop1-collect-1,0084-scoop1-collect-1,65800,65866,2,,84
+85,scoop1-collect-1,0085-scoop1-collect-1,65883,65883,1,,78
+86,scoop1-collect-1,0086-scoop1-collect-1,65933,65933,1,,80
+87,scoop1-collect-1,0087-scoop1-collect-1,66016,66016,1,,78
+88,scoop1-collect-1,0088-scoop1-collect-1,66083,66083,1,,80
+89,scoop1-collect-1,0089-scoop1-collect-1,66166,66166,1,,78
+90,scoop1-collect-1,0090-scoop1-collect-1,66216,66216,1,,80
+91,scoop1-collect-1,0091-scoop1-collect-1,66300,66300,1,,78
+92,scoop1-collect-1,0092-scoop1-collect-1,66350,66350,1,,80
+93,scoop1-collect-1,0093-scoop1-collect-1,66433,66433,1,,78
+94,scoop1-collect-1,0094-scoop1-collect-1,66483,66483,1,,80
+95,scoop1-collect-1,0095-scoop1-collect-1,66566,66566,1,,78
+96,scoop1-collect-1,0096-scoop1-collect-1,66616,66616,1,,80
+97,scoop1-collect-1,0097-scoop1-collect-1,66700,66700,1,,78
+98,scoop1-collect-1,0098-scoop1-collect-1,66766,66766,1,,80
+99,scoop1-collect-1,0099-scoop1-collect-1,66850,66850,1,,78
+100,scoop1-collect-1,0100-scoop1-collect-1,66900,66900,1,,80
+101,scoop1-collect-1,0101-scoop1-collect-1,66983,66983,1,,78
+102,scoop1-collect-1,0102-scoop1-collect-1,67033,67033,1,,80
+103,scoop1-collect-1,0103-scoop1-collect-1,67116,67116,1,,78
+104,scoop1-collect-1,0104-scoop1-collect-1,67166,67166,1,,80
+105,scoop1-collect-1,0105-scoop1-collect-1,67250,67250,1,,78
+106,scoop1-collect-1,0106-scoop1-collect-1,67316,67316,1,,80
+107,scoop1-collect-1,0107-scoop1-collect-1,67400,67400,1,,78
+108,scoop1-collect-2,0108-scoop1-collect-2,67450,67466,2,,80
+109,scoop1-collect-2,0109-scoop1-collect-2,67533,67550,2,,78
+110,scoop1-collect-2,0110-scoop1-collect-2,67583,67600,2,,80
+111,scoop1-collect-2,0111-scoop1-collect-2,67666,67666,1,,111
+112,scoop1-collect-2,0112-scoop1-collect-2,67683,67683,1,,78
+113,scoop1-collect-2,0113-scoop1-collect-2,67716,67716,1,,113
+114,scoop1-collect-2,0114-scoop1-collect-2,67733,67733,1,,80
+115,scoop1-collect-2,0115-scoop1-collect-2,67800,67800,1,,115
+116,scoop1-collect-2,0116-scoop1-collect-2,67816,67850,2,,116
+117,scoop1-collect-2,0117-scoop1-collect-2,67866,67933,2,,117
+118,scoop1-collect-2,0118-scoop1-collect-2,67950,67950,1,,78
+119,scoop1-collect-2,0119-scoop1-collect-2,68016,68016,1,,80
+120,scoop1-collect-2,0120-scoop1-collect-2,68083,68083,1,,78
+121,scoop1-collect-2,0121-scoop1-collect-2,68150,68150,1,,80
+122,scoop1-collect-2,0122-scoop1-collect-2,68233,68233,1,,78
+123,scoop1-collect-2,0123-scoop1-collect-2,68283,68283,1,,80
+124,scoop1-collect-2,0124-scoop1-collect-2,68366,68366,1,,78
+125,scoop1-collect-2,0125-scoop1-collect-2,68416,68416,1,,80
+126,scoop1-collect-2,0126-scoop1-collect-2,68500,68500,1,,78
+127,scoop1-collect-2,0127-scoop1-collect-2,68550,68550,1,,80
+128,scoop1-collect-2,0128-scoop1-collect-2,68633,68633,1,,78
+129,scoop1-collect-2,0129-scoop1-collect-2,68700,68700,1,,80
+130,scoop1-collect-2,0130-scoop1-collect-2,68783,68783,1,,78
+131,scoop1-collect-2,0131-scoop1-collect-2,68833,68833,1,,80
+132,scoop1-collect-2,0132-scoop1-collect-2,68916,68916,1,,78
+133,scoop1-collect-2,0133-scoop1-collect-2,68966,68966,1,,80
+134,scoop1-collect-2,0134-scoop1-collect-2,69050,69050,1,,78
+135,scoop1-collect-2,0135-scoop1-collect-2,69100,70000,13,1 1 / PLAYER BALL,135
+136,scoop1-collect-2,0136-scoop1-collect-2,70016,70016,1,,3
+137,scoop1-collect-2,0137-scoop1-collect-2,70050,70050,1,,137
+138,scoop1-collect-2,0138-scoop1-collect-2,70166,70166,1,,138
+139,scoop1-collect-2,0139-scoop1-collect-2,70300,70300,1,,137
+140,scoop1-collect-2,0140-scoop1-collect-2,70400,70400,1,,138
+141,scoop1-collect-2,0141-scoop1-collect-2,70550,70550,1,,137
+142,scoop1-collect-2,0142-scoop1-collect-2,70650,70650,1,,138
+143,scoop1-collect-2,0143-scoop1-collect-2,70783,70783,1,,137
+144,scoop1-collect-2,0144-scoop1-collect-2,70900,70900,1,,138
+145,scoop1-collect-2,0145-scoop1-collect-2,71033,71033,1,,137
+146,scoop1-collect-2,0146-scoop1-collect-2,71150,71150,1,,138
+147,scoop1-collect-2,0147-scoop1-collect-2,71283,71283,1,,137
+148,scoop1-collect-2,0148-scoop1-collect-2,71400,71400,1,,138
+149,scoop1-collect-2,0149-scoop1-collect-2,71533,71650,4,,138
+150,scoop1-collect-2,0150-scoop1-collect-2,71783,72400,6,1 1 / PLAYER BALL,150
+151,scoop1-collect-3,0151-scoop1-collect-3,72583,77233,31,1 1 / PLAYER BALL,151
+152,scoop1-collect-4,0152-scoop1-collect-4,77433,82300,37,1 1 / PLAYER BALL,152
+153,scoop1-collect-5,0153-scoop1-collect-5,82483,87333,35,1 1 / PLAYER BALL,153
+154,scoop1-collect-6,0154-scoop1-collect-6,87533,92400,33,1 1 / PLAYER BALL,154
+155,scoop1-collect-7,0155-scoop1-collect-7,92583,97233,29,1 1 / PLAYER BALL,155
+156,scoop1-collect-8,0156-scoop1-collect-8,97433,102100,32,1 1 / PLAYER BALL,156
+157,little-multiball-done,0157-little-multiball-done,102300,108883,45,1 1 / PLAYER BALL,157
+158,end,0158-end,109100,111416,16,1 1 / PLAYER BALL,156

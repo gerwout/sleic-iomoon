@@ -1,0 +1,62 @@
+# Little Multiball for iomoon, isolated.
+#
+# The Monolith chases rather than resting, so no scripted key can be timed to
+# LPA3 -- a lock lands on it about one time in ten.  This script therefore does
+# NOT press J at all: the run is driven with SLEIC_LM_AUTO, a closed loop that
+# waits for the ORBITS count to reach its cap and then takes the lock on the
+# frame LPA3 is actually lit, holding the C46 contact afterwards so the ball
+# stays locked.  See dmd/little-multiball/README.md.
+#
+# What the script does: spell ORBITS, then plunge the replacement ball and work
+# scoop 1 repeatedly across a wide window, because the lock lands whenever LPA3
+# next comes round and the collect has to follow it.  Little Multiball pays at
+# scoop 1: one ball locked with LPA3 lit lights LTB12 there, a ball is served,
+# and putting that ball into scoop 1 releases the Jupiter ball (rules 3.2.6).
+#
+# Needs a seeded NVRAM with credits -- see dmd/multiball/README.md.
+500 mark boot
+560 tap 12 KEYCODE_1
+620 mark start
+900 tap 8 KEYCODE_SPACE
+960 mark plunge
+1200 tap 6 KEYCODE_S
+1255 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1263 mark orbits-1
+1330 tap 6 KEYCODE_S
+1385 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1393 mark orbits-2
+1460 tap 6 KEYCODE_S
+1515 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1523 mark orbits-3
+1590 tap 6 KEYCODE_S
+1645 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1653 mark orbits-4
+1720 tap 6 KEYCODE_S
+1775 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1783 mark orbits-5
+1850 tap 6 KEYCODE_S
+1905 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+1913 mark orbits-6
+1980 mark orbits-complete
+2100 mark lock-window-opens
+3500 tap 8 KEYCODE_SPACE
+3508 mark replacement-ball
+3740 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+3748 mark scoop1-collect-1
+4040 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+4048 mark scoop1-collect-2
+4340 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+4348 mark scoop1-collect-3
+4640 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+4648 mark scoop1-collect-4
+4940 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+4948 mark scoop1-collect-5
+5240 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+5248 mark scoop1-collect-6
+5540 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+5548 mark scoop1-collect-7
+5840 tap 6 KEYCODE_LCONTROL,KEYCODE_H
+5848 mark scoop1-collect-8
+6140 mark little-multiball-done
+6540 mark end
+6690 quit

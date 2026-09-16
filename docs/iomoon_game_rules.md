@@ -1094,6 +1094,10 @@ Stated as open rather than guessed. Each line says what would settle it.
   routine's own three-contact test, so a genuine two-ball lock or a multiball
   may reach it where a single ball never does. *Settled by:* the MAME debugger on
   command `0xEB`'s handler and the coil-16 wrapper, or a real machine.
+  **Narrowed:** it does not fire for a single lock taken with `LPA3` lit, the
+  case §3.2.6 says releases the ball at scoop 1 — across eight scoop-1 collects
+  `[4134:0030]` stays at 1 and `core_getSol(16)` is never true
+  ([`../dmd/little-multiball/`](../dmd/little-multiball/)).
 - **What frees a ball sitting in scoop 2** — scoop 2 has no coil (F17 addendum),
   and the firmware's ball-recovery sweep does not treat *Taca* as a
   ball-freeing device either, yet §3.3.8 gives scoop 2 a full set of awards.
