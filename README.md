@@ -8,7 +8,7 @@
 
 This repository documents the results of an extensive reverse engineering effort on the IO Moon ROM images. It contains analysis tools, annotated disassembly listings, and technical documentation covering the dual-CPU hardware architecture, the DMD graphics format, the OKI sound chip, and a ROM patch for tournament play.
 
-**IO Moon is supported in [PinMAME](https://github.com/vpinball/pinmame)**, built on the findings in this repository: the emulation boots, plays complete games with working switches, lamps, solenoids and the service menu, and drives both sound chips (YM3812 FM music and OKI MSM6376 speech). All three known ROM sets are registered — `iomoon` (v1.3, latest), `iomoona` (v1.3, earlier revision) and `iomoont` (PRESS START tournament MOD). Bike Race and Sleic Pin-Ball are supported as well.
+**IO Moon is supported in [PinMAME](https://github.com/vpinball/pinmame)**, built on the findings in this repository: the emulation boots, plays complete games with working switches, lamps, solenoids and the service menu, and drives both sound chips (YM3812 FM music and OKI MSM6376 speech). All known ROM sets are registered — `iomoon` (v1.3, latest), `iomoona` (v1.3, earlier revision), `iomoont` (PRESS START tournament MOD) and `iomoontf` (that MOD plus free play). Bike Race and Sleic Pin-Ball are supported as well.
 
 ---
 
@@ -188,12 +188,14 @@ sleic-io-moon/
 │   ├── extract-oki-msm6376.py         # OKI ADPCM sound sample extractor
 │   ├── iomoon_fm_extract.py           # YM3812 (OPL2) FM music extractor
 │   ├── io_moon_press_start_patch.py   # Tournament "PRESS START" ROM patch
+│   ├── io_moon_free_play_patch.py     # Free-play ROM patch (stacks on the one above)
 │   └── sal_export.py                  # Re-export a Saleae .sal capture to parseable v0 binary
 ├── docs/
 │   ├── dmd_viewer.md                  # DMD Viewer documentation
 │   ├── extract_oki_msm6376.md         # OKI extractor documentation
 │   ├── iomoon_fm_extract.md           # YM3812 FM music extractor documentation
 │   ├── press_start_patch.md           # PRESS START patch documentation
+│   ├── free_play_patch.md             # Free-play patch documentation
 │   ├── hardware_architecture.md       # Hardware architecture overview
 │   ├── board_011-029A_ics.md          # 16-bit / 80188 board IC inventory
 │   ├── board_011-030A_ics.md          # 8-bit / Z80 board IC inventory
@@ -305,10 +307,13 @@ sleic-io-moon/
 │   │   ├── V1 3_02.bin                # Display ROM 2 (DMD graphics)
 │   │   ├── V1 3_03.bin                # Sound ROM 1 (OKI)
 │   │   ├── V1 3_04.bin                # Sound ROM 2 (OKI)
-│   │   ├── V1 3_05.bin                # Z80 CPU ROM
-│   │   └── Start-Tournament-Patch/    # Tournament patch for this ROM set
-│   │       ├── README.md
-│   │       └── V1 3_01.bin            # Patched Display ROM 1
+│   │   └── V1 3_05.bin                # Z80 CPU ROM
+│   ├── 1.3 IPDB latest - Tournament and free play patch/
+│   │   ├── README.md                  # PRESS START + free play — the tournament image
+│   │   └── V1 3_01.bin                # Patched Display ROM 1
+│   ├── 1.3 IPDB latest - Tournament patch/
+│   │   ├── README.md                  # PRESS START only — deprecated
+│   │   └── V1 3_01.bin                # Patched Display ROM 1
 │   └── related-machines/              # ROM images of other SLEIC machines
 │       ├── README.md
 │       ├── sleic-pin-ball/            # Sleic Pin-Ball (SLEIC1, 1993) — complete, 4 ROMs
@@ -412,6 +417,10 @@ A ROM patch for tournament use. After a game ends, the original IO Moon immediat
   <br>
   <em>Click to watch the PRESS START patch in action</em>
 </p>
+
+### [Free Play Patch](docs/free_play_patch.md) — `scripts/io_moon_free_play_patch.py`
+
+The companion patch, and the reason to stack the two: IO Moon has no free-play adjustment of its own, so this one gives the machine a standing credit at `main_loop`'s no-credit idle arm and START begins a game with no coin. Independent of the patch above — different hook, different cave — so the two apply in either order. The combined image is in [`roms/1.3 IPDB latest - Tournament and free play patch/`](roms/1.3%20IPDB%20latest%20-%20Tournament%20and%20free%20play%20patch/) and is what a tournament should burn; the PRESS-START-only image is **deprecated** in favour of it.
 
 ---
 

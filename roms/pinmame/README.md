@@ -29,12 +29,17 @@ in the PinMAME tree.
 | `sleicpin.zip` | Sleic Pin-Ball (1993) | `SLEIC1` | — |
 | `iomoon.zip` | Io Moon | `SLEIC2` | — |
 | `iomoona.zip` | Io Moon (earlier ROM revision) | `SLEIC2` | `iomoon` |
-| `iomoont.zip` | Io Moon (PRESS START tournament MOD) | `SLEIC2` | `iomoon` |
+| `iomoont.zip` | Io Moon (PRESS START tournament MOD) — **deprecated**, see `iomoontf` | `SLEIC2` | `iomoon` |
+| `iomoontf.zip` | Io Moon (tournament MOD, free play) | `SLEIC2` | `iomoon` |
 
 **Clone sets follow the MAME convention**: a clone zip holds only the chips that
 differ from its parent, and MAME pulls the rest out of the parent zip. So
 `bikerac2.zip`, `bikerac3.zip`, `iomoona.zip` and `iomoont.zip` will not load on
 their own — the matching parent zip has to be on the same ROM path.
+
+`iomoontf.zip` is the one exception and carries **all five chips**, so it loads
+on its own. It is the image handed to a machine owner to just run, and the driver
+declares the full complement for it anyway.
 
 ## Members
 
@@ -117,9 +122,26 @@ the chips themselves carry no label that separates them.
 
 | Member | CRC32 | Source image |
 |--------|-------|--------------|
-| `v1_3_01t.bin` | `42cafcda` | `../1.3 IPDB latest/Start-Tournament-Patch/V1 3_01.bin` |
+| `v1_3_01t.bin` | `42cafcda` | `../1.3 IPDB latest - Tournament patch/V1 3_01.bin` |
 
 Chips 02-05 are the parent's.
+
+**Deprecated in favour of `iomoontf`**, which is this patch plus free play. This
+set stays for a coin-operated machine and so the PRESS-START-only image keeps a
+PinMAME home.
+
+### `iomoontf.zip` — clone, 1 chip differs, packed with all five
+
+| Member | CRC32 | Source image |
+|--------|-------|--------------|
+| `v1_3_01tf.bin` | `007ec001` | `../1.3 IPDB latest - Tournament and free play patch/V1 3_01.bin` |
+| `v1_3_02.bin` | `2bd589cd` | `../1.3 IPDB latest/V1 3_02.bin` |
+| `v1_3_03.bin` | `334d0e20` | `../1.3 IPDB latest/V1 3_03.bin` |
+| `v1_3_04.bin` | `f3a950bf` | `../1.3 IPDB latest/V1 3_04.bin` |
+| `v1_3_05.bin` | `6bb5e101` | `../1.3 IPDB latest/V1 3_05.bin` |
+
+Only `v1_3_01tf.bin` differs from the parent; the other four are the parent's and
+are packed in anyway so the zip loads with no `iomoon.zip` beside it.
 
 ## Verifying
 

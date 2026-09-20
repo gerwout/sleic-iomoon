@@ -1,8 +1,8 @@
 # IO Moon ROM Sets
 
 This directory holds the dumped IO Moon ROM images, organised into two known
-version 1.3 ROM sets plus a tournament patch, alongside the ROM images of three
-related SLEIC machines. Each subdirectory has its own README with set-specific
+version 1.3 ROM sets plus two patched chip-01 variants of the later one,
+alongside the ROM images of three related SLEIC machines. Each subdirectory has its own README with set-specific
 details; this file is a single index of **every ROM image** in the directory
 together with its MD5 checksum for quick integrity verification.
 
@@ -11,7 +11,8 @@ together with its MD5 checksum for quick integrity verification.
 | Path | Description |
 |------|-------------|
 | `1.3 IPDB latest/` | Latest known v1.3 ROM set (from IPDB) — see its [README](1.3%20IPDB%20latest/README.md) |
-| `1.3 IPDB latest/Start-Tournament-Patch/` | PRESS START tournament patch for the IPDB set — see its [README](1.3%20IPDB%20latest/Start-Tournament-Patch/README.md) |
+| `1.3 IPDB latest - Tournament and free play patch/` | That set's chip 01 with PRESS START **and** free play — the recommended tournament image, see its [README](1.3%20IPDB%20latest%20-%20Tournament%20and%20free%20play%20patch/README.md) |
+| `1.3 IPDB latest - Tournament patch/` | That set's chip 01 with PRESS START only — **deprecated** in favour of the row above, see its [README](1.3%20IPDB%20latest%20-%20Tournament%20patch/README.md) |
 | `1.3 Early version/` | An earlier v1.3 ROM set — see its [README](1.3%20Early%20version/README.md) |
 | `PIC16C57/` | IC23 DMD-raster PIC dump, recovered from the locked chip by a recovery lab — see its [README](PIC16C57/README.md) |
 | `PAL20L10/` | IC7 80188 bus-decode PAL, recovered from the locked chip on a DuPAL V3 rig — see its [README](PAL20L10/README.md) |
@@ -29,7 +30,8 @@ together with its MD5 checksum for quick integrity verification.
 | `1.3 IPDB latest/V1 3_03.bin` | 524,288 bytes (512 KB) | `5f4b441f3b6bb8b27689c3fc1fc5d708` | Sound ROM 1 (OKI MSM6376 ADPCM) |
 | `1.3 IPDB latest/V1 3_04.bin` | 524,288 bytes (512 KB) | `7393923e265050a4adb706d7477bd4fd` | Sound ROM 2 (OKI MSM6376 ADPCM) |
 | `1.3 IPDB latest/V1 3_05.bin` | 32,768 bytes (32 KB) | `4a96bb470b10db89fdcbeea15fce1287` | Z80 CPU ROM (27C256) |
-| `1.3 IPDB latest/Start-Tournament-Patch/V1 3_01.bin` | 524,288 bytes (512 KB) | `71f19724d19bed4eac02f6c7caaad774` | Display ROM 1 — **PRESS START patched** |
+| `1.3 IPDB latest - Tournament patch/V1 3_01.bin` | 524,288 bytes (512 KB) | `71f19724d19bed4eac02f6c7caaad774` | Display ROM 1 — **PRESS START patched** (deprecated) |
+| `1.3 IPDB latest - Tournament and free play patch/V1 3_01.bin` | 524,288 bytes (512 KB) | `ead2200c63d9dee990c2a570c41033bf` | Display ROM 1 — **PRESS START + free play patched** |
 | `1.3 Early version/V1 3_01.bin` | 524,288 bytes (512 KB) | `3d5cf32e908d20350c2dfc6c70d2d68c` | Display ROM 1 (80188 code + upper graphics) |
 | `1.3 Early version/V1 3_02.bin` | 524,288 bytes (512 KB) | `4e35c714809aee1d29e2c66d1984921e` | Display ROM 2 (DMD animated frames) |
 | `1.3 Early version/V1 3_03.bin` | 524,288 bytes (512 KB) | `5f4b441f3b6bb8b27689c3fc1fc5d708` | Sound ROM 1 (OKI MSM6376 ADPCM) |
@@ -86,9 +88,15 @@ together with its MD5 checksum for quick integrity verification.
   `V1 3_04.bin`) are **byte-identical** across the two IO Moon ROM sets.
 - The two IO Moon sets differ only in the 80188 display ROM (`V1 3_01.bin`) and
   the Z80 CPU ROM (`V1 3_05.bin`).
-- The tournament-patch `V1 3_01.bin` is derived from the IPDB-latest
-  `V1 3_01.bin` (`031ca4c2…`) by the PRESS START patch; see
-  [`Start-Tournament-Patch/README.md`](1.3%20IPDB%20latest/Start-Tournament-Patch/README.md).
+- Both patched `V1 3_01.bin` images are derived from the IPDB-latest
+  `V1 3_01.bin` (`031ca4c2…`), which is the only chip either one changes:
+  `71f19724…` by [`scripts/io_moon_press_start_patch.py`](../scripts/io_moon_press_start_patch.py)
+  alone, and `ead2200c…` by that script followed by
+  [`scripts/io_moon_free_play_patch.py`](../scripts/io_moon_free_play_patch.py).
+  The two patches use different hooks and different caves, so either order gives
+  the same bytes. **The PRESS-START-only image is deprecated**: the combined one
+  holds the scores identically and adds coin-free starting, so it is the image to
+  burn unless the machine has to stay coin-operated.
 - A second, physically distinct IO Moon board was dumped in August 2026; all five
   images came out **byte-identical to the `1.3 IPDB latest` set**, so that set is
   confirmed by two independent boards and the duplicate dump was not archived.

@@ -1,48 +1,59 @@
-# ROM Set — Version 1.3 IPDB latest (Tournament Patch)
+# ROM Set — 1.3 IPDB latest, Tournament patch
 
-This directory contains the patched ROM for tournament play. The PRESS START patch modifies the end-of-game behavior to display "PRESS START" and wait for player confirmation before returning to attract mode.
+> **DEPRECATED — use
+> [`1.3 IPDB latest - Tournament and free play patch/`](../1.3%20IPDB%20latest%20-%20Tournament%20and%20free%20play%20patch/)
+> instead.** That image is this one with the free-play patch stacked on top: it
+> holds the scores in exactly the same way and adds coin-free starting, which is
+> what a tournament wants. This directory stays for anyone who needs the
+> PRESS-START behaviour on a coin-operated machine, and because `iomoont` in
+> PinMAME loads it.
+
+The chip-01 image of the [`1.3 IPDB latest`](../1.3%20IPDB%20latest/) set with the
+PRESS START patch applied: at the end of a game the machine holds the final
+scores on the panel until START is pressed, instead of running the match
+animation straight into attract.
 
 ## Files
 
-| Filename | Size | MD5 Checksum | Content |
-|----------|------|--------------|---------|
-| `V1 3_01.bin` | 524,288 bytes (512 KB) | `71f19724d19bed4eac02f6c7caaad774` | Display ROM 1 (80188 code + upper graphics) — **PATCHED** |
+| Filename | Size | MD5 | CRC32 | Content |
+|----------|------|-----|-------|---------|
+| `V1 3_01.bin` | 524,288 bytes (512 KB) | `71f19724d19bed4eac02f6c7caaad774` | `42cafcda` | Display ROM 1 (80188 code + upper graphics) — **PATCHED** |
 
-## Source ROM
+## Source
 
-This patched ROM was created from the unpatched `V1 3_01.bin` from the "1.3 IPDB latest" ROM set:
+| | MD5 | CRC32 |
+|---|---|---|
+| Original, `1.3 IPDB latest/V1 3_01.bin` | `031ca4c25f0e0433f9922b6a142478fa` | `df80bf4f` |
+| Patched, this file | `71f19724d19bed4eac02f6c7caaad774` | `42cafcda` |
 
-| Version | MD5 Checksum |
-|---------|--------------|
-| Original (unpatched) | `031ca4c25f0e0433f9922b6a142478fa` |
-| Patched (this file) | `71f19724d19bed4eac02f6c7caaad774` |
-
-## Usage
-
-Replace the original `V1 3_01.bin` EPROM in your IO Moon machine with this patched version.
-
-> **Important:** This patched ROM is designed for use with the **IPDB latest** ROM set. If your machine currently has ROMs with different checksums (e.g., the "Early version" ROM set), you should first upgrade **all ROMs that differ** to the IPDB latest versions before installing this patch.
-
-### Required ROM Set (IPDB latest)
-
-| Filename | MD5 Checksum | Notes |
-|----------|--------------|-------|
-| `V1 3_01.bin` | `71f19724d19bed4eac02f6c7caaad774` | **Use this patched version** |
-| `V1 3_02.bin` | `4e35c714809aee1d29e2c66d1984921e` | Identical in both ROM sets |
-| `V1 3_03.bin` | `5f4b441f3b6bb8b27689c3fc1fc5d708` | Identical in both ROM sets |
-| `V1 3_04.bin` | `7393923e265050a4adb706d7477bd4fd` | Identical in both ROM sets |
-| `V1 3_05.bin` | `4a96bb470b10db89fdcbeea15fce1287` | **Different from Early version — upgrade required** |
-
-The Z80 CPU ROM (`V1 3_05.bin`) differs between the Early version and IPDB latest. If you have the Early version checksum (`da674b87ca562221ce5a63568b8cec1e`), you must upgrade to the IPDB latest Z80 ROM for full compatibility.
-
-For details on what the patch modifies, see [PRESS START Patch Documentation](../../../docs/press_start_patch.md).
-
-## Creating Your Own Patched ROM
-
-You can create this patched ROM yourself using the patch script:
+Reproduce it with
+[`scripts/io_moon_press_start_patch.py`](../../scripts/io_moon_press_start_patch.py):
 
 ```bash
-python3 io_moon_press_start_patch.py "V1 3_01.bin"
+python3 scripts/io_moon_press_start_patch.py "roms/1.3 IPDB latest/V1 3_01.bin" \
+        -o "V1 3_01.bin"
 ```
 
-This creates `V1 3_01_patched.BIN` with the same checksum as the file in this directory.
+What the patch changes is in
+[`docs/press_start_patch.md`](../../docs/press_start_patch.md): 186 bytes in four
+regions — a 168-byte and an 11-byte block of new code in the ROM's `0xFF` padding
+at `C0010`-`C00B7` and `C00D0`-`C00DA`, reached by two four-byte hooks at `D5077`
+and `D5123`.
+
+## Installing it
+
+Only chip 01 changes. Program this image onto a 27C040 and swap it for the
+machine's `V1 3_01`; chips 02-05 stay in place.
+
+> The rest of the machine must already be the **IPDB latest** set. The Z80 ROM
+> `V1 3_05.bin` differs between that set and
+> [`1.3 Early version`](../1.3%20Early%20version/) (`4a96bb47…` against
+> `da674b87…`), so an Early-version machine needs that chip upgraded too. Chips
+> 02, 03 and 04 are byte-identical in both sets.
+
+Keep the original EPROM: the patch is reversible only by putting it back.
+
+## In PinMAME
+
+Loaded as set `iomoont`, "Io Moon (PRESS START tournament MOD)" — see
+[`../pinmame/README.md`](../pinmame/README.md).

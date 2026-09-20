@@ -2,6 +2,15 @@
 
 [← Back to main README](../README.md)
 
+> **Superseded for tournament use.** The image to burn is the one in
+> [`roms/1.3 IPDB latest - Tournament and free play patch/`](../roms/1.3%20IPDB%20latest%20-%20Tournament%20and%20free%20play%20patch/),
+> which carries this patch **and** the free-play patch
+> ([`scripts/io_moon_free_play_patch.py`](../scripts/io_moon_free_play_patch.py)),
+> so START also begins a game with no coin. The PRESS-START-only image documented
+> here stays for a machine that has to remain coin-operated. Everything below
+> still describes what this patch does — the two are independent, use different
+> hooks and different caves, and stack in either order.
+
 ## Overview
 
 The IO Moon's original software has a design issue for tournament and competitive play: after a game ends, the machine immediately transitions through the match animation and into attract mode. There is **no pause** between the end of the game and the attract mode, making it impossible for players or judges to read, photograph, or record the final scores.
@@ -29,7 +38,7 @@ The patch is fully reversible and uses only unused (`0xFF`) ROM space for the in
 
 A ready-to-use patched ROM is available in this repository:
 
-**[Download V1 3_01.bin (patched)](../roms/1.3%20IPDB%20latest/Start-Tournament-Patch/V1%203_01.bin)**
+**[Download V1 3_01.bin (patched)](../roms/1.3%20IPDB%20latest%20-%20Tournament%20patch/V1%203_01.bin)**
 
 | File | MD5 Checksum |
 |------|--------------|
@@ -173,7 +182,9 @@ The patch has been tested with the following ROM versions. Use MD5 checksums to 
 |-----------|---------------------|
 | V1 3_01.bin (IPDB latest) | `71f19724d19bed4eac02f6c7caaad774` |
 
-A pre-patched ROM is available in `roms/1.3 IPDB latest/Start-Tournament-Patch/`.
+A pre-patched ROM is available in `roms/1.3 IPDB latest - Tournament patch/`, and
+the same patch with free play stacked on top in
+`roms/1.3 IPDB latest - Tournament and free play patch/`.
 
 ### Verifying Checksums
 
