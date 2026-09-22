@@ -52,6 +52,12 @@ ROM1_OFFSET = 0x80000  # ROM1 starts at this offset in combined ROM
 DMD_DOT_SCALE = 4   # Upscale factor: each pixel becomes scale×scale output pixels
 DMD_DOT_GAP = 1     # Number of black border pixels between dots
 
+# Brightness model. The panel weights plane 0 as the MSB and treats a set bit
+# as lit, so level = 2*p0 + p1. LEGACY_LEVELS (--legacy-render) renders the
+# other convention -- both planes inverted and plane 0 weighted as the LSB,
+# which swaps off with full bright and leaves the two middle levels alone.
+LEGACY_LEVELS = False
+
 # Typical DMD orange color (like classic pinball machines)
 DMD_ORANGE = '#FF6600'
 DMD_COLORS = [
@@ -308,26 +314,19 @@ def decode_credits_frame(rom_data: bytes, credit_info: dict) -> np.ndarray:
     return img
 
 
-def decode_frame(rom_data: bytes, frame_info: dict, invert: bool = True) -> np.ndarray:
+def decode_frame(rom_data: bytes, frame_info: dict, invert: bool = False) -> np.ndarray:
     """
     Decode an animated DMD frame into a 2D numpy array with values 0-3.
-    
+
     Frame format:
     - 1024 bytes total: 512 bytes plane 0 + 512 bytes plane 1
     - Each plane: 32 rows x 16 bytes = 512 bytes
 
-    NOTE: this renderer's conventions differ from the hardware's in two ways:
-    - the panel treats a SET bit as lit; `invert` defaults to True here, so
-      pass invert=False (--no-invert) for the hardware convention. Inverting
-      both planes maps every level v -> 3-v, i.e. 0<->3 AND 1<->2;
-    - the panel weights plane 0 as the MSB (2*p0 + p1); this computes
-      p0 + 2*p1, which on its own swaps levels 1 and 2.
-
-    Composed, the two differences cancel on levels 1 and 2 but NOT on 0 and 3:
-    the default output has off and full-bright SWAPPED (0<->3), with levels 1
-    and 2 passing through unchanged. That is not cosmetic. Pass invert=False
-    to remove the inversion; correcting the weighting needs the expression
-    below changed to 2*p0_bit + p1_bit. See docs/dmd_graphics.md.
+    A set bit is lit and plane 0 is the MSB, so level = 2*p0 + p1 -- the
+    panel's own convention (finding F13; sleic_build_dmd_frame in
+    pinmame/src/wpc/sleic.c). LEGACY_LEVELS renders the other convention --
+    both planes inverted and plane 0 weighted as the LSB, which cancels on
+    levels 1 and 2 and swaps 0 with 3.
     """
     data_offset = frame_info['data_offset']
     frame_data = rom_data[data_offset:data_offset + FRAME_DATA_SIZE]
@@ -348,17 +347,18 @@ def decode_frame(rom_data: bytes, frame_info: dict, invert: bool = True) -> np.n
             b0 = plane0[row_offset + byte_idx]
             b1 = plane1[row_offset + byte_idx]
             
-            # Optional inversion; on IO Moon a SET bit is lit, so the
-            # hardware convention is invert=False (see the docstring)
-            if invert:
+            if invert or LEGACY_LEVELS:
                 b0 = ~b0 & 0xFF
                 b1 = ~b1 & 0xFF
-            
+
             for bit in range(8):
                 col = byte_idx * 8 + (7 - bit)  # MSB first
                 p0_bit = (b0 >> bit) & 1
                 p1_bit = (b1 >> bit) & 1
-                image[row, col] = p0_bit + 2 * p1_bit
+                if LEGACY_LEVELS:
+                    image[row, col] = p0_bit + 2 * p1_bit
+                else:
+                    image[row, col] = 2 * p0_bit + p1_bit
     
     return image
 
@@ -391,7 +391,7 @@ def decode_static_screen(data: bytes, invert: bool = False) -> np.ndarray:
     return image
 
 
-def decode_any_frame(rom_data: bytes, frame_info: dict, invert: bool = True) -> np.ndarray:
+def decode_any_frame(rom_data: bytes, frame_info: dict, invert: bool = False) -> np.ndarray:
     """Decode either animated, static, or credits frame based on type."""
     frame_type = frame_info.get('type', 'animated')
     
@@ -455,7 +455,7 @@ def format_offset(offset: int, include_rom1: bool = False) -> str:
     return f"0x{offset:05X}"
 
 
-def show_frame(rom_data: bytes, frame_info: dict, title: str = None, invert: bool = True):
+def show_frame(rom_data: bytes, frame_info: dict, title: str = None, invert: bool = False):
     """Display a single DMD frame with hex offset in title."""
     image = decode_any_frame(rom_data, frame_info, invert=invert)
     display = apply_dmd_dot_effect(image)
@@ -483,7 +483,7 @@ def show_frame(rom_data: bytes, frame_info: dict, title: str = None, invert: boo
     plt.show()
 
 
-def show_all_frames(rom_data: bytes, frames: list, interval: int = 200, invert: bool = True):
+def show_all_frames(rom_data: bytes, frames: list, interval: int = 200, invert: bool = False):
     """Show all DMD frames in an animation using FuncAnimation."""
     if not frames:
         print("No frames found!")
@@ -554,7 +554,7 @@ def show_all_frames(rom_data: bytes, frames: list, interval: int = 200, invert: 
     plt.show()
 
 
-def show_all_frames_manual(rom_data: bytes, frames: list, invert: bool = True):
+def show_all_frames_manual(rom_data: bytes, frames: list, invert: bool = False):
     """Manual frame-by-frame viewer for non-interactive backends."""
     cmap = create_dmd_colormap()
     
@@ -600,7 +600,7 @@ def show_all_frames_manual(rom_data: bytes, frames: list, invert: bool = True):
                 pass
 
 
-def show_all_frames_loop(rom_data: bytes, frames: list, interval: int = 200, invert: bool = True):
+def show_all_frames_loop(rom_data: bytes, frames: list, interval: int = 200, invert: bool = False):
     """
     Show all DMD frames using a manual plt.pause() loop.
     This is more reliable than FuncAnimation on some systems.
@@ -693,7 +693,7 @@ def show_index(frames: list, show_static: bool = False):
     print(f"{'='*70}\n")
 
 
-def show_frame_by_offset(rom_data: bytes, offset: int, invert: bool = True, is_static: bool = False):
+def show_frame_by_offset(rom_data: bytes, offset: int, invert: bool = False, is_static: bool = False):
     """Display a frame at a specific offset."""
     if is_static:
         frame_info = {
@@ -1044,7 +1044,7 @@ def show_fonts(rom_data: bytes):
 class PaginatedGrid:
     """Interactive paginated grid viewer with keyboard navigation."""
     
-    def __init__(self, rom_data, frames, cols=8, rows=4, invert=True, title_prefix="Frames"):
+    def __init__(self, rom_data, frames, cols=8, rows=4, invert=False, title_prefix="Frames"):
         self.rom_data = rom_data
         self.frames = frames
         self.cols = cols
@@ -1128,7 +1128,7 @@ class PaginatedGrid:
 
 
 def show_grid(rom_data: bytes, frames: list, start_frame: int = 0, 
-              cols: int = 8, rows: int = 4, invert: bool = True,
+              cols: int = 8, rows: int = 4, invert: bool = False,
               paginated: bool = True, title_prefix: str = "Frames"):
     """Display multiple frames in a grid layout with optional pagination."""
     
@@ -1164,7 +1164,7 @@ def show_grid(rom_data: bytes, frames: list, start_frame: int = 0,
         plt.show()
 
 
-def export_frame_png(rom_data: bytes, frame_info: dict, output_path: str, invert: bool = True):
+def export_frame_png(rom_data: bytes, frame_info: dict, output_path: str, invert: bool = False):
     """Export a single frame as PNG with dot matrix effect."""
     image = decode_any_frame(rom_data, frame_info, invert=invert)
     display = apply_dmd_dot_effect(image)
@@ -1181,7 +1181,7 @@ def export_frame_png(rom_data: bytes, frame_info: dict, output_path: str, invert
     print(f"Exported: {output_path} (offset: 0x{frame_info['offset']:05X})")
 
 
-def export_all_frames(rom_data: bytes, frames: list, output_dir: str, invert: bool = True):
+def export_all_frames(rom_data: bytes, frames: list, output_dir: str, invert: bool = False):
     """Export all frames as PNG files."""
     import os
     os.makedirs(output_dir, exist_ok=True)
@@ -1228,7 +1228,7 @@ Examples:
   %(prog)s -r io_moon.bin --grid               Show frames in paginated grid
   %(prog)s -r io_moon.bin --static-grid        Show static screens in grid
   %(prog)s -r io_moon.bin --export 0 out.png   Export frame 0 as PNG
-  %(prog)s -r io_moon.bin --no-invert          Show without bit inversion
+  %(prog)s -r io_moon.bin --legacy-render      Inverted planes, plane 0 as LSB
   %(prog)s -r io_moon.bin --no-dots --frame 0  Show without dot spacing
   %(prog)s -r io_moon.bin --dot-scale 6 --dot-gap 2  Larger dots
 
@@ -1280,8 +1280,14 @@ Grid Navigation:
     
     parser.add_argument('--interval', type=int, default=200,
                         help='Animation interval in ms (default: 200)')
+    parser.add_argument('--invert', action='store_true',
+                        help='Invert both bitplanes before decoding')
     parser.add_argument('--no-invert', action='store_true',
-                        help='Do not invert bits (default: invert, 0=lit)')
+                        help='Accepted for compatibility; no inversion is the default')
+    parser.add_argument('--legacy-render', action='store_true',
+                        help='Render the other convention: invert both planes '
+                             'and weight plane 0 as the LSB, which swaps off '
+                             'with full bright')
     parser.add_argument('--rows', type=int, default=4,
                         help='Number of rows in grid view (default: 4)')
     parser.add_argument('--cols', type=int, default=8,
@@ -1341,8 +1347,10 @@ Grid Navigation:
         credits_screens = find_scrolling_credits(rom_data)
         print(f"Found {len(credits_screens)} credits screens")
     
-    # Determine invert setting
-    invert = not args.no_invert
+    # Brightness model: hardware by default (2*p0 + p1, a set bit lit)
+    global LEGACY_LEVELS
+    LEGACY_LEVELS = args.legacy_render
+    invert = args.invert
     
     # Execute requested action
     if args.index:

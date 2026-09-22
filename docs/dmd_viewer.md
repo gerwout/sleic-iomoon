@@ -140,13 +140,18 @@ By default, the viewer renders each pixel as a scaled dot with a dark gap, simul
   <img src="../images/dmd_dot_comparison.png" alt="Dot Effect Comparison" width="700">
 </p>
 
-### Bit Inversion
+### Brightness model
 
-On the real machine **a set bit is a lit pixel** — the firmware applies no
-inversion anywhere between the graphics ROM and the display buffer, and the
-panel shows the bytes as they stand
-([`dmd_graphics.md`](dmd_graphics.md), finding F13). This viewer nevertheless
-**inverts by default**; pass `--no-invert` for the hardware convention.
+A set bit is a lit pixel and plane 0 is the MSB, so the viewer renders
+`level = 2 × plane0 + plane1` — the panel's own convention
+([`dmd_graphics.md`](dmd_graphics.md), finding F13, and `sleic_build_dmd_frame`
+in `pinmame/src/wpc/sleic.c`).
+
+```bash
+--invert                 # invert both bitplanes before decoding
+--legacy-render          # the other convention: inverted planes, plane 0 as LSB
+--no-invert              # accepted for compatibility; no inversion is the default
+```
 
 <p align="center">
   <img src="../images/dmd_invert_comparison.png" alt="Bit Inversion Comparison" width="700">
@@ -208,26 +213,21 @@ of its rows about 6.7× longer:
 | 2 | on | off | Medium | `#AA4400` (medium orange) |
 | 3 | on | on | Full | `#FF6600` (bright orange) |
 
-`decode_frame()` in the script computes `p0_bit + 2 * p1_bit`, i.e. **the
-weighting on its own** swaps levels 1 and 2 against the panel, leaving 0 and 3
-alone.
+`--legacy-render` renders the other convention — both planes inverted *and*
+plane 0 weighted as the LSB. Inverting maps every level `v` → `3 − v` (0↔3 *and*
+1↔2) and the LSB weighting swaps 1 and 2, so the two cancel on levels 1 and 2
+and reinforce on 0 and 3:
 
-**Composed with the default inversion, though, the net effect is the other way
-round.** Inverting both planes maps every level `v` → `3 − v` (0↔3 *and* 1↔2), so
-the two differences cancel on levels 1 and 2 and reinforce on 0 and 3:
-
-| Plane 0 | Plane 1 | Panel | Script default |
-|---------|---------|-------|----------------|
+| Plane 0 | Plane 1 | Panel (default) | `--legacy-render` |
+|---------|---------|-----------------|-------------------|
 | 0 | 0 | 0 (off) | **3 (full)** |
 | 0 | 1 | 1 (dim) | 1 (dim) |
 | 1 | 0 | 2 (medium) | 2 (medium) |
 | 1 | 1 | 3 (full) | **0 (off)** |
 
-So the default output has **off and full-bright swapped** — not a cosmetic
-difference. `--no-invert` removes the inversion (leaving only the 1↔2 weighting
-swap); matching the panel exactly also needs the expression changed to
-`2 * p0_bit + p1_bit`. The single-bitplane static-screen and font paths are
-unaffected by either.
+So `--legacy-render` shows **off and full-bright swapped** — not a cosmetic
+difference. The single-bitplane static-screen and font paths are unaffected by
+either setting.
 
 ### Animated Frame Format
 
@@ -273,6 +273,13 @@ Static screens use 1 bitplane only (on/off, no brightness levels).
 - **Interactive backend required**: Animations and paginated views require an interactive matplotlib backend (TkAgg, Qt5Agg, etc.). On headless systems, only export mode works.
 - **Static screen detection is heuristic**: Not all static screens may be detected. Use `--offset ADDR --static-offset` to manually inspect specific addresses.
 - **Credits cropping**: Credits elements taller than 32 rows are cropped for display. The first element (55 rows) loses its bottom rows.
+- **IO Moon only**: Bike Race and Sleic Pin-Ball are handled by the sibling
+  script [`sleic_dmd_viewer.py`](../scripts/sleic_dmd_viewer.py), which shares
+  the brightness model but needs different locators — Bike Race stores 3-plane
+  records (plane 0, plane 1, mask) in `bkcpu05`/`bkcpu06`, and Sleic Pin-Ball
+  has no headers at all, its bitmaps being named by blit immediates inside
+  `sp03`. That script also runs headless (ASCII and dependency-free PNG output)
+  and can locate a PinMAME `SLEIC_DMD_DUMP` frame back in the ROM.
 ---
 
 ## Example Output

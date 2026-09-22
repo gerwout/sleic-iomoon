@@ -141,14 +141,14 @@ frames with `1` = lit produces coherent images (frame 120 of `V1 3_02.bin`, for
 instance, is a clean lunar disc), while the inverted reading produces a
 full-screen lit rectangle with a hole in it.
 
-> ⚠️ `scripts/dmd_viewer.py` does not use this convention by default. It inverts
-> (`--no-invert` turns that off) and it weights the planes the other way round —
-> `decode_frame()` computes `p0_bit + 2 * p1_bit` where the panel computes
-> `2 * p0_bit + p1_bit`. The two differences do not cancel: composed, the default
-> output has levels **0 and 3 swapped** (off renders as full-bright and vice
-> versa), with levels 1 and 2 passing through. See
-> [`dmd_viewer.md`](dmd_viewer.md) for the truth table. Its static-screen and
-> font rendering is single-bitplane and unaffected.
+`scripts/dmd_viewer.py` and `scripts/sleic_dmd_viewer.py` both use this
+convention: a set bit is lit and `decode_frame()` computes
+`2 * p0_bit + p1_bit`. `dmd_viewer.py --legacy-render` renders the other
+convention instead — both planes inverted *and* plane 0 weighted as the LSB,
+which cancels on levels 1 and 2 and swaps **0 with 3**, so off shows as
+full-bright and vice versa. See [`dmd_viewer.md`](dmd_viewer.md) for the truth
+table. Single-bitplane static-screen and font rendering is unaffected by either
+setting.
 
 ---
 
