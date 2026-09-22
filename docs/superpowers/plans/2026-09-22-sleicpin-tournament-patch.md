@@ -24,7 +24,7 @@
 
 ## Prerequisite, not part of this plan
 
-**The SLEIC1 ball-trough model in `pinmame/src/wpc/sleic.c` must land first.** Sleic Pin-Ball's trough is one contact (C29 Salida Bolas, `swMatrix[1]` bit 2, key `E`) and one serve coil (11 Bobina Salida Bolas, port `0x86` bit 6 → `locals.solenoids` bit 14). Without a model that follows the coil there is no repeatable way to drive a 2–4 player game to game over, and Tasks 2, 4 and 12 all need one. That work is a PinMAME driver change in a separate repository and gets its own plan.
+**The SLEIC1 ball-trough model in `pinmame/src/wpc/sleic.c` must land first.** Sleic Pin-Ball's trough is one contact (C29 Salida Bolas, `swMatrix[1]` bit 2, key `E`) and one serve coil (11 Bobina Salida Bolas, port `0x86` bit 6, which `sleic1_z80_write` maps to `locals.solenoids` bit 10 — PinMAME solenoid 11, numbered to match the manual's bobina). Without a model that follows the coil there is no repeatable way to drive a 2–4 player game to game over, and Tasks 2, 4 and 12 all need one. That work is a PinMAME driver change in a separate repository and gets its own plan.
 
 **Do not start Task 2 until a keyscript can reliably take a 4-player game from START to attract.**
 

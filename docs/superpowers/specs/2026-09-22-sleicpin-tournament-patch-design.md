@@ -182,7 +182,9 @@ Spaces are an acceptable fallback.
 
 **The SLEIC1 ball-trough model in the PinMAME driver has to land first.** Sleic
 Pin-Ball's trough is one contact (C29 Salida Bolas, `swMatrix[1]` bit 2) and one
-coil (11 Bobina Salida Bolas, port `0x86` bit 6), and without a model that follows
+coil (11 Bobina Salida Bolas, port `0x86` bit 6, which `sleic1_z80_write` maps to
+`locals.solenoids` bit 10 — PinMAME solenoid 11, numbered so the solenoid number
+equals the manual's bobina number), and without a model that follows
 the coil there is no repeatable way to drive a two-to-four player game to game
 over. Items 1, 2 and 5 above all need such a game, and so does testing the patch.
 This is an enabler, not a side quest.
