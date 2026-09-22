@@ -26,6 +26,7 @@ in the PinMAME tree.
 | `bikerace.zip` | Bike Race (1992) | `SLEIC3` | — |
 | `bikerac2.zip` | Bike Race (2-ball play) | `SLEIC3` | `bikerace` |
 | `bikerac3.zip` | Bike Race (V4.1) | `SLEIC3` | `bikerace` |
+| `bikerc3f.zip` | Bike Race (V4.1, free play + press start MOD) | `SLEIC3` | `bikerace` |
 | `sleicpin.zip` | Sleic Pin-Ball (1993) | `SLEIC1` | — |
 | `iomoon.zip` | Io Moon | `SLEIC2` | — |
 | `iomoona.zip` | Io Moon (earlier ROM revision) | `SLEIC2` | `iomoon` |
@@ -37,9 +38,9 @@ differ from its parent, and MAME pulls the rest out of the parent zip. So
 `bikerac2.zip`, `bikerac3.zip`, `iomoona.zip` and `iomoont.zip` will not load on
 their own — the matching parent zip has to be on the same ROM path.
 
-`iomoontf.zip` is the one exception and carries **all five chips**, so it loads
-on its own. It is the image handed to a machine owner to just run, and the driver
-declares the full complement for it anyway.
+`iomoontf.zip` and `bikerc3f.zip` are the exceptions and carry **every chip of
+their machine**, so they load on their own. They are the images handed to a machine
+owner to just run, and the driver declares the full complement for both anyway.
 
 ## Members
 
@@ -87,6 +88,23 @@ machine came back CRC `9db436d4` — byte-identical to `bkcpu06.bin` — so ROM 
 inherited from the parent, the set works, and the flag is gone. The evidence is in
 [`../../asm/bikerace-2026-09/reports/v41_sprite_table.md`](../../asm/bikerace-2026-09/reports/v41_sprite_table.md);
 the bad image is archived as `bk06.baddump.bin` alongside the loose chips.
+
+### `bikerc3f.zip` — clone (V4.1 MOD), 1 chip differs, packed with all seven
+
+| Member | CRC32 | Source image |
+|--------|-------|--------------|
+| `bkdsp01.bin` | `9b220fcb` | `../related-machines/bike-race/bkdsp01.bin` |
+| `bksnd02.bin` | `d67b3883` | `../related-machines/bike-race/bksnd02.bin` |
+| `bk03.bin` | `74c10536` | `../related-machines/bike-race/v4.1/bk03.bin` |
+| `bk04f.bin` | `7626564e` | `../related-machines/bike-race/v4.1 - free play + press start/bk04f.bin` |
+| `bkcpu05.bin` | `072ce879` | `../related-machines/bike-race/bkcpu05.bin` |
+| `bkcpu06.bin` | `9db436d4` | `../related-machines/bike-race/bkcpu06.bin` |
+| `bk07.bin` | `200ff3fc` | `../related-machines/bike-race/v4.1/bk07.bin` |
+
+`bk04f.bin` is V4.1's chip 04 with the free-play and PRESS START patches applied;
+the other six are `bikerac3`'s own complement, packed in so the zip loads with no
+`bikerace.zip` beside it. The patched chip and how to reproduce it are documented at
+[`../related-machines/bike-race/v4.1 - free play + press start/README.md`](../related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start/README.md).
 
 ### `sleicpin.zip` — 4 chips
 

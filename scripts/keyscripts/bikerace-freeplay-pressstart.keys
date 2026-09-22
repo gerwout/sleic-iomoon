@@ -1,0 +1,158 @@
+# Bike Race V4.1 (bikerc3f) -- free play + PRESS START end-to-end test.
+#
+# Needs the "Balls" setting at 3 (Tab -> Dip Switches), or the machine sits on
+# "FALTAN n BOLAS" and no game can start.  With the ball model on, the trough
+# optos read "ball home", so each ball drains by itself and three of them reach
+# game over without any drain key.
+#
+# What to watch:
+#   ~frame 700   one START press begins a game with NO credits inserted (free play)
+#   ~frame 4400  game over -- the score must STAY on the panel, with PULSE START
+#   ~frame 6500  a second START press releases it and attract resumes
+
+600 mark boot
+700 tap 20 KEYCODE_1          # START -- free play, no coin needed
+900 mark game-started
+1000 tap 4 KEYCODE_Q
+1024 tap 4 KEYCODE_W
+1048 tap 4 KEYCODE_E
+1072 tap 4 KEYCODE_R
+1096 tap 4 KEYCODE_A
+1120 tap 4 KEYCODE_S
+1144 tap 4 KEYCODE_D
+1168 tap 4 KEYCODE_F
+1192 tap 4 KEYCODE_Z
+1216 tap 4 KEYCODE_X
+1240 tap 4 KEYCODE_C
+1264 tap 4 KEYCODE_V
+1288 tap 4 KEYCODE_Q
+1312 tap 4 KEYCODE_W
+1336 tap 4 KEYCODE_E
+1360 tap 4 KEYCODE_R
+1384 tap 4 KEYCODE_A
+1408 tap 4 KEYCODE_S
+1432 tap 4 KEYCODE_D
+1456 tap 4 KEYCODE_F
+1480 tap 4 KEYCODE_Z
+1504 tap 4 KEYCODE_X
+1528 tap 4 KEYCODE_C
+1552 tap 4 KEYCODE_V
+1576 tap 4 KEYCODE_Q
+1600 tap 4 KEYCODE_W
+1624 tap 4 KEYCODE_E
+1648 tap 4 KEYCODE_R
+1672 tap 4 KEYCODE_A
+1696 tap 4 KEYCODE_S
+1720 tap 4 KEYCODE_D
+1744 tap 4 KEYCODE_F
+1768 tap 4 KEYCODE_Z
+1792 tap 4 KEYCODE_X
+1816 tap 4 KEYCODE_C
+1840 tap 4 KEYCODE_V
+1864 tap 4 KEYCODE_Q
+1888 tap 4 KEYCODE_W
+1912 tap 4 KEYCODE_E
+1936 tap 4 KEYCODE_R
+1960 tap 4 KEYCODE_A
+1984 tap 4 KEYCODE_S
+2008 tap 4 KEYCODE_D
+2032 tap 4 KEYCODE_F
+2056 tap 4 KEYCODE_Z
+2080 tap 4 KEYCODE_X
+2104 tap 4 KEYCODE_C
+2128 tap 4 KEYCODE_V
+2152 tap 4 KEYCODE_Q
+2176 tap 4 KEYCODE_W
+2200 tap 4 KEYCODE_E
+2224 tap 4 KEYCODE_R
+2248 tap 4 KEYCODE_A
+2272 tap 4 KEYCODE_S
+2296 tap 4 KEYCODE_D
+2320 tap 4 KEYCODE_F
+2344 tap 4 KEYCODE_Z
+2368 tap 4 KEYCODE_X
+2392 tap 4 KEYCODE_C
+2416 tap 4 KEYCODE_V
+2440 tap 4 KEYCODE_Q
+2464 tap 4 KEYCODE_W
+2488 tap 4 KEYCODE_E
+2512 tap 4 KEYCODE_R
+2536 tap 4 KEYCODE_A
+2560 tap 4 KEYCODE_S
+2584 tap 4 KEYCODE_D
+2608 tap 4 KEYCODE_F
+2632 tap 4 KEYCODE_Z
+2656 tap 4 KEYCODE_X
+2680 tap 4 KEYCODE_C
+2704 tap 4 KEYCODE_V
+2728 tap 4 KEYCODE_Q
+2752 tap 4 KEYCODE_W
+2776 tap 4 KEYCODE_E
+2800 tap 4 KEYCODE_R
+2824 tap 4 KEYCODE_A
+2848 tap 4 KEYCODE_S
+2872 tap 4 KEYCODE_D
+2896 tap 4 KEYCODE_F
+2920 tap 4 KEYCODE_Z
+2944 tap 4 KEYCODE_X
+2968 tap 4 KEYCODE_C
+2992 tap 4 KEYCODE_V
+3016 tap 4 KEYCODE_Q
+3040 tap 4 KEYCODE_W
+3064 tap 4 KEYCODE_E
+3088 tap 4 KEYCODE_R
+3112 tap 4 KEYCODE_A
+3136 tap 4 KEYCODE_S
+3160 tap 4 KEYCODE_D
+3184 tap 4 KEYCODE_F
+3208 tap 4 KEYCODE_Z
+3232 tap 4 KEYCODE_X
+3256 tap 4 KEYCODE_C
+3280 tap 4 KEYCODE_V
+3304 tap 4 KEYCODE_Q
+3328 tap 4 KEYCODE_W
+3352 tap 4 KEYCODE_E
+3376 tap 4 KEYCODE_R
+3400 tap 4 KEYCODE_A
+3424 tap 4 KEYCODE_S
+3448 tap 4 KEYCODE_D
+3472 tap 4 KEYCODE_F
+3496 tap 4 KEYCODE_Z
+3520 tap 4 KEYCODE_X
+3544 tap 4 KEYCODE_C
+3568 tap 4 KEYCODE_V
+3592 tap 4 KEYCODE_Q
+3616 tap 4 KEYCODE_W
+3640 tap 4 KEYCODE_E
+3664 tap 4 KEYCODE_R
+3688 tap 4 KEYCODE_A
+3712 tap 4 KEYCODE_S
+3736 tap 4 KEYCODE_D
+3760 tap 4 KEYCODE_F
+3784 tap 4 KEYCODE_Z
+3808 tap 4 KEYCODE_X
+3832 tap 4 KEYCODE_C
+3856 tap 4 KEYCODE_V
+3880 tap 4 KEYCODE_Q
+3904 tap 4 KEYCODE_W
+3928 tap 4 KEYCODE_E
+3952 tap 4 KEYCODE_R
+3976 tap 4 KEYCODE_A
+4000 tap 4 KEYCODE_S
+4024 tap 4 KEYCODE_D
+4048 tap 4 KEYCODE_F
+4072 tap 4 KEYCODE_Z
+4096 tap 4 KEYCODE_X
+4120 tap 4 KEYCODE_C
+4144 tap 4 KEYCODE_V
+4168 tap 4 KEYCODE_Q
+4192 tap 4 KEYCODE_W
+4216 tap 4 KEYCODE_E
+4240 tap 4 KEYCODE_R
+4264 tap 4 KEYCODE_A
+4288 tap 4 KEYCODE_S
+
+4400 mark game-over-expected
+6500 tap 20 KEYCODE_1         # release the PRESS START hold
+6800 mark released
+8000 quit

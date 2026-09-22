@@ -189,6 +189,8 @@ sleic-io-moon/
 │   ├── iomoon_fm_extract.py           # YM3812 (OPL2) FM music extractor
 │   ├── io_moon_press_start_patch.py   # Tournament "PRESS START" ROM patch
 │   ├── io_moon_free_play_patch.py     # Free-play ROM patch (stacks on the one above)
+│   ├── bike_race_press_start_patch.py # The same two features for Bike Race V4.1's chip 04
+│   ├── bike_race_free_play_patch.py   #   "
 │   └── sal_export.py                  # Re-export a Saleae .sal capture to parseable v0 binary
 ├── docs/
 │   ├── dmd_viewer.md                  # DMD Viewer documentation
@@ -327,6 +329,9 @@ sleic-io-moon/
 │       │   ├── v4.1/                  # V4.1 chip set — six chips off one machine
 │       │   │   ├── README.md
 │       │   │   └── bk02.bin … bk07.bin
+│       │   ├── v4.1 - free play + press start/
+│       │   │   ├── README.md          # PRESS START + free play — confirmed on a real machine
+│       │   │   └── bk04f.bin          # Patched 80188 game + sound code
 │       │   ├── bkdsp01.bin            # I8039 display coprocessor
 │       │   ├── bksnd02.bin            # OKI sample ROM 1
 │       │   ├── bksnd03.bin            # OKI sample ROM 2
@@ -421,6 +426,14 @@ A ROM patch for tournament use. After a game ends, the original IO Moon immediat
 ### [Free Play Patch](docs/free_play_patch.md) — `scripts/io_moon_free_play_patch.py`
 
 The companion patch, and the reason to stack the two: IO Moon has no free-play adjustment of its own, so this one gives the machine a standing credit at `main_loop`'s no-credit idle arm and START begins a game with no coin. Independent of the patch above — different hook, different cave — so the two apply in either order. The combined image is in [`roms/1.3 IPDB latest - Tournament and free play patch/`](roms/1.3%20IPDB%20latest%20-%20Tournament%20and%20free%20play%20patch/) and is what a tournament should burn; the PRESS-START-only image is **deprecated** in favour of it.
+
+### Bike Race Patches — `scripts/bike_race_press_start_patch.py`, `scripts/bike_race_free_play_patch.py`
+
+The same two features for **Bike Race V4.1**, both on chip 04, both in caves in that ROM's zero padding above `F9163`, and independent of each other so they stack in either order. Bike Race has no free-play adjustment either — its CREDITOS page is coin pricing only.
+
+PRESS START needs two hooks into one shared hold, because two different things take the scores down: `F000:10F2`, the screen loader that follows a one-, two- or three-player game, and `E8C5D`, the panel blank ahead of the "Partida" overlay that a four-player game reaches first. Releasing the hold then takes the firmware's own idiom — the switch FIFO can carry more than one START code for a single press, since the Z80's cabinet scan has no time-based debounce (`bkio07:3033`), so the hold settles for sixteen steps of the free-running digit `[0010:000B]` and calls `E9C7:2F47` to scrub every queued `36h`, exactly as the stock START handler does. Each script's docstring carries the full evidence and the measured verification table.
+
+The combined image is in [`roms/related-machines/bike-race/v4.1 - free play + press start/`](roms/related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start/), confirmed working on a real V4.1 machine, and loads in PinMAME as set `bikerc3f`.
 
 ---
 

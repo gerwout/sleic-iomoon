@@ -32,6 +32,10 @@ IO Moon itself is `SLEIC2`; its ROM sets live one level up in
   chips of one V4.1 machine, pulled together off its two backbox boards, which are
   photographed in [`../../docs/bikerace_boards.md`](../../docs/bikerace_boards.md).
   Filenames are the chips' own (`bk02.bin` … `bk07.bin`), not PinMAME's.
+- **Bike Race V4.1, patched** ([`bike-race/v4.1 - free play + press start/`](bike-race/v4.1%20-%20free%20play%20+%20press%20start/))
+  — that set's chip 04 carrying the PRESS START and free-play patches, confirmed
+  working on a real V4.1 machine. Reproducible from `bk04.bin` with the two
+  scripts in [`../../scripts/`](../../scripts/).
 - **Doña Elvira 2** — all six EPROMs of one machine: the Z80 game CPU's 27C256, the
   Z80 sound CPU's 27C010, and the four 27C040s of OKI samples. Filenames are the
   dumper's own, where the numeric prefix is the EPROM type and the extension the

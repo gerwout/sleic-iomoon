@@ -44,6 +44,15 @@ the V4.1 chip holds.
 Both of that machine's boards are photographed at full resolution in
 [`../../../docs/bikerace_boards.md`](../../../docs/bikerace_boards.md).
 
+## The patched V4.1 chip 04
+
+[`v4.1 - free play + press start/`](v4.1%20-%20free%20play%20+%20press%20start/) holds
+that set's `bk04` with two patches applied: the end of a game holds the finished
+scores on the panel until START is pressed, and the machine always has a credit
+standing so START begins a game with no coin. Confirmed working on a real V4.1
+machine. Only chip 04 changes; the other six are V4.1's. PinMAME loads it as set
+`bikerc3f`.
+
 ## What this set is used for in this repository
 
 - [`../../../research/bikerace_disasm/`](../../../research/bikerace_disasm/) —
