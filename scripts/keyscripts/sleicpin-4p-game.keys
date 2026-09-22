@@ -1,0 +1,107 @@
+# Sleic Pin-Ball (SLEIC1) -- ONE four-player game, three balls each, twelve balls
+# total.  Four credited START presses ~750 frames apart while ball 1 is still in
+# play add players 1-4 (boxed "N JUGADOR(ES)" DMD announcement verified per-press:
+# see task-3-report.md fix-round-1 section); the model then serves all twelve balls
+# in the machine's own round-robin turn order (P1B1,P2B1,P3B1,P4B1,P1B2,...).
+# Each player takes a different, constant number of lane hits per ball (1/2/3/4) so
+# the four final scores differ.
+600 mark boot
+800 tap 20 KEYCODE_5
+880 tap 20 KEYCODE_5
+960 tap 20 KEYCODE_5
+1040 tap 20 KEYCODE_5
+1120 tap 20 KEYCODE_5
+1200 tap 20 KEYCODE_5
+1280 tap 20 KEYCODE_5
+1360 tap 20 KEYCODE_5
+1440 tap 20 KEYCODE_5
+1520 tap 20 KEYCODE_5
+1600 tap 20 KEYCODE_5
+1680 tap 20 KEYCODE_5
+1760 tap 20 KEYCODE_5
+1840 tap 20 KEYCODE_5
+1920 tap 20 KEYCODE_5
+2000 tap 20 KEYCODE_5
+2080 tap 20 KEYCODE_5
+2160 tap 20 KEYCODE_5
+2240 tap 20 KEYCODE_5
+2320 tap 20 KEYCODE_5
+2700 mark after_coins
+2800 tap 20 KEYCODE_1
+2800 mark start1_game_begins
+3550 tap 20 KEYCODE_1
+3550 mark start2_expect_2_jugadores
+4300 tap 20 KEYCODE_1
+4300 mark start3_expect_3_jugadores
+5050 tap 20 KEYCODE_1
+5050 mark start4_expect_4_jugadores
+5200 mark all_4_players_added_settled
+5350 mark ball_1_player_1_round_1_serve_settled
+5350 tap 15 KEYCODE_Q
+5515 tap 20 KEYCODE_BACKSPACE
+5535 mark ball_1_player_1_round_1_drained
+6135 mark ball_2_player_2_round_1_serve_settled
+6135 tap 15 KEYCODE_Q
+6180 tap 15 KEYCODE_W
+6345 tap 20 KEYCODE_BACKSPACE
+6365 mark ball_2_player_2_round_1_drained
+6965 mark ball_3_player_3_round_1_serve_settled
+6965 tap 15 KEYCODE_Q
+7010 tap 15 KEYCODE_W
+7055 tap 15 KEYCODE_A
+7220 tap 20 KEYCODE_BACKSPACE
+7240 mark ball_3_player_3_round_1_drained
+7840 mark ball_4_player_4_round_1_serve_settled
+7840 tap 15 KEYCODE_Q
+7885 tap 15 KEYCODE_W
+7930 tap 15 KEYCODE_A
+7975 tap 15 KEYCODE_S
+8140 tap 20 KEYCODE_BACKSPACE
+8160 mark ball_4_player_4_round_1_drained
+8760 mark ball_5_player_1_round_2_serve_settled
+8760 tap 15 KEYCODE_Q
+8925 tap 20 KEYCODE_BACKSPACE
+8945 mark ball_5_player_1_round_2_drained
+9545 mark ball_6_player_2_round_2_serve_settled
+9545 tap 15 KEYCODE_Q
+9590 tap 15 KEYCODE_W
+9755 tap 20 KEYCODE_BACKSPACE
+9775 mark ball_6_player_2_round_2_drained
+10375 mark ball_7_player_3_round_2_serve_settled
+10375 tap 15 KEYCODE_Q
+10420 tap 15 KEYCODE_W
+10465 tap 15 KEYCODE_A
+10630 tap 20 KEYCODE_BACKSPACE
+10650 mark ball_7_player_3_round_2_drained
+11250 mark ball_8_player_4_round_2_serve_settled
+11250 tap 15 KEYCODE_Q
+11295 tap 15 KEYCODE_W
+11340 tap 15 KEYCODE_A
+11385 tap 15 KEYCODE_S
+11550 tap 20 KEYCODE_BACKSPACE
+11570 mark ball_8_player_4_round_2_drained
+12170 mark ball_9_player_1_round_3_serve_settled
+12170 tap 15 KEYCODE_Q
+12335 tap 20 KEYCODE_BACKSPACE
+12355 mark ball_9_player_1_round_3_drained
+12955 mark ball_10_player_2_round_3_serve_settled
+12955 tap 15 KEYCODE_Q
+13000 tap 15 KEYCODE_W
+13165 tap 20 KEYCODE_BACKSPACE
+13185 mark ball_10_player_2_round_3_drained
+13785 mark ball_11_player_3_round_3_serve_settled
+13785 tap 15 KEYCODE_Q
+13830 tap 15 KEYCODE_W
+13875 tap 15 KEYCODE_A
+14040 tap 20 KEYCODE_BACKSPACE
+14060 mark ball_11_player_3_round_3_drained
+14660 mark ball_12_player_4_round_3_serve_settled
+14660 tap 15 KEYCODE_Q
+14705 tap 15 KEYCODE_W
+14750 tap 15 KEYCODE_A
+14795 tap 15 KEYCODE_S
+14960 tap 20 KEYCODE_BACKSPACE
+14980 mark ball_12_player_4_round_3_drained
+15880 mark game_over_wait
+17380 mark final_attract_check
+17530 quit
