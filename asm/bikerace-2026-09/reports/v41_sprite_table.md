@@ -29,11 +29,19 @@ Both graphics ROMs store sprites as a 6-byte header followed by three bit
 planes:
 
 ```
-  W (word)   sprite width in pixels
-  1 (word)   constant
-  H (word)   sprite height in pixels
-  then ceil(W/8) * H bytes each of plane 0, plane 1 and the mask
+  H   (word)  height in rows
+  BPR (word)  width in BYTES, so the pixel width is 8*BPR
+  LEN (word)  H * BPR, the size of one plane
+  then LEN bytes each of plane 0, plane 1 and the mask
 ```
+
+This is byte-for-byte the header IO Moon uses, so the two machines share one
+record format. The middle word is **not** a constant: `bkcpu06:0x0636` is
+`17 00 02 00 2E 00`, 23 rows two bytes wide, and `bkcpu06:0x1206` is
+`20 00 11 00 20 02`, 32 rows seventeen bytes wide. A reading of the middle word
+as a constant 1 and the first as a pixel width is indistinguishable from this
+one on an 8-pixel-wide glyph, where `H` and `W` coincide and `BPR` is 1 -- which
+is every record the section below originally examined.
 
 Plane 0 and plane 1 give the four grey levels; the mask is the pass-all/pass-none
 plane, the same three-plane arrangement IO Moon uses
@@ -74,18 +82,27 @@ does.**
 
 Walking the record chain from `0x0000` in each ROM 06:
 
-| | records before the chain breaks |
+| | records in the chain from `0x0000` |
 |---|---|
-| `bkcpu06` (1992) | **12** — eleven 8×8 sprites on a `0x1E` stride at `0x0000`…`0x012C`, then an 18×18 at `0x014A` |
-| `bk06` (V4.1) | **0** — the header at `0x0000` is `01 00 12 00 00 3C`, which is not a record |
+| `bkcpu06` (1992) | **54**, ending at `0x186C` — eleven 8-row × 8 px glyphs on a `0x1E` stride at `0x0000`…`0x012C`, an 18-row × 8 px at `0x014A`, and from `0x0636` onward wider records up to 32 rows × 17 bytes |
+| `bk06` (V4.1, the bad read) | **0** — the header at `0x0000` is `01 00 12 00 00 3C`, one row seventeen bytes wide declaring a 0x3C00-byte plane, which is not a record under either reading |
 
 Note where the parent's chain lands: `0x012C` and `0x014A` are the eleventh and
 twelfth records, and they are two of the five addresses ROM 04 points at. The
-chain and the pointers agree exactly. In V4.1 they agree about nothing —
-scanning the whole chip for well-formed headers finds **32 in `bkcpu06`, 19 in
-`bk06`**, at different offsets, and in both ROMs every one of them lies inside
-`0x0000-0x1103`. That 4356-byte block is the entire sprite table, and V4.1's
-copy of it is a different table.
+chain and the pointers agree exactly. In V4.1 they agree about nothing: the
+chain walk above is the discriminator, 54 records against 0.
+
+> Two figures in this paragraph were computed under the superseded header
+> reading and are left as they stood rather than restated: a chip-wide scan for
+> well-formed headers found **32 in `bkcpu06`, 19 in `bk06`**. Under the
+> corrected validity test (`LEN == H*BPR`) the same scan returns different and
+> much larger counts, because that test admits many coincidental matches, so it
+> is a weak discriminator either way. The chain walk is the load-bearing
+> evidence and it is unaffected.
+>
+> The corrected walk also runs to `0x186C`, past the 4356-byte damaged region,
+> so `0x0000-0x1103` is **not** the whole sprite table as originally stated --
+> it is the part of it the bad read corrupted.
 
 ## The substitution test
 
@@ -262,7 +279,7 @@ the correctly-read `0x0030-0x00FF`.
 Taken with the owner's machine working, that made the prediction firm — **a clean
 re-read of ROM 06 should come back as `bkcpu06`, CRC `9db436d4`** — and a re-read
 of the same machine then confirmed exactly that: CRC `9db436d4`, byte-identical to
-`bkcpu06`, offset `0x1E` = `08 00 01 00 08 00`, no duplicated pages, 12 well-formed
+`bkcpu06`, offset `0x1E` = `08 00 01 00 08 00`, no duplicated pages, 54 well-formed
 records. V4.1's ROM 06 is the 1992 ROM 06.
 
 ## How to check and re-read

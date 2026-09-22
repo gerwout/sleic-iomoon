@@ -33,7 +33,7 @@ this bad read.
 **A re-read of the same machine's ROM 06 confirmed the correct contents: CRC
 `9db436d4`, byte-identical to the parent set's `bkcpu06.bin`.** It passes every
 check the bad read failed — offset `0x1E` is `08 00 01 00 08 00`, there are no
-duplicated `0x200` pages, and the sprite-record chain from `0x0000` yields 12
+duplicated `0x200` pages, and the sprite-record chain from `0x0000` yields 54
 well-formed records. That is `bk06.bin` in this directory. So V4.1's ROM 06 is the
 1992 ROM 06, and the "inference" the evidence below builds is now a confirmed fact,
 not a prediction.
@@ -67,13 +67,22 @@ code segment, and **those pointers are byte-identical to the 1992 set's** — al
 24 segment-`0x2000` pointer slots hold the same offset as the matching slot in
 `bkcpu04`, `0x0000`, `0x012C`, `0x014A`, `0x03A2` and `0x05FA` among them.
 `bkcpu06` holds a well-formed sprite record at each of those offsets; **`bk06`
-holds none.** Walking the record chain from `0x0000` — a 6-byte header `W, 1, H`
-then `ceil(W/8)*H*3` bytes of plane 0, plane 1 and mask — `bkcpu06` yields eleven
-8x8 sprites on a `0x1E` stride and then an 18x18 at `0x014A`, landing exactly on
-the addresses the code names. `bk06` fails on the very first record. Chip-wide
-there are 32 well-formed headers in `bkcpu06` and 19 in `bk06`, and in both they
-all lie inside `0x0000-0x1103`: that block is the whole sprite table, and V4.1's
-copy of it is a different table.
+holds none.** The records are a 6-byte header — `H` rows, `BPR` bytes per row,
+then `LEN = H*BPR` — followed by `LEN` bytes each of plane 0, plane 1 and mask,
+byte-for-byte the header IO Moon uses. Walking the chain from `0x0000`,
+`bkcpu06` yields **54 records** ending at `0x186C`: eleven 8-row × 8 px glyphs on
+a `0x1E` stride, an 18-row × 8 px at `0x014A` — landing exactly on the addresses
+the code names — and wider records from `0x0636` on. `bk06` fails on the very
+first one. The damaged region `0x0000-0x1103` is part of that table rather than
+all of it.
+
+> An earlier revision of this README described the header as `W, 1, H` with
+> `ceil(W/8)*H` bytes per plane. That reading is indistinguishable from the
+> correct one on an 8-pixel-wide glyph, which is all the original analysis
+> examined, and is refuted by any wider record — `0x0636` is `17 00 02 00 2E 00`,
+> middle word 2, and `0x1206` is `20 00 11 00 20 02`, 32 rows × 17 bytes. The
+> bad-dump conclusion does not rest on it: the chain walk gives 54 records
+> against 0 either way, and a re-read of the chip settled the matter outright.
 
 Substituting `bkcpu06` for `bk06` — or replacing only its first `0x1104` bytes
 and leaving the other 124 KB of V4.1's own graphics in place — makes this set
@@ -181,7 +190,7 @@ and `0x0C00`/`0x0E00`. A sprite table on a 0x1E record stride cannot look like
 that, and `bkcpu06` does not.
 
 ROM 06 was re-read from the same machine, with `0x001E` checked first: it came
-back `08 00 01 00 08 00`, no duplicated pages, 12 well-formed records from
+back `08 00 01 00 08 00`, no duplicated pages, 54 well-formed records from
 `0x0000` -- and byte-identical to `bkcpu06`, CRC `9db436d4`. So V4.1's ROM 06 **is**
 the 1992 ROM 06, and V4.1 is a three-chip clone -- `bk03`, `bk04` and `bk07` over
 the 1992 set. `bk03`, `bk04` and `bk07` were already sound; with the confirmed ROM
