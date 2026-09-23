@@ -65,6 +65,8 @@ ROM_SIZE = 0x20000
 V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
     0x7861e7cd,   # + PRESS START
+    0xf82af142,   # + free play (sleic_pin_ball_free_play_patch.py)
+    0xa6501c6b,   # + both, either order
 )
 
 # CAVES and HOOKS are assembled at the end of this file, once every blob and
