@@ -28,6 +28,7 @@ in the PinMAME tree.
 | `bikerac3.zip` | Bike Race (V4.1) | `SLEIC3` | `bikerace` |
 | `bikerc3f.zip` | Bike Race (V4.1, free play + press start MOD) | `SLEIC3` | `bikerace` |
 | `sleicpin.zip` | Sleic Pin-Ball (1993) | `SLEIC1` | — |
+| `sleicpnf.zip` | Sleic Pin-Ball (free play + press start MOD) — **no PinMAME driver set**, see below | `SLEIC1` | — |
 | `iomoon.zip` | Io Moon | `SLEIC2` | — |
 | `iomoona.zip` | Io Moon (earlier ROM revision) | `SLEIC2` | `iomoon` |
 | `iomoont.zip` | Io Moon (PRESS START tournament MOD) — **deprecated**, see `iomoontf` | `SLEIC2` | `iomoon` |
@@ -37,6 +38,15 @@ in the PinMAME tree.
 differ from its parent, and MAME pulls the rest out of the parent zip. So
 `bikerac2.zip`, `bikerac3.zip`, `iomoona.zip` and `iomoont.zip` will not load on
 their own — the matching parent zip has to be on the same ROM path.
+
+**`sleicpnf.zip` is not a registered PinMAME set at all.** There is no
+`sleicpnf` entry in `sleicgames.c`, and the SLEIC1 ball-trough model such a set
+would need is not upstream either. It carries all four Sleic Pin-Ball chips so
+it is self-contained, but the only way to run it today is to point `-rompath`
+at a directory holding it renamed to `sleicpin.zip`, against the stock
+`sleicpin` driver — which then reports a checksum warning on the patched chip
+03 that `-skip_gamewarnings` suppresses. It does not drop in and work under its
+own name.
 
 `iomoontf.zip` and `bikerc3f.zip` are the exceptions and carry **every chip of
 their machine**, so they load on their own. They are the images handed to a machine
@@ -114,6 +124,24 @@ the other six are `bikerac3`'s own complement, packed in so the zip loads with n
 | `sp02-1_1.rom` | `0e4851a0` | `../related-machines/sleic-pin-ball/sp02-1_1.rom` |
 | `sp03-1_1.rom` | `261b0ae4` | `../related-machines/sleic-pin-ball/sp03-1_1.rom` |
 | `sp04-1_1.rom` | `84514cfa` | `../related-machines/sleic-pin-ball/sp04-1_1.rom` |
+
+### `sleicpnf.zip` — MOD, 1 chip differs, packed with all four, **no driver set**
+
+| Member | CRC32 | Source image |
+|--------|-------|--------------|
+| `sp01-1_1.rom` | `240015bb` | `../related-machines/sleic-pin-ball/sp01-1_1.rom` |
+| `sp02-1_1.rom` | `0e4851a0` | `../related-machines/sleic-pin-ball/sp02-1_1.rom` |
+| `sp03-1_1.rom` | `a6501c6b` | `../related-machines/sleic-pin-ball/free play + press start/sp03-1_1.rom` |
+| `sp04-1_1.rom` | `84514cfa` | `../related-machines/sleic-pin-ball/sp04-1_1.rom` |
+
+`sp03-1_1.rom` is chip 03 with the free-play and PRESS START patches applied;
+the other three are `sleicpin`'s own complement, packed in so the zip loads
+with no `sleicpin.zip` beside it. The patched chip and how to reproduce it are
+documented at
+[`../related-machines/sleic-pin-ball/free play + press start/README.md`](../related-machines/sleic-pin-ball/free%20play%20+%20press%20start/README.md).
+See the note below the Sets table: there is no `sleicpnf` PinMAME driver set,
+so loading this zip means renaming it to `sleicpin.zip` on its own ROM path and
+running it against the stock `sleicpin` driver.
 
 ### `iomoon.zip` — parent, 5 chips
 
