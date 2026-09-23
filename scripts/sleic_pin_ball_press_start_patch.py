@@ -13,11 +13,13 @@ Usage:
 **V1.1 only**, by CRC; `--any-version` overrides.
 
 Two padding regions hold the payload, both erased to `0xFF` in the stock ROM:
-`0xE50EB`-`0xEFFFF` (segment E000, the hold stub and its two game-over
-trampolines) and `0xFDFF0`-`0xFFE76` (segment F000, the digit blitter, the
-per-player digit reader, the `PRESS START` string record and the screen
-composer). Three hooks wire the payload into the sequence table and the two
-game-over paths that would otherwise drop straight to attract.
+`0xE50EB`-`0xEFFFF` (segment E000, the hold stub, its two game-over
+trampolines and the attract loop's credit-gate trampoline) and
+`0xFDFF0`-`0xFFE76` (segment F000, the digit blitter, the per-player digit
+reader, the `PRESS START` string record and the screen composer). Four hooks
+wire the payload into the sequence table, the two game-over paths, and the
+attract loop's credit test -- the last of which otherwise skips the score
+screen whenever a credit is standing, which free play always leaves true.
 """
 
 import argparse
@@ -35,7 +37,7 @@ ROM_SIZE = 0x20000
 # The images this accepts: stock V1.1, plus every patched variant.
 V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
-    0x40fdc030,   # + PRESS START
+    0xeff46b81,   # + PRESS START
 )
 
 # CAVES and HOOKS are assembled at the end of this file, once every blob and
@@ -466,12 +468,52 @@ TRAMPOLINE_TENTH = bytes([
 ])
 
 
-def _jmp_near(from_offset, to_offset):
-    """A `jmp near` (3 bytes) plus 4 bytes of 0x90, filling a 7-byte hook
-    site. `from_offset`/`to_offset` are segment E000 offsets; the
-    displacement is relative to the end of the jmp itself."""
+# =============================================================================
+# The attract loop's credit gate
+# =============================================================================
+
+# Packed right after trampoline_tenth. Reached from the attract/credit-wait
+# loop (E000:00EC) in place of the stock credit test, which the loop's one
+# call site for the game-over dispatcher (E000:00F6) never reaches while a
+# credit is standing -- see GAME_OVER_CREDIT_GATE below. Entry 25 of the
+# [0000:017D] sequence dispatcher is the patch's own spare slot (STUB_ADDR),
+# so a pending score screen is recognised the same way the stub itself is
+# entered: [0x17D] == 25. When it is, the screen must keep dispatching
+# regardless of credits; otherwise this reproduces the stock test byte for
+# byte in behaviour.
+TRAMPOLINE_CREDIT_GATE_ADDR = TRAMPOLINE_TENTH_ADDR + len(TRAMPOLINE_TENTH)
+
+TRAMPOLINE_CREDIT_GATE_ASM = f"""BITS 16
+org 0x{TRAMPOLINE_CREDIT_GATE_ADDR:04X}
+
+trampoline_credit_gate:
+        cmp word [0x17d], 25
+        je dispatch
+        mov al, [0x100]
+        and al, al
+        je dispatch
+        jmp 0x106
+dispatch:
+        jmp 0x00F6
+"""
+
+TRAMPOLINE_CREDIT_GATE = bytes([
+    0x83, 0x3E, 0x7D, 0x01, 0x19,          # cmp word [0x17D], 25   ; our screen pending?
+    0x74, 0x0A,                            # je dispatch
+    0xA0, 0x00, 0x01,                      # mov al, [0x100]        ; stock test from here
+    0x20, 0xC0,                            # and al, al
+    0x74, 0x03,                            # je dispatch
+    0xE9, 0xA2, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
+    0xE9, 0x8F, 0xAF,                      # dispatch: jmp 0x00F6   ; the dispatcher call
+])
+
+
+def _jmp_near(from_offset, to_offset, pad=4):
+    """A `jmp near` (3 bytes) plus `pad` bytes of 0x90. `from_offset`/
+    `to_offset` are segment E000 offsets; the displacement is relative to
+    the end of the jmp itself."""
     disp = (to_offset - (from_offset + 3)) & 0xFFFF
-    return bytes([0xE9, disp & 0xFF, disp >> 8, 0x90, 0x90, 0x90, 0x90])
+    return bytes([0xE9, disp & 0xFF, disp >> 8]) + bytes([0x90] * pad)
 
 
 # Table entry 25 of the [0000:017D] sequence dispatcher, at E000:4F7C+2*25.
@@ -492,6 +534,15 @@ GAME_OVER_TENTH_ADDR = 0xE1962
 GAME_OVER_TENTH_ORIGINAL = bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, 0x01, 0x00])
 GAME_OVER_TENTH_PATCHED = _jmp_near(GAME_OVER_TENTH_ADDR - ROM_BASE, TRAMPOLINE_TENTH_ADDR)
 
+# The attract/credit-wait loop's credit test (E000:00EC-00F5), which stock
+# leaves the loop (`jmp 0x106`) rather than dispatch (`call 0x4F4E` at
+# E000:00F6, outside this range and untouched) whenever a credit is
+# standing. `jmp near` (3 bytes) + 7 bytes of 0x90 fills the 10-byte site.
+GAME_OVER_CREDIT_GATE_ADDR = 0xE00EC
+GAME_OVER_CREDIT_GATE_ORIGINAL = bytes([0xA0, 0x00, 0x01, 0x22, 0xC0, 0x74, 0x03, 0xE9, 0x10, 0x00])
+GAME_OVER_CREDIT_GATE_PATCHED = _jmp_near(
+    GAME_OVER_CREDIT_GATE_ADDR - ROM_BASE, TRAMPOLINE_CREDIT_GATE_ADDR, pad=7)
+
 CAVES = (
     (DIGITS_DRAW_ADDR, DIGITS_DRAW, "digits_draw"),
     (SCORE_DIGITS_ADDR, SCORE_DIGITS, "score_digits"),
@@ -500,12 +551,15 @@ CAVES = (
     (ROM_BASE + STUB_ADDR, STUB, "hold stub"),
     (ROM_BASE + TRAMPOLINE_COMMON_ADDR, TRAMPOLINE_COMMON, "common game-over trampoline"),
     (ROM_BASE + TRAMPOLINE_TENTH_ADDR, TRAMPOLINE_TENTH, "tenth-game game-over trampoline"),
+    (ROM_BASE + TRAMPOLINE_CREDIT_GATE_ADDR, TRAMPOLINE_CREDIT_GATE, "credit-gate trampoline"),
 )
 
 HOOKS = (
     (TABLE_ENTRY_25_ADDR, TABLE_ENTRY_25_ORIGINAL, TABLE_ENTRY_25_PATCHED, "sequence table entry 25"),
     (GAME_OVER_COMMON_ADDR, GAME_OVER_COMMON_ORIGINAL, GAME_OVER_COMMON_PATCHED, "common game-over tail"),
     (GAME_OVER_TENTH_ADDR, GAME_OVER_TENTH_ORIGINAL, GAME_OVER_TENTH_PATCHED, "tenth-game game-over tail"),
+    (GAME_OVER_CREDIT_GATE_ADDR, GAME_OVER_CREDIT_GATE_ORIGINAL, GAME_OVER_CREDIT_GATE_PATCHED,
+     "attract loop credit gate"),
 )
 
 
