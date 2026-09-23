@@ -303,7 +303,11 @@ git commit -m "research: locate Sleic Pin-Ball's per-player scores and player co
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks
-- Produces: `HOOK_SITE` (the `F000:xxxx` instruction the patch overwrites), `HOOK_ORIGINAL` (the exact displaced bytes), `NEXT_HANDLER` (how the cave recovers the original next-handler offset), and the semantics of `[0000:027E]`, `[0000:0283]`, `[0000:0285]`
+- Produced: the semantics of `[0000:027E]`-`[0285]`, and the finding that the
+  end-of-game sequence is the `[0000:017D]` table at `E000:4F7C` rather than a
+  `[0281]` handler chain — so the hook is the two-byte table entry at
+  `E000:4FAA`, and `HOOK_SITE`/`HOOK_ORIGINAL`/`NEXT_HANDLER` as framed below do
+  not apply. The steps below are the recipe that established that.
 
 **Known starting point:** `[0000:0281]` is the next handler's offset,
 `[0000:027F]` a tick delay, `[0000:027E]` a flag. The worked example is the
@@ -789,48 +793,122 @@ git commit -m "scripts: the Pin-Ball patch's score-screen composer"
 
 ---
 
-### Task 10: The handler
+### Task 10: The hold stub
 
 **Files:**
 - Modify: `sleic-iomoon/scripts/sleic_pin_ball_press_start_patch.py`
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Task 9's `draw_screen`, Task 3's `NEXT_HANDLER`, Task 5's `REDRAW_PER_TICK`
-- Produces: a cave routine `handler` at `HANDLER_ADDR`, installed into `[0000:0281]`, which on each tick polls `F000:54EF` for code `0x05`, and on seeing it drains the remaining queue, restores `NEXT_HANDLER` into `[0000:0281]` and returns
+- Consumes: Task 9's `draw_screen` (in the F000 cave), `GUARD_ADDR = 0x0103`
+- Produces: `STUB_ASM`/`STUB` and `STUB_ADDR`, a routine in **segment E000**
+  reached as step 23 of the `[0000:017D]` sequence table, plus `STATE_ADDR`, one
+  byte of segment-0 workspace
+
+**The mechanism.** Step 23 of the table at `E000:4F7C` is stock `E000:5090`:
+
+```
+E000:5090  9afcde00f0   lcall F000:DEFC          ; clear the display buffer
+E000:5095  9a020b00f0   lcall F000:0B02          ; the LOTERIA setup
+E000:509A  3ec706df046400  mov word [0x4df], 0x64  ; this step's dwell, in ticks
+E000:50A1  e93100       jmp 0x50d5               ; the advance tail
+```
+
+and the advance tail every step ends in is:
+
+```
+E000:50D5  3e833e7d0118  cmp word [0x17d], 0x18
+E000:50DB  7508          jne 0x50e5
+E000:50DD  3ec7067d010000 mov word [0x17d], 0     ; wrap
+E000:50E4  c3            ret
+E000:50E5  3eff067d01    inc word [0x17d]
+E000:50EA  c3            ret
+```
+
+So **holding the screen is a `ret` that skips `0x50D5`**: `[017D]` stays at 23
+and the dispatcher vectors here again on the next tick. Releasing is
+`jmp 0x5090`, which runs the stock step and advances normally. The stub must be
+in segment E000 because the table entry is a near offset in that segment; it
+lives at `E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of
+the segment. The drawing cave stays in F000 and is reached by `lcall`.
+
+`DS` is already 0 on entry — every access in the dispatcher and in step 23 is a
+`3E`-prefixed direct address in segment 0. Confirm that before relying on it;
+`F000:54EF` needs `DS = 0` because it reads the FIFO read pointer at
+`[0000:04E5]`, and it clobbers `AX` and `SI`.
+
+**The state byte.** `STATE_ADDR` holds 0 = not yet drawn, 1 = drawn and holding.
+The release path sets it back to 0, so a later game gets its screen. Whether that
+is sufficient depends on whether the `[017D]` sequence revisits step 23 during
+attract — if it does, a game-start reset hook is needed as well, which Task 11
+adds. The answer is recorded in the ledger before this task runs.
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-def test_handler_assembles_as_written():
+def test_stub_assembles_as_written():
     m = load()
     with tempfile.TemporaryDirectory() as t:
         src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
-        src.write_text(m.HANDLER_ASM)
+        src.write_text(m.STUB_ASM)
         subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
-        assert out.read_bytes() == bytes(m.HANDLER)
+        assert out.read_bytes() == bytes(m.STUB)
 
-def test_handler_calls_the_switch_pop_far():
+def test_stub_polls_the_switch_queue_far():
     m = load()
-    # 9A EF 54 00 F0 = call far F000:54EF
-    assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.HANDLER)
+    assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.STUB), 'no far call to F000:54EF'
+
+def test_stub_guards_on_the_in_game_flag():
+    m = load()
+    # 3E 80 3E 03 01 00 = cmp byte ds:[0103], 0
+    assert bytes([0x3E, 0x80, 0x3E, 0x03, 0x01, 0x00]) in bytes(m.STUB)
+
+def test_stub_rejoins_the_stock_step_and_not_the_advance_tail():
+    m = load()
+    asm = m.STUB_ASM
+    assert '0x5090' in asm or '05090' in asm, 'stub never rejoins the stock step 23'
+    assert '0x50d5' not in asm.lower(), 'stub must not jump to the advance tail itself'
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Expected: `FAIL` — `HANDLER_ASM` undefined.
+Expected: `FAIL` — `STUB_ASM` undefined.
 
-- [ ] **Step 3: Write the handler**
+- [ ] **Step 3: Write the stub**
 
-On entry: set `DS = 0`. If `REDRAW_PER_TICK`, call `draw_screen`. Then
-`call far 0xF000:0x54EF`; `AL` is the popped code, zero meaning empty. If
-`AL == 5`, drain by calling it until it returns zero, write `NEXT_HANDLER` to
-`[0000:0281]`, set `[0000:027F]` to 0 so the chain advances at once, and return.
-Otherwise re-install `HANDLER_ADDR` in `[0000:0281]` with a short
-`[0000:027F]` delay and return.
+```
+stub:   cmp byte [0x103], 0        ; in-game flag: 0 means the game is over
+        jne stock                  ;   a game is running: behave exactly as stock
+        cmp byte [STATE_ADDR], 0
+        jne holding
+        lcall F000:<draw_screen>   ; compose the screen once
+        mov byte [STATE_ADDR], 1
+        jmp hold
+holding:
+        lcall F000:0x54EF          ; pop one switch code, AL = 0 when empty
+        or al, al
+        je hold                    ;   queue empty: keep holding
+        cmp al, 5                  ; START
+        jne holding                ;   anything else: discard it and keep draining
+drain:  lcall F000:0x54EF          ; scrub duplicate START codes before moving on
+        or al, al
+        jne drain
+        mov byte [STATE_ADDR], 0
+        jmp stock
+hold:   mov word [0x4df], <dwell>  ; this step's dwell in ticks
+        ret                        ; [017D] untouched: step 23 runs again
+stock:  jmp 0x5090
+```
 
-Note `F000:54EF` needs `DS = 0` because it reads the FIFO read pointer at
-`[0000:04E5]`, and it clobbers `AX` and `SI`.
+Pick `<dwell>` small enough that START feels responsive and large enough not to
+redraw needlessly — the draw is already guarded by `STATE_ADDR`, so the dwell
+only paces the poll. Write it as `STUB_ASM` with `org 0x50EB` and
+hand-assemble it into `STUB`.
+
+The `drain` loop is this ROM's own idiom for a START press: the Z80 cabinet scan
+has no time-based debounce, so one press can leave more than one `0x05` in the
+FIFO, and an undrained duplicate would be consumed by whatever screen follows.
+Bike Race needed exactly this and the patch was wrong without it.
 
 - [ ] **Step 4: Run the tests**
 
@@ -843,31 +921,52 @@ Expected: all `PASS`.
 
 ```bash
 git add scripts/sleic_pin_ball_press_start_patch.py scripts/tests/test_sleicpin_press_start.py
-git commit -m "scripts: the Pin-Ball patch's screen handler and START poll"
+git commit -m "scripts: the Pin-Ball patch's hold stub and START poll"
 ```
 
 ---
 
-### Task 11: The hook, the guards, and the cave layout
+### Task 11: The hook and the cave layout
 
 **Files:**
 - Modify: `sleic-iomoon/scripts/sleic_pin_ball_press_start_patch.py`
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: every earlier Phase 2 task, plus Task 3's `HOOK_SITE`/`HOOK_ORIGINAL` and Task 4's `GUARD_ADDR`/`GUARD_TEST`
+- Consumes: every earlier Phase 2 task
 - Produces: the final `CAVES` and `HOOKS` tuples; a complete, applicable patch
+
+**The hook is two bytes.** Table entry 23 sits at `E000:4FAA` and reads
+`90 50` (`0x5090`). The patch writes the stub's offset there. That is the whole
+hook — no displaced instructions, no trampoline, nothing to replay.
+
+Two cave regions, so `CAVES` spans two padding runs:
+
+| region | physical | holds |
+|---|---|---|
+| E000 padding | `0xE50EB` upward | `STUB` |
+| F000 padding | `0xFDFF0` upward | `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN` |
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-def test_hook_original_matches_the_stock_rom():
+def test_hooks_are_present_and_match_the_stock_rom():
     m = load()
     data = ROM.read_bytes()
+    assert len(m.HOOKS) >= 1, 'HOOKS is empty, so the assertions below never run'
     for addr, original, patched, label in m.HOOKS:
         off = m.physical_to_file(addr)
         assert data[off:off+len(original)] == original, f'{label}: stock bytes differ'
         assert len(original) == len(patched), f'{label}: patch changes length'
+
+def test_the_table_entry_is_the_hook():
+    m = load()
+    addrs = {addr for addr, _, _, _ in m.HOOKS}
+    assert 0xE4FAA in addrs, 'step 23 of the E000:4F7C table is not hooked'
+    for addr, original, patched, _ in m.HOOKS:
+        if addr == 0xE4FAA:
+            assert original == bytes([0x90, 0x50]), 'stock entry 23 is not 0x5090'
+            assert int.from_bytes(patched, 'little') == m.STUB_ADDR & 0xFFFF
 
 def test_patched_rom_differs_only_in_caves_and_hooks():
     m = load()
@@ -882,24 +981,23 @@ def test_patched_rom_differs_only_in_caves_and_hooks():
     assert diff <= allowed, f'{len(diff - allowed)} bytes changed outside cave and hook'
 ```
 
+Note that `test_caves_fit_the_padding` from Task 6 asserts every cave sits inside
+`0xFDFF0`-`0xFFE76`. Widen it to accept either padding run, keeping the assertion
+that the space is `0xFF` before the patch writes it.
+
 - [ ] **Step 2: Run it to verify it fails**
 
-Expected: `FAIL test_hook_original_matches_the_stock_rom` — `HOOKS` is empty, so
-the loop body never runs and the assertion about the hook is never exercised;
-make the test also assert `len(m.HOOKS) >= 1` so it fails honestly.
+Expected: `FAIL test_hooks_are_present_and_match_the_stock_rom` — `HOOKS` is
+empty.
 
-- [ ] **Step 3: Lay out the cave and write the hook**
+- [ ] **Step 3: Lay out the caves and write the hook**
 
-Assign final addresses from `0xFDFF0` upward: `DIGITS_DRAW`,
-`SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN`, `HANDLER`, then the hook
-trampoline. Re-assemble every blob with the real addresses substituted and
-confirm the `nasm` cross-checks still pass.
-
-The hook replaces `HOOK_ORIGINAL` at `HOOK_SITE` with a `jmp far` to a
-trampoline that: tests `GUARD_ADDR` against `GUARD_TEST` and, if this is not a
-game over, runs `HOOK_ORIGINAL` and rejoins; otherwise records the original
-next-handler, installs `HANDLER_ADDR` in `[0000:0281]`, calls `draw_screen`, and
-rejoins.
+Assign the F000 blobs from `0xFDFF0` upward and the stub at `0xE50EB`,
+re-assemble every blob with the real addresses substituted, and confirm the
+`nasm` cross-checks still pass. Add the game-start reset hook only if the ledger
+records that the `[017D]` sequence revisits step 23 during attract; if it does,
+clear `STATE_ADDR` from `E000:0706`, where the stock code already writes
+`[0103] = 0xFF` and `[0105] = 1`.
 
 - [ ] **Step 4: Run the tests and apply the patch for real**
 
@@ -915,7 +1013,7 @@ the output CRC32; it becomes a member of `V11_FAMILY_CRC32`.
 
 ```bash
 git add scripts/sleic_pin_ball_press_start_patch.py scripts/tests/test_sleicpin_press_start.py
-git commit -m "scripts: hook the Pin-Ball score screen into the handler chain"
+git commit -m "scripts: hook the Pin-Ball score screen into the sequence table"
 ```
 
 ---
@@ -1063,14 +1161,13 @@ here by construction.
 
 **Type consistency.** `physical_to_file`, `validate_rom`, `is_already_patched`,
 `apply_patches`, `CAVES`, `HOOKS` are the names Task 6 defines and every later
-task uses. `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`,
-`DRAW_SCREEN`, `HANDLER` each have a matching `*_ASM` string for the `nasm`
-cross-check and a matching `*_ADDR` assigned in Task 11.
+task uses. `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN` and
+`STUB` each have a matching `*_ASM` string for the `nasm` cross-check and a
+matching `*_ADDR` assigned in Task 11.
 
-**One honest gap.** Tasks 7-11 give assembly *structure* and the exact test that
-must pass, not final byte lists, because seven of the constants those blobs
-embed — `SCORE_BASE`, `SCORE_STRIDE`, `PLAYER_COUNT`, `HOOK_SITE`,
-`HOOK_ORIGINAL`, `GUARD_ADDR`, `NEXT_HANDLER` — are Phase 1 outputs. Writing
-byte lists now would mean inventing addresses into a ROM patch, which is the one
-class of error that corrupts a live machine. The `nasm` cross-check in every
-task is what makes the assembly-to-bytes step safe once the values are real.
+**Why structure and not byte lists.** Tasks 7-11 give assembly *structure* and
+the exact test that must pass, not final byte lists, because every blob embeds
+addresses that are only fixed once the cave is laid out in Task 11. Writing byte
+lists earlier would mean inventing addresses into a ROM patch, which is the one
+class of error that corrupts a live machine. The `nasm` cross-check in every task
+is what makes the assembly-to-bytes step safe.
