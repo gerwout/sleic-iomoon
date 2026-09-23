@@ -203,7 +203,7 @@ if __name__ == '__main__':
         if name.startswith('test_') and callable(fn):
             try:
                 fn(); print(f'  PASS {name}')
-            except AssertionError as e:
+            except Exception as e:
                 fails += 1; print(f'  FAIL {name}: {e}')
     print('FAILED' if fails else 'OK')
     sys.exit(1 if fails else 0)
