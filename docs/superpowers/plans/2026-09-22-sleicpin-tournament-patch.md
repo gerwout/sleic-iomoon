@@ -767,7 +767,9 @@ Expected: `FAIL` — `DRAW_SCREEN_ASM` undefined.
 
 - [ ] **Step 3: Write the composer**
 
-Far-call `F000:DEFC` to clear the buffer, then for each player `1` to
+Far-call `F000:DEFC` to clear the buffer — it sets `ES = 0x6000` itself and
+`stosb`s 0xFFF zero bytes from `DI = 0x410`, which covers `0x410`-`0x140E` and so
+clears **both** planes in one call, ending in `retf`. Then for each player `1` to
 `PLAYER_COUNT` index the block table at `E000:190F`, call `score_digits` to get
 eight digits into a scratch buffer with the leading zeros blanked, and call
 `digits_draw` with that player's slot offset from the table above. Then draw the
@@ -833,9 +835,25 @@ lives at `E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of
 the segment. The drawing cave stays in F000 and is reached by `lcall`.
 
 `DS` is already 0 on entry — every access in the dispatcher and in step 23 is a
-`3E`-prefixed direct address in segment 0. Confirm that before relying on it;
-`F000:54EF` needs `DS = 0` because it reads the FIFO read pointer at
-`[0000:04E5]`, and it clobbers `AX` and `SI`.
+`3E`-prefixed direct address in segment 0. Confirm that before relying on it.
+
+`F000:54EF` is verified to behave as this task assumes:
+
+```
+F000:54EF  3e8b36e504   mov si, ds:[0x4e5]     ; the FIFO read pointer
+F000:54F4  3e8a04       mov al, ds:[si]
+F000:54F7  22c0         and al, al
+F000:54F9  740b         je 0x5506              ; empty
+F000:54FB  3ec60400     mov byte ds:[si], 0    ; consume the slot
+F000:54FF  46           inc si
+F000:5500  3e8936e504   mov ds:[0x4e5], si
+F000:5505  cb           retf
+F000:5506  3ec606e40400 mov byte ds:[0x4e4], 0 ; empty: clear the pending flag
+F000:550C  cb           retf                   ;   and return with AL = 0
+```
+
+So it needs `DS = 0`, clobbers `AX` and `SI`, returns `AL = 0` on an empty queue,
+and is safe to call in a loop — which is what the drain below does.
 
 **The state byte.** `STATE_ADDR` holds 0 = not yet drawn, 1 = drawn and holding.
 The release path sets it back to 0, so a later game gets its screen. Whether that
