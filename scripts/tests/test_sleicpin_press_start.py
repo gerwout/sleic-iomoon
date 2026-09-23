@@ -152,6 +152,39 @@ def test_both_game_over_tails_are_redirected():
         assert original == bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, imm, 0x00]), \
             f'{label}: stock bytes are not mov word ds:[0x17d], {imm:#04x}'
 
+def test_block_table_matches_the_rom_score_table():
+    m = load()
+    data = ROM.read_bytes()
+    stock = [int.from_bytes(data[0x1911+2*i:0x1913+2*i], 'little') for i in range(4)]
+    assert stock == [0x1E7, 0x209, 0x22B, 0x24D], 'block bases do not match the ROM score table at 0x1911'
+    trailer = bytes(m.DRAW_SCREEN)[-16:-8]
+    assert trailer == b''.join(w.to_bytes(2, 'little') for w in stock), \
+        "draw_screen's block_table does not match the ROM's own bases"
+
+def test_score_digits_reads_offsets_4_through_11():
+    m = load()
+    b = bytes(m.SCORE_DIGITS)
+    assert bytes([0x83, 0xC6, 0x0B]) in b, 'does not start at block+11 (add si, 11)'
+    assert bytes([0xB9, 0x08, 0x00]) in b, 'does not read 8 digits down to block+4 (mov cx, 8)'
+
+def test_stock_tails_end_in_ret_right_after_the_hooked_mov():
+    m = load()
+    data = ROM.read_bytes()
+    assert data[m.physical_to_file(0xE197C) + 7] == 0xC3, \
+        "stock byte past the common tail's hooked mov is not ret"
+    assert data[m.physical_to_file(0xE1962) + 7] == 0xC3, \
+        "stock byte past the tenth-game tail's hooked mov is not ret"
+
+def test_draw_screen_and_trampolines_share_the_count_snapshot():
+    m = load()
+    read_snapshot = bytes([0xA0]) + m.COUNT_ADDR.to_bytes(2, 'little')
+    assert read_snapshot in bytes(m.DRAW_SCREEN), 'draw_screen does not read COUNT_ADDR'
+    assert bytes([0xA0, 0x06, 0x01]) not in bytes(m.DRAW_SCREEN), \
+        'draw_screen reads the live [0x106], which is already zeroed by the time it runs'
+    write_snapshot = bytes([0xA0, 0x06, 0x01, 0xA2]) + m.COUNT_ADDR.to_bytes(2, 'little')
+    assert write_snapshot in bytes(m.TRAMPOLINE_COMMON), 'common trampoline does not snapshot [0x106]'
+    assert write_snapshot in bytes(m.TRAMPOLINE_TENTH), 'tenth trampoline does not snapshot [0x106]'
+
 def test_patched_rom_differs_only_in_caves_and_hooks():
     m = load()
     stock = ROM.read_bytes()
