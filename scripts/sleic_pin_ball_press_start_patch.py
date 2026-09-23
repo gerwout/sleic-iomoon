@@ -147,14 +147,20 @@ PROMPT_RECORD = (len(PROMPT_TEXT).to_bytes(2, 'little') +
 # =============================================================================
 
 # The whole patch's scratch RAM: 8 bytes of digit buffer, 1 byte for the
-# stub's DRAWN flag, then a 2-byte SAVED_ADDR word. Segment 0 below 0x100 is
-# the interrupt vector table, copied from F000:FEF0 at boot, so the
-# workspace must sit above it; nothing initialises segment 0 above 0x100 at
-# power-on either way. Claimed from the 0x377-0x3E7 run (113 bytes, the
-# largest of four measured candidate runs that no direct-address
-# instruction in the image reaches), 11 bytes (0x3A0-0x3AA) well inside it.
+# stub's DRAWN flag, a 2-byte SAVED_ADDR word, then 1 byte for COUNT_ADDR.
+# Segment 0 below 0x100 is the interrupt vector table, copied from F000:FEF0
+# at boot, so the workspace must sit above it; nothing initialises segment 0
+# above 0x100 at power-on either way. Claimed from the 0x377-0x3E7 run (113
+# bytes, the largest of four measured candidate runs that no direct-address
+# instruction in the image reaches), 12 bytes (0x3A0-0x3AB) well inside it.
 WORKSPACE_ADDR = 0x3A0
 DRAWN_ADDR = WORKSPACE_ADDR + 8
+
+# The trampolines snapshot [0x106] (PLAYER_COUNT) here before the game-over
+# tail zeroes it, since draw_screen cannot run until the attract loop's next
+# dispatch -- by which time [0x106] already reads 0. draw_screen reads this
+# instead of [0x106].
+COUNT_ADDR = WORKSPACE_ADDR + 11
 
 # Packed right after digits_draw.
 SCORE_DIGITS_ADDR = DIGITS_DRAW_ADDR + len(DIGITS_DRAW)
@@ -228,7 +234,9 @@ DRAW_SCREEN_ADDR = PROMPT_RECORD_ADDR + len(PROMPT_RECORD)
 
 # Takes no arguments; DS = 0 and CS = F000 on entry (the stub far-calls it).
 # Clears both display planes through F000:DEFC, which also sets ES = 0x6000,
-# then for each player 1..PLAYER_COUNT reads that player's block with
+# then for each player 1..count (read from COUNT_ADDR, the trampolines'
+# snapshot of [0x106] -- by the time draw_screen runs, [0x106] itself has
+# already been zeroed by the game-over tail) reads that player's block with
 # score_digits into WORKSPACE_ADDR and draws it with digits_draw at that
 # player's plane-1 slot, then draws PROMPT_RECORD twice with F000:550D, once
 # per plane. Far ret. The player index lives in BP, the one register neither
@@ -244,7 +252,7 @@ draw_screen:
         call 0xF000:0xDEFC
         mov bp, 1
 .loop:
-        mov al, [0x106]
+        mov al, [0x{COUNT_ADDR:04X}]
         xor ah, ah
         cmp ax, bp
         jb .prompt
@@ -280,7 +288,7 @@ DRAW_SCREEN = bytes([
     0x55,                                 # push bp                ; save the caller's BP
     0x9A, 0xFC, 0xDE, 0x00, 0xF0,         # call 0xF000:0xDEFC    ; clear buffer, ES=0x6000
     0xBD, 0x01, 0x00,                     # mov bp, 1             ; player index, 1-based
-    0xA0, 0x06, 0x01,                     # .loop: mov al, [0x106]; PLAYER_COUNT
+    0xA0, 0xAB, 0x03,                     # .loop: mov al, [COUNT_ADDR]; snapshot of PLAYER_COUNT
     0x30, 0xE4,                           # xor ah, ah
     0x39, 0xE8,                           # cmp ax, bp
     0x72, 0x22,                           # jb .prompt            ; count < index -> done
@@ -401,16 +409,21 @@ STUB = bytes([
 TRAMPOLINE_COMMON_ADDR = STUB_ADDR + len(STUB)
 
 # Reached from the common game-over tail (E000:197C -- nine games in ten,
-# per the branch at E000:1919 on the NVRAM game counter [0x66D]). Records
-# 0x17, the index that tail's own stock mov would have written to [017D],
-# clears DRAWN_ADDR so the stub composes a fresh screen, points the
-# dispatcher at entry 25, and returns -- the same ret the stock tail took.
+# per the branch at E000:1919 on the NVRAM game counter [0x66D]), while
+# [0x106] (PLAYER_COUNT) is still live -- the same tail zeroes it a few
+# instructions later, before the dispatcher's next tick can reach the stub.
+# Records 0x17, the index that tail's own stock mov would have written to
+# [017D], snapshots [0x106] into COUNT_ADDR for draw_screen to read, clears
+# DRAWN_ADDR so the stub composes a fresh screen, points the dispatcher at
+# entry 25, and returns -- the same ret the stock tail took.
 TRAMPOLINE_COMMON_ASM = f"""BITS 16
 org 0x{TRAMPOLINE_COMMON_ADDR:04X}
 
 trampoline_common:
         mov word [0x{SAVED_ADDR:X}], 0x17
         mov byte [0x{DRAWN_ADDR:04X}], 0
+        mov al, [0x106]
+        mov [0x{COUNT_ADDR:04X}], al
         mov word [0x17D], 25
         ret
 """
@@ -418,6 +431,8 @@ trampoline_common:
 TRAMPOLINE_COMMON = bytes([
     0xC7, 0x06, 0xA9, 0x03, 0x17, 0x00,    # mov word [SAVED_ADDR], 0x17
     0xC6, 0x06, 0xA8, 0x03, 0x00,          # mov byte [DRAWN_ADDR], 0
+    0xA0, 0x06, 0x01,                      # mov al, [0x106]         ; PLAYER_COUNT, still live here
+    0xA2, 0xAB, 0x03,                      # mov [COUNT_ADDR], al    ; snapshot for draw_screen
     0xC7, 0x06, 0x7D, 0x01, 0x19, 0x00,    # mov word [0x17D], 25
     0xC3,                                  # ret
 ])
@@ -425,15 +440,18 @@ TRAMPOLINE_COMMON = bytes([
 # Packed right after trampoline_common.
 TRAMPOLINE_TENTH_ADDR = TRAMPOLINE_COMMON_ADDR + len(TRAMPOLINE_COMMON)
 
-# Reached from the tenth-game tail (E000:1962), the branch's other target.
-# Identical to trampoline_common except it records 0x01, the index that
-# tail's own stock mov would have written.
+# Reached from the tenth-game tail (E000:1962), the branch's other target,
+# while [0x106] is likewise still live. Identical to trampoline_common
+# except it records 0x01, the index that tail's own stock mov would have
+# written.
 TRAMPOLINE_TENTH_ASM = f"""BITS 16
 org 0x{TRAMPOLINE_TENTH_ADDR:04X}
 
 trampoline_tenth:
         mov word [0x{SAVED_ADDR:X}], 0x01
         mov byte [0x{DRAWN_ADDR:04X}], 0
+        mov al, [0x106]
+        mov [0x{COUNT_ADDR:04X}], al
         mov word [0x17D], 25
         ret
 """
@@ -441,6 +459,8 @@ trampoline_tenth:
 TRAMPOLINE_TENTH = bytes([
     0xC7, 0x06, 0xA9, 0x03, 0x01, 0x00,    # mov word [SAVED_ADDR], 0x01
     0xC6, 0x06, 0xA8, 0x03, 0x00,          # mov byte [DRAWN_ADDR], 0
+    0xA0, 0x06, 0x01,                      # mov al, [0x106]         ; PLAYER_COUNT, still live here
+    0xA2, 0xAB, 0x03,                      # mov [COUNT_ADDR], al    ; snapshot for draw_screen
     0xC7, 0x06, 0x7D, 0x01, 0x19, 0x00,    # mov word [0x17D], 25
     0xC3,                                  # ret
 ])
