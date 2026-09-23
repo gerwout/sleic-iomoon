@@ -66,8 +66,9 @@ after the `locals.solenoids` assignment:
 #endif
 ```
 
-Then `sed -i 's|^//#define DEBUG_SLEIC |#define DEBUG_SLEIC |' src/wpc/sleic.c`
-and `cmake --build build-probe -j$(nproc)`.
+Then `cmake --build build-probe -j$(nproc)`. `build-probe` is configured with
+`-DDEBUG_SLEIC` already, so the source stays untouched — do not uncomment
+`sleic.c:31` as well, or the define is redefined and the compile warns.
 
 - [ ] **Step 2: Run a game with the contact held closed the whole time**
 

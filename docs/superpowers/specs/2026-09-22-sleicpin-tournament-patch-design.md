@@ -80,20 +80,52 @@ screen follows `FIN DEL JUGADOR` directly.
 
 ## Architecture
 
-### The screen state machine
+### Two mechanisms, not one
 
-Every screen in this ROM is a cooperative handler. `[0000:0281]` holds the next
-handler's offset, `[0000:027F]` the tick delay before it runs, and `[0000:027E]` a
-flag; `[0000:0283]` and `[0000:0285]` carry per-screen parameters. The continue
-prompt is the worked example: `F000:5056` draws `¿ CONTINUAS ?` from the string
-record at `F000:533E` and installs `F000:5092` as the handler, which decrements the
-ten-second counter at `[0000:02C6]`, redraws the digit, re-installs itself with
-`[0000:027F] = 0xFA` and eventually chains on.
+**Measured, and it corrects an earlier reading of this section.** The ROM has two
+separate mechanisms and the patch must use the right one.
 
-The cave is a handler of exactly that shape. It draws the score screen once, then
-re-installs itself with a short delay and polls for START on each tick. When START
-arrives it writes the **original** next-handler offset back into `[0000:0281]` and
-returns, and the stock chain proceeds into `LOTERIA`.
+`[0000:0281]` is a real, reusable *animation* dispatcher: it holds a handler
+offset in segment `F000`, `[0000:027F]` a tick delay, `[0000:027E]` a flag, and
+`[0000:0283]`/`[0000:0285]` per-screen parameters. The continue prompt uses it —
+`F000:5056` draws `¿ CONTINUAS ?` from the record at `F000:533E` and installs
+`F000:5092`, which decrements the ten-second counter at `[0000:02C6]`, redraws the
+digit and re-installs itself with `[0000:027F] = 0xFA`. But it animates *within* a
+screen; it does not sequence one screen to the next.
+
+**The end-of-game sequence is a step table in segment E000**, a run of 26 word-sized
+near offsets at `E000:4F7C` indexed by a step counter at `[0000:017D]`. Step 23 is
+`E000:5090`:
+
+```
+E000:5090   9a fc de 00 f0    lcall F000:DEFC   ; clear the display buffer
+E000:5095   9a 02 0b 00 f0    lcall F000:0B02   ; the LOTERIA setup
+```
+
+`F000:0B02` is referenced exactly once in the whole image — that call. An exhaustive
+scan for writes of `0x0B02` into `[0000:0281]` finds none, so **`LOTERIA` is not
+installed as a `[0281]` handler** and a patch cannot insert itself by that route.
+
+### The injection point — OPEN
+
+The approved design said the cave installs itself into `[0000:0281]`. That rested on
+a premise the measurement refutes, so the injection mechanism is **open** and needs a
+decision before Phase 2 starts. The candidates:
+
+1. **Repoint step 23** of the `E000:4F7C` table at a small stub in segment E000 that
+   far-calls an `F000` cave, then falls through to the stock `E000:5090`. Keeps the
+   cooperative, non-blocking property by simply *not advancing* `[0000:017D]` until
+   START arrives — the same trick the approved design wanted, in the variable that
+   actually drives the sequence. The `F000` cave can still make the near calls to the
+   draw routines.
+2. **Hook `F000:0B02`'s entry**, its sole caller path. Simpler and stays entirely in
+   `F000`, but a wait there is a blocking hold of the Bike Race kind, which this
+   design rejected on the grounds that an indefinite stall of the 80188 main loop is
+   untested on this machine.
+
+Option 1 preserves the property the design was chosen for. Option 2 is smaller.
+Steps 0-18 and 24-25 of the table are not yet traced, which is the main unknown
+weighing against option 1.
 
 Nothing blocks. Interrupts, the J1 link service and the screen refresh all keep
 running for as long as the player takes — which on a tournament machine may be

@@ -51,6 +51,43 @@ Five tasks. Each produces a **verified constant or answer** recorded in
 Do not guess any of these values; a wrong address here produces a patch that
 corrupts a live game.
 
+## Phase 1 constants already settled
+
+Recorded with their evidence in
+[`research/sleicpin_disasm/sleicpin_endgame.md`](../../../research/sleicpin_disasm/sleicpin_endgame.md).
+Phase 2 consumes these values; the tasks below that produced them need not be
+re-run.
+
+| Plan name | Value | Task |
+|---|---|---|
+| `SCORE_BASE` | `0x01EB` — player 1's least significant digit | 2 |
+| `SCORE_STRIDE` | `0x22` | 2 |
+| score format | **8 bytes, one unpacked decimal digit each, most significant digit at the highest address** (`base+7` = the `10^7` place) | 2 |
+| `PLAYER_COUNT` | `[0000:0106]`, 1..4 | 2 |
+| `GUARD_ADDR` | `[0000:0103]` — the in-game flag | 4 |
+| `GUARD_TEST` | `0xFF` while a game is running, `0x00` once it is over: set at `E000:0706`, cleared at `E000:09DC` | 4 |
+| `GLYPH_PERIOD` | `44` (`43` = comma, `44` = period, `45` = semicolon) | 5 |
+| current player | `[0000:0105]`, 1-based | 2 |
+| credit count | cache `[0000:0100]`, authority the triplicated NVRAM byte `0x140`/`0x141`/`0x142`, loader `E000:1463` | — |
+
+Two things this changes for Phase 2:
+
+- **The ROM already has four 8-digit score renderers**, `F000:4234`, `43C5`,
+  `4556` and `46E7`, one per player, each self-contained and taking no
+  arguments. They draw into panel rows `0xC13`, `0xD13`, `0xE13` and `0xF13` —
+  one player per row, four rows of eight pixel rows filling the panel exactly,
+  which leaves no room for labels or a `PULSE START` line. So they are usable
+  as a fallback layout but do **not** replace Task 9's cave: the two-per-row
+  layout this plan specifies still needs the cave's own smaller digit font.
+  What they do supply is the digit source and a worked example of the draw
+  loop.
+- **`REDRAW_PER_TICK` is `false`** (Task 5), so a cave that draws once and then
+  only polls is correct.
+
+Still open in Phase 1: the **injection point** (Task 3). The spec's original
+`[0000:0281]` route does not reach `LOTERIA` — see "The interception point" in
+the findings doc.
+
 ### Task 1: RAM-dump probe in the driver
 
 **Files:**
@@ -114,10 +151,13 @@ and as the first statement inside `SWITCH_UPDATE(SLEIC1)`:
 
 ```bash
 cd /home/gerwout/iomoon/pinmame
-sed -i 's|^//#define DEBUG_SLEIC |#define DEBUG_SLEIC |' src/wpc/sleic.c
-cmake --build build-probe -j$(nproc) 2>&1 | grep -E "error|Built target sdl3pinmame"
+cmake --build build-probe -j$(nproc) 2>&1 | grep -E "error|warning: .*DEBUG_SLEIC|Built target sdl3pinmame"
 ```
-Expected: `Built target sdl3pinmame`, no errors.
+Expected: `Built target sdl3pinmame`, no errors and no warnings.
+
+`build-probe` is configured with `-DDEBUG_SLEIC` in `CMAKE_C_FLAGS`, so it
+compiles the probes with the source untouched. Do **not** uncomment
+`sleic.c:31` as well — the define is then redefined and the compile warns.
 
 - [ ] **Step 4: Verify it writes**
 
@@ -136,8 +176,7 @@ Expected: two files, each exactly 8192 bytes.
 
 ```bash
 cd /home/gerwout/iomoon/pinmame
-sed -i 's|^#define DEBUG_SLEIC |//#define DEBUG_SLEIC |' src/wpc/sleic.c
-grep -n '^//#define DEBUG_SLEIC' src/wpc/sleic.c    # must print line 31
+grep -n '^//#define DEBUG_SLEIC' src/wpc/sleic.c    # must print line 31, untouched
 cmake --build build -j$(nproc) 2>&1 | grep -E "error|Built target sdl3pinmame"
 git add src/wpc/sleic.c
 git commit -m "sleic: add a work-RAM dump probe for Sleic Pin-Ball
