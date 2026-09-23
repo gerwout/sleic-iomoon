@@ -674,13 +674,33 @@ git commit -m "scripts: the Pin-Ball patch's digit blitter and PRESS START recor
 - Produces: a cave routine `score_digits` at `SCORE_DIGITS_ADDR`, called with
   `BX` = a player's block base and `DI` = an 8-byte scratch buffer offset in
   segment 0; writes eight digit values `0`-`9` **most significant first**, with
-  leading zeros replaced by `0xFF` to mean "draw nothing"
+  leading zeros replaced by `0xFF` to mean "draw nothing". Also produces
+  `WORKSPACE_ADDR`, the single segment-0 scratch region this patch owns: 8 bytes
+  of digit buffer plus 1 byte for the stub's `DRAWN` flag, so `DRAWN_ADDR` is
+  `WORKSPACE_ADDR + 8`
 
 **No divide loop.** The score is already eight unpacked decimal digits in
 memory, so this is a reversing copy with leading-zero suppression, not a
 binary-to-decimal conversion. The digit layout and the block table it sits in
 are in "Per-player score storage" in
 `research/sleicpin_disasm/sleicpin_endgame.md`.
+
+**The workspace.** This patch needs 9 contiguous bytes of segment-0 RAM and must
+claim them once, here, for every later task to use. Boot initialises segment 0
+only from `0x0000` to `0x00FE`, and that block is the **interrupt vector table**
+(255 bytes copied from `F000:FEF0`: every entry `F000:FFF0` except vector 2 at
+`F000:DF20` and vector 8 at `F000:DF7F`), so the workspace must sit above
+`0x100` and nothing initialises it at power-on — which is why the game-over
+trampoline writes the `DRAWN` flag before the stub can run.
+
+Choose `WORKSPACE_ADDR` inside a run of segment-0 bytes that **no direct-address
+instruction in the image references**, neither the bytes themselves nor either
+neighbour. Measured candidate runs above `0x100`: `0x377`-`0x3E7` (113 bytes),
+`0x312`-`0x36E` (93), `0x43A`-`0x486` (77), `0x133`-`0x16C` (58). Take 9 bytes
+well inside one of them and say in a comment which run it came from. Absence of a
+direct reference is not proof the firmware never reaches the byte through an
+index register — the per-player score blocks themselves are reached that way — so
+record the choice as an unreferenced region, not a free one.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -786,8 +806,8 @@ eight digits into a scratch buffer with the leading zeros blanked, and call
 prompt twice with `F000:550D`, at `0x712` and `0xF12`, since that routine writes
 one plane per call.
 
-Take the scratch digit buffer from the cave's own segment-0 workspace, not from
-the live player block — the live block is real game state.
+Take the scratch digit buffer from `WORKSPACE_ADDR` (Task 8), not from the live
+player block — the live block is real game state.
 
 - [ ] **Step 4: Run the tests**
 
@@ -812,10 +832,10 @@ git commit -m "scripts: the Pin-Ball patch's score-screen composer"
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Task 9's `draw_screen` (in the F000 cave)
+- Consumes: Task 9's `draw_screen` (in the F000 cave) and Task 8's
+  `DRAWN_ADDR` (= `WORKSPACE_ADDR + 8`)
 - Produces: `STUB_ASM`/`STUB` and `STUB_ADDR`, a routine in **segment E000**
-  reached as entry **25** of the `[0000:017D]` sequence table, plus `DRAWN_ADDR`,
-  one byte of segment-0 workspace above `0x100`
+  reached as entry **25** of the `[0000:017D]` sequence table
 
 **The mechanism.** The sequence dispatcher has **no bounds check**:
 
@@ -899,24 +919,11 @@ F000:550C  cb           retf                   ;   and return with AL = 0
 So it needs `DS = 0`, clobbers `AX` and `SI`, returns `AL = 0` on an empty queue,
 and is safe to call in a loop — which is what the drain below does.
 
-**The one flag, and why its power-on value does not matter.** The stub is
-re-entered every tick while holding, so it needs to know whether it has already
-drawn — redrawing would mean clearing and recomposing the buffer under the
-panel's raster. `DRAWN_ADDR` is one byte of segment-0 workspace for that, and the
-game-over hook writes it to 0 immediately before the stub can ever run, so an
-uninitialised value at power-on is unreachable. Boot initialises only
-`0x0000`-`0x00FE` of segment 0, and that region is the **interrupt vector table**
-(255 bytes copied from `F000:FEF0`, every entry `F000:FFF0` except vector 2 at
-`F000:DF20` and vector 8 at `F000:DF7F`), so no flag may live below `0x100`.
-
-Pick `DRAWN_ADDR` from a run of segment-0 bytes that no direct-address
-instruction in the image references, neither the byte nor either neighbour. The
-measured runs above `0x100` include `0x377`-`0x3E7` (113 bytes), `0x312`-`0x36E`
-(93), `0x43A`-`0x486` (77) and `0x133`-`0x16C` (58); take a byte well inside one
-of them. Absence of a direct reference does not prove the firmware never reaches
-it through an index register, so state the choice as what it is — an unreferenced
-byte, not a proven-free one. The failure mode if the firmware does write it
-mid-hold is cosmetic: one extra redraw, or a blank screen until START.
+**The one flag.** The stub is re-entered every tick while holding, so it needs to
+know whether it has already drawn — redrawing would mean clearing and recomposing
+the buffer under the panel's raster. `DRAWN_ADDR` is `WORKSPACE_ADDR + 8` from
+Task 8, and the game-over trampoline writes it to 0 immediately before the stub
+can ever run, so its power-on value is unreachable.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -941,9 +948,10 @@ def test_stub_hands_back_to_the_stock_step_23():
     assert '0x5090' in asm, 'stub never rejoins the stock step 23'
     assert '0x50d5' not in asm, 'stub must not jump to the advance tail itself'
 
-def test_drawn_flag_is_above_the_vector_table():
+def test_workspace_is_above_the_vector_table():
     m = load()
-    assert m.DRAWN_ADDR >= 0x100, 'the flag would land in the interrupt vector table'
+    assert m.WORKSPACE_ADDR >= 0x100, 'the workspace would land in the vector table'
+    assert m.DRAWN_ADDR == m.WORKSPACE_ADDR + 8, 'the flag is not the workspace tail'
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
