@@ -333,7 +333,8 @@ variables above. The credit store lives in NVRAM, segment `0x1000`, physical
 | `[0000:0103]` | byte | **In-game flag.** `0xFF` = a game is running, `0x00` = not. | Set `0xFF` at `E000:0706`, cleared at `E000:09DC` (`xor al,al` at `09DA`). Read at 35 sites in the image, every one of them followed by `and al,al`; one `cmp byte [0103],0xFF` at `E000:1ACC` |
 | `[0000:0105]` | byte | **Current player**, 1-based | Set to `1` at `E000:070D` (immediately after the flag above) and at `E000:0BF9`; `cmp al,[0106]` at `E000:08D5` is the "last player?" test; `E000:18D2`/`18F3` shift it left by one to index a stride table |
 | `[0000:0106]` | byte | **Player count**, 1..4 | `E000:06C5`-`06CA` is the add-a-player path: `mov al,[0106] / inc al / mov [0106],al / cmp al,4`. Bounded by `cmp byte [0106],4` with `JB` at `E000:053A` and `06A1`, and used as the loop limit in the continue-offer loop (`E000:0B20`, `0B49`, `0BA0`) |
-| `[0000:01C5]` (low) `[01C7]` (high) | dword | one 32-bit accumulator, compared as a magnitude against the threshold dword `[0000:019D]`/`[019F]` | `E000:0222`-`0236` reads `[01C7]` first and only falls through to `[01C5]` on equality, so `[01C7]` is the more significant word; the same pair is compared the same way at `E000:0253` and `E000:0284` |
+| `[0000:01C5]` | 31 bytes | **the live player block** — the playing player's own copy, swapped in and out of the four saved blocks at every handoff | `E000:18CD` and `E000:18EE`, below |
+| `[0000:01C5]`+0 (low) +2 (high) | dword | a field of that block, compared as a 32-bit magnitude against the threshold dword `[0000:019D]`/`[019F]` | `E000:0222`-`0236` reads `+2` first and only falls through to `+0` on equality, so `+2` is the more significant word; compared the same way at `E000:0253` and `E000:0284`, and `E000:186C` adds `[0000:0190]` into `+2` |
 
 ### The credit store
 
@@ -392,19 +393,53 @@ be wrong: the next call to either routine above overwrites it from the store.
 
 ### Per-player score storage
 
-**Four 8-digit score buffers, one per player, `0x22` apart**, each holding one
-unpacked decimal digit per byte with the **most significant digit at the
-highest address**:
+The playing player works in a single **live block at `[0000:01C5]`**, and each
+player's block is saved and restored around it. `E000:190F` is the 5-entry word
+table of block bases:
 
-| Player | MSD | LSD | Renderer | Panel-buffer row |
-|---|---|---|---|---|
-| 1 | `[0000:01F2]` | `[0000:01EB]` | `F000:4234`-`43BA` | `0xC13`-`0xC1A` |
-| 2 | `[0000:0214]` | `[0000:020D]` | `F000:43C5`-`454B` | `0xD13`-`0xD1A` |
-| 3 | `[0000:0236]` | `[0000:022F]` | `F000:4556`-`46DC` | `0xE13`-`0xE1A` |
-| 4 | `[0000:0258]` | `[0000:0251]` | `F000:46E7`-`486D` | `0xF13`-`0xF1A` |
+```
+E000:190F   C5 01   E7 01   09 02   2B 02   4D 02
+            0x1C5   0x1E7   0x209   0x22B   0x24D
+            live    player1 player2 player3 player4
+```
 
-So the digit at `base+7` is the `10^7` place and the digit at `base+0` the
-units, and the four block bases are `0x1EB`, `0x20D`, `0x22F` and `0x251`.
+Stride `0x22`, indexed by the 1-based current player `[0000:0105]`, so entry 0
+is the live block itself. `E000:18CD` copies **31 bytes** out of the live block
+into the current player's slot and `E000:18EE` copies them back:
+
+```
+E000:18CD  be0f19      mov si, 0x190f         ; the table
+E000:18D0  b400        mov ah, 0
+E000:18D2  a00501      mov al, [0x105]        ; current player, 1-based
+E000:18D5  d1e0        shl ax, 1
+E000:18D7  03f0        add si, ax
+E000:18D9  2e8b04      mov ax, cs:[si]        ; that player's block base
+E000:18DC  8bf8        mov di, ax
+E000:18DE  b80000      mov ax, 0
+E000:18E1  8ec0        mov es, ax
+E000:18E3  bec501      mov si, 0x1c5          ; the live block
+E000:18E6  b91f00      mov cx, 0x1f           ; 31 bytes
+E000:18E9  ac          lodsb
+E000:18EA  aa          stosb
+E000:18EB  e2fc        loop 0x18e9
+E000:18ED  c3          ret
+```
+
+This is why the live block looks transient in a RAM diff: it is overwritten
+from the saved block at every player change.
+
+**The score itself is eight unpacked decimal digits at block offsets `+4` to
+`+11`**, one digit per byte, with the **most significant digit at the highest
+address** — there is no binary score to convert:
+
+| Player | Block | LSD (`+4`) | MSD (`+11`) | Renderer | Panel-buffer row |
+|---|---|---|---|---|---|
+| 1 | `0x01E7` | `[0000:01EB]` | `[0000:01F2]` | `F000:4234`-`43BA` | `0xC13`-`0xC1A` |
+| 2 | `0x0209` | `[0000:020D]` | `[0000:0214]` | `F000:43C5`-`454B` | `0xD13`-`0xD1A` |
+| 3 | `0x022B` | `[0000:022F]` | `[0000:0236]` | `F000:4556`-`46DC` | `0xE13`-`0xE1A` |
+| 4 | `0x024D` | `[0000:0251]` | `[0000:0258]` | `F000:46E7`-`486D` | `0xF13`-`0xF1A` |
+
+So `block+11` is the `10^7` place and `block+4` the units.
 
 Each renderer is **eight unrolled copies** of one block, one per digit, ending
 in a single `pop si / retf`. Every copy has the same shape — this is player
@@ -457,8 +492,8 @@ panel row `0xC13 + 0x100*(N-1)`.
 ### What the continue offer actually tests
 
 This also identifies the four bytes the continue-offer cascade compares
-against `1`. `0x1F1`, `0x213`, `0x235` and `0x257` are each **player N's
-second digit from the left**, the `10^6` place, so `cmp byte [0213],1 / JB`
-is a score threshold: offer the continue only to a player who has scored at
-least one million. `E000:0AC9`'s `cmp byte [0173],0 / JNE ret` is the global
+against `1`. Each is its player's block `+0x0A`, the **second digit from the
+left** and so the `10^6` place, which makes `cmp byte [0213],1 / JB` a score
+threshold: offer the continue only to a player who has scored at least one
+million. `E000:0AC9`'s `cmp byte [0173],0 / JNE ret` is the global
 enable in front of all four.

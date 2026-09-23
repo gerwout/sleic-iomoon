@@ -180,13 +180,21 @@ byte column *c* is `0x410 + r*0x20 + c`.
 
 ### Data
 
-Scores are **32-bit little-endian binary**, confirmed twice: the default record
-table at `F000:8085` on a `0x20` stride holds 3,000,000, 2,000,000 and 1,000,000
-behind the names `CRABY`, `ZIPI` and `ZAPE`, and a live RAM diff found the playing
-player's score at `0000:01C5` rising by 5,000 per lane hit, matching manual §3.13.
+A **playing** score is stored as **eight unpacked decimal digits**, one per
+byte, most significant digit at the highest address, at offsets `+4` to `+11`
+of that player's block. The blocks are the five-entry table at `E000:190F` —
+`0x1C5` live, then `0x1E7`, `0x209`, `0x22B`, `0x24D` for players 1 to 4 —
+indexed by the 1-based `[0000:0105]`, with 31 bytes copied in and out of the
+live block at every handoff (`E000:18CD` / `E000:18EE`). So the screen reads
+digits directly and needs **no binary-to-decimal conversion**.
 
-The manual caps the in-game display at 99,999,999 even though a score may reach
-999,999,999, so the screen shows up to nine digits and inherits no new limit.
+The **high-score** records are a different structure: the default table at
+`F000:8085` on a `0x20` stride holds 3,000,000, 2,000,000 and 1,000,000 as
+32-bit little-endian binary behind the names `CRABY`, `ZIPI` and `ZAPE`. The
+score screen does not read those.
+
+Eight digits caps a displayed score at 99,999,999, which is also the cap the
+manual prints for the in-game display, so the screen inherits no new limit.
 
 ## What must be measured before implementation
 

@@ -4,7 +4,7 @@
 
 **Goal:** Patch Sleic Pin-Ball's `sp03` ROM so the end of a game shows every player's final score and holds it until START is pressed.
 
-**Architecture:** A code cave in `sp03`'s `0xFF` padding, installed as a handler in the ROM's own cooperative screen state machine rather than as a blocking hold. The cave composes a screen the firmware does not have: player labels in the machine's 8-row font, scores in a 4×7 digit font the cave carries, two players per row, with a steady `PULSE START`. It polls the switch FIFO for code `0x05` and chains to the original next-handler when it arrives.
+**Architecture:** A code cave in `sp03`'s `0xFF` padding, installed as a handler in the ROM's own cooperative screen state machine rather than as a blocking hold. The cave composes a screen the firmware does not have: player labels in the machine's 8-row font, scores in a 4x7 digit font the cave carries, two players per row, with a steady `PULSE START`. It polls the switch FIFO for code `0x05` and chains to the original next-handler when it arrives.
 
 **Tech Stack:** Python 3 (the patch script, matching the other `scripts/*_patch.py`), 8086/80188 assembly hand-assembled into a Python byte list and cross-checked with `nasm`, PinMAME (`build-probe/sdl3pinmame` with `DEBUG_SLEIC`) for headless verification with `-key_script` and `SLEIC_DMD_DUMP`.
 
@@ -95,6 +95,10 @@ step 23 leaves the stock sequence unchanged; steps 0-18 and 24-25 of the table
 are untraced and are the residual unknown.
 
 ### Task 1: RAM-dump probe in the driver
+
+> **Resolved.** The answer is in the Phase 1 constants table above and in
+> `research/sleicpin_disasm/sleicpin_endgame.md`. The steps below are the
+> recipe that produced it and do not need re-running.
 
 **Files:**
 - Modify: `pinmame/src/wpc/sleic.c` — add a function beside `sleic_debug_switches`, call it from `SWITCH_UPDATE(SLEIC1)`
@@ -200,6 +204,10 @@ Commit on a branch off `master`, not on `bikerace-freeplay-pressstart`.
 
 ### Task 2: Locate the per-player score array and the player count
 
+> **Resolved.** The answer is in the Phase 1 constants table above and in
+> `research/sleicpin_disasm/sleicpin_endgame.md`. The steps below are the
+> recipe that produced it and do not need re-running.
+
 **Files:**
 - Create: `sleic-iomoon/research/sleicpin_disasm/sleicpin_endgame.md`
 - Create: `sleic-iomoon/scripts/keyscripts/sleicpin-4p-scores.keys`
@@ -208,11 +216,12 @@ Commit on a branch off `master`, not on `bikerace-freeplay-pressstart`.
 - Consumes: Task 1's `SLEIC_RAMDUMP`; the trough model from the prerequisite plan
 - Produces: `SCORE_BASE` (word, offset in segment 0), `SCORE_STRIDE` (bytes), `PLAYER_COUNT` (byte offset in segment 0). Phase 2 consumes all three.
 
-**Known starting point:** the playing player's score is a 32-bit little-endian
-binary dword at `0000:01C5`, rising 5,000 per lane hit. That is almost certainly
-one slot of an array or a working copy of one. The default record table at
-`F000:8085` (stride `0x20`) stores its scores the same way — 3,000,000,
-2,000,000 and 1,000,000 behind `CRABY`, `ZIPI`, `ZAPE`.
+**Answer:** `[0000:01C5]` is the **live player block**, swapped in and out of
+four saved blocks listed in the word table at `E000:190F` (`0x1E7`, `0x209`,
+`0x22B`, `0x24D`, stride `0x22`), and the score inside a block is **eight
+unpacked decimal digits** at `+4` (units) to `+11` (`10^7`). The 32-bit
+little-endian dwords at `F000:8085` are the separate high-score records, not
+the playing score.
 
 - [ ] **Step 1: Write a 4-player keyscript that gives each player a different score**
 
@@ -270,11 +279,8 @@ Record it as `PLAYER_COUNT`.
 - [ ] **Step 5: Write the findings document and commit**
 
 Create `research/sleicpin_disasm/sleicpin_endgame.md` with a `## Score storage`
-section giving `SCORE_BASE`, `SCORE_STRIDE` and `PLAYER_COUNT` as CPU addresses,
-the format (32-bit little-endian binary), and the measurement that establishes
-each — the keyscript name, the frames dumped, the four values seen. State
-plainly that `0000:01C5` is the playing player's slot or working copy, whichever
-the array turns out to make it.
+section giving the block table, the per-block digit layout and `PLAYER_COUNT` as
+CPU addresses, together with the evidence for each.
 
 ```bash
 cd /home/gerwout/iomoon/sleic-iomoon
@@ -285,6 +291,10 @@ git commit -m "research: locate Sleic Pin-Ball's per-player scores and player co
 ---
 
 ### Task 3: Decode the screen-handler contract and find the interception point
+
+> **Resolved.** The answer is in the Phase 1 constants table above and in
+> `research/sleicpin_disasm/sleicpin_endgame.md`. The steps below are the
+> recipe that produced it and do not need re-running.
 
 **Files:**
 - Modify: `sleic-iomoon/research/sleicpin_disasm/sleicpin_endgame.md`
@@ -344,6 +354,10 @@ git commit -m "research: decode Sleic Pin-Ball's screen-handler chain"
 
 ### Task 4: Settle the game-over guard
 
+> **Resolved.** The answer is in the Phase 1 constants table above and in
+> `research/sleicpin_disasm/sleicpin_endgame.md`. The steps below are the
+> recipe that produced it and do not need re-running.
+
 **Files:**
 - Modify: `sleic-iomoon/research/sleicpin_disasm/sleicpin_endgame.md`
 
@@ -393,6 +407,10 @@ git commit -m "research: distinguish Sleic Pin-Ball's game over from end of ball
 ---
 
 ### Task 5: Settle the redraw question and the punctuation glyphs
+
+> **Resolved.** The answer is in the Phase 1 constants table above and in
+> `research/sleicpin_disasm/sleicpin_endgame.md`. The steps below are the
+> recipe that produced it and do not need re-running.
 
 **Files:**
 - Modify: `sleic-iomoon/research/sleicpin_disasm/sleicpin_endgame.md`
@@ -675,18 +693,25 @@ git commit -m "scripts: the Pin-Ball patch's 4x7 digit font and its shift blitte
 
 ---
 
-### Task 8: The score formatter
+### Task 8: The score reader
 
 **Files:**
 - Modify: `sleic-iomoon/scripts/sleic_pin_ball_press_start_patch.py`
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Task 2's `SCORE_BASE`/`SCORE_STRIDE`
-- Produces: a cave routine `score_digits` at `SCORE_DIGITS_ADDR`, called with `BX` = the score's offset in segment 0 and `DI` = a 9-byte scratch buffer offset in segment 0; writes nine digit values 0-9 most significant first, leading zeros written as `0xFF` to mean "draw nothing"
+- Consumes: the block table at `E000:190F` and the digit layout — player N's
+  eight digits sit at `table[N]+4` (units) to `table[N]+11` (the `10^7` place)
+- Produces: a cave routine `score_digits` at `SCORE_DIGITS_ADDR`, called with
+  `BX` = a player's block base and `DI` = an 8-byte scratch buffer offset in
+  segment 0; writes eight digit values `0`-`9` **most significant first**, with
+  leading zeros replaced by `0xFF` to mean "draw nothing"
 
-**Why a divide loop:** the ROM has no binary-to-decimal routine — no
-powers-of-ten table, no `AAM`, no BCD anywhere. The cave does its own.
+**No divide loop.** The score is already eight unpacked decimal digits in
+memory, so this is a reversing copy with leading-zero suppression, not a
+binary-to-decimal conversion. The digit layout and the block table it sits in
+are in "Per-player score storage" in
+`research/sleicpin_disasm/sleicpin_endgame.md`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -706,17 +731,19 @@ Expected: `FAIL` — `SCORE_DIGITS_ASM` undefined.
 
 - [ ] **Step 3: Write the routine**
 
-Repeated division of a 32-bit value by 10 using the two-step `div` idiom (divide
-the high word, then the low word with the remainder in `DX`), collecting
-remainders least-significant first into the scratch buffer from the far end, then
-replacing leading zeros with `0xFF`. Write it as `SCORE_DIGITS_ASM` and
-hand-assemble it into `SCORE_DIGITS`.
+Read `[BX+11]` down to `[BX+4]`, storing forward into the scratch buffer, so the
+buffer comes out most significant first. Then walk the buffer from the front
+replacing zeros with `0xFF` until the first non-zero digit, leaving a score of
+zero as a single `0` in the units position rather than eight blanks — the ROM's
+own renderers draw nothing at all for a zero score, which is wrong for a score
+screen. Write it as `SCORE_DIGITS_ASM` and hand-assemble it into `SCORE_DIGITS`.
 
-- [ ] **Step 4: Verify the algorithm against a Python model, then run the tests**
+- [ ] **Step 4: Verify against a Python model, then run the tests**
 
-Before trusting the assembly, model it in Python and check it on the values the
-machine actually produces — 0, 5000, 15000, 1_000_000, 99_999_999, 999_999_999 —
-asserting nine digits with correct leading-`0xFF` suppression. Then:
+Model it in Python and check it on digit arrays the machine actually produces —
+all zeros, `5000`, `15000`, `1_000_000`, `99_999_999` — asserting eight entries
+with correct leading-`0xFF` suppression and that zero yields seven `0xFF` then
+`0`. Then:
 
 ```bash
 python3 scripts/tests/test_sleicpin_press_start.py
@@ -727,7 +754,7 @@ Expected: all `PASS`.
 
 ```bash
 git add scripts/sleic_pin_ball_press_start_patch.py scripts/tests/test_sleicpin_press_start.py
-git commit -m "scripts: the Pin-Ball patch's 32-bit score to decimal conversion"
+git commit -m "scripts: the Pin-Ball patch's per-player score digit reader"
 ```
 
 ---
@@ -782,7 +809,7 @@ Expected: `FAIL` — `PROMPT_RECORD` undefined.
 Write `PROMPT_RECORD` from those indices computed in Python, not hand-typed.
 
 `draw_screen` clears offsets `0x410`-`0xC0F` in both planes, then loops players
-`0` to `PLAYER_COUNT-1` drawing a label and nine digits each, then draws the
+`1` to `PLAYER_COUNT` drawing a label and eight digits each, then draws the
 prompt with `F000:550D`.
 
 - [ ] **Step 4: Run the tests**
