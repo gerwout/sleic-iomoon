@@ -183,14 +183,21 @@ sleic-io-moon/
 ├── LICENSE                            # MIT (scripts) + educational/preservation terms (docs/disasm)
 ├── .gitignore                         # Ignores Python caches, output/, video/, OS & editor files
 ├── scripts/
-│   ├── dmd_viewer.py                  # DMD graphics viewer & exporter
+│   ├── dmd_viewer.py                  # DMD graphics viewer & exporter (IO Moon deep dive)
+│   ├── sleic_dmd_viewer.py            # Cross-machine DMD viewer, stdlib-only and ASCII-first
+│   ├── find_font_tables.py            # Bitmap font-table finder & text-string extractor
+│   ├── dmd_dump_split.py              # Split a raw SLEIC_DMD_DUMP into per-frame text
+│   ├── dmd_dump_diff.py               # Diff two DMD dumps frame by frame
 │   ├── dmd_logic_decode.py            # Reconstruct DMD frames + timing from a Saleae logic capture
 │   ├── extract-oki-msm6376.py         # OKI ADPCM sound sample extractor
 │   ├── iomoon_fm_extract.py           # YM3812 (OPL2) FM music extractor
+│   ├── iomoon_strings.py              # Dump IO Moon's static text screens
+│   ├── nvcheck.py                     # Decode a PinMAME iomoon.nv against the F10/F11 offsets
 │   ├── io_moon_press_start_patch.py   # Tournament "PRESS START" ROM patch
 │   ├── io_moon_free_play_patch.py     # Free-play ROM patch (stacks on the one above)
 │   ├── bike_race_press_start_patch.py # The same two features for Bike Race V4.1's chip 04
 │   ├── bike_race_free_play_patch.py   #   "
+│   ├── keyscripts/                    # -key_script input scripts for headless PinMAME runs
 │   └── sal_export.py                  # Re-export a Saleae .sal capture to parseable v0 binary
 ├── docs/
 │   ├── dmd_viewer.md                  # DMD Viewer documentation
@@ -382,6 +389,7 @@ sleic-io-moon/
     └── sleicpin_disasm/               # Sleic Pin-Ball (SLEIC1) disassembly & notes
         ├── eeprom_findings.md
         ├── sleicpin_coil_map.md
+        ├── sleicpin_endgame.md
         ├── sleicpin_input_switches.md
         ├── sleicpin_sound.md
         ├── sleicpin_switch_map.md
@@ -402,6 +410,23 @@ A Python tool for viewing, analyzing, and exporting DMD graphics from the IO Moo
 <p align="center">
   <img src="images/dmd_grid_animated.png" alt="DMD Grid View" width="700">
 </p>
+
+### Cross-Machine DMD Viewer — `scripts/sleic_dmd_viewer.py`
+
+The viewer for all three machines, `-m {iomoon,bikerace,sleicpin}`. Standard library only and ASCII-first, so it runs headless. Bike Race and IO Moon share one record format — a 6-byte header of `H` rows / `BPR` bytes per row / `LEN = H*BPR`, then `LEN` bytes each of plane 0, plane 1 and mask — while Sleic Pin-Ball has no headers at all and its bitmaps are named by the blit immediates inside `sp03`. `--locate` finds a PinMAME `SLEIC_DMD_DUMP` frame back in the ROM, and `--compose` replays a run of Pin-Ball blits into the panel buffer to give a whole composed screen.
+
+### Font Table & Text Extractor — `scripts/find_font_tables.py`
+
+Finds the bitmap **font tables** in any SLEIC ROM without being told the geometry — it discovers the cell height and the glyph index scheme, renders every glyph as ASCII, and cross-references the code that reaches each table. Having found a table it then locates **every text string drawn from it**, reporting the CPU and file address, the raw bytes, the decoded text, the length, and which face the string uses with the evidence for that.
+
+Two string encodings occur in this family, and both are decoded. Sleic Pin-Ball stores a count word followed by one pointer word per glyph, each pointer landing on a cell of a packed face, so the face is implied by the record. Bike Race and IO Moon store `[length byte][one glyph index per character]`, where the face is **not** in the record — it comes from an `attr` argument at the call site of a shared drawer routine, so resolving it means finding the call and following the drawer's dispatch chain to the face it loads.
+
+Give every ROM of a machine on one command line; that is what lets a call site in the code ROM name a string or a face living on a graphics ROM.
+
+```bash
+python3 scripts/find_font_tables.py roms/related-machines/bike-race/bkcpu0{4,5,6}.bin
+python3 scripts/find_font_tables.py <rom>... --font 0x2B2   # one face, its full string list
+```
 
 ### [OKI MSM6376 Sound Extractor](docs/extract_oki_msm6376.md) — `scripts/extract-oki-msm6376.py`
 

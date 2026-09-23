@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """
-SLEIC bitmap font-table finder
-==============================
+SLEIC bitmap font-table finder and text-string extractor
+==========================================================
 
 Locates bitmap **font tables** in the ROMs of the three SLEIC pinball machines
 (Sleic Pin-Ball, Bike Race, IO Moon), renders every glyph it finds as ASCII,
-infers the index scheme, and reports the code and data that reach the table.
+infers the index scheme, reports the code and data that reach the table - and,
+having found a table, locates **every text string that draws from it**:
+address (CPU and file), raw bytes, decoded text, byte/character length, which
+face it uses and how that was determined, and the call sites that draw it
+where those are findable.  See "Text-string cross-reference" below.
 
 Usage:
     python3 scripts/find_font_tables.py <rom>[@org] ...
+    python3 scripts/find_font_tables.py <rom>... --font <addr>   # one face, full string list
 
     python3 scripts/find_font_tables.py roms/related-machines/sleic-pin-ball/sp03-1_1.rom
     python3 scripts/find_font_tables.py "roms/1.3 IPDB latest/V1 3_01.bin"
@@ -16,7 +21,11 @@ Usage:
 
 Give every ROM of a machine on one command line: each table is cross-referenced
 against *all* of them, which is what finds the pointers in the code ROM that
-reach a font living on a graphics ROM.
+reach a font living on a graphics ROM, and what lets a Bike Race call site name
+a string that lives in the graphics ROM rather than the code ROM it is in.
+`--font <addr>` (a file offset, or any window's CPU-visible address, exactly as
+printed under `FACE n`) narrows the whole report to one face and its full,
+un-truncated string inventory - "given a font table, which strings use it".
 
 `@org` overrides the flat address the image is mapped at. Without it the org is
 taken from the 80188 reset vector (an image whose last 16 bytes start with `EA`
@@ -100,9 +109,95 @@ For each face, in every supplied image:
   itself only data, the pool slot's own address is looked up the same way, so
   `les si,[0x52eb]` call sites are reported for a face the code never names
   directly.
-* **`[length][glyph codes]` string records** - a separate scan of each image for
-  the length-prefixed string form Bike Race and IO Moon use, decoded with
-  `0x0A` = space, `0x0B..0x25` = `A..Z` with `Ñ` after `N`.
+* **every text string that uses the face** - see the next section.
+
+Text-string cross-reference
+----------------------------
+
+Two different record encodings exist and this script handles both, since which
+one a machine uses decides where the font comes from.
+
+**Sleic Pin-Ball** stores a string as a **`word` count followed by that many
+`word` glyph pointers**, each an absolute offset within segment `F000` landing
+directly on a cell of one packed face - so the face is implied by where the
+pointers land, and no separate lookup is needed.  `xref_near_pointers` finds
+every occurrence of a face's cell addresses as 16-bit words, extending the
+search a good way past the face's own rendered `count` (the packed scan's tail
+is fuzzy - see Limits - and real records reach into the punctuation past the
+alphabet, capped at the next face's base so two faces' cells are never
+confused), and `group_pointer_records` turns consecutive hits into records,
+decoded through the fitted scheme with unmapped indices shown as `<n>`.  A
+record's own stored count word is cross-checked against the number of
+pointers found, and shown as `count=N` when they agree, `no count word`
+otherwise (usually a record's front is clipped by a neighbouring face).
+
+**Bike Race and IO Moon** store a string as **`[length byte][glyph index
+bytes]`** - indices, not pointers, one byte per glyph, `length` doubling as
+the on-screen character count - found by `scan_length_prefixed_strings`, whose
+gate (every byte a known code, length 4-40, letters at least 60% of the body)
+is unchanged from before this cross-reference was added, because it already
+reproduces three independently-known answers exactly: `bkcpu05.bin` decodes
+to the three records `PRIMERA PARTIDA` / `SEGUNDA PARTIDA` / `INSCRIPCION`,
+`bkcpu04.bin` yields 133 records including `AK.SCHWANT`, `W.RAINEY` and
+`E.LAWSON` letter-for-letter, and IO Moon's `V1 3_01.bin` yields 375 - the
+reference counts this scan is checked against.  (An earlier pass's count of
+185 for `bkcpu04.bin` is not reproduced by any gate this script tried that
+also reproduces the three verified answers above; 133 is the settled figure.)
+`--allow-unmapped N` widens the gate to admit up to `N` codes outside the
+known alphabet per record, shown as `<n>`; at the default of 0 every accepted
+record already decodes in full, so raising it only ever adds records - mostly
+noise from graphics data (see Limits), occasionally a real record with a
+not-yet-identified punctuation or digit code.
+
+Unlike Pin-Ball, **the record does not name its own font** - a shared drawer
+routine does, from a dispatch argument at its call site.  `find_text_drawer`
+locates the routine by its prologue's exact bytes (`push bp; mov bp,sp; push
+es; les si,[bp+0xa]; mov di,[bp+8]; mov bx,[bp+6]`, identical in Bike Race's
+parent set at `F000:06C5` and IO Moon at `F000:0701`, and confirmed against
+`docs/press_start_patch.md` and `scripts/io_moon_press_start_patch.py`, which
+call IO Moon's copy `CALL FAR F000:0701(attr, position, seg, off)`).
+`parse_text_drawer_dispatch` recovers its `cmp bx,imm / jne / jmp` case chain,
+and `_case_pool_slot` reads the `les`/`lds` each case's block issues before
+drawing - the same pointer-pool slot the face cross-reference above already
+resolves to a `Face`, which is how a case is matched to a font without
+guessing at what the bits of `attr` mean.  Both machines' dispatch tables have
+the same shape: `attr` bit 4 clear selects the 9-row face, set selects the
+12-row face, and the default (no explicit case matches) is the 9-row face -
+recovered from the ROM, not assumed, and it is what turns `attr=0x21` at a
+real Bike Race call site into `FACE at file 0x002B2` in the output.
+
+`find_text_drawer_call_sites` then finds every `CALL FAR <drawer>` preceded
+immediately by four push-immediate instructions (`PUSH seg; PUSH off; PUSH
+position; PUSH attr`) by exact byte pattern - a full disassembly cannot be
+trusted over this ROM family (see the `ndisasm` caveat below) - and resolves
+the pushed `seg:off` to a record found by the scan above.  Only a
+compile-time-constant string pointer is found this way; a call that builds
+its pointer at runtime (a RAM buffer, a score readout) pushes a register or a
+memory operand and is invisible to it.  When exactly one face is named across
+a record's call sites, that is reported as the font, with the call site's
+address, `attr` and DMD position; when call sites disagree, or point at a
+case whose face could not be resolved, or none are found at all, the record
+is `font: undetermined` - and if some *other* far pointer (a lookup table, or
+a call this pattern misses) still names the record's address, that is
+reported too, as weaker evidence that the string is live rather than an
+explanation of its font.  This is deliberately conservative: **undetermined
+is reported rather than guessed**.
+
+In practice this resolves 7 of Bike Race's 133 `bkcpu04.bin` records to a
+named face by an exact, traced call site (all seven land on the default case,
+`attr=0x21`, and the trace is fully reproducible - address, pushed operands
+and the pool-slot `les` are all printed); a further 86 are at least named by
+some far pointer, unresolved to a specific font. IO Moon resolves **none** of
+its 375 by call site - every one of its compile-time-constant `CALL FAR
+F000:0701` sites pushes RAM segment `0x413C`, not a ROM address, which is
+exactly what F14 predicts: IO Moon's menu and prompt text is reached through
+the 46-byte menu-record table's own pointer field, not a literal push per
+string - but 273 of the 375 (73%) are still named by a far pointer somewhere
+in the ROM, so the great majority are demonstrably live text, just not
+traceable to a face by this method. A translator changing IO Moon's UI text
+should expect to find the record by its decoded string (this script's output)
+and confirm the face by eye on real hardware or in the debugger, not from
+this script's font column.
 
 What it finds on each machine
 -----------------------------
@@ -120,9 +215,16 @@ the glyph code *is* the index; punctuation runs on from 38.  `mov si,0x83D9`
 appears at 12 sites and `mov si,0x85EB` at 11, and two of each are followed by
 the stride: `F000:0C7A`/`F000:0E8D` load `dx = 0xA` and `mul`/`imul` it, which
 is `base + 10*index`.  The string records are a `word count` followed by that
-many word glyph pointers - 13 of them into the 10-row face, 160 into the 8-row -
-and they decode straight to Spanish: `F000:5308` = `RECORD JUGADOR`,
-`F000:0B44` = `SI DAS A LA BOLA`, `F000:0BCB` = ` ? BOLA EXTRA ?` (the `?` is a glyph the fit does not label).
+many word glyph pointers - 13 of them into the 10-row face, 160 into the 8-row,
+173 in total - and they decode straight to Spanish, address and character
+count both matching the record's own stored count word: `F000:5308` =
+`RECORD JUGADOR` (10-row), `F000:5326` = `NOMBRE<46>` (8-row, ":" - a glyph
+past the fitted alphabet, shown as `<46>` rather than guessed), `F000:533E` =
+` <50> CONTINUAS <51>` (10-row, `¿ ... ?` with the bracketing marks unmapped
+and, tellingly, at two *different* indices either side, and a leading blank
+cell the fit's alphabet does not cover), `F000:0B28` = `  <47> LOTERIA <47>`
+(10-row, `- LOTERIA -` with the same bracketing mark both sides and a second
+leading blank cell - the field is evidently padded for centring on the DMD).
 
 **Bike Race** - `bkcpu04.bin` (code, org `0xE0000`), `bkcpu05.bin` and
 `bkcpu06.bin` (graphics, org inferred as `0x40000` and `0x20000`).  **The code
@@ -141,6 +243,19 @@ chains hold artwork in the same format: `bkcpu05 0x030EE` (ten 18x16 cells) and
 `bkcpu06 0x1CC92` (37 24x24 cells, which the render shows to be one sprite
 walked one pixel to the right per entry - a constant-geometry run that is not a
 font, and the fit says so).
+
+`bkcpu04.bin` also holds 133 `[length][glyph code]` string records (0x0087D-
+0x14165) - rider names (`AK.SCHWANT`, `W.RAINEY`, `E.LAWSON`) and UI prompts
+(`ATENCION`, `IMPOSIBLE SEGUIR`) - drawn through a shared far-call routine at
+`F000:06C5` (the parent set; V4.1's chip is at `F000:0682` instead, per
+`asm/bikerace-2026-09/tools/strptr.py`, and is not what this ROM's own drawer
+is found at).  7 of the 133 trace to a named face by an exact call site (all
+`attr=0x21`, all the default dispatch case, all naming the 9-row face);
+86 more are at least referenced by some other far pointer.  `bkcpu05.bin`
+holds exactly the three service-menu titles this cross-reference was checked
+against: `PRIMERA PARTIDA`, `SEGUNDA PARTIDA`, `INSCRIPCION`.  `bkcpu06.bin`
+"finds" 2 records reading `DBBNNN` - a coincidence in the sprite-strip bitmap
+data at `0x2FB`/`0x553`, not real text (see Limits).
 
 **IO Moon** - `V1 3_01.bin`, 512 KB, org `0x80000` from the reset vector, and a
 second window at `0x00000` the script discovers from the pointers themselves
@@ -163,6 +278,18 @@ at chain entries 23 and 75 - the same two offsets Bike Race uses, in a table
 with the same shape.  The `(21,2)` face at `0x29B34` is a clean 16x21 digit set
 in a chain of its own, outside the walked table `docs/dmd_graphics.md`
 describes.
+
+`V1 3_01.bin` also holds 375 `[length][glyph code]` string records (0x017A8-
+0x59526) - the service-menu tree: `- ADJUSTMENT -`, `SOUND/VIDEO`, `TECHNICAL`,
+`CUSTOM MESSAGE`, `LOWEST SCORE`, `EXTRA BALLS`, and so on, consistent with
+F14's 38-record menu.  The same drawer routine exists, at `F000:0701`, with
+the same dispatch shape and the same two pool slots (`CS:052EB` 9-row,
+`CS:052E7` 12-row), but **none** of the 375 resolve to a named face by call
+site: every compile-time-constant call this script finds pushes RAM segment
+`0x413C`, not a ROM address - the menu text is reached through the menu-record
+table (F14), not a literal push per string.  273 of the 375 (73%) are still
+named by some far pointer elsewhere in the ROM, so most are demonstrably live,
+just not traceable to a face this way.
 
 Limits
 ------
@@ -204,7 +331,41 @@ Limits
   offset 0 of its chip attracts coincidental far-pointer hits, because the
   four zero-ish bytes that encode it are a common byte pattern.
 * `[length][glyph code]` records are recognised by byte shape alone, so short
-  ones are noisy and records under four characters are not reported.
+  ones are noisy and records under four characters are not reported.  Applied
+  to a pure graphics ROM this occasionally finds a coincidence: `bkcpu06.bin`
+  "finds" two identical records reading `DBBNNN` at `0x2FB`/`0x553`, which is a
+  repeating bitmap pattern in the sprite-strip artwork, not text - visible as
+  such because it is short, all-consonant and duplicated verbatim.
+* The scan is a **greedy left-to-right sweep with no knowledge of true record
+  boundaries**, so it can occasionally misalign across two adjacent records
+  and print a garbled hybrid of both - `bkcpu04.bin`'s `F000:3953` decodes to
+  `O - AJUSTE -BSONIDO/VIDE`, which is the tail of one title fused to the head
+  of the next.  The individual real titles (`- SONIDO -`, `SOUND/VIDEO`-style
+  strings) are elsewhere in the same run; read the surrounding records if one
+  looks fused.
+* **Call-site resolution only ever finds a compile-time-constant string
+  pointer** - four push-immediate instructions immediately before `CALL FAR
+  <drawer>`.  A call that composes its pointer at runtime (register or memory
+  operand) is invisible to it, which is why IO Moon's static menu text - all
+  reached through a record table, per F14 - resolves to a face zero times out
+  of 375 even though most of it is demonstrably live (named by *some* far
+  pointer).  Do not read "font: undetermined" as "this string is unused."
+* **Translating a `[length][glyph code]` record**: the length byte counts
+  glyph bytes 1:1 with on-screen characters, there is no terminator, and
+  records sit back-to-back with no slack - so a same-length or *shorter*
+  translation (pad with trailing spaces, as several original records already
+  do, e.g. `CRABY  `, `W.RAINEY `) is a same-address byte patch, lowering the
+  length byte if needed; a *longer* one overflows into the next record and
+  needs the string relocated to free space with every reference that names
+  its old address - the call sites this script finds, and any pointer-table
+  entry it can only report as "referenced," not resolved - repointed at the
+  new one, which is a ROM-wide patch, not a byte-level edit.
+* Sleic Pin-Ball's pointer-record scan searches past a face's own rendered
+  `count` for the punctuation its tail is under-reported for (see the packed-
+  run fuzzy-tail limit above), capped at the next face's base so the two
+  faces' cells cannot be confused with each other; a record that reaches
+  *past* both known faces (into whatever data follows the second one) is not
+  extended further and will still come up short.
 
 Dependencies: numpy, capstone (`pip install numpy capstone`). capstone is only
 needed for the code cross-reference; without it the rest still runs.
@@ -946,12 +1107,11 @@ def _record_credible(rec):
     """A run of consecutive near pointers is a string record if it is long
     enough, and either carries its own count word or spells something with
     letters in it.  Short runs of small values are ordinary data."""
-    start, n, cnt, text = rec
-    if n < 4:
+    if rec['n'] < 4:
         return False
-    if cnt == n:
+    if rec['has_count']:
         return True
-    return sum(1 for c in text if c.isalpha()) >= 3
+    return sum(1 for c in rec['text'] if c.isalpha()) >= 3
 
 
 def _md():
@@ -1036,12 +1196,32 @@ def _segment_offsets(rom, off):
 # Cross-reference: data pointers
 # --------------------------------------------------------------------------
 
-def xref_near_pointers(host, face):
+def _pointer_index_cap(face, other_faces, extra=128):
+    """How far past the *rendered* face.count a pointer is still credited to
+    this face.  The alphabet fit pins the face's start hard but its tail is
+    punctuation the run-scorer cannot always defend (see the packed-scan
+    "fuzzy tail" limit), and real string records reach into it - Sleic
+    Pin-Ball's '?' / '-quote' glyphs sit past index 37.  So the *pointer*
+    search range is extended well past face.count, capped only by where the
+    next face in the same image begins (never claim another face's cells) and
+    by the 16-bit offset ceiling, which the caller re-checks anyway."""
+    cap = face.count + extra
+    nxt = min((f.base for f in other_faces
+              if f is not face and f.rom is face.rom and f.base > face.base),
+             default=None)
+    if nxt is not None:
+        cap = min(cap, (nxt - face.base) // face.stride)
+    return max(cap, face.count)
+
+
+def xref_near_pointers(host, face, other_faces=()):
     """16-bit pointers in `host` landing exactly on a glyph boundary."""
     res = []
+    cap = _pointer_index_cap(face, other_faces)
     for base_off in _segment_offsets(face.rom, face.base):
-        targets = np.arange(face.count, dtype=np.int64) * face.stride + base_off
-        if targets[-1] > 0xFFFF:
+        targets = np.arange(cap, dtype=np.int64) * face.stride + base_off
+        targets = targets[targets <= 0xFFFF]
+        if len(targets) < face.count:
             continue
         w = host.words()
         mask = np.isin(w, targets)
@@ -1053,7 +1233,9 @@ def xref_near_pointers(host, face):
 
 
 def group_pointer_records(host, face, base_off, idx, min_len=3):
-    """Consecutive 16-bit pointers = one string record."""
+    """Consecutive 16-bit pointers = one string record.  Returns dicts, not
+    tuples, so the report can print address/byte/font detail uniformly with
+    the length-prefixed records (see StringRecord-shaped dicts below)."""
     recs = []
     run = []
     for p in idx:
@@ -1072,10 +1254,22 @@ def group_pointer_records(host, face, base_off, idx, min_len=3):
         for p in run:
             v = int(host.words()[p])
             gi = (v - base_off) // face.stride
-            text += labels.get(gi, '?')
-        cnt = int(host.words()[run[0] - 2]) if run[0] >= 2 else -1
-        out.append((run[0], len(run), cnt, text))
-    out.sort(key=lambda r: (r[2] != r[1], -r[1]))
+            text += labels.get(gi, '<%d>' % gi)
+        has_count = run[0] >= 2
+        cnt = int(host.words()[run[0] - 2]) if has_count else -1
+        rec_off = run[0] - 2 if has_count and cnt == len(run) else run[0]
+        rec_end = run[-1] + 2
+        out.append(dict(
+            off=rec_off, cpu=host.seg_off(rec_off), n=len(run), cnt=cnt,
+            has_count=has_count and cnt == len(run), text=text,
+            raw=host.data[rec_off:rec_end], byte_len=rec_end - rec_off,
+            char_len=len(run),
+            font_reason="implied by where its %d pointer%s land: every one "
+                        "resolves to a cell inside this face (base 0x%05X, "
+                        "stride %d, file 0x%05X-0x%05X)"
+                        % (len(run), "" if len(run) == 1 else "s", face.base,
+                           face.stride, face.base, face.end - 1)))
+    out.sort(key=lambda r: (not r['has_count'], -r['n']))
     return out
 
 
@@ -1104,7 +1298,27 @@ def xref_far_pointers(host, face, entry_offsets, skip_ranges=()):
 # `[length][glyph codes]` string records (Bike Race, IO Moon)
 # --------------------------------------------------------------------------
 
-def scan_length_prefixed_strings(rom, min_len=4, max_len=40):
+def scan_length_prefixed_strings(rom, min_len=4, max_len=40, allow_unmapped=0):
+    """`[length][glyph code]` records - Bike Race's and IO Moon's encoding for
+    everything that is not drawn through the pointer-array form.  `length`
+    counts glyph codes one byte each, so it is also the on-screen character
+    count; there is no terminator and no padding beyond whatever the ROM's
+    author put there, so a record occupies exactly `1 + length` bytes with
+    nothing to spare.
+
+    The gate - every byte a known code, at least `min_len` of them, and
+    letters at least 60% of the body (or 3, whichever is more) - is the one
+    this scan has always used; kept as the default because it reproduces
+    three independently-known answers exactly: bkcpu05's three records decode
+    verbatim to PRIMERA PARTIDA / SEGUNDA PARTIDA / INSCRIPCION, bkcpu04's 133
+    records include AK.SCHWANT, W.RAINEY and E.LAWSON letter-for-letter, and
+    IO Moon's V1 3_01.bin yields 375 - the reference counts this tool is
+    checked against (see the module docstring's Text-string cross-reference
+    section).  `allow_unmapped` widens the gate to admit up to that many
+    bytes outside `CODE_TO_CHAR` per record, shown as `<n>` rather than
+    dropping the record; at the default of 0 every accepted record already
+    decodes with every byte mapped, so raising it only ever adds records, it
+    never changes the 133/3/375 baseline."""
     d = rom.data
     out = []
     i = 0
@@ -1113,14 +1327,260 @@ def scan_length_prefixed_strings(rom, min_len=4, max_len=40):
         ln = d[i]
         if min_len <= ln <= max_len and i + 1 + ln <= n:
             body = d[i + 1:i + 1 + ln]
-            if all(c in CODE_TO_CHAR for c in body):
+            unmapped = sum(1 for c in body if c not in CODE_TO_CHAR)
+            if unmapped <= allow_unmapped and all(c <= 0x40 for c in body):
                 letters = sum(1 for c in body if 0x0B <= c <= 0x25)
                 if letters >= max(3, int(0.6 * ln)) and body[0] != 0x0A:
-                    out.append((i, ln, "".join(CODE_TO_CHAR[c] for c in body)))
+                    text = "".join(CODE_TO_CHAR.get(c, '<%d>' % c) for c in body)
+                    out.append(dict(off=i, cpu=rom.seg_off(i), ln=ln, body=bytes(body),
+                                    raw=d[i:i + 1 + ln], text=text, byte_len=1 + ln,
+                                    char_len=ln, unmapped=unmapped,
+                                    call_sites=[], font=None,
+                                    font_reason="undetermined - the record does not "
+                                                "carry its own font; see the call-site "
+                                                "search below"))
                     i += 1 + ln
                     continue
         i += 1
     return out
+
+
+# --------------------------------------------------------------------------
+# The `[length][glyph code]` text drawer: one shared far-call routine per
+# code ROM, `CALL FAR <drawer>(far string ptr, DMD position, dispatch attr)`.
+# Its `attr` argument - not the record - is what says which face draws a
+# given record, so this locates the routine, recovers its dispatch table,
+# matches each case to a Face by the pointer-pool slot the case loads, and
+# then finds the call sites that name a record with a compile-time-constant
+# address.
+# --------------------------------------------------------------------------
+
+# push bp; mov bp,sp; push es; les si,[bp+0xa]; mov di,[bp+8]; mov bx,[bp+6] -
+# byte-identical in bkcpu04 (CS:06C5) and IO Moon's V1 3_01.bin (CS:0701);
+# found by this prologue rather than by address, since Bike Race's parent and
+# V4.1 chip sets do not agree on one (asm/bikerace-2026-09/tools/strptr.py).
+_TEXT_DRAWER_PROLOGUE = bytes.fromhex('558bec06c4760a8b7e088b5e06')
+
+
+def find_text_drawer(rom):
+    """The four-argument text-drawer routine, by its prologue's exact bytes.
+    Confirmed against docs/press_start_patch.md and
+    scripts/io_moon_press_start_patch.py, which call IO Moon's copy
+    (`CALL FAR F000:0701`) with exactly this stack layout: `PUSH seg; PUSH
+    off` (the far string pointer), `PUSH position`, `PUSH attr`."""
+    pos = rom.data.find(_TEXT_DRAWER_PROLOGUE)
+    if pos < 0:
+        return None
+    dup = rom.data.find(_TEXT_DRAWER_PROLOGUE, pos + 1)
+    return dict(off=pos, flat=rom.flat(pos), cpu=rom.seg_off(pos), ambiguous=dup >= 0)
+
+
+def parse_text_drawer_dispatch(rom, drawer, window=400):
+    """The `attr` argument (the drawer's `bx`) selects a case through an
+    inline `cmp bx,imm / jne +3 / jmp <case>` chain ending in one
+    unconditional `jmp <default>`.  Returns `[(imm_or_None, target_flat),
+    ...]`, `None` marking the default (no explicit `cmp` matched)."""
+    if not _HAVE_CAPSTONE:
+        return []
+    md = _md()
+    cases = []
+    pending = None
+    for ins in md.disasm(rom.data[drawer['off']:drawer['off'] + window], drawer['flat']):
+        if ins.mnemonic == 'nop':
+            continue
+        if ins.mnemonic == 'cmp' and ins.op_str.startswith('bx, '):
+            try:
+                pending = int(ins.op_str.split(',')[1].strip(), 0)
+            except ValueError:
+                pending = None
+            continue
+        if ins.mnemonic in ('jne', 'jnz'):
+            continue
+        if ins.mnemonic == 'jmp':
+            try:
+                tgt = int(ins.op_str, 0)
+            except ValueError:
+                break
+            cases.append((pending, tgt))
+            if pending is None:      # the unconditional default jmp ends the table
+                break
+            pending = None
+            continue
+        if pending is None and cases:
+            break
+    return cases
+
+
+def _case_pool_slot(rom, target_flat, window=40):
+    """The `les`/`lds` a dispatch case's block issues before drawing, which
+    names the pointer-pool slot for the face it uses - the same slot
+    `xref_far_pointers` already resolves to a Face for the code
+    cross-reference printed above each face."""
+    if not _HAVE_CAPSTONE:
+        return None
+    off = target_flat - rom.org
+    for ins in _window_disasm(rom, off, 10):
+        if ins.mnemonic in ('les', 'lds'):
+            m = re.search(r'0x([0-9a-f]+)\]', ins.op_str)
+            if m:
+                return int(m.group(1), 16)
+    return None
+
+
+def find_text_drawer_call_sites(rom, drawer, drawer_seg=0xF000):
+    """Every `CALL FAR <drawer>` preceded immediately by four push-immediate
+    instructions - `PUSH seg; PUSH off; PUSH position; PUSH attr`, byte
+    pattern only, no full disassembly (this ROM family mis-decodes as a
+    flat linear sweep - see the module's ndisasm caveat).  A call that builds
+    its string pointer at runtime (a RAM buffer, a score readout) pushes a
+    register or a memory operand instead and is invisible to this scan; it
+    is not claimed as a miss, just not found."""
+    drawer_off = drawer['flat'] - (drawer_seg << 4)
+    needle = bytes([0x9A]) + drawer_off.to_bytes(2, 'little') + drawer_seg.to_bytes(2, 'little')
+    sites = []
+    pos = rom.data.find(needle)
+    while pos >= 0:
+        sites.append(pos)
+        pos = rom.data.find(needle, pos + 1)
+    return sites
+
+
+def _preceding_immediate_pushes(rom, callpos, n=4):
+    if not _HAVE_CAPSTONE:
+        return None
+    md = _md()
+    for total in range(2 * n, 3 * n + 1):
+        start = callpos - total
+        if start < 0:
+            continue
+        try:
+            ins_list = list(md.disasm(rom.data[start:callpos], rom.flat(start)))
+        except Exception:
+            continue
+        if len(ins_list) != n or sum(i.size for i in ins_list) != total:
+            continue
+        if not all(i.mnemonic == 'push' and re.match(r'^0x[0-9a-f]+$', i.op_str)
+                  for i in ins_list):
+            continue
+        return [int(i.op_str, 16) for i in ins_list]
+    return None
+
+
+def _resolve_flat(flat, roms):
+    """Which ROM (and file offset) a flat address falls in, checking every
+    window each image is mapped at."""
+    for r in roms:
+        for org in r.windows():
+            if org <= flat < org + len(r.data):
+                return r, flat - org
+    return None, None
+
+
+def analyze_text_drawer_strings(roms, all_faces, entry_offsets, args):
+    """Run the whole drawer/dispatch/call-site pipeline over every supplied
+    ROM.  Mutates each length-prefixed record in place with `call_sites`,
+    `font` and `font_reason`, and returns `{rom.name: drawer-info-or-None}`
+    for the report header."""
+    records = {}
+    for rom in roms:
+        records[rom.name] = scan_length_prefixed_strings(
+            rom, allow_unmapped=args.allow_unmapped)
+    by_off = {(r.name, rec['off']): rec for r in roms for rec in records[r.name]}
+    faces_by_rom = {name: all_faces[name][0] for name in all_faces}
+
+    drawers = {}
+    for rom in roms:
+        drawer = find_text_drawer(rom)
+        if drawer is None:
+            continue
+        cases = parse_text_drawer_dispatch(rom, drawer)
+        skip = [(t[0], t[1]) for t in entry_offsets.get('chains:' + rom.name, ())]
+        slot_face = {}
+        for faces in faces_by_rom.values():
+            for face in faces:
+                for p, seg, off, flat in xref_far_pointers(
+                        rom, face, [face.cell_offset(0)], skip):
+                    for slot in _segment_offsets(rom, p):
+                        slot_face[slot] = face
+        case_face = {}
+        for attr, tgt in cases:
+            slot = _case_pool_slot(rom, tgt)
+            case_face[attr] = dict(face=slot_face.get(slot), slot=slot, target=tgt)
+        default = case_face.get(None)
+
+        sites = find_text_drawer_call_sites(rom, drawer)
+        resolved = 0
+        for callpos in sites:
+            pushes = _preceding_immediate_pushes(rom, callpos)
+            if not pushes:
+                continue
+            seg, offv, posv, attrv = pushes
+            trom, toff = _resolve_flat((seg << 4) + offv, roms)
+            if trom is None:
+                continue
+            rec = by_off.get((trom.name, toff))
+            if rec is None:
+                continue
+            resolved += 1
+            case = case_face.get(attrv, default)
+            rec['call_sites'].append(dict(
+                cpu=rom.seg_off(callpos), off=callpos, attr=attrv, position=posv,
+                face=case['face'] if case else None,
+                explicit=attrv in case_face))
+
+        for rec in records[rom.name]:
+            faces_seen = {cs['face'] for cs in rec['call_sites'] if cs['face']}
+            if len(faces_seen) == 1:
+                cs = rec['call_sites'][0]
+                rec['font'] = next(iter(faces_seen))
+                rec['font_reason'] = (
+                    "call site %s pushes attr=0x%02X (%s dispatch case), whose "
+                    "block loads this face's pointer-pool slot"
+                    % (cs['cpu'], cs['attr'],
+                       "an explicit" if cs['explicit'] else "the default"))
+            elif len(faces_seen) > 1:
+                rec['font'] = None
+                rec['font_reason'] = ("undetermined - call sites disagree on attr "
+                                      "(%s)" % ", ".join(
+                                          "0x%02X" % cs['attr']
+                                          for cs in rec['call_sites']))
+            elif rec['call_sites']:
+                rec['font'] = None
+                rec['font_reason'] = ("undetermined - %d call site(s) found, but "
+                                      "the dispatch case's face could not be "
+                                      "resolved" % len(rec['call_sites']))
+            # else: leave the "no call site found" reason scan_ set
+
+        drawers[rom.name] = dict(info=drawer, cases=cases, case_face=case_face,
+                                 call_sites=len(sites), resolved=resolved)
+
+    # A record with no resolved call site may still be live code: something
+    # may hold a raw far pointer to it (a lookup table, or a call this
+    # scanner's push-immediate pattern does not match) without our being able
+    # to say which font draws it.  That is a different, weaker claim than a
+    # resolved font, so it only fills in when nothing else has already
+    # explained the record - it never overrides a resolved font.
+    for owner in roms:
+        for rec in records[owner.name]:
+            if rec['font'] is not None or rec['call_sites']:
+                continue
+            flats = {owner.flat(rec['off'], o) for o in owner.windows()}
+            hit = None
+            for host in roms:
+                pos, tgt = host.far_pointers()
+                m = np.flatnonzero(np.isin(tgt, np.array(sorted(flats),
+                                                          dtype=np.int64)))
+                if len(m):
+                    hit = (host, int(pos[m[0]]))
+                    break
+            if hit:
+                host, p = hit
+                rec['font_reason'] = (
+                    "undetermined - no draw call was matched, but a far "
+                    "pointer to this record sits at %s in %s (a table entry, "
+                    "or a call this scan's push-immediate pattern misses)"
+                    % (host.seg_off(p), host.name))
+    return records, drawers
 
 
 # --------------------------------------------------------------------------
@@ -1235,26 +1695,12 @@ def report(roms, args):
         rom.alt_orgs = [o for o, _ in extra]
         rom.alt_why = extra
 
+    # fit every face's scheme up front, so both the code below and the text-
+    # drawer analysis (which needs a settled face list to match dispatch
+    # cases against) see the final face set
     for rom in roms:
         faces, tables, weak = all_faces[rom.name]
-        print(hr())
-        print("%s  (%d bytes)" % (rom.name, len(rom.data)))
-        print("  org 0x%05X - %s" % (rom.org, rom.org_why))
-        for o, n in getattr(rom, 'alt_why', []):
-            print("  also mapped at 0x%05X - %d entry boundaries there are the "
-                  "target of an aligned far pointer" % (o, n))
-        if tables:
-            print("  header chains: " + ", ".join(
-                "0x%05X-0x%05X (%d entries)" % (t[0], t[1], len(t[2]))
-                for t in tables[:6]))
-        print(hr())
-        if weak:
-            print("  %d packed run%s scored below --min-fit %.1f and were "
-                  "dropped as noise" % (weak, "" if weak == 1 else "s",
-                                        args.min_fit))
-        if not faces:
-            print("  no font table found\n")
-        for k, face in enumerate(sorted(faces, key=lambda f: f.base), 1):
+        for face in faces:
             if face.scheme is None:
                 face.scheme = fit_scheme(face)
             if face.planes > 1 and face.scheme.score < 5.0:
@@ -1270,21 +1716,99 @@ def report(roms, args):
                                       % (alt.score, face.fit))
                 else:
                     face.set_plane_mode('p0')
-            print_face(k, face, roms, entry_offsets, args)
 
-        if args.strings:
-            recs = scan_length_prefixed_strings(rom)
+    text_records, drawers = ({r.name: [] for r in roms}, {}) if not args.strings \
+        else analyze_text_drawer_strings(roms, all_faces, entry_offsets, args)
+    face_records = {}
+    for rname, recs in text_records.items():
+        for rec in recs:
+            if rec['font'] is not None:
+                face_records.setdefault(id(rec['font']), []).append(rec)
+
+    font_filter = None
+    if args.font is not None:
+        want = int(args.font, 0)
+        cands = [f for faces, _, _ in all_faces.values() for f in faces
+                 if want == f.base or any(f.rom.flat(f.base, o) == want
+                                          for o in f.rom.windows())]
+        if not cands:
+            print("--font 0x%X matches no face found in these ROMs" % want,
+                  file=sys.stderr)
+        else:
+            font_filter = cands[0]
+
+    for rom in roms:
+        faces, tables, weak = all_faces[rom.name]
+        if font_filter is not None and font_filter.rom is not rom:
+            continue
+        print(hr())
+        print("%s  (%d bytes)" % (rom.name, len(rom.data)))
+        print("  org 0x%05X - %s" % (rom.org, rom.org_why))
+        for o, n in getattr(rom, 'alt_why', []):
+            print("  also mapped at 0x%05X - %d entry boundaries there are the "
+                  "target of an aligned far pointer" % (o, n))
+        if tables:
+            print("  header chains: " + ", ".join(
+                "0x%05X-0x%05X (%d entries)" % (t[0], t[1], len(t[2]))
+                for t in tables[:6]))
+        print(hr())
+        if weak and font_filter is None:
+            print("  %d packed run%s scored below --min-fit %.1f and were "
+                  "dropped as noise" % (weak, "" if weak == 1 else "s",
+                                        args.min_fit))
+        if not faces:
+            print("  no font table found\n")
+        sorted_faces = sorted(faces, key=lambda f: f.base)
+        for k, face in enumerate(sorted_faces, 1):
+            if font_filter is not None and face is not font_filter:
+                continue
+            print_face(k, face, roms, entry_offsets, args, sorted_faces,
+                      face_records.get(id(face), []))
+
+        if args.strings and font_filter is None:
+            drawer = drawers.get(rom.name)
+            if drawer:
+                print("  [length][glyph code] text drawer: %s (%s), %d "
+                      "dispatch case%s, %d CALL FAR site%s found, %d resolved "
+                      "to a record found in these ROMs"
+                      % (drawer['info']['cpu'], rom.name,
+                         len(drawer['cases']),
+                         "" if len(drawer['cases']) == 1 else "s",
+                         drawer['call_sites'],
+                         "" if drawer['call_sites'] == 1 else "s",
+                         drawer['resolved']))
+                for attr, case in sorted(drawer['case_face'].items(),
+                                         key=lambda kv: (kv[0] is None, kv[0])):
+                    tag = "default" if attr is None else "attr=0x%02X" % attr
+                    face_desc = ("FACE at file 0x%05X" % case['face'].base
+                                if case['face'] else "no face resolved")
+                    print("    %-12s -> target 0x%05X, pool slot %s -> %s"
+                          % (tag, case['target'],
+                             "0x%04X" % case['slot'] if case['slot'] is not None
+                             else "?", face_desc))
+            recs = text_records.get(rom.name, [])
+            undetermined = [r for r in recs if r['font'] is None]
             if recs:
-                print("  [length][glyph code] string records: %d found "
-                      "(0x%05X-0x%05X)" % (len(recs), recs[0][0], recs[-1][0]))
-                for off, ln, txt in recs[:args.max_strings]:
-                    print("    %s  len=%-3d %s" % (rom.seg_off(off), ln, txt))
-                if len(recs) > args.max_strings:
-                    print("    ... %d more" % (len(recs) - args.max_strings))
+                print("  [length][glyph code] string records in %s: %d found "
+                      "(0x%05X-0x%05X), %d with a font resolved by a call "
+                      "site, %d undetermined"
+                      % (rom.name, len(recs), recs[0]['off'], recs[-1]['off'],
+                         len(recs) - len(undetermined), len(undetermined)))
+            if undetermined:
+                print("  ... records with no font resolved:")
+                for rec in undetermined[:args.max_strings]:
+                    print("    %s  file 0x%05X  %2d bytes/%2d chars  \"%s\""
+                          % (rec['cpu'], rec['off'], rec['byte_len'],
+                             rec['char_len'], rec['text']))
+                    print("        raw: %s" % rec['raw'].hex())
+                    print("        font: %s" % rec['font_reason'])
+                if len(undetermined) > args.max_strings:
+                    print("    ... %d more" % (len(undetermined) - args.max_strings))
+            if recs:
                 print("")
 
 
-def print_face(k, face, roms, entry_offsets, args):
+def print_face(k, face, roms, entry_offsets, args, other_faces=(), face_records=()):
     rom = face.rom
     print("FACE %d  [%s]  %s" % (k, face.layout, face.geometry()))
     a = face.addrs()
@@ -1329,9 +1853,11 @@ def print_face(k, face, roms, entry_offsets, args):
             if len(hits) > args.max_refs:
                 print("    ... %d more" % (len(hits) - args.max_refs))
 
-    # --- near pointers -> string records
+    # --- near pointers -> string records (Sleic Pin-Ball's word-count +
+    # word-glyph-pointer encoding: see scan_pointer_string_records's docstring)
+    limit = None if args.font is not None else args.max_refs
     for host in roms:
-        for base_off, idx in xref_near_pointers(host, face):
+        for base_off, idx in xref_near_pointers(host, face, other_faces):
             recs = [r for r in group_pointer_records(host, face, base_off, idx)
                     if _record_credible(r)]
             if not recs:
@@ -1339,12 +1865,17 @@ def print_face(k, face, roms, entry_offsets, args):
             print("  string records of near pointers into this face, in %s "
                   "(%d word%s in the image land on a glyph boundary):"
                   % (host.name, len(idx), "" if len(idx) == 1 else "s"))
-            for start, n, cnt, text in recs[:args.max_refs]:
-                tag = "count=%d" % cnt if cnt == n else "no count word"
-                print("    %s  %-14s %2d pointers  \"%s\""
-                      % (host.seg_off(start - 2), tag, n, text))
-            if len(recs) > args.max_refs:
-                print("    ... %d more records" % (len(recs) - args.max_refs))
+            shown = recs if limit is None else recs[:limit]
+            for r in shown:
+                tag = "count=%d" % r['cnt'] if r['has_count'] else "no count word"
+                print("    %s  file 0x%05X  %-14s %2d ptr%s  %2d bytes/%2d chars  \"%s\""
+                      % (r['cpu'], r['off'], tag, r['n'],
+                         " " if r['n'] == 1 else "s", r['byte_len'], r['char_len'],
+                         r['text']))
+                print("        raw: %s" % r['raw'].hex())
+                print("        font: %s" % r['font_reason'])
+            if limit is not None and len(recs) > limit:
+                print("    ... %d more records" % (len(recs) - limit))
 
     # --- far pointers, and the code that loads the pool slot they sit in
     for host in roms:
@@ -1367,6 +1898,26 @@ def print_face(k, face, roms, entry_offsets, args):
                           % (host.seg_off(off2), text))
         if len(hits) > args.max_refs:
             print("    ... %d more" % (len(hits) - args.max_refs))
+
+    # --- [length][glyph code] records this face draws (Bike Race, IO Moon):
+    # the record does not name its own font, the call site's `attr` does -
+    # see analyze_text_drawer_strings
+    if face_records:
+        print("  [length][glyph code] string records drawn with this face "
+              "(%d found):" % len(face_records))
+        shown = face_records if args.font is not None else face_records[:args.max_refs]
+        for rec in shown:
+            print("    %s  file 0x%05X  %2d bytes/%2d chars  \"%s\""
+                  % (rec['cpu'], rec['off'], rec['byte_len'], rec['char_len'],
+                     rec['text']))
+            print("        raw: %s" % rec['raw'].hex())
+            print("        font: %s" % rec['font_reason'])
+            for cs in rec['call_sites']:
+                print("        drawn at %s  push seg:off (string), 0x%04X "
+                      "(position), 0x%02X (attr)"
+                      % (cs['cpu'], cs['position'], cs['attr']))
+        if args.font is None and len(face_records) > args.max_refs:
+            print("    ... %d more" % (len(face_records) - args.max_refs))
     print("")
 
 
@@ -1396,6 +1947,16 @@ def main(argv=None):
     ap.add_argument('--max-refs', type=int, default=16)
     ap.add_argument('--max-strings', type=int, default=12)
     ap.add_argument('--no-strings', dest='strings', action='store_false')
+    ap.add_argument('--allow-unmapped', type=int, default=0, metavar='N',
+                    help="accept [length][glyph code] records with up to N "
+                         "codes outside the known alphabet, shown as <n> "
+                         "(default 0: every accepted record already decodes "
+                         "in full - see scan_length_prefixed_strings)")
+    ap.add_argument('--font', metavar='ADDR',
+                    help="list only the face at this file offset (or any "
+                         "window's CPU-visible address), with its full "
+                         "string inventory un-truncated - 'given a font "
+                         "table, which strings use it'")
     args = ap.parse_args(argv)
     args.widths = [int(x) for x in args.widths.split(',')]
 
