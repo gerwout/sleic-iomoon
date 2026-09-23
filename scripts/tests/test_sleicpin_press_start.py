@@ -108,6 +108,46 @@ def test_workspace_is_above_the_vector_table():
     assert m.WORKSPACE_ADDR >= 0x100, 'the workspace would land in the vector table'
     assert m.DRAWN_ADDR == m.WORKSPACE_ADDR + 8, 'the flag is not the workspace tail'
 
+def test_hooks_are_present_and_match_the_stock_rom():
+    m = load()
+    data = ROM.read_bytes()
+    assert len(m.HOOKS) == 3, 'expected the table entry and both game-over tails'
+    for addr, original, patched, label in m.HOOKS:
+        off = m.physical_to_file(addr)
+        assert data[off:off+len(original)] == original, f'{label}: stock bytes differ'
+        assert len(original) == len(patched), f'{label}: patch changes length'
+
+def test_the_spare_table_entry_is_the_hook():
+    m = load()
+    by_addr = {addr: (o, p) for addr, o, p, _ in m.HOOKS}
+    assert 0xE4FAE in by_addr, 'spare entry 25 of the E000:4F7C table is not hooked'
+    original, patched = by_addr[0xE4FAE]
+    assert original == bytes([0x22, 0x50]), 'stock entry 25 is not 0x5022'
+    assert int.from_bytes(patched, 'little') == m.STUB_ADDR & 0xFFFF
+    assert 0xE4FAA not in by_addr, 'entry 23 must be left alone, or attract shows the screen'
+
+def test_both_game_over_tails_are_redirected():
+    m = load()
+    by_addr = {addr: (o, p) for addr, o, p, _ in m.HOOKS}
+    for addr, imm, label in ((0xE197C, 0x17, 'the common tail'),
+                             (0xE1962, 0x01, 'the tenth-game tail')):
+        assert addr in by_addr, f'{label} at {addr:#07x} is not hooked'
+        original, _ = by_addr[addr]
+        assert original == bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, imm, 0x00]), \
+            f'{label}: stock bytes are not mov word ds:[0x17d], {imm:#04x}'
+
+def test_patched_rom_differs_only_in_caves_and_hooks():
+    m = load()
+    stock = ROM.read_bytes()
+    patched = m.apply_patches(stock)
+    allowed = set()
+    for addr, blob, _ in m.CAVES:
+        allowed |= set(range(m.physical_to_file(addr), m.physical_to_file(addr)+len(blob)))
+    for addr, original, _, _ in m.HOOKS:
+        allowed |= set(range(m.physical_to_file(addr), m.physical_to_file(addr)+len(original)))
+    diff = {i for i in range(len(stock)) if stock[i] != patched[i]}
+    assert diff <= allowed, f'{len(diff - allowed)} bytes changed outside cave and hook'
+
 if __name__ == '__main__':
     fails = 0
     for name, fn in sorted(globals().items()):

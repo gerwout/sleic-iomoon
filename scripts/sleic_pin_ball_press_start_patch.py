@@ -12,12 +12,12 @@ Usage:
 
 **V1.1 only**, by CRC; `--any-version` overrides.
 
-Two padding regions are free in this ROM, both erased to `0xFF`:
-`0xE50EB`-`0xEFFFF` (segment E000) and `0xFDFF0`-`0xFFE76` (segment F000).
-This revision carries a single one-byte placeholder cave at `0xFDFF0` and no
-hooks; the digit-glyph blitter (`digits_draw`) and the `PRESS START` string
-record (`PROMPT_RECORD`) are written and `nasm`-verified but not yet placed
-in the cave, so the patch payload is not yet implemented.
+Two padding regions hold the payload, both erased to `0xFF` in the stock ROM:
+`0xE50EB`-`0xEFFFF` (segment E000, the hold stub and its two game-over
+trampolines) and `0xFDFF0`-`0xFFE76` (segment F000, the digit blitter, the
+per-player digit reader, the `PRESS START` string record and the screen
+composer). Three hooks wire the payload into the sequence table and the two
+game-over paths that would otherwise drop straight to attract.
 """
 
 import argparse
@@ -37,12 +37,8 @@ V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
 )
 
-CAVE_PLACEHOLDER = 0xFDFF0   # F000:DFF0, free padding before FE76
-
-CAVE_PLACEHOLDER_DATA = bytes([0x90])
-
-CAVES = ((CAVE_PLACEHOLDER, CAVE_PLACEHOLDER_DATA, "single-byte NOP filler"),)
-HOOKS = ()
+# CAVES and HOOKS are assembled at the end of this file, once every blob and
+# every hook's replacement bytes exist.
 
 # =============================================================================
 # The 8-row glyph face and its blitters
@@ -53,8 +49,9 @@ HOOKS = ()
 # addresses a cell, exactly as F000:43C5 computes it.
 GLYPH_FACE_ADDR = 0x85EB
 
-# Provisional; the cave's own layout is not settled yet and moves this.
-DIGITS_DRAW_ADDR = 0xFDFF1
+# F000 padding starts at 0xFDFF0 (7,815 bytes, all 0xFF up to 0xFE76); this is
+# the first of the four blobs packed into it.
+DIGITS_DRAW_ADDR = 0xFDFF0
 
 # SI = an 8-byte digit buffer in segment 0 (values 0-9, or 0xFF for a blanked
 # leading zero), DI = the buffer offset of the leftmost cell, ES = 0x6000.
@@ -158,7 +155,7 @@ PROMPT_RECORD = (len(PROMPT_TEXT).to_bytes(2, 'little') +
 WORKSPACE_ADDR = 0x3A0
 DRAWN_ADDR = WORKSPACE_ADDR + 8
 
-# Provisional; the cave's own layout is not settled yet and moves this.
+# Packed right after digits_draw.
 SCORE_DIGITS_ADDR = DIGITS_DRAW_ADDR + len(DIGITS_DRAW)
 
 # BX = a player's block base (E000:190F table entry), DI = an 8-byte scratch
@@ -222,10 +219,10 @@ SCORE_DIGITS = bytes([
 # =============================================================================
 
 # Data, not code: the eleven-glyph prompt record from the previous section,
-# placed after score_digits. Provisional, like the two addresses above it.
+# placed after score_digits.
 PROMPT_RECORD_ADDR = SCORE_DIGITS_ADDR + len(SCORE_DIGITS)
 
-# Provisional; the cave's own layout is not settled yet and moves this.
+# Last of the four F000 blobs, right after prompt_record.
 DRAW_SCREEN_ADDR = PROMPT_RECORD_ADDR + len(PROMPT_RECORD)
 
 # Takes no arguments; DS = 0 and CS = F000 on entry (the stub far-calls it).
@@ -289,23 +286,23 @@ DRAW_SCREEN = bytes([
     0x89, 0xEB,                           # mov bx, bp
     0x4B,                                 # dec bx
     0x01, 0xDB,                           # add bx, bx            ; bx = (index-1)*2
-    0x2E, 0x8B, 0x9F, 0xAA, 0xE0,         # mov bx, [cs:bx+block_table]
+    0x2E, 0x8B, 0x9F, 0xA9, 0xE0,         # mov bx, [cs:bx+block_table]
     0xBF, 0xA0, 0x03,                     # mov di, 0x3A0         ; WORKSPACE_ADDR
-    0xE8, 0xA2, 0xFF,                     # call 0xFE026          ; score_digits
+    0xE8, 0xA2, 0xFF,                     # call 0xFE025          ; score_digits
     0x89, 0xFE,                           # mov si, di            ; si = digit buffer
     0x89, 0xEF,                           # mov di, bp
     0x4F,                                 # dec di
     0x01, 0xFF,                           # add di, di            ; di = (index-1)*2
-    0x2E, 0x8B, 0xBD, 0xB2, 0xE0,         # mov di, [cs:di+slot_table]
-    0xE8, 0x5E, 0xFF,                     # call 0xFDFF1          ; digits_draw
+    0x2E, 0x8B, 0xBD, 0xB1, 0xE0,         # mov di, [cs:di+slot_table]
+    0xE8, 0x5E, 0xFF,                     # call 0xFDFF0          ; digits_draw
     0x45,                                 # inc bp
     0xEB, 0xD5,                           # jmp .loop
-    0xBE, 0x4A, 0xE0,                     # .prompt: mov si, 0xE04A ; PROMPT_RECORD
+    0xBE, 0x49, 0xE0,                     # .prompt: mov si, 0xE049 ; PROMPT_RECORD
     0xBF, 0x12, 0x07,                     # mov di, 0x712
-    0xE8, 0x6E, 0x74,                     # call 0x550D
-    0xBE, 0x4A, 0xE0,                     # mov si, 0xE04A
+    0xE8, 0x6F, 0x74,                     # call 0x550D
+    0xBE, 0x49, 0xE0,                     # mov si, 0xE049
     0xBF, 0x12, 0x0F,                     # mov di, 0xF12
-    0xE8, 0x65, 0x74,                     # call 0x550D
+    0xE8, 0x66, 0x74,                     # call 0x550D
     0x5D,                                 # pop bp                 ; restore the caller's BP
     0xCB,                                 # retf
     0xE7, 0x01, 0x09, 0x02, 0x2B, 0x02, 0x4D, 0x02,  # block_table: dw 0x1E7,0x209,0x22B,0x24D
@@ -327,16 +324,18 @@ SAVED_ADDR = WORKSPACE_ADDR + 9
 # The sequence table's spare slot: entries run 0-24, wrap at 24->0, and no
 # write to [017D] anywhere in the image produces 25, so this entry is
 # unreachable except through a game-over trampoline pointing at it. The
-# table entry is a near offset in segment E000, so unlike every other blob
-# in this file the stub's address is real, not provisional -- it is the
-# start of the 44,821-byte 0xFF run reaching the end of the segment.
+# table entry holds this as a plain near offset in segment E000, so unlike
+# every F000 blob in this file (numbered in the 0xF0000+ physical-address
+# style) the stub's org is the true segment offset -- it is the start of
+# the 44,821-byte 0xFF run reaching the end of the segment.
 STUB_ADDR = 0x50EB
 
 # Reached as entry 25 of the [0000:017D] sequence dispatcher, re-entered
 # every tick while [017D] stays 25. DS = 0 on entry (every dispatcher and
-# step access is DS-relative). Not yet drawn (DRAWN_ADDR == 0): clears both
-# display planes and composes the score screen once, sets DRAWN_ADDR, then
-# falls into holding. Already drawn: polls the switch FIFO once per tick
+# step access is DS-relative). Not yet drawn (DRAWN_ADDR == 0): far-calls
+# draw_screen, which clears both display planes itself and composes the
+# score screen, sets DRAWN_ADDR, then falls into holding. Already drawn:
+# polls the switch FIFO once per tick
 # and otherwise just holds -- a `ret` with [0x4DF] set to 0 so the
 # dispatcher re-enters immediately on the next tick and [017D] never
 # advances past 25. On seeing START (code 5) it drains the FIFO until empty
@@ -350,7 +349,6 @@ org 0x{STUB_ADDR:04X}
 stub:
         cmp byte [0x{DRAWN_ADDR:04X}], 0
         jne poll
-        call 0xF000:0xDEFC
         call 0xF000:0x{DRAW_SCREEN_ADDR & 0xFFFF:04X}
         mov byte [0x{DRAWN_ADDR:04X}], 1
         jmp hold
@@ -374,9 +372,8 @@ hold:
 
 STUB = bytes([
     0x80, 0x3E, 0xA8, 0x03, 0x00,          # stub: cmp byte [DRAWN_ADDR], 0
-    0x75, 0x11,                            # jne poll                ; already composed
-    0x9A, 0xFC, 0xDE, 0x00, 0xF0,          # call 0xF000:0xDEFC      ; clear both planes
-    0x9A, 0x62, 0xE0, 0x00, 0xF0,          # call 0xF000:0xE062      ; draw_screen
+    0x75, 0x0C,                            # jne poll                ; already composed
+    0x9A, 0x61, 0xE0, 0x00, 0xF0,          # call 0xF000:0xE061      ; draw_screen (clears both planes)
     0xC6, 0x06, 0xA8, 0x03, 0x01,          # mov byte [DRAWN_ADDR], 1
     0xEB, 0x1D,                            # jmp hold
     0x9A, 0xEF, 0x54, 0x00, 0xF0,          # poll: call 0xF000:0x54EF ; pop a switch code
@@ -393,6 +390,102 @@ STUB = bytes([
     0xC7, 0x06, 0xDF, 0x04, 0x00, 0x00,    # hold: mov word [0x4DF], 0 ; no delay: re-enter next tick
     0xC3,                                  # ret                     ; [017D] still 25
 ])
+
+
+# =============================================================================
+# The two game-over trampolines and the sequence-table hook
+# =============================================================================
+
+# Packed right after the stub, in the same 0xE50EB-upward padding run.
+TRAMPOLINE_COMMON_ADDR = STUB_ADDR + len(STUB)
+
+# Reached from the common game-over tail (E000:197C -- nine games in ten,
+# per the branch at E000:1919 on the NVRAM game counter [0x66D]). Records
+# 0x17, the index that tail's own stock mov would have written to [017D],
+# clears DRAWN_ADDR so the stub composes a fresh screen, points the
+# dispatcher at entry 25, and returns -- the same ret the stock tail took.
+TRAMPOLINE_COMMON_ASM = f"""BITS 16
+org 0x{TRAMPOLINE_COMMON_ADDR:04X}
+
+trampoline_common:
+        mov word [0x{SAVED_ADDR:X}], 0x17
+        mov byte [0x{DRAWN_ADDR:04X}], 0
+        mov word [0x17D], 25
+        ret
+"""
+
+TRAMPOLINE_COMMON = bytes([
+    0xC7, 0x06, 0xA9, 0x03, 0x17, 0x00,    # mov word [SAVED_ADDR], 0x17
+    0xC6, 0x06, 0xA8, 0x03, 0x00,          # mov byte [DRAWN_ADDR], 0
+    0xC7, 0x06, 0x7D, 0x01, 0x19, 0x00,    # mov word [0x17D], 25
+    0xC3,                                  # ret
+])
+
+# Packed right after trampoline_common.
+TRAMPOLINE_TENTH_ADDR = TRAMPOLINE_COMMON_ADDR + len(TRAMPOLINE_COMMON)
+
+# Reached from the tenth-game tail (E000:1962), the branch's other target.
+# Identical to trampoline_common except it records 0x01, the index that
+# tail's own stock mov would have written.
+TRAMPOLINE_TENTH_ASM = f"""BITS 16
+org 0x{TRAMPOLINE_TENTH_ADDR:04X}
+
+trampoline_tenth:
+        mov word [0x{SAVED_ADDR:X}], 0x01
+        mov byte [0x{DRAWN_ADDR:04X}], 0
+        mov word [0x17D], 25
+        ret
+"""
+
+TRAMPOLINE_TENTH = bytes([
+    0xC7, 0x06, 0xA9, 0x03, 0x01, 0x00,    # mov word [SAVED_ADDR], 0x01
+    0xC6, 0x06, 0xA8, 0x03, 0x00,          # mov byte [DRAWN_ADDR], 0
+    0xC7, 0x06, 0x7D, 0x01, 0x19, 0x00,    # mov word [0x17D], 25
+    0xC3,                                  # ret
+])
+
+
+def _jmp_near(from_offset, to_offset):
+    """A `jmp near` (3 bytes) plus 4 bytes of 0x90, filling a 7-byte hook
+    site. `from_offset`/`to_offset` are segment E000 offsets; the
+    displacement is relative to the end of the jmp itself."""
+    disp = (to_offset - (from_offset + 3)) & 0xFFFF
+    return bytes([0xE9, disp & 0xFF, disp >> 8, 0x90, 0x90, 0x90, 0x90])
+
+
+# Table entry 25 of the [0000:017D] sequence dispatcher, at E000:4F7C+2*25.
+# Stock holds 0x5022, a duplicate of entry 0 that stock firmware can never
+# index; the patch points it at the stub instead.
+TABLE_ENTRY_25_ADDR = 0xE4FAE
+TABLE_ENTRY_25_ORIGINAL = bytes([0x22, 0x50])
+TABLE_ENTRY_25_PATCHED = STUB_ADDR.to_bytes(2, 'little')
+
+# The two game-over tails, both `mov word ds:[0x17D], <index>` followed by
+# their own stock `ret` one instruction later (left untouched -- only the
+# mov itself is replaced).
+GAME_OVER_COMMON_ADDR = 0xE197C
+GAME_OVER_COMMON_ORIGINAL = bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, 0x17, 0x00])
+GAME_OVER_COMMON_PATCHED = _jmp_near(GAME_OVER_COMMON_ADDR - ROM_BASE, TRAMPOLINE_COMMON_ADDR)
+
+GAME_OVER_TENTH_ADDR = 0xE1962
+GAME_OVER_TENTH_ORIGINAL = bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, 0x01, 0x00])
+GAME_OVER_TENTH_PATCHED = _jmp_near(GAME_OVER_TENTH_ADDR - ROM_BASE, TRAMPOLINE_TENTH_ADDR)
+
+CAVES = (
+    (DIGITS_DRAW_ADDR, DIGITS_DRAW, "digits_draw"),
+    (SCORE_DIGITS_ADDR, SCORE_DIGITS, "score_digits"),
+    (PROMPT_RECORD_ADDR, PROMPT_RECORD, "PRESS START prompt record"),
+    (DRAW_SCREEN_ADDR, DRAW_SCREEN, "draw_screen"),
+    (ROM_BASE + STUB_ADDR, STUB, "hold stub"),
+    (ROM_BASE + TRAMPOLINE_COMMON_ADDR, TRAMPOLINE_COMMON, "common game-over trampoline"),
+    (ROM_BASE + TRAMPOLINE_TENTH_ADDR, TRAMPOLINE_TENTH, "tenth-game game-over trampoline"),
+)
+
+HOOKS = (
+    (TABLE_ENTRY_25_ADDR, TABLE_ENTRY_25_ORIGINAL, TABLE_ENTRY_25_PATCHED, "sequence table entry 25"),
+    (GAME_OVER_COMMON_ADDR, GAME_OVER_COMMON_ORIGINAL, GAME_OVER_COMMON_PATCHED, "common game-over tail"),
+    (GAME_OVER_TENTH_ADDR, GAME_OVER_TENTH_ORIGINAL, GAME_OVER_TENTH_PATCHED, "tenth-game game-over tail"),
+)
 
 
 def physical_to_file(addr):
