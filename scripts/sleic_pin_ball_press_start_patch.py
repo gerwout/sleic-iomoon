@@ -218,8 +218,95 @@ SCORE_DIGITS = bytes([
 
 
 # =============================================================================
-# Patching logic
+# The screen composer
 # =============================================================================
+
+# Data, not code: the eleven-glyph prompt record from the previous section,
+# placed after score_digits. Provisional, like the two addresses above it.
+PROMPT_RECORD_ADDR = SCORE_DIGITS_ADDR + len(SCORE_DIGITS)
+
+# Provisional; the cave's own layout is not settled yet and moves this.
+DRAW_SCREEN_ADDR = PROMPT_RECORD_ADDR + len(PROMPT_RECORD)
+
+# Takes no arguments; DS = 0 and CS = F000 on entry (the stub far-calls it).
+# Clears both display planes through F000:DEFC, which also sets ES = 0x6000,
+# then for each player 1..PLAYER_COUNT reads that player's block with
+# score_digits into WORKSPACE_ADDR and draws it with digits_draw at that
+# player's plane-1 slot, then draws PROMPT_RECORD twice with F000:550D, once
+# per plane. Far ret. The player index lives in BP, the one register neither
+# callee touches; the two four-word tables translate it into a block base and
+# a target slot without a multiply.
+DRAW_SCREEN_ASM = f"""BITS 16
+org 0x{DRAW_SCREEN_ADDR:04X}
+
+draw_screen:
+        call 0xF000:0xDEFC
+        mov bp, 1
+.loop:
+        mov al, [0x106]
+        xor ah, ah
+        cmp ax, bp
+        jb .prompt
+        mov bx, bp
+        dec bx
+        add bx, bx
+        mov bx, [cs:bx+block_table]
+        mov di, 0x{WORKSPACE_ADDR:04X}
+        call 0x{SCORE_DIGITS_ADDR:04X}
+        mov si, di
+        mov di, bp
+        dec di
+        add di, di
+        mov di, [cs:di+slot_table]
+        call 0x{DIGITS_DRAW_ADDR:04X}
+        inc bp
+        jmp .loop
+.prompt:
+        mov si, 0x{PROMPT_RECORD_ADDR & 0xFFFF:04X}
+        mov di, 0x712
+        call 0x550D
+        mov si, 0x{PROMPT_RECORD_ADDR & 0xFFFF:04X}
+        mov di, 0xF12
+        call 0x550D
+        retf
+
+block_table: dw 0x1E7, 0x209, 0x22B, 0x24D
+slot_table:  dw 0x410, 0x418, 0x510, 0x518
+"""
+
+DRAW_SCREEN = bytes([
+    0x9A, 0xFC, 0xDE, 0x00, 0xF0,         # call 0xF000:0xDEFC    ; clear buffer, ES=0x6000
+    0xBD, 0x01, 0x00,                     # mov bp, 1             ; player index, 1-based
+    0xA0, 0x06, 0x01,                     # .loop: mov al, [0x106]; PLAYER_COUNT
+    0x30, 0xE4,                           # xor ah, ah
+    0x39, 0xE8,                           # cmp ax, bp
+    0x72, 0x22,                           # jb .prompt            ; count < index -> done
+    0x89, 0xEB,                           # mov bx, bp
+    0x4B,                                 # dec bx
+    0x01, 0xDB,                           # add bx, bx            ; bx = (index-1)*2
+    0x2E, 0x8B, 0x9F, 0xA8, 0xE0,         # mov bx, [cs:bx+block_table]
+    0xBF, 0xA0, 0x03,                     # mov di, 0x3A0         ; WORKSPACE_ADDR
+    0xE8, 0xA3, 0xFF,                     # call 0xFE026          ; score_digits
+    0x89, 0xFE,                           # mov si, di            ; si = digit buffer
+    0x89, 0xEF,                           # mov di, bp
+    0x4F,                                 # dec di
+    0x01, 0xFF,                           # add di, di            ; di = (index-1)*2
+    0x2E, 0x8B, 0xBD, 0xB0, 0xE0,         # mov di, [cs:di+slot_table]
+    0xE8, 0x5F, 0xFF,                     # call 0xFDFF1          ; digits_draw
+    0x45,                                 # inc bp
+    0xEB, 0xD5,                           # jmp .loop
+    0xBE, 0x4A, 0xE0,                     # .prompt: mov si, 0xE04A ; PROMPT_RECORD
+    0xBF, 0x12, 0x07,                     # mov di, 0x712
+    0xE8, 0x6F, 0x74,                     # call 0x550D
+    0xBE, 0x4A, 0xE0,                     # mov si, 0xE04A
+    0xBF, 0x12, 0x0F,                     # mov di, 0xF12
+    0xE8, 0x66, 0x74,                     # call 0x550D
+    0xCB,                                 # retf
+    0xE7, 0x01, 0x09, 0x02, 0x2B, 0x02, 0x4D, 0x02,  # block_table: dw 0x1E7,0x209,0x22B,0x24D
+    0x10, 0x04, 0x18, 0x04, 0x10, 0x05, 0x18, 0x05,  # slot_table:  dw 0x410,0x418,0x510,0x518
+])
+
+
 
 def physical_to_file(addr):
     return addr - ROM_BASE

@@ -70,6 +70,19 @@ def test_prompt_record_is_eleven_glyph_pointers():
         ptr = int.from_bytes(m.PROMPT_RECORD[2+2*k:4+2*k], 'little')
         assert ptr == 0x85EB + 8*idx, f'glyph {k} ({ch!r}) points at {ptr:#06x}'
 
+def test_draw_screen_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.DRAW_SCREEN_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.DRAW_SCREEN)
+
+def test_draw_screen_uses_the_documented_slots():
+    m = load()
+    for off in (0x410, 0x418, 0x510, 0x518, 0x712):
+        assert off.to_bytes(2, 'little') in bytes(m.DRAW_SCREEN), f'{off:#05x} missing'
+
 if __name__ == '__main__':
     fails = 0
     for name, fn in sorted(globals().items()):
