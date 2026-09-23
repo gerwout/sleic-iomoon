@@ -185,7 +185,7 @@ def test_draw_screen_and_trampolines_share_the_count_snapshot():
     assert write_snapshot in bytes(m.TRAMPOLINE_COMMON), 'common trampoline does not snapshot [0x106]'
     assert write_snapshot in bytes(m.TRAMPOLINE_TENTH), 'tenth trampoline does not snapshot [0x106]'
 
-def test_patched_rom_differs_only_in_caves_and_hooks():
+def test_apply_patches_writes_nothing_outside_caves_and_hooks():
     m = load()
     stock = ROM.read_bytes()
     patched = m.apply_patches(stock)
