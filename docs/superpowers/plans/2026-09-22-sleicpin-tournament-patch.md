@@ -1035,8 +1035,7 @@ Expected: `FAIL` — `STUB_ASM` undefined.
 ```
 stub:   cmp byte [DRAWN_ADDR], 0
         jne poll                   ; already composed: just poll
-        lcall F000:DEFC            ; clear both planes
-        lcall F000:<draw_screen>   ; compose the screen once
+        lcall F000:<draw_screen>   ; compose the screen once; it clears first
         mov byte [DRAWN_ADDR], 1
         jmp hold
 poll:   lcall F000:0x54EF          ; pop one switch code, AL = 0 when empty
@@ -1199,6 +1198,10 @@ empty, so the length assertion fires before the loop can pass vacuously.
 Assign the F000 blobs from `0xFDFF0` upward, and the stub plus the game-over
 trampoline from `0xE50EB` upward. Re-assemble every blob with the real addresses
 substituted and confirm the `nasm` cross-checks still pass.
+
+While re-assembling, drop the stub's own `lcall F000:DEFC`: `draw_screen` opens
+with that same call, so the stub's is a second clear of the same buffer and only
+widens the window in which the panel can raster a blank screen.
 
 Then write the three hooks described above. Each trampoline's `jmp near`
 displacement is relative to the end of its own `jmp` — `E000:197F` for the common
