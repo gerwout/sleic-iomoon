@@ -136,6 +136,35 @@ def test_credit_gate_dispatches_on_the_patch_own_pending_index():
     assert bytes([0x83, 0x3E, 0x7D, 0x01, 0x19]) in bytes(m.TRAMPOLINE_CREDIT_GATE), \
         'missing cmp word [0x17d], 25'
 
+def test_trampoline_credit_gate_entrance_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.TRAMPOLINE_CREDIT_GATE_ENTRANCE_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.TRAMPOLINE_CREDIT_GATE_ENTRANCE)
+
+def test_credit_gate_entrance_trampoline_jumps_resolve_correctly():
+    m = load()
+    b = bytes(m.TRAMPOLINE_CREDIT_GATE_ENTRANCE)
+    addr = m.TRAMPOLINE_CREDIT_GATE_ENTRANCE_ADDR
+    assert b[14] == 0xE9, 'byte 14 is not the leave-the-loop jmp opcode'
+    rel1 = int.from_bytes(b[15:17], 'little')
+    target1 = (addr + 17 + rel1) & 0xFFFF
+    assert target1 == 0x106, f'leave-the-loop jmp targets {target1:#06x}, not 0x106'
+    assert b[17] == 0xE9, 'byte 17 is not the continue jmp opcode'
+    rel2 = int.from_bytes(b[18:20], 'little')
+    target2 = (addr + 20 + rel2) & 0xFFFF
+    assert target2 == 0xE2, f'continue jmp targets {target2:#06x}, not 0xE2'
+
+def test_credit_gate_entrance_dispatches_on_the_patch_own_pending_index():
+    m = load()
+    asm = m.TRAMPOLINE_CREDIT_GATE_ENTRANCE_ASM.lower()
+    assert '0x17d' in asm and '25' in asm, \
+        'trampoline does not test the patch spare sequence index (25)'
+    assert bytes([0x83, 0x3E, 0x7D, 0x01, 0x19]) in bytes(m.TRAMPOLINE_CREDIT_GATE_ENTRANCE), \
+        'missing cmp word [0x17d], 25'
+
 def test_stub_polls_the_switch_queue_far():
     m = load()
     assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.STUB), 'no far call to F000:54EF'
@@ -156,7 +185,8 @@ def test_workspace_is_above_the_vector_table():
 def test_hooks_are_present_and_match_the_stock_rom():
     m = load()
     data = ROM.read_bytes()
-    assert len(m.HOOKS) == 4, 'expected the table entry, both game-over tails and the credit gate'
+    assert len(m.HOOKS) == 5, \
+        'expected the table entry, both game-over tails and both credit gates'
     for addr, original, patched, label in m.HOOKS:
         off = m.physical_to_file(addr)
         assert data[off:off+len(original)] == original, f'{label}: stock bytes differ'
@@ -190,6 +220,15 @@ def test_credit_gate_hook_matches_stock_bytes():
         'E000:00EC is not the stock credit test; wrong ROM revision?'
     assert m.GAME_OVER_CREDIT_GATE_ORIGINAL == expected
 
+def test_credit_gate_entrance_hook_matches_stock_bytes():
+    m = load()
+    data = ROM.read_bytes()
+    expected = bytes([0xA0, 0x00, 0x01, 0x22, 0xC0, 0x74, 0x03, 0xE9, 0x24, 0x00])
+    off = m.physical_to_file(m.GAME_OVER_CREDIT_GATE_ENTRANCE_ADDR)
+    assert data[off:off+10] == expected, \
+        'E000:00D8 is not the stock credit test; wrong ROM revision?'
+    assert m.GAME_OVER_CREDIT_GATE_ENTRANCE_ORIGINAL == expected
+
 def test_credit_gate_hook_leaves_its_jump_targets_untouched():
     m = load()
     data = ROM.read_bytes()
@@ -200,6 +239,17 @@ def test_credit_gate_hook_leaves_its_jump_targets_untouched():
         'E000:00F6 is not call 0x4F4E; the trampoline would dispatch nowhere'
     # E000:0106, the stock "leave the loop" target, must still be reachable
     # as ordinary code (the replaced range's own stock jmp landed there).
+    off_106 = m.physical_to_file(0xE0106)
+    assert off_106 < len(data), 'E000:0106 falls outside the ROM'
+
+def test_credit_gate_entrance_hook_leaves_its_jump_targets_untouched():
+    m = load()
+    data = ROM.read_bytes()
+    # E000:00E2, the fall-back-into-the-loop target, sits right after the
+    # replaced range and must still be the stock `mov al, 0x70`.
+    off_e2 = m.physical_to_file(0xE00E2)
+    assert data[off_e2:off_e2+2] == bytes([0xB0, 0x70]), \
+        'E000:00E2 is not mov al, 0x70; the trampoline would fall back nowhere'
     off_106 = m.physical_to_file(0xE0106)
     assert off_106 < len(data), 'E000:0106 falls outside the ROM'
 

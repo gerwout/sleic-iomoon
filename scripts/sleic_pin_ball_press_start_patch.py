@@ -14,12 +14,14 @@ Usage:
 
 Two padding regions hold the payload, both erased to `0xFF` in the stock ROM:
 `0xE50EB`-`0xEFFFF` (segment E000, the hold stub, its two game-over
-trampolines and the attract loop's credit-gate trampoline) and
+trampolines and the attract loop's two credit-gate trampolines) and
 `0xFDFF0`-`0xFFE76` (segment F000, the digit blitter, the per-player digit
-reader, the `PRESS START` string record and the screen composer). Four hooks
+reader, the `PRESS START` string record and the screen composer). Five hooks
 wire the payload into the sequence table, the two game-over paths, and the
-attract loop's credit test -- the last of which otherwise skips the score
-screen whenever a credit is standing, which free play always leaves true.
+attract loop's two identical credit tests -- both of which otherwise skip
+the score screen whenever a credit is standing, which free play always
+leaves true. The loop's only entrance is the first test; the second is
+reachable only from inside the loop.
 """
 
 import argparse
@@ -37,7 +39,7 @@ ROM_SIZE = 0x20000
 # The images this accepts: stock V1.1, plus every patched variant.
 V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
-    0xeff46b81,   # + PRESS START
+    0xcd1edb86,   # + PRESS START
 )
 
 # CAVES and HOOKS are assembled at the end of this file, once every blob and
@@ -472,15 +474,23 @@ TRAMPOLINE_TENTH = bytes([
 # The attract loop's credit gate
 # =============================================================================
 
-# Packed right after trampoline_tenth. Reached from the attract/credit-wait
-# loop (E000:00EC) in place of the stock credit test, which the loop's one
-# call site for the game-over dispatcher (E000:00F6) never reaches while a
-# credit is standing -- see GAME_OVER_CREDIT_GATE below. Entry 25 of the
-# [0000:017D] sequence dispatcher is the patch's own spare slot (STUB_ADDR),
-# so a pending score screen is recognised the same way the stub itself is
-# entered: [0x17D] == 25. When it is, the screen must keep dispatching
-# regardless of credits; otherwise this reproduces the stock test byte for
-# byte in behaviour.
+# The attract/credit-wait loop contains two byte-identical credit tests
+# (E000:00D8 and E000:00EC); both gate reaching the dispatcher call at
+# E000:00F6 and both are hooked below. Entry 25 of the [0000:017D] sequence
+# dispatcher is the patch's own spare slot (STUB_ADDR), so a pending score
+# screen is recognised the same way the stub itself is entered: [0x17D] ==
+# 25. While it holds, both trampolines keep the machine in the loop instead
+# of letting it leave to start a game; E000:4F4E itself early-returns
+# whenever [0x4DF], [0x27E] or [0x2C1] is non-zero, none of which is cleared
+# by re-entering the loop, so a coin cannot start a game in that window
+# where stock would have allowed it.
+
+# Packed right after trampoline_tenth. Reached from the loop's second credit
+# test (E000:00EC), which the loop's one call site for the game-over
+# dispatcher (E000:00F6) never reaches while a credit is standing -- see
+# GAME_OVER_CREDIT_GATE below. When [0x17D] == 25 the screen must keep
+# dispatching regardless of credits; otherwise this reproduces the stock
+# test byte for byte in behaviour.
 TRAMPOLINE_CREDIT_GATE_ADDR = TRAMPOLINE_TENTH_ADDR + len(TRAMPOLINE_TENTH)
 
 TRAMPOLINE_CREDIT_GATE_ASM = f"""BITS 16
@@ -505,6 +515,37 @@ TRAMPOLINE_CREDIT_GATE = bytes([
     0x74, 0x03,                            # je dispatch
     0xE9, 0xA2, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
     0xE9, 0x8F, 0xAF,                      # dispatch: jmp 0x00F6   ; the dispatcher call
+])
+
+# Packed right after trampoline_credit_gate. Reached from the loop's first
+# credit test (E000:00D8), its only entrance -- reachable from outside the
+# loop, whereas E000:00E9 (the second test's own site) is reachable only
+# from inside it. Falls back into the loop body at 0x00E2 rather than
+# dispatching directly, matching what the stock test itself did there.
+TRAMPOLINE_CREDIT_GATE_ENTRANCE_ADDR = TRAMPOLINE_CREDIT_GATE_ADDR + len(TRAMPOLINE_CREDIT_GATE)
+
+TRAMPOLINE_CREDIT_GATE_ENTRANCE_ASM = f"""BITS 16
+org 0x{TRAMPOLINE_CREDIT_GATE_ENTRANCE_ADDR:04X}
+
+trampoline_credit_gate_entrance:
+        cmp word [0x17d], 25
+        je continue
+        mov al, [0x100]
+        and al, al
+        je continue
+        jmp 0x106
+continue:
+        jmp 0x00E2
+"""
+
+TRAMPOLINE_CREDIT_GATE_ENTRANCE = bytes([
+    0x83, 0x3E, 0x7D, 0x01, 0x19,          # cmp word [0x17D], 25   ; our screen pending?
+    0x74, 0x0A,                            # je continue
+    0xA0, 0x00, 0x01,                      # mov al, [0x100]        ; stock test from here
+    0x20, 0xC0,                            # and al, al
+    0x74, 0x03,                            # je continue
+    0xE9, 0x8E, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
+    0xE9, 0x67, 0xAF,                      # continue: jmp 0x00E2   ; screen pending or no credits
 ])
 
 
@@ -534,14 +575,23 @@ GAME_OVER_TENTH_ADDR = 0xE1962
 GAME_OVER_TENTH_ORIGINAL = bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, 0x01, 0x00])
 GAME_OVER_TENTH_PATCHED = _jmp_near(GAME_OVER_TENTH_ADDR - ROM_BASE, TRAMPOLINE_TENTH_ADDR)
 
-# The attract/credit-wait loop's credit test (E000:00EC-00F5), which stock
-# leaves the loop (`jmp 0x106`) rather than dispatch (`call 0x4F4E` at
+# The attract/credit-wait loop's second credit test (E000:00EC-00F5), which
+# stock leaves the loop (`jmp 0x106`) rather than dispatch (`call 0x4F4E` at
 # E000:00F6, outside this range and untouched) whenever a credit is
 # standing. `jmp near` (3 bytes) + 7 bytes of 0x90 fills the 10-byte site.
 GAME_OVER_CREDIT_GATE_ADDR = 0xE00EC
 GAME_OVER_CREDIT_GATE_ORIGINAL = bytes([0xA0, 0x00, 0x01, 0x22, 0xC0, 0x74, 0x03, 0xE9, 0x10, 0x00])
 GAME_OVER_CREDIT_GATE_PATCHED = _jmp_near(
     GAME_OVER_CREDIT_GATE_ADDR - ROM_BASE, TRAMPOLINE_CREDIT_GATE_ADDR, pad=7)
+
+# The loop's first credit test (E000:00D8-00E1), byte-identical to the one
+# above -- and, unlike it, the loop's only entrance from outside. Falls
+# through to 0x00E2 (the next stock instruction, left untouched) rather
+# than dispatching, exactly as GAME_OVER_CREDIT_GATE does at 0x00EC.
+GAME_OVER_CREDIT_GATE_ENTRANCE_ADDR = 0xE00D8
+GAME_OVER_CREDIT_GATE_ENTRANCE_ORIGINAL = bytes([0xA0, 0x00, 0x01, 0x22, 0xC0, 0x74, 0x03, 0xE9, 0x24, 0x00])
+GAME_OVER_CREDIT_GATE_ENTRANCE_PATCHED = _jmp_near(
+    GAME_OVER_CREDIT_GATE_ENTRANCE_ADDR - ROM_BASE, TRAMPOLINE_CREDIT_GATE_ENTRANCE_ADDR, pad=7)
 
 CAVES = (
     (DIGITS_DRAW_ADDR, DIGITS_DRAW, "digits_draw"),
@@ -552,12 +602,16 @@ CAVES = (
     (ROM_BASE + TRAMPOLINE_COMMON_ADDR, TRAMPOLINE_COMMON, "common game-over trampoline"),
     (ROM_BASE + TRAMPOLINE_TENTH_ADDR, TRAMPOLINE_TENTH, "tenth-game game-over trampoline"),
     (ROM_BASE + TRAMPOLINE_CREDIT_GATE_ADDR, TRAMPOLINE_CREDIT_GATE, "credit-gate trampoline"),
+    (ROM_BASE + TRAMPOLINE_CREDIT_GATE_ENTRANCE_ADDR, TRAMPOLINE_CREDIT_GATE_ENTRANCE,
+     "credit-gate entrance trampoline"),
 )
 
 HOOKS = (
     (TABLE_ENTRY_25_ADDR, TABLE_ENTRY_25_ORIGINAL, TABLE_ENTRY_25_PATCHED, "sequence table entry 25"),
     (GAME_OVER_COMMON_ADDR, GAME_OVER_COMMON_ORIGINAL, GAME_OVER_COMMON_PATCHED, "common game-over tail"),
     (GAME_OVER_TENTH_ADDR, GAME_OVER_TENTH_ORIGINAL, GAME_OVER_TENTH_PATCHED, "tenth-game game-over tail"),
+    (GAME_OVER_CREDIT_GATE_ENTRANCE_ADDR, GAME_OVER_CREDIT_GATE_ENTRANCE_ORIGINAL,
+     GAME_OVER_CREDIT_GATE_ENTRANCE_PATCHED, "attract loop credit gate entrance"),
     (GAME_OVER_CREDIT_GATE_ADDR, GAME_OVER_CREDIT_GATE_ORIGINAL, GAME_OVER_CREDIT_GATE_PATCHED,
      "attract loop credit gate"),
 )
