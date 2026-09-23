@@ -32,9 +32,10 @@ from pathlib import Path
 
 ROM_BASE = 0xE0000
 ROM_SIZE = 0x20000
-# The images this accepts: stock V1.1.
+# The images this accepts: stock V1.1, plus every patched variant.
 V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
+    0xddb29e2e,   # + PRESS START
 )
 
 # CAVES and HOOKS are assembled at the end of this file, once every blob and
@@ -145,13 +146,13 @@ PROMPT_RECORD = (len(PROMPT_TEXT).to_bytes(2, 'little') +
 # Segment-0 workspace and the per-player score digit reader
 # =============================================================================
 
-# The whole patch's scratch RAM: 8 bytes of digit buffer, then 1 byte for the
-# stub's DRAWN flag. Segment 0 below 0x100 is the interrupt vector table,
-# copied from F000:FEF0 at boot, so the workspace must sit above it; nothing
-# initialises segment 0 above 0x100 at power-on either way. Claimed from the
-# 0x377-0x3E7 run (113 bytes, the largest of four measured candidate runs
-# that no direct-address instruction in the image reaches), 9 bytes well
-# inside it.
+# The whole patch's scratch RAM: 8 bytes of digit buffer, 1 byte for the
+# stub's DRAWN flag, then a 2-byte SAVED_ADDR word. Segment 0 below 0x100 is
+# the interrupt vector table, copied from F000:FEF0 at boot, so the
+# workspace must sit above it; nothing initialises segment 0 above 0x100 at
+# power-on either way. Claimed from the 0x377-0x3E7 run (113 bytes, the
+# largest of four measured candidate runs that no direct-address
+# instruction in the image reaches), 11 bytes (0x3A0-0x3AA) well inside it.
 WORKSPACE_ADDR = 0x3A0
 DRAWN_ADDR = WORKSPACE_ADDR + 8
 
@@ -495,7 +496,8 @@ def physical_to_file(addr):
 def validate_rom(rom_data, any_version=False):
     crc = zlib.crc32(rom_data)
     if crc not in V11_FAMILY_CRC32 and not any_version:
-        print(f"  ERROR: CRC32 {crc:08x} is not V1.1's sp03-1_1.rom ({V11_FAMILY_CRC32[0]:08x}).\n"
+        print(f"  ERROR: CRC32 {crc:08x} is not V1.1's sp03-1_1.rom ({V11_FAMILY_CRC32[0]:08x}),\n"
+              f"  nor that image with this patch already applied.\n"
               f"  This patch is verified on V1.1 only -- pass --any-version to force it.",
               file=sys.stderr)
         return False
