@@ -35,7 +35,7 @@ ROM_SIZE = 0x20000
 # The images this accepts: stock V1.1, plus every patched variant.
 V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
-    0xddb29e2e,   # + PRESS START
+    0x40fdc030,   # + PRESS START
 )
 
 # CAVES and HOOKS are assembled at the end of this file, once every blob and
@@ -344,14 +344,16 @@ STUB_ADDR = 0x50EB
 # step access is DS-relative). Not yet drawn (DRAWN_ADDR == 0): far-calls
 # draw_screen, which clears both display planes itself and composes the
 # score screen, sets DRAWN_ADDR, then falls into holding. Already drawn:
-# polls the switch FIFO once per tick
-# and otherwise just holds -- a `ret` with [0x4DF] set to 0 so the
-# dispatcher re-enters immediately on the next tick and [017D] never
-# advances past 25. On seeing START (code 5) it drains the FIFO until empty
-# (a real contact reports twice with no debounce, so a duplicate START must
-# not leak into the next screen), restores [017D] from SAVED_ADDR and
-# returns, handing the very next tick to whichever step the game would have
-# reached. Clobbers AX; DS/ES/other registers not touched.
+# peeks the FIFO head through the shared read pointer [0x4E5] rather than
+# popping it -- F000:54EF and the attract switch handler (E000:02E1) share
+# that pointer, and popping a non-START code here would swallow a coin or
+# Test press before 02E1 ever saw it. A head of anything but START (5,
+# including an empty queue) just holds. On seeing START at the head, it
+# pops that one code for real, then drains the FIFO until empty (a real
+# contact reports twice with no debounce, so a duplicate START must not
+# leak into the next screen), restores [017D] from SAVED_ADDR and returns,
+# handing the very next tick to whichever step the game would have reached.
+# Clobbers AX and SI; DS/ES/other registers not touched.
 STUB_ASM = f"""BITS 16
 org 0x{STUB_ADDR:04X}
 
@@ -362,11 +364,10 @@ stub:
         mov byte [0x{DRAWN_ADDR:04X}], 1
         jmp hold
 poll:
+        mov si, [0x4E5]
+        cmp byte [si], 5
+        jne hold
         call 0xF000:0x54EF
-        or al, al
-        je hold
-        cmp al, 5
-        jne poll
 drain:
         call 0xF000:0x54EF
         or al, al
@@ -384,12 +385,11 @@ STUB = bytes([
     0x75, 0x0C,                            # jne poll                ; already composed
     0x9A, 0x61, 0xE0, 0x00, 0xF0,          # call 0xF000:0xE061      ; draw_screen (clears both planes)
     0xC6, 0x06, 0xA8, 0x03, 0x01,          # mov byte [DRAWN_ADDR], 1
-    0xEB, 0x1D,                            # jmp hold
-    0x9A, 0xEF, 0x54, 0x00, 0xF0,          # poll: call 0xF000:0x54EF ; pop a switch code
-    0x08, 0xC0,                            # or al, al
-    0x74, 0x14,                            # je hold                 ; empty: keep holding
-    0x3C, 0x05,                            # cmp al, 5               ; START
-    0x75, 0xF3,                            # jne poll                ; discard and keep draining
+    0xEB, 0x1E,                            # jmp hold
+    0x8B, 0x36, 0xE5, 0x04,                # poll: mov si, [0x4E5]   ; FIFO read pointer
+    0x80, 0x3C, 0x05,                      # cmp byte [si], 5        ; peek, don't pop
+    0x75, 0x15,                            # jne hold                ; not START: leave it queued
+    0x9A, 0xEF, 0x54, 0x00, 0xF0,          # call 0xF000:0x54EF      ; it is START: pop it for real
     0x9A, 0xEF, 0x54, 0x00, 0xF0,          # drain: call 0xF000:0x54EF ; scrub duplicate STARTs
     0x08, 0xC0,                            # or al, al
     0x75, 0xF7,                            # jne drain
