@@ -497,3 +497,108 @@ left** and so the `10^6` place, which makes `cmp byte [0213],1 / JB` a score
 threshold: offer the continue only to a player who has scored at least one
 million. `E000:0AC9`'s `cmp byte [0173],0 / JNE ret` is the global
 enable in front of all four.
+
+## The sequence dispatcher and what gates it
+
+`E000:4F4E` is the only code that reads `[0000:017D]`, and it has **exactly one
+call site in the whole image**: the near `call` at `E000:00F6`, inside the
+attract/credit-wait loop. Nothing in either interrupt handler reaches it.
+
+```
+E000:4F4E  3e833edf0400  cmp word ds:[0x4df], 0   ; a delay pending?
+E000:4F54  7401          je 0x4f57
+E000:4F56  c3            ret
+E000:4F57  3e803e7e0200  cmp byte ds:[0x27e], 0   ; a [0281] handler armed?
+E000:4F5D  7401          je 0x4f60
+E000:4F5F  c3            ret
+E000:4F60  3e803ec10200  cmp byte ds:[0x2c1], 0
+E000:4F66  7401          je 0x4f69
+E000:4F68  c3            ret
+E000:4F69  be7c4f        mov si, 0x4f7c           ; the table base
+E000:4F6C  3ea17d01      mov ax, ds:[0x17d]
+E000:4F70  ba0200        mov dx, 2
+E000:4F73  f7e2          mul dx
+E000:4F75  03f0          add si, ax
+E000:4F77  2e8b04        mov ax, cs:[si]
+E000:4F7A  ffe0          jmp ax                   ; near, so a step ends in ret
+```
+
+There is **no bounds check**. The table runs to entry 25 at `E000:4FAE`, with code
+beginning at `E000:4FB0` where entries 1 and 13 jump, and the advance tail wraps
+at `0x18` — so incrementing never produces 25 and, of the six writes to `[017D]`
+in the image, none produces it either. **Entry 25 is unreachable in stock
+firmware**; it holds `0x5022`, a duplicate of entry 0.
+
+`[0000:04DF]` is a **tick countdown**, not a dwell: the vector-8 timer handler
+decrements it once per interrupt and saturates at zero,
+
+```
+F000:DFB1  a1df04    mov ax, [0x4df]
+F000:DFB4  23c0      and ax, ax
+F000:DFB6  7404      je 0xdfbc
+F000:DFB8  48        dec ax
+F000:DFB9  a3df04    mov [0x4df], ax
+```
+
+so a step writing `N` means "wait N ticks before the next step", and `0` means
+"advance on the dispatcher's next call". Stock step 23 writes `0x64`.
+
+### The sequence runs only when no credits are standing
+
+The attract loop tests the credit count **twice**, with byte-identical code, and
+leaves the loop on either test when a credit is standing:
+
+```
+E000:00D5  e88b13    call 0x1463    ; recompute [0x100] from the store
+E000:00D8  a0 00 01  mov al, [0x100]      \ the loop's only entrance
+E000:00DB  22 c0     and al, al           |
+E000:00DD  74 03     je 0xe2              |
+E000:00DF  e9 24 00  jmp 0x106            / credits standing: leave
+E000:00E2  b070      mov al, 0x70
+E000:00E9  e87713    call 0x1463
+E000:00EC  a0 00 01  mov al, [0x100]      \ the same test again
+E000:00EF  22 c0     and al, al           |
+E000:00F1  74 03     je 0xf6              |
+E000:00F3  e9 10 00  jmp 0x106            / credits standing: leave
+E000:00F6  e8554e    call 0x4f4e          ; the dispatcher
+```
+
+`0x00E9` is reachable only from inside the loop (`0x00FF`, `0x0104`) or by
+falling through `0x00E2`, so **every entrance to the loop passes `0x00D8`**. The
+consequence is that the whole end-of-game screen sequence — `LOTERIA` included —
+runs only while the credit count is zero. A machine with a credit standing goes
+straight from game over to the next game.
+
+### The player count does not survive the game-end sequence
+
+`[0000:0106]` is zeroed **twice** inside the sequence that reaches the screen
+steps, at `E000:09FA` and `E000:0A06`, and again at `E000:00B8` on the attract
+re-entry. `E000:1919` — which selects the screen step — is called from
+`E000:09C9`, well before those writes, and the dispatcher cannot run until the
+whole sequence returns at `E000:0A1D`. So the number of players in the finished
+game is **not readable** from `[0106]` by anything the sequence dispatches; it
+has to be captured earlier.
+
+The scores themselves do survive: `E000:08CA` calls the block save at `E000:18CD`
+unconditionally before the ball and player advance, and the game-end tail clears
+only `0x1D8`-`0x1E6`, which is the live block, not the four saved ones.
+
+## Boot initialisation of segment 0
+
+Boot writes only `0x0000`-`0x00FE` of segment 0, and that block is the
+**interrupt vector table**, copied byte by byte from a ROM table at `F000:FEF0`:
+
+```
+F000:FE98  bef0fe    mov si, 0xfef0
+F000:FE9B  b9ff00    mov cx, 0xff
+F000:FE9F  bf0000    mov di, 0
+F000:FEA2  2eac      lodsb cs:[si]
+F000:FEA4  aa        stosb es:[di]
+F000:FEA5  e2fb      loop 0xfea2
+F000:FEA7  ea000000e0 ljmp E000:0000
+```
+
+Every entry is `F000:FFF0`, the reset vector, except vector 2 at `F000:DF20` and
+vector 8 at `F000:DF7F`. Nothing above `0x00FE` is initialised at power-on, so a
+work-RAM byte in that region holds whatever the RAM came up with until the
+firmware writes it.
