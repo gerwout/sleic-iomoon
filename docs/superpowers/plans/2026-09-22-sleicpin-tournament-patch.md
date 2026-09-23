@@ -676,8 +676,9 @@ git commit -m "scripts: the Pin-Ball patch's digit blitter and PRESS START recor
   segment 0; writes eight digit values `0`-`9` **most significant first**, with
   leading zeros replaced by `0xFF` to mean "draw nothing". Also produces
   `WORKSPACE_ADDR`, the single segment-0 scratch region this patch owns: 8 bytes
-  of digit buffer plus 1 byte for the stub's `DRAWN` flag, so `DRAWN_ADDR` is
-  `WORKSPACE_ADDR + 8`
+  of digit buffer plus `DRAWN_ADDR = WORKSPACE_ADDR + 8`. Task 10 extends the
+  region by a word, `SAVED_ADDR = WORKSPACE_ADDR + 9`, so the whole claim is 11
+  bytes
 
 **No divide loop.** The score is already eight unpacked decimal digits in
 memory, so this is a reversing copy with leading-zero suppression, not a
@@ -685,8 +686,8 @@ binary-to-decimal conversion. The digit layout and the block table it sits in
 are in "Per-player score storage" in
 `research/sleicpin_disasm/sleicpin_endgame.md`.
 
-**The workspace.** This patch needs 9 contiguous bytes of segment-0 RAM and must
-claim them once, here, for every later task to use. Boot initialises segment 0
+**The workspace.** This patch needs 11 contiguous bytes of segment-0 RAM and
+must claim them once, here, for every later task to use. Boot initialises segment 0
 only from `0x0000` to `0x00FE`, and that block is the **interrupt vector table**
 (255 bytes copied from `F000:FEF0`: every entry `F000:FFF0` except vector 2 at
 `F000:DF20` and vector 8 at `F000:DF7F`), so the workspace must sit above
@@ -701,6 +702,10 @@ well inside one of them and say in a comment which run it came from. Absence of 
 direct reference is not proof the firmware never reaches the byte through an
 index register — the per-player score blocks themselves are reached that way — so
 record the choice as an unreferenced region, not a free one.
+
+The two bytes past the digit buffer are the stub's `DRAWN` flag and the word in
+which the game-over trampolines record which sequence step the game would have
+gone to, so the stub can hand control back to it.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -854,8 +859,11 @@ git commit -m "scripts: the Pin-Ball patch's score-screen composer"
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Task 9's `draw_screen` (in the F000 cave) and Task 8's
-  `DRAWN_ADDR` (= `WORKSPACE_ADDR + 8`)
+- Consumes: Task 9's `draw_screen` (in the F000 cave) and Task 8's `DRAWN_ADDR`
+  (= `WORKSPACE_ADDR + 8`)
+- Produces, besides the stub: `SAVED_ADDR = WORKSPACE_ADDR + 9`, a word. Task 8
+  claimed the workspace but not this field, so define it here beside the stub
+  that reads it
 - Produces: `STUB_ASM`/`STUB` and `STUB_ADDR`, a routine in **segment E000**
   reached as entry **25** of the `[0000:017D]` sequence table
 
@@ -903,18 +911,57 @@ That gives the patch a clean separation no state flag can match:
 | a real game ends | **25** | the patch's stub |
 | attract's free-run | 23 | stock step 23, untouched |
 
-`E000:196A` is the game-over path: it bumps an NVRAM audit byte
-(`inc byte es:[0x66d]` with `ES = 0x1000`), far-calls `F000:002C`, and then sets
-`[017D] = 0x17` to jump the sequence to the LOTERIA screen. Redirecting **that
-write** to 25 is what routes a finished game to the stub, while attract — which
-free-runs the whole table on a ~5760-frame period and holds step 23 for about 200
-frames each lap — reaches only the stock entry. The screen therefore **cannot**
-appear in attract, structurally, rather than by a guard that has to be right.
+**The game-over path has two tails, and both must be hooked.** `E000:1919` is
+called from the game-end sequence at `E000:09C9`, immediately before `[0103]` is
+cleared, and it branches on a game counter held in NVRAM:
+
+```
+E000:1919  e822f1        call 0xa3e
+E000:191C  b80010        mov ax, 0x1000          ; ES = the NVRAM segment
+E000:191F  8ec0          mov es, ax
+E000:1921  26803e6d060a  cmp byte es:[0x66d], 0xa
+E000:1927  7303          jae 0x192c
+E000:1929  e90900        jmp 0x1935
+E000:192C  3ec6067101ff  mov byte [0x171], 0xff  ;   >= 10 games
+E000:1932  e90600        jmp 0x193b
+E000:1935  3ec606710100  mov byte [0x171], 0     ;   < 10 games
+E000:193B  9a5c3600f0    lcall F000:365C
+E000:1940  3e803e710100  cmp byte [0x171], 0
+E000:1946  7422          je 0x196a
+```
+
+so a game takes **one of two tails**, each a 7-byte `mov word ds:[0x17d], imm`
+followed by `ret`:
+
+| tail | reached when | stock bytes | sets |
+|---|---|---|---|
+| `E000:197C` | `[0x66D] < 10` (nine games in ten) | `3e c7 06 7d 01 17 00` | `[017D] = 23` |
+| `E000:1962` | `[0x66D] >= 10` (every tenth game) | `3e c7 06 7d 01 01 00` | `[017D] = 1` |
+
+`E000:196A`, the first tail, also increments `[0x66D]`; the second resets it to 0
+and does extra bookkeeping first. Hooking only the common tail would skip the
+score screen on **one game in ten**, so the patch hooks both.
+
+Each trampoline records the index its tail would have written, points the
+sequence at 25, clears the `DRAWN` flag, and returns:
+
+```
+        mov word [SAVED_ADDR], <23 or 1>
+        mov word [0x17d], 25
+        mov byte [DRAWN_ADDR], 0
+        ret
+```
+
+Attract free-runs the whole table on a ~5760-frame period and holds step 23 for
+about 200 frames each lap, but nothing in stock firmware ever writes 25, so the
+screen **cannot** appear in attract — structurally, rather than by a guard that
+has to be right.
 
 Holding is a `ret` that skips the advance tail: `[017D]` stays 25 and the
-dispatcher re-enters the stub next tick. Releasing sets `[017D] = 23` and jumps
-to `0x5090`, so the stock step 23 draws LOTERIA and its own tail advances 23 to
-24 exactly as it would have.
+dispatcher re-enters the stub next tick. **Releasing writes `SAVED_ADDR` back
+into `[017D]` and returns**, so the very next tick runs exactly the step the game
+would have run, whichever tail it came from. The stub therefore never needs to
+jump into another step's code.
 
 The stub must be in segment E000 because the table entry is a near offset there;
 it lives at `E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of
@@ -941,11 +988,14 @@ F000:550C  cb           retf                   ;   and return with AL = 0
 So it needs `DS = 0`, clobbers `AX` and `SI`, returns `AL = 0` on an empty queue,
 and is safe to call in a loop — which is what the drain below does.
 
-**The one flag.** The stub is re-entered every tick while holding, so it needs to
+**The flags.** The stub is re-entered every tick while holding, so it needs to
 know whether it has already drawn — redrawing would mean clearing and recomposing
-the buffer under the panel's raster. `DRAWN_ADDR` is `WORKSPACE_ADDR + 8` from
-Task 8, and the game-over trampoline writes it to 0 immediately before the stub
-can ever run, so its power-on value is unreachable.
+the buffer under the panel's raster. `DRAWN_ADDR` is `WORKSPACE_ADDR + 8` and
+`SAVED_ADDR` is `WORKSPACE_ADDR + 9`, which this task defines, and a game-over
+trampoline writes both immediately before the stub can ever run, so their
+power-on values are unreachable. With `WORKSPACE_ADDR = 0x3A0` the claim is
+`0x3A0`-`0x3AA`, and no direct-address instruction in the image references
+`0x39F`-`0x3AC`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -962,12 +1012,12 @@ def test_stub_polls_the_switch_queue_far():
     m = load()
     assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.STUB), 'no far call to F000:54EF'
 
-def test_stub_hands_back_to_the_stock_step_23():
+def test_stub_hands_back_to_the_saved_step():
     m = load()
     asm = m.STUB_ASM.lower()
-    # the release path restores index 23 and rejoins the stock step
     assert '0x17d' in asm, 'stub never writes the sequence index'
-    assert '0x5090' in asm, 'stub never rejoins the stock step 23'
+    assert hex(m.SAVED_ADDR) in asm, 'stub never reads the saved step'
+    assert '0x5090' not in asm, 'stub must not hard-code step 23; it restores the saved step'
     assert '0x50d5' not in asm, 'stub must not jump to the advance tail itself'
 
 def test_workspace_is_above_the_vector_table():
@@ -997,8 +1047,9 @@ poll:   lcall F000:0x54EF          ; pop one switch code, AL = 0 when empty
 drain:  lcall F000:0x54EF          ; scrub duplicate START codes before moving on
         or al, al
         jne drain
-        mov word [0x17d], 0x17     ; hand the sequence back to the stock step 23
-        jmp 0x5090                 ;   whose own tail advances 23 -> 24
+        mov ax, [SAVED_ADDR]       ; the step this game would have gone to
+        mov word [0x17d], ax       ;   hand the sequence back to it
+        ret                        ;   the dispatcher runs it on the next tick
 hold:   mov word [0x4df], <dwell>  ; this step's dwell in ticks
         ret                        ; [017D] still 25: the stub runs again
 ```
@@ -1038,16 +1089,24 @@ git commit -m "scripts: the Pin-Ball patch's hold stub and START poll"
 - Consumes: every earlier Phase 2 task
 - Produces: the final `CAVES` and `HOOKS` tuples; a complete, applicable patch
 
-**Two hooks, both tiny.**
+**Three hooks, all tiny.**
 
 1. **Table entry 25**, at `E000:4FAE`, reads `22 50` (`0x5022`, a duplicate of
    entry 0 that stock firmware can never index). The patch writes the stub's
    offset there.
-2. **The game-over redirect**, at `E000:197C`, is `3e c7 06 7d 01 17 00` —
-   `mov word ds:[0x17d], 0x17` — followed by `ret` at `E000:1983`. The patch
-   replaces those seven bytes with a `jmp near` to a trampoline plus `0x90`
-   padding. The trampoline sets `[017D] = 25`, clears `DRAWN_ADDR`, and `ret`s,
-   which is the same `ret` the stock path took.
+2. **The common game-over tail**, at `E000:197C`: `3e c7 06 7d 01 17 00`
+   (`mov word ds:[0x17d], 0x17`), followed by `ret` at `E000:1983`.
+3. **The tenth-game tail**, at `E000:1962`: `3e c7 06 7d 01 01 00`
+   (`mov word ds:[0x17d], 1`), followed by `ret` at `E000:1969`.
+
+Hooks 2 and 3 each replace their seven bytes with a `jmp near` to a trampoline
+plus `0x90` padding. Each trampoline records its tail's original index in
+`SAVED_ADDR`, sets `[017D] = 25`, clears `DRAWN_ADDR`, and `ret`s — the same
+`ret` the stock path took.
+
+Both tails must be hooked: `E000:1919` branches on the NVRAM game counter
+`[0x66D]`, so one game in ten takes the `E000:1962` tail, and hooking only the
+common one would skip the score screen on those games.
 
 Entry 23 is **left alone**, which is what keeps the screen out of attract.
 
@@ -1055,7 +1114,7 @@ Two cave regions, so `CAVES` spans two padding runs:
 
 | region | physical | holds |
 |---|---|---|
-| E000 padding | `0xE50EB` upward | `STUB`, the game-over trampoline |
+| E000 padding | `0xE50EB` upward | `STUB`, both game-over trampolines |
 | F000 padding | `0xFDFF0` upward | `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN` |
 
 - [ ] **Step 1: Write the failing test**
@@ -1064,7 +1123,7 @@ Two cave regions, so `CAVES` spans two padding runs:
 def test_hooks_are_present_and_match_the_stock_rom():
     m = load()
     data = ROM.read_bytes()
-    assert len(m.HOOKS) == 2, 'expected the table entry and the game-over redirect'
+    assert len(m.HOOKS) == 3, 'expected the table entry and both game-over tails'
     for addr, original, patched, label in m.HOOKS:
         off = m.physical_to_file(addr)
         assert data[off:off+len(original)] == original, f'{label}: stock bytes differ'
@@ -1079,13 +1138,15 @@ def test_the_spare_table_entry_is_the_hook():
     assert int.from_bytes(patched, 'little') == m.STUB_ADDR & 0xFFFF
     assert 0xE4FAA not in by_addr, 'entry 23 must be left alone, or attract shows the screen'
 
-def test_the_game_over_write_is_redirected():
+def test_both_game_over_tails_are_redirected():
     m = load()
     by_addr = {addr: (o, p) for addr, o, p, _ in m.HOOKS}
-    assert 0xE197C in by_addr, 'the game-over write to [017D] is not hooked'
-    original, _ = by_addr[0xE197C]
-    assert original == bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, 0x17, 0x00]), \
-        'stock bytes at E000:197C are not mov word ds:[0x17d], 0x17'
+    for addr, imm, label in ((0xE197C, 0x17, 'the common tail'),
+                             (0xE1962, 0x01, 'the tenth-game tail')):
+        assert addr in by_addr, f'{label} at {addr:#07x} is not hooked'
+        original, _ = by_addr[addr]
+        assert original == bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, imm, 0x00]), \
+            f'{label}: stock bytes are not mov word ds:[0x17d], {imm:#04x}'
 
 def test_patched_rom_differs_only_in_caves_and_hooks():
     m = load()
@@ -1115,9 +1176,10 @@ Assign the F000 blobs from `0xFDFF0` upward, and the stub plus the game-over
 trampoline from `0xE50EB` upward. Re-assemble every blob with the real addresses
 substituted and confirm the `nasm` cross-checks still pass.
 
-Then write the two hooks described above. The trampoline's `jmp near`
-displacement is relative to the end of the `jmp` at `E000:197F`, so compute it
-from the final trampoline address rather than assuming one.
+Then write the three hooks described above. Each trampoline's `jmp near`
+displacement is relative to the end of its own `jmp` — `E000:197F` for the common
+tail, `E000:1965` for the tenth-game tail — so compute both from the final
+trampoline addresses rather than assuming.
 
 - [ ] **Step 4: Run the tests and apply the patch for real**
 

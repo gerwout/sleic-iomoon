@@ -143,9 +143,14 @@ The patch uses it:
 | a real game ends | **25** | the patch's stub, which holds the screen |
 | attract's free-run | 23 | stock step 23, untouched |
 
-`E000:196A` is the game-over path — it bumps an NVRAM audit byte, far-calls
-`F000:002C`, then sets `[017D] = 0x17` to reach the LOTERIA screen. The patch
-redirects that one write to 25. Attract free-runs the whole table on a
+The game-over path is `E000:1919`, called from the game-end sequence at
+`E000:09C9` just before `[0103]` is cleared. It branches on a game counter in
+NVRAM (`cmp byte es:[0x66d], 0x0a`) into **two tails**, each a 7-byte
+`mov word ds:[0x17d], imm` followed by `ret`: `E000:197C` sets 23 for nine games
+in ten, and `E000:1962` sets 1 on every tenth game, after resetting the counter.
+The patch redirects **both** to 25 — hooking only the common tail would skip the
+score screen on one game in ten — and each trampoline records the index its tail
+would have written, so the stub can hand control back to the right step. Attract free-runs the whole table on a
 ~5760-frame period and holds step 23 for about 200 frames each lap, so leaving
 entry 23 alone is what keeps the screen out of attract — **structurally**, not by
 a guard that has to be right. `[0103]`, the in-game flag, reads `0x00` in attract
@@ -154,8 +159,9 @@ too, so it could not have made that distinction on its own.
 Holding is a `ret` that skips the advance tail at `E000:50D5`: `[017D]` stays 25
 and the dispatcher re-enters the stub on the next tick, with every interrupt, the
 J1 link service and the screen refresh still running for as long as the player
-takes. Releasing sets `[017D] = 23` and jumps to `0x5090`, so the stock step
-draws LOTERIA and its own tail advances 23 to 24 exactly as it would have.
+takes. Releasing writes the recorded index back into `[017D]` and returns, so the next
+tick runs exactly the step the game would have run, whichever tail it came from.
+The stub never jumps into another step's code.
 
 The stub lives in segment E000 because the table entry is a near offset there, at
 `E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of the
