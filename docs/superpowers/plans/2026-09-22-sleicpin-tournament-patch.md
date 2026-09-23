@@ -1050,13 +1050,37 @@ drain:  lcall F000:0x54EF          ; scrub duplicate START codes before moving o
         mov ax, [SAVED_ADDR]       ; the step this game would have gone to
         mov word [0x17d], ax       ;   hand the sequence back to it
         ret                        ;   the dispatcher runs it on the next tick
-hold:   mov word [0x4df], <dwell>  ; this step's dwell in ticks
+hold:   mov word [0x4df], 0        ; no delay: re-enter on the next tick
         ret                        ; [017D] still 25: the stub runs again
 ```
 
-Pick `<dwell>` small enough that START feels responsive — the draw happens once,
-guarded by `DRAWN_ADDR`, so the dwell only paces the poll. Write it as `STUB_ASM`
-with `org 0x50EB` and hand-assemble it into `STUB`.
+**`[0x4DF]` is a tick countdown, not a dwell to be guessed.** The dispatcher's
+first act is to refuse to run at all while it is non-zero:
+
+```
+E000:4F4E  3e833edf0400  cmp word ds:[0x4df], 0
+E000:4F54  7401          je 0x4f57
+E000:4F56  c3            ret
+```
+
+and the vector-8 timer handler decrements it once per interrupt, saturating at
+zero:
+
+```
+F000:DFB1  a1df04    mov ax, [0x4df]
+F000:DFB4  23c0      and ax, ax
+F000:DFB6  7404      je 0xdfbc        ; already 0: leave it alone
+F000:DFB8  48        dec ax
+F000:DFB9  a3df04    mov [0x4df], ax
+```
+
+A step therefore sets `[0x4DF] = N` to mean "wait N ticks before the next step".
+The stub wants the opposite — it polls for START, so it sets **0** and is
+re-entered on the dispatcher's very next call, which is the most responsive value
+available and needs no tuning. The draw happens once regardless, guarded by
+`DRAWN_ADDR`. (For scale, stock step 23 sets `0x64`.)
+
+Write it as `STUB_ASM` with `org 0x50EB` and hand-assemble it into `STUB`.
 
 The `drain` loop is this ROM's own idiom for a START press: the Z80 cabinet scan
 has no time-based debounce, so one press can leave more than one `0x05` in the
