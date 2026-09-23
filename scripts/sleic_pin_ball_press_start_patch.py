@@ -313,6 +313,88 @@ DRAW_SCREEN = bytes([
 ])
 
 
+# =============================================================================
+# The hold stub
+# =============================================================================
+
+# A second word beside DRAWN_ADDR, in the same claimed 0x377-0x3E7 run: the
+# sequence index a game-over trampoline would otherwise have written to
+# [0x17D] (23 nine games in ten, 1 on the tenth). The stub restores it once
+# START is seen, so the dispatcher's very next tick runs exactly the step
+# the game would have run.
+SAVED_ADDR = WORKSPACE_ADDR + 9
+
+# The sequence table's spare slot: entries run 0-24, wrap at 24->0, and no
+# write to [017D] anywhere in the image produces 25, so this entry is
+# unreachable except through a game-over trampoline pointing at it. The
+# table entry is a near offset in segment E000, so unlike every other blob
+# in this file the stub's address is real, not provisional -- it is the
+# start of the 44,821-byte 0xFF run reaching the end of the segment.
+STUB_ADDR = 0x50EB
+
+# Reached as entry 25 of the [0000:017D] sequence dispatcher, re-entered
+# every tick while [017D] stays 25. DS = 0 on entry (every dispatcher and
+# step access is DS-relative). Not yet drawn (DRAWN_ADDR == 0): clears both
+# display planes and composes the score screen once, sets DRAWN_ADDR, then
+# falls into holding. Already drawn: polls the switch FIFO once per tick
+# and otherwise just holds -- a `ret` with [0x4DF] set to 0 so the
+# dispatcher re-enters immediately on the next tick and [017D] never
+# advances past 25. On seeing START (code 5) it drains the FIFO until empty
+# (a real contact reports twice with no debounce, so a duplicate START must
+# not leak into the next screen), restores [017D] from SAVED_ADDR and
+# returns, handing the very next tick to whichever step the game would have
+# reached. Clobbers AX; DS/ES/other registers not touched.
+STUB_ASM = f"""BITS 16
+org 0x{STUB_ADDR:04X}
+
+stub:
+        cmp byte [0x{DRAWN_ADDR:04X}], 0
+        jne poll
+        call 0xF000:0xDEFC
+        call 0xF000:0x{DRAW_SCREEN_ADDR & 0xFFFF:04X}
+        mov byte [0x{DRAWN_ADDR:04X}], 1
+        jmp hold
+poll:
+        call 0xF000:0x54EF
+        or al, al
+        je hold
+        cmp al, 5
+        jne poll
+drain:
+        call 0xF000:0x54EF
+        or al, al
+        jne drain
+        mov ax, [0x{SAVED_ADDR:X}]
+        mov word [0x17D], ax
+        ret
+hold:
+        mov word [0x4DF], 0
+        ret
+"""
+
+STUB = bytes([
+    0x80, 0x3E, 0xA8, 0x03, 0x00,          # stub: cmp byte [DRAWN_ADDR], 0
+    0x75, 0x11,                            # jne poll                ; already composed
+    0x9A, 0xFC, 0xDE, 0x00, 0xF0,          # call 0xF000:0xDEFC      ; clear both planes
+    0x9A, 0x62, 0xE0, 0x00, 0xF0,          # call 0xF000:0xE062      ; draw_screen
+    0xC6, 0x06, 0xA8, 0x03, 0x01,          # mov byte [DRAWN_ADDR], 1
+    0xEB, 0x1D,                            # jmp hold
+    0x9A, 0xEF, 0x54, 0x00, 0xF0,          # poll: call 0xF000:0x54EF ; pop a switch code
+    0x08, 0xC0,                            # or al, al
+    0x74, 0x14,                            # je hold                 ; empty: keep holding
+    0x3C, 0x05,                            # cmp al, 5               ; START
+    0x75, 0xF3,                            # jne poll                ; discard and keep draining
+    0x9A, 0xEF, 0x54, 0x00, 0xF0,          # drain: call 0xF000:0x54EF ; scrub duplicate STARTs
+    0x08, 0xC0,                            # or al, al
+    0x75, 0xF7,                            # jne drain
+    0xA1, 0xA9, 0x03,                      # mov ax, [SAVED_ADDR]
+    0xA3, 0x7D, 0x01,                      # mov word [0x17D], ax
+    0xC3,                                  # ret                     ; the dispatcher runs the saved step next
+    0xC7, 0x06, 0xDF, 0x04, 0x00, 0x00,    # hold: mov word [0x4DF], 0 ; no delay: re-enter next tick
+    0xC3,                                  # ret                     ; [017D] still 25
+])
+
+
 def physical_to_file(addr):
     return addr - ROM_BASE
 

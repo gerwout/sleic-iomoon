@@ -83,6 +83,31 @@ def test_draw_screen_uses_the_documented_slots():
     for off in (0x410, 0x418, 0x510, 0x518, 0x712):
         assert off.to_bytes(2, 'little') in bytes(m.DRAW_SCREEN), f'{off:#05x} missing'
 
+def test_stub_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.STUB_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.STUB)
+
+def test_stub_polls_the_switch_queue_far():
+    m = load()
+    assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.STUB), 'no far call to F000:54EF'
+
+def test_stub_hands_back_to_the_saved_step():
+    m = load()
+    asm = m.STUB_ASM.lower()
+    assert '0x17d' in asm, 'stub never writes the sequence index'
+    assert hex(m.SAVED_ADDR) in asm, 'stub never reads the saved step'
+    assert '0x5090' not in asm, 'stub must not hard-code step 23; it restores the saved step'
+    assert '0x50d5' not in asm, 'stub must not jump to the advance tail itself'
+
+def test_workspace_is_above_the_vector_table():
+    m = load()
+    assert m.WORKSPACE_ADDR >= 0x100, 'the workspace would land in the vector table'
+    assert m.DRAWN_ADDR == m.WORKSPACE_ADDR + 8, 'the flag is not the workspace tail'
+
 if __name__ == '__main__':
     fails = 0
     for name, fn in sorted(globals().items()):
