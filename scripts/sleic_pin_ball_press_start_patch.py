@@ -22,6 +22,31 @@ attract loop's two identical credit tests -- both of which otherwise skip
 the score screen whenever a credit is standing, which free play always
 leaves true. The loop's only entrance is the first test; the second is
 reachable only from inside the loop.
+
+The two game-over trampolines also snapshot the score data: the attract
+loop's own entry preamble (E000:00AD-00CB, via its call to E000:07BD) zeroes
+the live player block and all four saved player blocks before the stub's
+first tick can run, so score_digits reads that snapshot rather than the
+(by then zeroed) live blocks.
+
+Verified (`build-probe`, `Balls>0`, headless, RAM ground truth cross-checked
+against the panel's own rendered pixels bit-for-bit):
+
+| check | result |
+|---|---|
+| screen appears at game over, 1 and 4 players | pass |
+| each player's score matches what was actually scored | pass -- confirmed pixel-exact against the font table in both a 1-player and a 4-player game |
+| one START press releases it | pass -- within the same sampled tick |
+| a press reported twice does not disturb anything | pass |
+| credits standing | pass |
+| credits exhausted | pass |
+| a coin inserted while held is not lost | pass |
+| service menu opens and closes | pass |
+| `MAME_DEBUG` validity checks | pass |
+| three games back to back, each with its own scores | pass |
+| `Balls` ships at 0 on the permanent set | not this patch's concern, but the trough model is off by default -- a game cannot reach game over without `Balls>0`, in the DIP menu or a build override |
+| record-beating score reaches name entry after the lottery | not tested |
+| `¿ CONTINUAS ?` offer resolves (accept/decline) | not verified -- confirmed still armed and blinking identically in stock and patched builds well past where it should time out; a START press during the window did not visibly change it. Whatever settles this needs a real machine or a scope, not more headless probing |
 """
 
 import argparse
@@ -39,7 +64,7 @@ ROM_SIZE = 0x20000
 # The images this accepts: stock V1.1, plus every patched variant.
 V11_FAMILY_CRC32 = (
     0x261b0ae4,   # sp03-1_1.rom, stock V1.1
-    0xcd1edb86,   # + PRESS START
+    0x7861e7cd,   # + PRESS START
 )
 
 # CAVES and HOOKS are assembled at the end of this file, once every blob and
@@ -151,12 +176,13 @@ PROMPT_RECORD = (len(PROMPT_TEXT).to_bytes(2, 'little') +
 # =============================================================================
 
 # The whole patch's scratch RAM: 8 bytes of digit buffer, 1 byte for the
-# stub's DRAWN flag, a 2-byte SAVED_ADDR word, then 1 byte for COUNT_ADDR.
-# Segment 0 below 0x100 is the interrupt vector table, copied from F000:FEF0
-# at boot, so the workspace must sit above it; nothing initialises segment 0
-# above 0x100 at power-on either way. Claimed from the 0x377-0x3E7 run (113
-# bytes, the largest of four measured candidate runs that no direct-address
-# instruction in the image reaches), 12 bytes (0x3A0-0x3AB) well inside it.
+# stub's DRAWN flag, a 2-byte SAVED_ADDR word, 1 byte for COUNT_ADDR, then a
+# 32-byte score snapshot (4 players x 8 digit bytes). Segment 0 below 0x100
+# is the interrupt vector table, copied from F000:FEF0 at boot, so the
+# workspace must sit above it; nothing initialises segment 0 above 0x100 at
+# power-on either way. Claimed from the 0x377-0x3E7 run (113 bytes, the
+# largest of four measured candidate runs that no direct-address instruction
+# in the image reaches), 44 bytes (0x3A0-0x3CB) well inside it.
 WORKSPACE_ADDR = 0x3A0
 DRAWN_ADDR = WORKSPACE_ADDR + 8
 
@@ -165,6 +191,16 @@ DRAWN_ADDR = WORKSPACE_ADDR + 8
 # dispatch -- by which time [0x106] already reads 0. draw_screen reads this
 # instead of [0x106].
 COUNT_ADDR = WORKSPACE_ADDR + 11
+
+# The same problem hits the scores, worse: E000:07BD, called from the attract
+# loop's own entry preamble (E000:00AD-00CB) ahead of the dispatcher call at
+# E000:00F6, zeroes 0x1C5-0x26E -- the live block AND all four saved player
+# blocks -- before the stub's first tick can ever run. A trampoline must copy
+# the scores out at the same point it already copies PLAYER_COUNT: player n's
+# eight digit bytes (block+4..block+11, LSD to MSD, the same order they sit
+# in at the source) land at SCORE_SNAPSHOT_ADDR + 8*(n-1). draw_screen reads
+# this instead of the live blocks.
+SCORE_SNAPSHOT_ADDR = WORKSPACE_ADDR + 12
 
 # Packed right after digits_draw.
 SCORE_DIGITS_ADDR = DIGITS_DRAW_ADDR + len(DIGITS_DRAW)
@@ -240,14 +276,17 @@ DRAW_SCREEN_ADDR = PROMPT_RECORD_ADDR + len(PROMPT_RECORD)
 # Clears both display planes through F000:DEFC, which also sets ES = 0x6000,
 # then for each player 1..count (read from COUNT_ADDR, the trampolines'
 # snapshot of [0x106] -- by the time draw_screen runs, [0x106] itself has
-# already been zeroed by the game-over tail) reads that player's block with
-# score_digits into WORKSPACE_ADDR and draws it with digits_draw at that
+# already been zeroed by the game-over tail) reads that player's eight digit
+# bytes out of SCORE_SNAPSHOT_ADDR (the trampolines' snapshot -- the live
+# blocks are zeroed by then too, by the attract loop's own entry preamble)
+# with score_digits into WORKSPACE_ADDR and draws it with digits_draw at that
 # player's plane-1 slot, then draws PROMPT_RECORD twice with F000:550D, once
 # per plane. Far ret. The player index lives in BP, the one register neither
-# callee touches; the two four-word tables translate it into a block base and
-# a target slot without a multiply. The caller's own BP is saved on entry and
-# restored before the single retf, so BP is the one register this routine
-# does not clobber.
+# callee touches; score_digits' own +4/+11 indexing is reused as-is by
+# pointing BX four bytes before the player's snapshot slot, so no snapshot
+# table is needed, only the target-slot table. The caller's own BP is saved
+# on entry and restored before the single retf, so BP is the one register
+# this routine does not clobber.
 DRAW_SCREEN_ASM = f"""BITS 16
 org 0x{DRAW_SCREEN_ADDR:04X}
 
@@ -263,7 +302,9 @@ draw_screen:
         mov bx, bp
         dec bx
         add bx, bx
-        mov bx, [cs:bx+block_table]
+        add bx, bx
+        add bx, bx
+        add bx, 0x{(SCORE_SNAPSHOT_ADDR - 4) & 0xFFFF:04X}
         mov di, 0x{WORKSPACE_ADDR:04X}
         call 0x{SCORE_DIGITS_ADDR:04X}
         mov si, di
@@ -284,7 +325,6 @@ draw_screen:
         pop bp
         retf
 
-block_table: dw 0x1E7, 0x209, 0x22B, 0x24D
 slot_table:  dw 0x410, 0x418, 0x510, 0x518
 """
 
@@ -295,30 +335,31 @@ DRAW_SCREEN = bytes([
     0xA0, 0xAB, 0x03,                     # .loop: mov al, [COUNT_ADDR]; snapshot of PLAYER_COUNT
     0x30, 0xE4,                           # xor ah, ah
     0x39, 0xE8,                           # cmp ax, bp
-    0x72, 0x22,                           # jb .prompt            ; count < index -> done
+    0x72, 0x25,                           # jb .prompt            ; count < index -> done
     0x89, 0xEB,                           # mov bx, bp
     0x4B,                                 # dec bx
-    0x01, 0xDB,                           # add bx, bx            ; bx = (index-1)*2
-    0x2E, 0x8B, 0x9F, 0xA9, 0xE0,         # mov bx, [cs:bx+block_table]
+    0x01, 0xDB,                           # add bx, bx  ]
+    0x01, 0xDB,                           # add bx, bx  ] bx = (index-1)*8
+    0x01, 0xDB,                           # add bx, bx  ]
+    0x81, 0xC3, 0xA8, 0x03,               # add bx, 0x3A8         ; SCORE_SNAPSHOT_ADDR - 4
     0xBF, 0xA0, 0x03,                     # mov di, 0x3A0         ; WORKSPACE_ADDR
-    0xE8, 0xA2, 0xFF,                     # call 0xFE025          ; score_digits
+    0xE8, 0x9F, 0xFF,                     # call 0xFE025          ; score_digits
     0x89, 0xFE,                           # mov si, di            ; si = digit buffer
     0x89, 0xEF,                           # mov di, bp
     0x4F,                                 # dec di
     0x01, 0xFF,                           # add di, di            ; di = (index-1)*2
-    0x2E, 0x8B, 0xBD, 0xB1, 0xE0,         # mov di, [cs:di+slot_table]
-    0xE8, 0x5E, 0xFF,                     # call 0xFDFF0          ; digits_draw
+    0x2E, 0x8B, 0xBD, 0xAC, 0xE0,         # mov di, [cs:di+slot_table]
+    0xE8, 0x5B, 0xFF,                     # call 0xFDFF0          ; digits_draw
     0x45,                                 # inc bp
-    0xEB, 0xD5,                           # jmp .loop
+    0xEB, 0xD2,                           # jmp .loop
     0xBE, 0x49, 0xE0,                     # .prompt: mov si, 0xE049 ; PROMPT_RECORD
     0xBF, 0x12, 0x07,                     # mov di, 0x712
-    0xE8, 0x6F, 0x74,                     # call 0x550D
+    0xE8, 0x6C, 0x74,                     # call 0x550D
     0xBE, 0x49, 0xE0,                     # mov si, 0xE049
     0xBF, 0x12, 0x0F,                     # mov di, 0xF12
-    0xE8, 0x66, 0x74,                     # call 0x550D
+    0xE8, 0x63, 0x74,                     # call 0x550D
     0x5D,                                 # pop bp                 ; restore the caller's BP
     0xCB,                                 # retf
-    0xE7, 0x01, 0x09, 0x02, 0x2B, 0x02, 0x4D, 0x02,  # block_table: dw 0x1E7,0x209,0x22B,0x24D
     0x10, 0x04, 0x18, 0x04, 0x10, 0x05, 0x18, 0x05,  # slot_table:  dw 0x410,0x418,0x510,0x518
 ])
 
@@ -412,14 +453,25 @@ STUB = bytes([
 # Packed right after the stub, in the same 0xE50EB-upward padding run.
 TRAMPOLINE_COMMON_ADDR = STUB_ADDR + len(STUB)
 
+# The four saved player blocks, per research/sleicpin_disasm/sleicpin_endgame.md.
+# Each trampoline copies block+4..block+11 (eight digit bytes, LSD to MSD)
+# into the score snapshot before the attract loop's own entry preamble
+# (E000:00AD-00CB, via its call to E000:07BD) zeroes 0x1C5-0x26E -- the live
+# block and all four of these -- ahead of the dispatcher's first tick.
+SCORE_BLOCK_BASES = (0x1E7, 0x209, 0x22B, 0x24D)
+
 # Reached from the common game-over tail (E000:197C -- nine games in ten,
 # per the branch at E000:1919 on the NVRAM game counter [0x66D]), while
-# [0x106] (PLAYER_COUNT) is still live -- the same tail zeroes it a few
-# instructions later, before the dispatcher's next tick can reach the stub.
-# Records 0x17, the index that tail's own stock mov would have written to
-# [017D], snapshots [0x106] into COUNT_ADDR for draw_screen to read, clears
-# DRAWN_ADDR so the stub composes a fresh screen, points the dispatcher at
-# entry 25, and returns -- the same ret the stock tail took.
+# [0x106] (PLAYER_COUNT) and the four score blocks above are still live --
+# the same tail's caller zeroes them all a few instructions later, before
+# the dispatcher's next tick can reach the stub. Records 0x17, the index
+# that tail's own stock mov would have written to [017D], snapshots [0x106]
+# into COUNT_ADDR and the four blocks into SCORE_SNAPSHOT_ADDR for
+# draw_screen to read, clears DRAWN_ADDR so the stub composes a fresh
+# screen, points the dispatcher at entry 25, and returns -- the same ret the
+# stock tail took. ES is saved and set equal to DS for the four `rep movsb`
+# copies (DF is already clear on entry -- nothing in this ROM sets it -- but
+# `cld` costs one byte and removes the doubt) and restored before returning.
 TRAMPOLINE_COMMON_ASM = f"""BITS 16
 org 0x{TRAMPOLINE_COMMON_ADDR:04X}
 
@@ -428,6 +480,24 @@ trampoline_common:
         mov byte [0x{DRAWN_ADDR:04X}], 0
         mov al, [0x106]
         mov [0x{COUNT_ADDR:04X}], al
+        push es
+        push ds
+        pop es
+        cld
+        mov di, 0x{SCORE_SNAPSHOT_ADDR:04X}
+        mov si, 0x{SCORE_BLOCK_BASES[0] + 4:04X}
+        mov cx, 8
+        rep movsb
+        mov si, 0x{SCORE_BLOCK_BASES[1] + 4:04X}
+        mov cx, 8
+        rep movsb
+        mov si, 0x{SCORE_BLOCK_BASES[2] + 4:04X}
+        mov cx, 8
+        rep movsb
+        mov si, 0x{SCORE_BLOCK_BASES[3] + 4:04X}
+        mov cx, 8
+        rep movsb
+        pop es
         mov word [0x17D], 25
         ret
 """
@@ -437,6 +507,24 @@ TRAMPOLINE_COMMON = bytes([
     0xC6, 0x06, 0xA8, 0x03, 0x00,          # mov byte [DRAWN_ADDR], 0
     0xA0, 0x06, 0x01,                      # mov al, [0x106]         ; PLAYER_COUNT, still live here
     0xA2, 0xAB, 0x03,                      # mov [COUNT_ADDR], al    ; snapshot for draw_screen
+    0x06,                                  # push es
+    0x1E,                                  # push ds
+    0x07,                                  # pop es                  ; es = ds = 0
+    0xFC,                                  # cld
+    0xBF, 0xAC, 0x03,                      # mov di, SCORE_SNAPSHOT_ADDR
+    0xBE, 0xEB, 0x01,                      # mov si, 0x1EB           ; block 0x1E7 + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0xBE, 0x0D, 0x02,                      # mov si, 0x20D           ; block 0x209 + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0xBE, 0x2F, 0x02,                      # mov si, 0x22F           ; block 0x22B + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0xBE, 0x51, 0x02,                      # mov si, 0x251           ; block 0x24D + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0x07,                                  # pop es
     0xC7, 0x06, 0x7D, 0x01, 0x19, 0x00,    # mov word [0x17D], 25
     0xC3,                                  # ret
 ])
@@ -445,9 +533,9 @@ TRAMPOLINE_COMMON = bytes([
 TRAMPOLINE_TENTH_ADDR = TRAMPOLINE_COMMON_ADDR + len(TRAMPOLINE_COMMON)
 
 # Reached from the tenth-game tail (E000:1962), the branch's other target,
-# while [0x106] is likewise still live. Identical to trampoline_common
-# except it records 0x01, the index that tail's own stock mov would have
-# written.
+# while [0x106] and the four score blocks are likewise still live. Identical
+# to trampoline_common except it records 0x01, the index that tail's own
+# stock mov would have written.
 TRAMPOLINE_TENTH_ASM = f"""BITS 16
 org 0x{TRAMPOLINE_TENTH_ADDR:04X}
 
@@ -456,6 +544,24 @@ trampoline_tenth:
         mov byte [0x{DRAWN_ADDR:04X}], 0
         mov al, [0x106]
         mov [0x{COUNT_ADDR:04X}], al
+        push es
+        push ds
+        pop es
+        cld
+        mov di, 0x{SCORE_SNAPSHOT_ADDR:04X}
+        mov si, 0x{SCORE_BLOCK_BASES[0] + 4:04X}
+        mov cx, 8
+        rep movsb
+        mov si, 0x{SCORE_BLOCK_BASES[1] + 4:04X}
+        mov cx, 8
+        rep movsb
+        mov si, 0x{SCORE_BLOCK_BASES[2] + 4:04X}
+        mov cx, 8
+        rep movsb
+        mov si, 0x{SCORE_BLOCK_BASES[3] + 4:04X}
+        mov cx, 8
+        rep movsb
+        pop es
         mov word [0x17D], 25
         ret
 """
@@ -465,6 +571,24 @@ TRAMPOLINE_TENTH = bytes([
     0xC6, 0x06, 0xA8, 0x03, 0x00,          # mov byte [DRAWN_ADDR], 0
     0xA0, 0x06, 0x01,                      # mov al, [0x106]         ; PLAYER_COUNT, still live here
     0xA2, 0xAB, 0x03,                      # mov [COUNT_ADDR], al    ; snapshot for draw_screen
+    0x06,                                  # push es
+    0x1E,                                  # push ds
+    0x07,                                  # pop es                  ; es = ds = 0
+    0xFC,                                  # cld
+    0xBF, 0xAC, 0x03,                      # mov di, SCORE_SNAPSHOT_ADDR
+    0xBE, 0xEB, 0x01,                      # mov si, 0x1EB           ; block 0x1E7 + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0xBE, 0x0D, 0x02,                      # mov si, 0x20D           ; block 0x209 + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0xBE, 0x2F, 0x02,                      # mov si, 0x22F           ; block 0x22B + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0xBE, 0x51, 0x02,                      # mov si, 0x251           ; block 0x24D + 4
+    0xB9, 0x08, 0x00,                      # mov cx, 8
+    0xF3, 0xA4,                            # rep movsb
+    0x07,                                  # pop es
     0xC7, 0x06, 0x7D, 0x01, 0x19, 0x00,    # mov word [0x17D], 25
     0xC3,                                  # ret
 ])
@@ -513,8 +637,8 @@ TRAMPOLINE_CREDIT_GATE = bytes([
     0xA0, 0x00, 0x01,                      # mov al, [0x100]        ; stock test from here
     0x20, 0xC0,                            # and al, al
     0x74, 0x03,                            # je dispatch
-    0xE9, 0xA2, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
-    0xE9, 0x8F, 0xAF,                      # dispatch: jmp 0x00F6   ; the dispatcher call
+    0xE9, 0x52, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
+    0xE9, 0x3F, 0xAF,                      # dispatch: jmp 0x00F6   ; the dispatcher call
 ])
 
 # Packed right after trampoline_credit_gate. Reached from the loop's first
@@ -544,8 +668,8 @@ TRAMPOLINE_CREDIT_GATE_ENTRANCE = bytes([
     0xA0, 0x00, 0x01,                      # mov al, [0x100]        ; stock test from here
     0x20, 0xC0,                            # and al, al
     0x74, 0x03,                            # je continue
-    0xE9, 0x8E, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
-    0xE9, 0x67, 0xAF,                      # continue: jmp 0x00E2   ; screen pending or no credits
+    0xE9, 0x3E, 0xAF,                      # jmp 0x106              ; credits standing: leave the loop
+    0xE9, 0x17, 0xAF,                      # continue: jmp 0x00E2   ; screen pending or no credits
 ])
 
 

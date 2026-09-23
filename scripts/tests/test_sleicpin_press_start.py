@@ -190,22 +190,25 @@ def test_workspace_is_above_the_vector_table():
 
 def test_workspace_slots_are_disjoint_and_pinned():
     m = load()
-    # digits +0..+7, DRAWN +8, SAVED +9..+10 (word), COUNT +11.
+    # digits +0..+7, DRAWN +8, SAVED +9..+10 (word), COUNT +11,
+    # SCORE_SNAPSHOT +12..+43 (4 players x 8 digit bytes).
     assert m.DRAWN_ADDR == m.WORKSPACE_ADDR + 8
     assert m.SAVED_ADDR == m.WORKSPACE_ADDR + 9
     assert m.COUNT_ADDR == m.WORKSPACE_ADDR + 11
+    assert m.SCORE_SNAPSHOT_ADDR == m.WORKSPACE_ADDR + 12
     slots = [
         ('digit buffer', m.WORKSPACE_ADDR, 8),
         ('DRAWN_ADDR', m.DRAWN_ADDR, 1),
         ('SAVED_ADDR', m.SAVED_ADDR, 2),
         ('COUNT_ADDR', m.COUNT_ADDR, 1),
+        ('SCORE_SNAPSHOT_ADDR', m.SCORE_SNAPSHOT_ADDR, 32),
     ]
     ranges = sorted((addr, addr + size) for _, addr, size in slots)
     for (_, end), (start, _) in zip(ranges, ranges[1:]):
         assert end <= start, f'workspace slots overlap: {ranges}'
     lo = min(addr for _, addr, _ in slots)
     hi = max(addr + size for _, addr, size in slots)
-    assert hi - lo == 12, 'the whole claim is not 12 bytes'
+    assert hi - lo == 44, 'the whole claim is not 44 bytes'
     assert 0x377 <= lo and hi <= 0x3E7 + 1, \
         f'workspace claim {lo:#x}-{hi-1:#x} falls outside the 0x377-0x3E7 run'
 
@@ -280,14 +283,43 @@ def test_credit_gate_entrance_hook_leaves_its_jump_targets_untouched():
     off_106 = m.physical_to_file(0xE0106)
     assert off_106 < len(data), 'E000:0106 falls outside the ROM'
 
-def test_block_table_matches_the_rom_score_table():
+def test_score_block_bases_match_the_rom_score_table():
     m = load()
     data = ROM.read_bytes()
     stock = [int.from_bytes(data[0x1911+2*i:0x1913+2*i], 'little') for i in range(4)]
     assert stock == [0x1E7, 0x209, 0x22B, 0x24D], 'block bases do not match the ROM score table at 0x1911'
-    trailer = bytes(m.DRAW_SCREEN)[-16:-8]
-    assert trailer == b''.join(w.to_bytes(2, 'little') for w in stock), \
-        "draw_screen's block_table does not match the ROM's own bases"
+    assert list(m.SCORE_BLOCK_BASES) == stock, \
+        "SCORE_BLOCK_BASES does not match the ROM's own bases"
+
+def test_draw_screen_does_not_reference_the_live_score_blocks():
+    m = load()
+    # The live blocks are zeroed by the attract loop's entry preamble before
+    # the stub's first tick, so draw_screen must read the trampolines' score
+    # snapshot instead -- never the live block bases directly.
+    b = bytes(m.DRAW_SCREEN)
+    for base in (0x1E7, 0x209, 0x22B, 0x24D):
+        assert base.to_bytes(2, 'little') not in b, \
+            f'draw_screen still references live block {base:#05x}; it must use the snapshot'
+
+def test_trampolines_snapshot_all_four_score_blocks():
+    m = load()
+    for base in m.SCORE_BLOCK_BASES:
+        src = (base + 4).to_bytes(2, 'little')
+        assert src in bytes(m.TRAMPOLINE_COMMON), \
+            f'common trampoline does not copy from block {base:#05x} + 4'
+        assert src in bytes(m.TRAMPOLINE_TENTH), \
+            f'tenth trampoline does not copy from block {base:#05x} + 4'
+    dest = m.SCORE_SNAPSHOT_ADDR.to_bytes(2, 'little')
+    assert dest in bytes(m.TRAMPOLINE_COMMON), 'common trampoline never targets SCORE_SNAPSHOT_ADDR'
+    assert dest in bytes(m.TRAMPOLINE_TENTH), 'tenth trampoline never targets SCORE_SNAPSHOT_ADDR'
+
+def test_draw_screen_reads_the_score_snapshot():
+    m = load()
+    # score_digits is called with BX = SCORE_SNAPSHOT_ADDR - 4, so its own
+    # [BX+4]..[BX+11] indexing lands on the snapshot, not the live block.
+    anchor = ((m.SCORE_SNAPSHOT_ADDR - 4) & 0xFFFF).to_bytes(2, 'little')
+    assert anchor in bytes(m.DRAW_SCREEN), \
+        'draw_screen never computes BX = SCORE_SNAPSHOT_ADDR - 4'
 
 def test_score_digits_reads_offsets_4_through_11():
     m = load()
