@@ -27,3 +27,8 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+# Superpowers working files (task briefs, agent reports, review packages).
+# Process artifacts, not repository documentation - the durable findings go in
+# docs/ and research/ instead.
+.superpowers/
