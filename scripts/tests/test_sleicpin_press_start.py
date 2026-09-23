@@ -42,6 +42,26 @@ def test_foreign_rom_is_refused():
     junk = bytes(m.ROM_SIZE)
     assert m.validate_rom(junk, False) is False
 
+def test_digits_draw_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.DIGITS_DRAW_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.DIGITS_DRAW), 'byte list != nasm output'
+
+def test_prompt_record_is_eleven_glyph_pointers():
+    m = load()
+    assert m.PROMPT_RECORD[:2] == bytes([11, 0]), 'count word is not 11'
+    assert len(m.PROMPT_RECORD) == 2 + 22, 'record is not count + 11 words'
+    # 'N with tilde' sits between N and O, so every letter from O on is one
+    # higher than its position in the plain Latin alphabet would suggest.
+    ALPHA = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'
+    for k, ch in enumerate('PRESS START'):
+        idx = 10 if ch == ' ' else 11 + ALPHA.index(ch)
+        ptr = int.from_bytes(m.PROMPT_RECORD[2+2*k:4+2*k], 'little')
+        assert ptr == 0x85EB + 8*idx, f'glyph {k} ({ch!r}) points at {ptr:#06x}'
+
 if __name__ == '__main__':
     fails = 0
     for name, fn in sorted(globals().items()):

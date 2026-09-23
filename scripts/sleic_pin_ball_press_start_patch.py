@@ -15,7 +15,9 @@ Usage:
 Two padding regions are free in this ROM, both erased to `0xFF`:
 `0xE50EB`-`0xEFFFF` (segment E000) and `0xFDFF0`-`0xFFE76` (segment F000).
 This revision carries a single one-byte placeholder cave at `0xFDFF0` and no
-hooks; the patch payload is not yet implemented.
+hooks; the digit-glyph blitter (`digits_draw`) and the `PRESS START` string
+record (`PROMPT_RECORD`) are written and `nasm`-verified but not yet placed
+in the cave, so the patch payload is not yet implemented.
 """
 
 import argparse
@@ -37,10 +39,109 @@ V11_FAMILY_CRC32 = (
 
 CAVE_PLACEHOLDER = 0xFDFF0   # F000:DFF0, free padding before FE76
 
-CAVE_PLACEHOLDER_DATA = bytes([0x90])   # NOP; the real payload replaces this in Tasks 7-11
+CAVE_PLACEHOLDER_DATA = bytes([0x90])
 
-CAVES = ((CAVE_PLACEHOLDER, CAVE_PLACEHOLDER_DATA, "placeholder cave"),)
+CAVES = ((CAVE_PLACEHOLDER, CAVE_PLACEHOLDER_DATA, "single-byte NOP filler"),)
 HOOKS = ()
+
+# =============================================================================
+# The 8-row glyph face and its blitters
+# =============================================================================
+
+# F000:85EB, 50 glyphs of the 8-row face: 0-9 digits, 10 space, 11.. A-Z with
+# N-tilde after N.  Byte-aligned, 8 bytes per cell: glyph index*8 + base
+# addresses a cell, exactly as F000:43C5 computes it.
+GLYPH_FACE_ADDR = 0x85EB
+
+# Provisional; the cave's own layout is not settled yet and moves this.
+DIGITS_DRAW_ADDR = 0xFDFF1
+
+# SI = an 8-byte digit buffer in segment 0 (values 0-9, or 0xFF for a blanked
+# leading zero), DI = the buffer offset of the leftmost cell, ES = 0x6000.
+# Draws eight glyphs of GLYPH_FACE_ADDR, one column apart, into both display
+# planes (DI and DI+0x800), each eight rows at a 0x20 stride.  A digit value
+# is already its own glyph index (0-9); 0xFF draws index 10 (space).  Returns
+# with SI and DI advanced past the eight cells; AX, BX, CX and DX clobbered.
+DIGITS_DRAW_ASM = f"""BITS 16
+org 0x{DIGITS_DRAW_ADDR:04X}
+
+digits_draw:
+        mov dx, 8
+.glyph:
+        mov al, [si]
+        cmp al, 0xFF
+        jne .idx
+        mov al, 10
+.idx:
+        xor ah, ah
+        mov bx, ax
+        add bx, bx
+        add bx, bx
+        add bx, bx
+        add bx, 0x{GLYPH_FACE_ADDR:04X}
+        mov cx, 8
+        push di
+.row:
+        mov al, [cs:bx]
+        mov [es:di], al
+        mov [es:di+0x800], al
+        inc bx
+        add di, 0x20
+        loop .row
+        pop di
+        inc di
+        inc si
+        dec dx
+        jnz .glyph
+        ret
+"""
+
+DIGITS_DRAW = bytes([
+    0xBA, 0x08, 0x00,                    # mov dx, 8             ; 8 glyph columns
+    0x8A, 0x04,                          # .glyph: mov al, [si]  ; digit value (DS=0)
+    0x3C, 0xFF,                          # cmp al, 0xFF
+    0x75, 0x02,                          # jne .idx
+    0xB0, 0x0A,                          # mov al, 10            ; blanked -> space glyph
+    0x30, 0xE4,                          # .idx: xor ah, ah
+    0x89, 0xC3,                          # mov bx, ax
+    0x01, 0xDB,                          # add bx, bx  ]
+    0x01, 0xDB,                          # add bx, bx  ] bx = index*8
+    0x01, 0xDB,                          # add bx, bx  ]
+    0x81, 0xC3, 0xEB, 0x85,              # add bx, 0x85EB        ; bx = glyph address
+    0xB9, 0x08, 0x00,                    # mov cx, 8             ; 8 rows
+    0x57,                                # push di               ; save the column
+    0x2E, 0x8A, 0x07,                    # .row: mov al, [cs:bx]
+    0x26, 0x88, 0x05,                    # mov [es:di], al       ; plane 1
+    0x26, 0x88, 0x85, 0x00, 0x08,        # mov [es:di+0x800], al ; plane 2
+    0x43,                                # inc bx
+    0x83, 0xC7, 0x20,                    # add di, 0x20
+    0xE2, 0xEF,                          # loop .row
+    0x5F,                                # pop di
+    0x47,                                # inc di                ; next glyph column
+    0x46,                                # inc si                ; next digit
+    0x4A,                                # dec dx
+    0x75, 0xCF,                          # jnz .glyph
+    0xC3,                                # ret
+])
+
+# 'PRESS START' as a [count][pointer...] record in the ROM's own string-record
+# shape: a word count followed by that many word glyph pointers into
+# GLYPH_FACE_ADDR.  N-tilde sits between N and O in the face, so every letter
+# from O on is one higher than its plain-Latin-alphabet position.
+PROMPT_TEXT = 'PRESS START'
+_ALPHA = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'
+
+
+def _glyph_index(ch):
+    return 10 if ch == ' ' else 11 + _ALPHA.index(ch)
+
+
+def _glyph_ptr(ch):
+    return GLYPH_FACE_ADDR + 8 * _glyph_index(ch)
+
+
+PROMPT_RECORD = (len(PROMPT_TEXT).to_bytes(2, 'little') +
+                 b''.join(_glyph_ptr(ch).to_bytes(2, 'little') for ch in PROMPT_TEXT))
 
 
 # =============================================================================
