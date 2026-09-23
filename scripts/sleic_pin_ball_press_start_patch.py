@@ -145,6 +145,79 @@ PROMPT_RECORD = (len(PROMPT_TEXT).to_bytes(2, 'little') +
 
 
 # =============================================================================
+# Segment-0 workspace and the per-player score digit reader
+# =============================================================================
+
+# The whole patch's scratch RAM: 8 bytes of digit buffer, then 1 byte for the
+# stub's DRAWN flag. Segment 0 below 0x100 is the interrupt vector table,
+# copied from F000:FEF0 at boot, so the workspace must sit above it; nothing
+# initialises segment 0 above 0x100 at power-on either way. Claimed from the
+# 0x377-0x3E7 run (113 bytes, the largest of four measured candidate runs
+# that no direct-address instruction in the image reaches), 9 bytes well
+# inside it.
+WORKSPACE_ADDR = 0x3A0
+DRAWN_ADDR = WORKSPACE_ADDR + 8
+
+# Provisional; the cave's own layout is not settled yet and moves this.
+SCORE_DIGITS_ADDR = DIGITS_DRAW_ADDR + len(DIGITS_DRAW)
+
+# BX = a player's block base (E000:190F table entry), DI = an 8-byte scratch
+# buffer offset in segment 0 (WORKSPACE_ADDR), DS = 0. Reads the block's eight
+# unpacked decimal digits from [BX+11] (the 10^7 place) down to [BX+4] (units)
+# and stores them forward into the buffer, so the buffer comes out most
+# significant digit first. Then blanks leading zeros to 0xFF, stopping at the
+# first non-zero digit, so an all-zero score is left as seven 0xFF followed by
+# a single 0 in the units position rather than eight blanks. Returns with DI
+# restored to the buffer's first byte; BX, ES and DS untouched; AX, CX and SI
+# clobbered.
+SCORE_DIGITS_ASM = f"""BITS 16
+org 0x{SCORE_DIGITS_ADDR:04X}
+
+score_digits:
+        mov si, bx
+        add si, 11
+        mov cx, 8
+.copy:
+        mov al, [si]
+        mov [di], al
+        dec si
+        inc di
+        loop .copy
+        sub di, 8
+        mov si, di
+        mov cx, 7
+.blank:
+        cmp byte [si], 0
+        jne .done
+        mov byte [si], 0xFF
+        inc si
+        loop .blank
+.done:
+        ret
+"""
+
+SCORE_DIGITS = bytes([
+    0x89, 0xDE,                          # mov si, bx            ; SI = block base
+    0x83, 0xC6, 0x0B,                    # add si, 11             ; SI = block+11, the MSD
+    0xB9, 0x08, 0x00,                    # mov cx, 8              ; 8 digits
+    0x8A, 0x04,                          # .copy: mov al, [si]
+    0x88, 0x05,                          # mov [di], al           ; MSD-first into the buffer
+    0x4E,                                # dec si                 ; next digit toward the LSD
+    0x47,                                # inc di
+    0xE2, 0xF8,                          # loop .copy
+    0x83, 0xEF, 0x08,                    # sub di, 8              ; DI -> buffer start
+    0x89, 0xFE,                          # mov si, di
+    0xB9, 0x07, 0x00,                    # mov cx, 7              ; up to 7 leading digits
+    0x80, 0x3C, 0x00,                    # .blank: cmp byte [si], 0
+    0x75, 0x06,                          # jne .done              ; first non-zero: stop blanking
+    0xC6, 0x04, 0xFF,                    # mov byte [si], 0xFF    ; blank a leading zero
+    0x46,                                # inc si
+    0xE2, 0xF5,                          # loop .blank
+    0xC3,                                # .done: ret
+])
+
+
+# =============================================================================
 # Patching logic
 # =============================================================================
 

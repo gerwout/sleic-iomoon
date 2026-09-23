@@ -50,6 +50,14 @@ def test_digits_draw_assembles_as_written():
         subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
         assert out.read_bytes() == bytes(m.DIGITS_DRAW), 'byte list != nasm output'
 
+def test_score_digits_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.SCORE_DIGITS_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.SCORE_DIGITS)
+
 def test_prompt_record_is_eleven_glyph_pointers():
     m = load()
     assert m.PROMPT_RECORD[:2] == bytes([11, 0]), 'count word is not 11'
