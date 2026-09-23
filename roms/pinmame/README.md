@@ -28,7 +28,7 @@ in the PinMAME tree.
 | `bikerac3.zip` | Bike Race (V4.1) | `SLEIC3` | `bikerace` |
 | `bikerc3f.zip` | Bike Race (V4.1, free play + press start MOD) | `SLEIC3` | `bikerace` |
 | `sleicpin.zip` | Sleic Pin-Ball (1993) | `SLEIC1` | — |
-| `sleicpnf.zip` | Sleic Pin-Ball (free play + press start MOD) — **no PinMAME driver set**, see below | `SLEIC1` | — |
+| `sleicpnf.zip` | Sleic Pin-Ball (free play + end-of-game scores MOD) — **no PinMAME driver set**, see below | `SLEIC1` | — |
 | `iomoon.zip` | Io Moon | `SLEIC2` | — |
 | `iomoona.zip` | Io Moon (earlier ROM revision) | `SLEIC2` | `iomoon` |
 | `iomoont.zip` | Io Moon (PRESS START tournament MOD) — **deprecated**, see `iomoontf` | `SLEIC2` | `iomoon` |

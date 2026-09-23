@@ -91,18 +91,18 @@ Keep the original EPROM: the patch is reversible only by putting it back.
 
 ## In PinMAME
 
-Loaded as set `sleicpnf`, "Sleic Pin-Ball (free play + press start)" — see
+Loaded as set `sleicpnf`, "Sleic Pin-Ball (free play + end-of-game scores)" — see
 [`../../../pinmame/README.md`](../../../pinmame/README.md). That zip carries all
 four chips, so it loads with no `sleicpin.zip` beside it.
 
-**PinMAME has no `sleicpnf` driver set**, and the ball-trough model the set would
-need is not upstream either. Today the zip is used by pointing `-rompath` at a
-directory holding it named `sleicpin.zip`, run against the stock `sleicpin`
-driver — which reports a checksum warning that `-skip_gamewarnings` suppresses.
-The zip does not simply drop in and work.
+The `sleicpnf` set and the SLEIC1 ball-exit model it needs are **not upstream
+yet**. Until they are, the zip runs against the stock `sleicpin` driver by
+pointing `-rompath` at a directory holding it named `sleicpin.zip`, which reports
+a checksum warning that `-skip_gamewarnings` suppresses — and, without the
+ball-exit model, no ball is served, so a game cannot reach game over.
 
-The set ships the `Balls` setting at 0, so no ball is served and a game cannot
-reach game over until it is set above 0 in PinMAME's TAB → Dip Switches menu.
+`sleicpin` ships the `Balls` setting at 1, which is what enables the ball-exit
+model once that is upstream; a value of 0 disables it.
 
 ## Note on redistribution
 
