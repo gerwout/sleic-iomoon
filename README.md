@@ -197,6 +197,8 @@ sleic-io-moon/
 │   ├── io_moon_free_play_patch.py     # Free-play ROM patch (stacks on the one above)
 │   ├── bike_race_press_start_patch.py # The same two features for Bike Race V4.1's chip 04
 │   ├── bike_race_free_play_patch.py   #   "
+│   ├── sleic_pin_ball_press_start_patch.py # The same two features for Sleic Pin-Ball's chip 03
+│   ├── sleic_pin_ball_free_play_patch.py   #   "
 │   ├── keyscripts/                    # -key_script input scripts for headless PinMAME runs
 │   └── sal_export.py                  # Re-export a Saleae .sal capture to parseable v0 binary
 ├── docs/
@@ -330,7 +332,10 @@ sleic-io-moon/
 │       │   ├── sp01-1_1.rom           # I8039 display coprocessor
 │       │   ├── sp02-1_1.rom           # OKI sample ROM
 │       │   ├── sp03-1_1.rom           # 80188 game + sound code
-│       │   └── sp04-1_1.rom           # Z80 I/O CPU ROM
+│       │   ├── sp04-1_1.rom           # Z80 I/O CPU ROM
+│       │   └── free play + press start/
+│       │       ├── README.md          # PRESS START + free play — verified in emulation
+│       │       └── sp03-1_1.rom       # Patched 80188 game + sound code
 │       ├── bike-race/                 # Bike Race (SLEIC3, 1992) — complete, 7 ROMs
 │       │   ├── README.md
 │       │   ├── v4.1/                  # V4.1 chip set — six chips off one machine
@@ -459,6 +464,18 @@ The same two features for **Bike Race V4.1**, both on chip 04, both in caves in 
 PRESS START needs two hooks into one shared hold, because two different things take the scores down: `F000:10F2`, the screen loader that follows a one-, two- or three-player game, and `E8C5D`, the panel blank ahead of the "Partida" overlay that a four-player game reaches first. Releasing the hold then takes the firmware's own idiom — the switch FIFO can carry more than one START code for a single press, since the Z80's cabinet scan has no time-based debounce (`bkio07:3033`), so the hold settles for sixteen steps of the free-running digit `[0010:000B]` and calls `E9C7:2F47` to scrub every queued `36h`, exactly as the stock START handler does. Each script's docstring carries the full evidence and the measured verification table.
 
 The combined image is in [`roms/related-machines/bike-race/v4.1 - free play + press start/`](roms/related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start/), confirmed working on a real V4.1 machine, and loads in PinMAME as set `bikerc3f`.
+
+### Sleic Pin-Ball Patches — `scripts/sleic_pin_ball_press_start_patch.py`, `scripts/sleic_pin_ball_free_play_patch.py`
+
+The same two features for **Sleic Pin-Ball V1.1**, both on chip 03, and independent of each other — different hook sites, different cave regions — so they stack in either order to a byte-identical result.
+
+PRESS START has five hooks, all in segment E000. The end-of-game screen sequence is a table of near offsets at `E000:4F7C`, indexed by `[0000:017D]` and dispatched from `E000:4F4E`. Entry 25 at `E000:4FAE` is a spare slot stock firmware can never index, so the patch points it at a stub; the two game-over tails at `E000:197C` and `E000:1962` are redirected to it, each recording which step the game would have gone to so the stub can hand control back; and both of the attract loop's credit tests, at `E000:00D8` and `E000:00EC`, are hooked so the screen appears whether or not credits are standing — the pair that makes it work on free play. Entry 23, which attract's own free-running cycle reaches, is deliberately left alone, so the screen cannot appear in attract. The stub snapshots the player count and all four players' score digits first, because the attract loop's own entry preamble (`E000:00B8`, `call 0x7bd` at `E000:00CB`) wipes every player's score block before the stub's first tick can run.
+
+Free play floors the credit cache `[0000:0100]` to at least 1 at its two writers, `E000:147E` and `E000:14C8`, and never touches the triplicated NVRAM credit byte at `0x140`-`0x142`, so a free game consumes nothing and the store cannot be corrupted. Sleic Pin-Ball has no free-play adjustment of its own. Full mechanism detail is in [`research/sleicpin_disasm/sleicpin_endgame.md`](research/sleicpin_disasm/sleicpin_endgame.md).
+
+Verified in emulation, headless: the screen appears at game over for 1 and 4 players with correct scores, one START press releases it, a press reported twice does not disturb anything, it works with credits standing and exhausted, a coin inserted while held is not lost, three games back to back each show their own scores, the service menu still opens and closes, and free play starts a game with no coin. Two paths are untested either way: a record-beating score reaching name entry, and whether the `¿ CONTINUAS ?` offer resolves.
+
+The combined image is in [`roms/related-machines/sleic-pin-ball/free play + press start/`](roms/related-machines/sleic-pin-ball/free%20play%20+%20press%20start/) and is packed into PinMAME zip `sleicpnf.zip`. **There is no `sleicpnf` PinMAME driver set** — running it today means renaming the zip to `sleicpin.zip` on its own ROM path against the stock `sleicpin` driver; see the archive's own README for the details and the open items.
 
 ---
 
