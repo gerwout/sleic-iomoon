@@ -1,0 +1,33 @@
+600 mark boot
+1200 tap 20 KEYCODE_5
+1350 tap 20 KEYCODE_5
+1500 tap 20 KEYCODE_5
+1650 tap 20 KEYCODE_5
+1800 tap 20 KEYCODE_5
+1950 tap 20 KEYCODE_5
+2100 tap 20 KEYCODE_5
+2250 tap 20 KEYCODE_5
+2400 tap 20 KEYCODE_5
+2550 tap 20 KEYCODE_5
+2900 mark after_coins
+3000 tap 20 KEYCODE_1
+3000 mark game_begins
+3400 mark ball1_serve_settled
+3400 tap 15 KEYCODE_Q
+3600 tap 20 KEYCODE_BACKSPACE
+3650 mark ball1_drained
+4050 mark ball2_serve_settled
+4050 tap 15 KEYCODE_Q
+4250 tap 20 KEYCODE_BACKSPACE
+4300 mark ball2_drained
+4700 mark ball3_serve_settled
+4700 tap 15 KEYCODE_Q
+4900 tap 20 KEYCODE_BACKSPACE
+4950 mark ball3_drained
+5300 mark check1
+5800 mark check2
+6300 mark check3
+6800 mark check4
+7300 mark check5
+7800 mark check6
+8000 quit

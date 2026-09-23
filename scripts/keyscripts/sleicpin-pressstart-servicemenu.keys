@@ -1,0 +1,9 @@
+600 mark boot
+900 mark boot_settled
+1000 tap 10 KEYCODE_7
+1100 mark test_pressed_open
+1600 mark menu_open_check
+1700 tap 10 KEYCODE_7
+1800 mark test_pressed_close
+2300 mark menu_closed_check
+2600 quit

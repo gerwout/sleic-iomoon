@@ -1,0 +1,86 @@
+600 mark boot
+800 tap 20 KEYCODE_5
+900 tap 20 KEYCODE_5
+1000 tap 20 KEYCODE_5
+1100 tap 20 KEYCODE_5
+1200 tap 20 KEYCODE_5
+1300 tap 20 KEYCODE_5
+1400 tap 20 KEYCODE_5
+1500 tap 20 KEYCODE_5
+1600 tap 20 KEYCODE_5
+1700 tap 20 KEYCODE_5
+2000 mark after_coins
+2100 tap 20 KEYCODE_1
+2100 mark start1_pressed
+2850 tap 20 KEYCODE_1
+2850 mark start2_pressed
+3600 tap 20 KEYCODE_1
+3600 mark start3_pressed
+4350 tap 20 KEYCODE_1
+4350 mark start4_pressed
+5400 mark all_players_added_settled
+5700 mark ball1_p1_serve_settled
+5700 tap 15 KEYCODE_Q
+5950 tap 20 KEYCODE_BACKSPACE
+5990 mark ball1_p1_drained
+6600 mark ball2_p2_serve_settled
+6600 tap 15 KEYCODE_Q
+6750 tap 15 KEYCODE_Q
+7000 tap 20 KEYCODE_BACKSPACE
+7040 mark ball2_p2_drained
+7800 mark ball3_p3_serve_settled
+7800 tap 15 KEYCODE_Q
+7950 tap 15 KEYCODE_Q
+8100 tap 15 KEYCODE_Q
+8350 tap 20 KEYCODE_BACKSPACE
+8390 mark ball3_p3_drained
+9300 mark ball4_p4_serve_settled
+9300 tap 15 KEYCODE_Q
+9450 tap 15 KEYCODE_Q
+9600 tap 15 KEYCODE_Q
+9750 tap 15 KEYCODE_Q
+10000 tap 20 KEYCODE_BACKSPACE
+10040 mark ball4_p4_drained
+11100 mark ball5_p1_serve_settled
+11100 tap 15 KEYCODE_Q
+11350 tap 20 KEYCODE_BACKSPACE
+11390 mark ball5_p1_drained
+12000 mark ball6_p2_serve_settled
+12000 tap 15 KEYCODE_Q
+12250 tap 20 KEYCODE_BACKSPACE
+12290 mark ball6_p2_drained
+12900 mark ball7_p3_serve_settled
+12900 tap 15 KEYCODE_Q
+13150 tap 20 KEYCODE_BACKSPACE
+13190 mark ball7_p3_drained
+13800 mark ball8_p4_serve_settled
+13800 tap 15 KEYCODE_Q
+14050 tap 20 KEYCODE_BACKSPACE
+14090 mark ball8_p4_drained
+14700 mark ball9_p1_serve_settled
+14700 tap 15 KEYCODE_Q
+14950 tap 20 KEYCODE_BACKSPACE
+14990 mark ball9_p1_drained
+15600 mark ball10_p2_serve_settled
+15600 tap 15 KEYCODE_Q
+15850 tap 20 KEYCODE_BACKSPACE
+15890 mark ball10_p2_drained
+16500 mark ball11_p3_serve_settled
+16500 tap 15 KEYCODE_Q
+16750 tap 20 KEYCODE_BACKSPACE
+16790 mark ball11_p3_drained
+17400 mark ball12_p4_serve_settled
+17400 tap 15 KEYCODE_Q
+17650 tap 20 KEYCODE_BACKSPACE
+17690 mark ball12_p4_drained
+18300 mark last_ball_settle_wait
+18800 mark game_over_wait
+19200 mark before_start_press
+19200 tap 20 KEYCODE_1
+19300 mark after_start_press
+19500 mark check1
+20000 mark check2
+20300 mark final_check
+20500 mark check3
+21000 mark check4
+22000 quit

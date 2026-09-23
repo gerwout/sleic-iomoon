@@ -1,0 +1,73 @@
+600 mark boot
+800 tap 20 KEYCODE_5
+900 tap 20 KEYCODE_5
+1000 tap 20 KEYCODE_5
+1100 tap 20 KEYCODE_5
+1400 mark after_coins
+1500 tap 20 KEYCODE_1
+1500 mark start1_pressed
+2250 tap 20 KEYCODE_1
+2250 mark start2_pressed
+3000 tap 20 KEYCODE_1
+3000 mark start3_pressed
+3750 tap 20 KEYCODE_1
+3750 mark start4_pressed
+4800 mark all_players_added_settled
+5100 mark ball1_p1_serve_settled
+5100 tap 15 KEYCODE_Q
+5350 tap 20 KEYCODE_BACKSPACE
+5390 mark ball1_p1_drained
+6000 mark ball2_p2_serve_settled
+6000 tap 15 KEYCODE_Q
+6150 tap 15 KEYCODE_Q
+6400 tap 20 KEYCODE_BACKSPACE
+6440 mark ball2_p2_drained
+7200 mark ball3_p3_serve_settled
+7200 tap 15 KEYCODE_Q
+7350 tap 15 KEYCODE_Q
+7500 tap 15 KEYCODE_Q
+7750 tap 20 KEYCODE_BACKSPACE
+7790 mark ball3_p3_drained
+8700 mark ball4_p4_serve_settled
+8700 tap 15 KEYCODE_Q
+8850 tap 15 KEYCODE_Q
+9000 tap 15 KEYCODE_Q
+9150 tap 15 KEYCODE_Q
+9400 tap 20 KEYCODE_BACKSPACE
+9440 mark ball4_p4_drained
+10500 mark ball5_p1_serve_settled
+10500 tap 15 KEYCODE_Q
+10750 tap 20 KEYCODE_BACKSPACE
+10790 mark ball5_p1_drained
+11400 mark ball6_p2_serve_settled
+11400 tap 15 KEYCODE_Q
+11650 tap 20 KEYCODE_BACKSPACE
+11690 mark ball6_p2_drained
+12300 mark ball7_p3_serve_settled
+12300 tap 15 KEYCODE_Q
+12550 tap 20 KEYCODE_BACKSPACE
+12590 mark ball7_p3_drained
+13200 mark ball8_p4_serve_settled
+13200 tap 15 KEYCODE_Q
+13450 tap 20 KEYCODE_BACKSPACE
+13490 mark ball8_p4_drained
+14100 mark ball9_p1_serve_settled
+14100 tap 15 KEYCODE_Q
+14350 tap 20 KEYCODE_BACKSPACE
+14390 mark ball9_p1_drained
+15000 mark ball10_p2_serve_settled
+15000 tap 15 KEYCODE_Q
+15250 tap 20 KEYCODE_BACKSPACE
+15290 mark ball10_p2_drained
+15900 mark ball11_p3_serve_settled
+15900 tap 15 KEYCODE_Q
+16150 tap 20 KEYCODE_BACKSPACE
+16190 mark ball11_p3_drained
+16800 mark ball12_p4_serve_settled
+16800 tap 15 KEYCODE_Q
+17050 tap 20 KEYCODE_BACKSPACE
+17090 mark ball12_p4_drained
+17700 mark last_ball_settle_wait
+18200 mark game_over_wait
+19700 mark final_check
+21700 quit
