@@ -182,6 +182,27 @@ def test_workspace_is_above_the_vector_table():
     assert m.WORKSPACE_ADDR >= 0x100, 'the workspace would land in the vector table'
     assert m.DRAWN_ADDR == m.WORKSPACE_ADDR + 8, 'the flag is not the workspace tail'
 
+def test_workspace_slots_are_disjoint_and_pinned():
+    m = load()
+    # digits +0..+7, DRAWN +8, SAVED +9..+10 (word), COUNT +11.
+    assert m.DRAWN_ADDR == m.WORKSPACE_ADDR + 8
+    assert m.SAVED_ADDR == m.WORKSPACE_ADDR + 9
+    assert m.COUNT_ADDR == m.WORKSPACE_ADDR + 11
+    slots = [
+        ('digit buffer', m.WORKSPACE_ADDR, 8),
+        ('DRAWN_ADDR', m.DRAWN_ADDR, 1),
+        ('SAVED_ADDR', m.SAVED_ADDR, 2),
+        ('COUNT_ADDR', m.COUNT_ADDR, 1),
+    ]
+    ranges = sorted((addr, addr + size) for _, addr, size in slots)
+    for (_, end), (start, _) in zip(ranges, ranges[1:]):
+        assert end <= start, f'workspace slots overlap: {ranges}'
+    lo = min(addr for _, addr, _ in slots)
+    hi = max(addr + size for _, addr, size in slots)
+    assert hi - lo == 12, 'the whole claim is not 12 bytes'
+    assert 0x377 <= lo and hi <= 0x3E7 + 1, \
+        f'workspace claim {lo:#x}-{hi-1:#x} falls outside the 0x377-0x3E7 run'
+
 def test_hooks_are_present_and_match_the_stock_rom():
     m = load()
     data = ROM.read_bytes()
