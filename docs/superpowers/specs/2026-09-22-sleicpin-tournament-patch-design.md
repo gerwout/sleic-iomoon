@@ -106,36 +106,41 @@ E000:5095   9a 02 0b 00 f0    lcall F000:0B02   ; the LOTERIA setup
 scan for writes of `0x0B02` into `[0000:0281]` finds none, so **`LOTERIA` is not
 installed as a `[0281]` handler** and a patch cannot insert itself by that route.
 
-### The injection point — OPEN
+### The injection point
 
-The approved design said the cave installs itself into `[0000:0281]`. That rested on
-a premise the measurement refutes, so the injection mechanism is **open** and needs a
-decision before Phase 2 starts. The candidates:
+The cave is reached by **repointing step 23** of the end-of-game sequence table at
+`E000:4F7C`, the 26-entry word table indexed by `[0000:017D]`. Step 23 is stock
+`E000:5090`:
 
-1. **Repoint step 23** of the `E000:4F7C` table at a small stub in segment E000 that
-   far-calls an `F000` cave, then falls through to the stock `E000:5090`. Keeps the
-   cooperative, non-blocking property by simply *not advancing* `[0000:017D]` until
-   START arrives — the same trick the approved design wanted, in the variable that
-   actually drives the sequence. The `F000` cave can still make the near calls to the
-   draw routines.
-2. **Hook `F000:0B02`'s entry**, its sole caller path. Simpler and stays entirely in
-   `F000`, but a wait there is a blocking hold of the Bike Race kind, which this
-   design rejected on the grounds that an indefinite stall of the 80188 main loop is
-   untested on this machine.
+```
+E000:5090   9a fc de 00 f0    lcall F000:DEFC   ; clear the display buffer
+E000:5095   9a 02 0b 00 f0    lcall F000:0B02   ; the LOTERIA setup
+```
 
-Option 1 preserves the property the design was chosen for. Option 2 is smaller.
-Steps 0-18 and 24-25 of the table are not yet traced, which is the main unknown
-weighing against option 1.
+The table entry points instead at a short stub in segment E000 that far-calls the
+`F000` cave and then falls through to the stock `E000:5090`. The cave keeps the
+sequence cooperative by **not advancing `[0000:017D]`** until START arrives: the
+table is re-read once per tick, so leaving the index alone re-enters the cave on
+the next tick, and every interrupt, the J1 link service and the screen refresh keep
+running for as long as the player takes. Once START arrives the cave advances the
+index and the stock `E000:5090` draws LOTERIA exactly as it does today.
 
-Nothing blocks. Interrupts, the J1 link service and the screen refresh all keep
-running for as long as the player takes — which on a tournament machine may be
-minutes. A blocking hold of the Bike Race kind was the alternative and is kept as
-the fallback if the handler contract proves opaque. The reason to prefer the handler
-is simply that an indefinite stall of the 80188 main loop is untested on this
-machine, and the ROM already contains the idiom that avoids needing to test it.
-(The VDB coil-current watchdog is *not* an argument either way: it is scanned on
-the Z80's port 0x87 and read back on `IN 0x01`, so it keeps running whatever the
-80188 does.)
+`[0000:0281]` is **not** the mechanism. The ROM's screen state machine there is real
+and is documented in the findings, but an exhaustive scan for every write to
+`[0000:0281]` finds none that installs any address associated with LOTERIA, and
+`F000:0B02` is referenced exactly once in the whole image. Nothing to preserve and
+restore, so there is nothing for a `[0281]` handler to chain to.
+
+Hooking `F000:0B02`'s entry directly was the alternative. It is smaller and stays
+entirely in `F000`, but a wait there is a blocking hold of the Bike Race kind, and an
+indefinite stall of the 80188 main loop is untested on this machine. It stays as the
+fallback if repointing the table proves harder than expected. Steps 0-18 and 24-25 of
+the table are not traced; that is the residual unknown, and Phase 2's first
+verification is that a no-op stub at step 23 leaves the stock sequence unchanged.
+
+(The VDB coil-current watchdog is *not* an argument either way: it is scanned on the
+Z80's port 0x87 and read back on `IN 0x01`, so it keeps running whatever the 80188
+does.)
 
 ### Cave placement
 

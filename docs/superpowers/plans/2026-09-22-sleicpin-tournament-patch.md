@@ -84,9 +84,15 @@ Two things this changes for Phase 2:
 - **`REDRAW_PER_TICK` is `false`** (Task 5), so a cave that draws once and then
   only polls is correct.
 
-Still open in Phase 1: the **injection point** (Task 3). The spec's original
-`[0000:0281]` route does not reach `LOTERIA` — see "The interception point" in
-the findings doc.
+The **injection point** is settled too: repoint **step 23** of the 26-entry
+end-of-game table at `E000:4F7C` (indexed by `[0000:017D]`) at an `E000` stub
+that far-calls the `F000` cave and falls through to the stock `E000:5090`, and
+keep the sequence cooperative by not advancing `[0000:017D]` until START
+arrives. The spec's original `[0000:0281]` route does not reach `LOTERIA` —
+nothing writes a LOTERIA address into `[0281]`, and `F000:0B02` is referenced
+exactly once in the image. Phase 2's first verification is that a no-op stub at
+step 23 leaves the stock sequence unchanged; steps 0-18 and 24-25 of the table
+are untraced and are the residual unknown.
 
 ### Task 1: RAM-dump probe in the driver
 
