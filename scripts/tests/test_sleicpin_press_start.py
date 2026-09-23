@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """Byte-level tests for the Sleic Pin-Ball PRESS START patch. Run: python3 this."""
-import importlib.util, pathlib, subprocess, sys, tempfile, zlib
+import pathlib, subprocess, sys, tempfile, types, zlib
+
+sys.dont_write_bytecode = True  # never cache bytecode; the suite must reflect the file on disk
 
 HERE = pathlib.Path(__file__).resolve().parent
 SCRIPTS = HERE.parent
 ROM = SCRIPTS.parent / 'roms/related-machines/sleic-pin-ball/sp03-1_1.rom'
 
 def load():
-    spec = importlib.util.spec_from_file_location(
-        'ps', SCRIPTS / 'sleic_pin_ball_press_start_patch.py')
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
+    # Exec the source text directly. importlib's loader validates cached
+    # bytecode against (source mtime, source size); an edit that lands at the
+    # same byte length with the mtime unchanged reuses a stale .pyc instead
+    # of the code actually on disk.
+    path = SCRIPTS / 'sleic_pin_ball_press_start_patch.py'
+    m = types.ModuleType('ps')
+    m.__file__ = str(path)
+    exec(compile(path.read_text(), str(path), 'exec'), m.__dict__)
     return m
 
 def test_stock_rom_is_accepted():
