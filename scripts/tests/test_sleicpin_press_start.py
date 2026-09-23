@@ -91,6 +91,22 @@ def test_stub_assembles_as_written():
         subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
         assert out.read_bytes() == bytes(m.STUB)
 
+def test_trampoline_common_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.TRAMPOLINE_COMMON_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.TRAMPOLINE_COMMON)
+
+def test_trampoline_tenth_assembles_as_written():
+    m = load()
+    with tempfile.TemporaryDirectory() as t:
+        src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
+        src.write_text(m.TRAMPOLINE_TENTH_ASM)
+        subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
+        assert out.read_bytes() == bytes(m.TRAMPOLINE_TENTH)
+
 def test_stub_polls_the_switch_queue_far():
     m = load()
     assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.STUB), 'no far call to F000:54EF'
