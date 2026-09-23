@@ -86,11 +86,13 @@ Two things this changes for Phase 2:
 - **`REDRAW_PER_TICK` is `false`** (Task 5), so a cave that draws once and then
   only polls is correct.
 
-The **injection point** is settled too: repoint **step 23** of the 26-entry
-end-of-game table at `E000:4F7C` (indexed by `[0000:017D]`) at an `E000` stub
-that far-calls the `F000` cave and falls through to the stock `E000:5090`, and
-keep the sequence cooperative by not advancing `[0000:017D]` until START
-arrives. The spec's original `[0000:0281]` route does not reach `LOTERIA` —
+The **injection point** is settled too, and it is better than repointing step 23:
+the table at `E000:4F7C` has a **spare entry 25** that stock firmware can never
+index, because the advance tail wraps at `0x18` and no write to `[0000:017D]`
+anywhere in the image produces 25. The patch points entry 25 at an `E000` stub
+and redirects the game-over write at `E000:197C` from `0x17` to 25, leaving entry
+23 — the one attract's free-run reaches — untouched. The sequence stays
+cooperative because the stub returns without advancing `[0000:017D]`. The spec's original `[0000:0281]` route does not reach `LOTERIA` —
 nothing writes a LOTERIA address into `[0281]`, and `F000:0B02` is referenced
 exactly once in the image. Phase 2's first verification is that a no-op stub at
 step 23 leaves the stock sequence unchanged; steps 0-18 and 24-25 of the table
@@ -810,40 +812,74 @@ git commit -m "scripts: the Pin-Ball patch's score-screen composer"
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Task 9's `draw_screen` (in the F000 cave), `GUARD_ADDR = 0x0103`
+- Consumes: Task 9's `draw_screen` (in the F000 cave)
 - Produces: `STUB_ASM`/`STUB` and `STUB_ADDR`, a routine in **segment E000**
-  reached as step 23 of the `[0000:017D]` sequence table, plus `STATE_ADDR`, one
-  byte of segment-0 workspace
+  reached as entry **25** of the `[0000:017D]` sequence table, plus `DRAWN_ADDR`,
+  one byte of segment-0 workspace above `0x100`
 
-**The mechanism.** Step 23 of the table at `E000:4F7C` is stock `E000:5090`:
-
-```
-E000:5090  9afcde00f0   lcall F000:DEFC          ; clear the display buffer
-E000:5095  9a020b00f0   lcall F000:0B02          ; the LOTERIA setup
-E000:509A  3ec706df046400  mov word [0x4df], 0x64  ; this step's dwell, in ticks
-E000:50A1  e93100       jmp 0x50d5               ; the advance tail
-```
-
-and the advance tail every step ends in is:
+**The mechanism.** The sequence dispatcher has **no bounds check**:
 
 ```
-E000:50D5  3e833e7d0118  cmp word [0x17d], 0x18
-E000:50DB  7508          jne 0x50e5
-E000:50DD  3ec7067d010000 mov word [0x17d], 0     ; wrap
-E000:50E4  c3            ret
-E000:50E5  3eff067d01    inc word [0x17d]
-E000:50EA  c3            ret
+E000:4F57  cmp byte [0x27e], 0    ; a [0281] handler armed? then do nothing
+E000:4F5D  je 0x4f60
+E000:4F5F  ret
+E000:4F60  cmp byte [0x2c1], 0
+E000:4F66  je 0x4f69
+E000:4F68  ret
+E000:4F69  be7c4f      mov si, 0x4f7c   ; the table base
+E000:4F6C  3ea17d01    mov ax, [0x17d]
+E000:4F70  ba0200      mov dx, 2
+E000:4F73  f7e2        mul dx
+E000:4F75  03f0        add si, ax
+E000:4F77  2e8b04      mov ax, cs:[si]
+E000:4F7A  ffe0        jmp ax           ; NEAR jmp, so a step ends in ret
 ```
 
-So **holding the screen is a `ret` that skips `0x50D5`**: `[017D]` stays at 23
-and the dispatcher vectors here again on the next tick. Releasing is
-`jmp 0x5090`, which runs the stock step and advances normally. The stub must be
-in segment E000 because the table entry is a near offset in that segment; it
-lives at `E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of
+and the table has **a spare slot**. Entries run 0 to 25 at `E000:4F7C`-`4FAF`,
+with code beginning at `E000:4FB0` (entries 1 and 13 both jump there). The
+advance tail wraps at `0x18`:
+
+```
+E000:50D5  cmp word [0x17d], 0x18
+E000:50DB  jne 0x50e5
+E000:50DD  mov word [0x17d], 0     ; 24 wraps to 0
+E000:50E4  ret
+E000:50E5  inc word [0x17d]
+E000:50EA  ret
+```
+
+so incrementing never produces 25, and no write to `[017D]` anywhere in the image
+produces 25 either — the six writes are `1` (`E000:0075`), `1` (`E000:1962`),
+`0x17` (`E000:197C`), `0` (`E000:50DE`), and two bare `inc`s (`E000:5051`,
+`E000:50E6`). **Entry 25 at `E000:4FAE` is therefore unreachable in stock
+firmware**, and it holds `0x5022`, a duplicate of entry 0.
+
+That gives the patch a clean separation no state flag can match:
+
+| path | index | what runs |
+|---|---|---|
+| a real game ends | **25** | the patch's stub |
+| attract's free-run | 23 | stock step 23, untouched |
+
+`E000:196A` is the game-over path: it bumps an NVRAM audit byte
+(`inc byte es:[0x66d]` with `ES = 0x1000`), far-calls `F000:002C`, and then sets
+`[017D] = 0x17` to jump the sequence to the LOTERIA screen. Redirecting **that
+write** to 25 is what routes a finished game to the stub, while attract — which
+free-runs the whole table on a ~5760-frame period and holds step 23 for about 200
+frames each lap — reaches only the stock entry. The screen therefore **cannot**
+appear in attract, structurally, rather than by a guard that has to be right.
+
+Holding is a `ret` that skips the advance tail: `[017D]` stays 25 and the
+dispatcher re-enters the stub next tick. Releasing sets `[017D] = 23` and jumps
+to `0x5090`, so the stock step 23 draws LOTERIA and its own tail advances 23 to
+24 exactly as it would have.
+
+The stub must be in segment E000 because the table entry is a near offset there;
+it lives at `E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of
 the segment. The drawing cave stays in F000 and is reached by `lcall`.
 
-`DS` is already 0 on entry — every access in the dispatcher and in step 23 is a
-`3E`-prefixed direct address in segment 0. Confirm that before relying on it.
+`DS` is already 0 on entry — every access in the dispatcher and in each step is a
+`3E`-prefixed direct address in segment 0.
 
 `F000:54EF` is verified to behave as this task assumes:
 
@@ -863,19 +899,24 @@ F000:550C  cb           retf                   ;   and return with AL = 0
 So it needs `DS = 0`, clobbers `AX` and `SI`, returns `AL = 0` on an empty queue,
 and is safe to call in a loop — which is what the drain below does.
 
-**The state byte.** `STATE_ADDR` holds 0 = not yet drawn, 1 = drawn and holding,
-2 = done for this game.
+**The one flag, and why its power-on value does not matter.** The stub is
+re-entered every tick while holding, so it needs to know whether it has already
+drawn — redrawing would mean clearing and recomposing the buffer under the
+panel's raster. `DRAWN_ADDR` is one byte of segment-0 workspace for that, and the
+game-over hook writes it to 0 immediately before the stub can ever run, so an
+uninitialised value at power-on is unreachable. Boot initialises only
+`0x0000`-`0x00FE` of segment 0, and that region is the **interrupt vector table**
+(255 bytes copied from `F000:FEF0`, every entry `F000:FFF0` except vector 2 at
+`F000:DF20` and vector 8 at `F000:DF7F`), so no flag may live below `0x100`.
 
-The `[017D]` sequence **free-runs continuously through the whole table in
-attract**, measured: with no input at all it cycles 0-24 on a ~5760-frame period
-and holds step 23 for about 200 frames each lap, while `[0103]` reads `0x00`
-throughout. So `[0103] == 0` alone does not mean "a game just ended" — it is
-equally true in attract, and a stub that released by resetting `STATE_ADDR` to 0
-would put the score screen up in attract every ~96 seconds.
-
-The release path therefore sets `STATE_ADDR` to **2**, not 0, and only the
-game-start hook Task 11 adds clears it back to 0. That gives exactly one hold per
-game, which is the Bike Race two-hook shape.
+Pick `DRAWN_ADDR` from a run of segment-0 bytes that no direct-address
+instruction in the image references, neither the byte nor either neighbour. The
+measured runs above `0x100` include `0x377`-`0x3E7` (113 bytes), `0x312`-`0x36E`
+(93), `0x43A`-`0x486` (77) and `0x133`-`0x16C` (58); take a byte well inside one
+of them. Absence of a direct reference does not prove the firmware never reaches
+it through an index register, so state the choice as what it is — an unreferenced
+byte, not a proven-free one. The failure mode if the firmware does write it
+mid-hold is cosmetic: one extra redraw, or a blank screen until START.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -892,16 +933,17 @@ def test_stub_polls_the_switch_queue_far():
     m = load()
     assert bytes([0x9A, 0xEF, 0x54, 0x00, 0xF0]) in bytes(m.STUB), 'no far call to F000:54EF'
 
-def test_stub_guards_on_the_in_game_flag():
+def test_stub_hands_back_to_the_stock_step_23():
     m = load()
-    # 3E 80 3E 03 01 00 = cmp byte ds:[0103], 0
-    assert bytes([0x3E, 0x80, 0x3E, 0x03, 0x01, 0x00]) in bytes(m.STUB)
+    asm = m.STUB_ASM.lower()
+    # the release path restores index 23 and rejoins the stock step
+    assert '0x17d' in asm, 'stub never writes the sequence index'
+    assert '0x5090' in asm, 'stub never rejoins the stock step 23'
+    assert '0x50d5' not in asm, 'stub must not jump to the advance tail itself'
 
-def test_stub_rejoins_the_stock_step_and_not_the_advance_tail():
+def test_drawn_flag_is_above_the_vector_table():
     m = load()
-    asm = m.STUB_ASM
-    assert '0x5090' in asm or '05090' in asm, 'stub never rejoins the stock step 23'
-    assert '0x50d5' not in asm.lower(), 'stub must not jump to the advance tail itself'
+    assert m.DRAWN_ADDR >= 0x100, 'the flag would land in the interrupt vector table'
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
@@ -911,35 +953,29 @@ Expected: `FAIL` — `STUB_ASM` undefined.
 - [ ] **Step 3: Write the stub**
 
 ```
-stub:   cmp byte [0x103], 0        ; in-game flag: 0 means the game is over
-        jne stock                  ;   a game is running: behave exactly as stock
-        cmp byte [STATE_ADDR], 1
-        je holding                 ;   already drawn: poll for START
-        cmp byte [STATE_ADDR], 0
-        jne stock                  ;   2 = this game already had its screen
+stub:   cmp byte [DRAWN_ADDR], 0
+        jne poll                   ; already composed: just poll
+        lcall F000:DEFC            ; clear both planes
         lcall F000:<draw_screen>   ; compose the screen once
-        mov byte [STATE_ADDR], 1
+        mov byte [DRAWN_ADDR], 1
         jmp hold
-holding:
-        lcall F000:0x54EF          ; pop one switch code, AL = 0 when empty
+poll:   lcall F000:0x54EF          ; pop one switch code, AL = 0 when empty
         or al, al
         je hold                    ;   queue empty: keep holding
         cmp al, 5                  ; START
-        jne holding                ;   anything else: discard it and keep draining
+        jne poll                   ;   anything else: discard it and keep draining
 drain:  lcall F000:0x54EF          ; scrub duplicate START codes before moving on
         or al, al
         jne drain
-        mov byte [STATE_ADDR], 2   ; one hold per game; the game-start hook resets it
-        jmp stock
+        mov word [0x17d], 0x17     ; hand the sequence back to the stock step 23
+        jmp 0x5090                 ;   whose own tail advances 23 -> 24
 hold:   mov word [0x4df], <dwell>  ; this step's dwell in ticks
-        ret                        ; [017D] untouched: step 23 runs again
-stock:  jmp 0x5090
+        ret                        ; [017D] still 25: the stub runs again
 ```
 
-Pick `<dwell>` small enough that START feels responsive and large enough not to
-redraw needlessly — the draw is already guarded by `STATE_ADDR`, so the dwell
-only paces the poll. Write it as `STUB_ASM` with `org 0x50EB` and
-hand-assemble it into `STUB`.
+Pick `<dwell>` small enough that START feels responsive — the draw happens once,
+guarded by `DRAWN_ADDR`, so the dwell only paces the poll. Write it as `STUB_ASM`
+with `org 0x50EB` and hand-assemble it into `STUB`.
 
 The `drain` loop is this ROM's own idiom for a START press: the Z80 cabinet scan
 has no time-based debounce, so one press can leave more than one `0x05` in the
@@ -972,15 +1008,24 @@ git commit -m "scripts: the Pin-Ball patch's hold stub and START poll"
 - Consumes: every earlier Phase 2 task
 - Produces: the final `CAVES` and `HOOKS` tuples; a complete, applicable patch
 
-**The hook is two bytes.** Table entry 23 sits at `E000:4FAA` and reads
-`90 50` (`0x5090`). The patch writes the stub's offset there. That is the whole
-hook — no displaced instructions, no trampoline, nothing to replay.
+**Two hooks, both tiny.**
+
+1. **Table entry 25**, at `E000:4FAE`, reads `22 50` (`0x5022`, a duplicate of
+   entry 0 that stock firmware can never index). The patch writes the stub's
+   offset there.
+2. **The game-over redirect**, at `E000:197C`, is `3e c7 06 7d 01 17 00` —
+   `mov word ds:[0x17d], 0x17` — followed by `ret` at `E000:1983`. The patch
+   replaces those seven bytes with a `jmp near` to a trampoline plus `0x90`
+   padding. The trampoline sets `[017D] = 25`, clears `DRAWN_ADDR`, and `ret`s,
+   which is the same `ret` the stock path took.
+
+Entry 23 is **left alone**, which is what keeps the screen out of attract.
 
 Two cave regions, so `CAVES` spans two padding runs:
 
 | region | physical | holds |
 |---|---|---|
-| E000 padding | `0xE50EB` upward | `STUB`, the game-start trampoline |
+| E000 padding | `0xE50EB` upward | `STUB`, the game-over trampoline |
 | F000 padding | `0xFDFF0` upward | `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN` |
 
 - [ ] **Step 1: Write the failing test**
@@ -989,20 +1034,28 @@ Two cave regions, so `CAVES` spans two padding runs:
 def test_hooks_are_present_and_match_the_stock_rom():
     m = load()
     data = ROM.read_bytes()
-    assert len(m.HOOKS) >= 1, 'HOOKS is empty, so the assertions below never run'
+    assert len(m.HOOKS) == 2, 'expected the table entry and the game-over redirect'
     for addr, original, patched, label in m.HOOKS:
         off = m.physical_to_file(addr)
         assert data[off:off+len(original)] == original, f'{label}: stock bytes differ'
         assert len(original) == len(patched), f'{label}: patch changes length'
 
-def test_the_table_entry_is_the_hook():
+def test_the_spare_table_entry_is_the_hook():
     m = load()
-    addrs = {addr for addr, _, _, _ in m.HOOKS}
-    assert 0xE4FAA in addrs, 'step 23 of the E000:4F7C table is not hooked'
-    for addr, original, patched, _ in m.HOOKS:
-        if addr == 0xE4FAA:
-            assert original == bytes([0x90, 0x50]), 'stock entry 23 is not 0x5090'
-            assert int.from_bytes(patched, 'little') == m.STUB_ADDR & 0xFFFF
+    by_addr = {addr: (o, p) for addr, o, p, _ in m.HOOKS}
+    assert 0xE4FAE in by_addr, 'spare entry 25 of the E000:4F7C table is not hooked'
+    original, patched = by_addr[0xE4FAE]
+    assert original == bytes([0x22, 0x50]), 'stock entry 25 is not 0x5022'
+    assert int.from_bytes(patched, 'little') == m.STUB_ADDR & 0xFFFF
+    assert 0xE4FAA not in by_addr, 'entry 23 must be left alone, or attract shows the screen'
+
+def test_the_game_over_write_is_redirected():
+    m = load()
+    by_addr = {addr: (o, p) for addr, o, p, _ in m.HOOKS}
+    assert 0xE197C in by_addr, 'the game-over write to [017D] is not hooked'
+    original, _ = by_addr[0xE197C]
+    assert original == bytes([0x3E, 0xC7, 0x06, 0x7D, 0x01, 0x17, 0x00]), \
+        'stock bytes at E000:197C are not mov word ds:[0x17d], 0x17'
 
 def test_patched_rom_differs_only_in_caves_and_hooks():
     m = load()
@@ -1024,17 +1077,17 @@ that the space is `0xFF` before the patch writes it.
 - [ ] **Step 2: Run it to verify it fails**
 
 Expected: `FAIL test_hooks_are_present_and_match_the_stock_rom` — `HOOKS` is
-empty.
+empty, so the length assertion fires before the loop can pass vacuously.
 
 - [ ] **Step 3: Lay out the caves and write the hook**
 
-Assign the F000 blobs from `0xFDFF0` upward and the stub at `0xE50EB`,
-re-assemble every blob with the real addresses substituted, and confirm the
-`nasm` cross-checks still pass. Add the game-start reset hook: the `[017D]` sequence is measured to revisit step
-23 every lap in attract, so the patch needs `STATE_ADDR` cleared when a game
-starts. Hook `E000:0706`, where the stock code writes `[0103] = 0xFF` and
-`[0105] = 1`, and have the trampoline clear `STATE_ADDR` before rejoining. So
-`HOOKS` has two entries: the two-byte table entry and this one.
+Assign the F000 blobs from `0xFDFF0` upward, and the stub plus the game-over
+trampoline from `0xE50EB` upward. Re-assemble every blob with the real addresses
+substituted and confirm the `nasm` cross-checks still pass.
+
+Then write the two hooks described above. The trampoline's `jmp near`
+displacement is relative to the end of the `jmp` at `E000:197F`, so compute it
+from the final trampoline address rather than assuming one.
 
 - [ ] **Step 4: Run the tests and apply the patch for real**
 

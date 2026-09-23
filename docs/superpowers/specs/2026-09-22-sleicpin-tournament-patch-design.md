@@ -119,39 +119,59 @@ installed as a `[0281]` handler** and a patch cannot insert itself by that route
 
 ### The injection point
 
-The cave is reached by **repointing step 23** of the end-of-game sequence table at
-`E000:4F7C`, the 26-entry word table indexed by `[0000:017D]`. Step 23 is stock
-`E000:5090`:
+The end-of-game sequence is a table of near offsets at `E000:4F7C` indexed by
+`[0000:017D]`, dispatched with **no bounds check**:
 
 ```
-E000:5090   9a fc de 00 f0    lcall F000:DEFC   ; clear the display buffer
-E000:5095   9a 02 0b 00 f0    lcall F000:0B02   ; the LOTERIA setup
+E000:4F69  be7c4f      mov si, 0x4f7c
+E000:4F6C  3ea17d01    mov ax, [0x17d]
+E000:4F73  f7e2        mul dx           ; DX = 2
+E000:4F75  03f0        add si, ax
+E000:4F77  2e8b04      mov ax, cs:[si]
+E000:4F7A  ffe0        jmp ax
 ```
 
-The table entry points instead at a short stub in segment E000 that far-calls the
-`F000` cave and then falls through to the stock `E000:5090`. The cave keeps the
-sequence cooperative by **not advancing `[0000:017D]`** until START arrives: the
-table is re-read once per tick, so leaving the index alone re-enters the cave on
-the next tick, and every interrupt, the J1 link service and the screen refresh keep
-running for as long as the player takes. Once START arrives the cave advances the
-index and the stock `E000:5090` draws LOTERIA exactly as it does today.
+The table runs to entry 25 at `E000:4FAE` (code begins at `E000:4FB0`, where
+entries 1 and 13 jump), but the advance tail wraps at `0x18`, so incrementing
+never reaches 25, and none of the six writes to `[017D]` in the image produces 25
+either. **Entry 25 is a spare slot stock firmware cannot index.**
 
-`[0000:0281]` is **not** the mechanism. The ROM's screen state machine there is real
-and is documented in the findings, but an exhaustive scan for every write to
-`[0000:0281]` finds none that installs any address associated with LOTERIA, and
-`F000:0B02` is referenced exactly once in the whole image. Nothing to preserve and
-restore, so there is nothing for a `[0281]` handler to chain to.
+The patch uses it:
 
-Hooking `F000:0B02`'s entry directly was the alternative. It is smaller and stays
-entirely in `F000`, but a wait there is a blocking hold of the Bike Race kind, and an
-indefinite stall of the 80188 main loop is untested on this machine. It stays as the
-fallback if repointing the table proves harder than expected. Steps 0-18 and 24-25 of
-the table are not traced; that is the residual unknown, and Phase 2's first
-verification is that a no-op stub at step 23 leaves the stock sequence unchanged.
+| path | index | what runs |
+|---|---|---|
+| a real game ends | **25** | the patch's stub, which holds the screen |
+| attract's free-run | 23 | stock step 23, untouched |
 
-(The VDB coil-current watchdog is *not* an argument either way: it is scanned on the
-Z80's port 0x87 and read back on `IN 0x01`, so it keeps running whatever the 80188
-does.)
+`E000:196A` is the game-over path — it bumps an NVRAM audit byte, far-calls
+`F000:002C`, then sets `[017D] = 0x17` to reach the LOTERIA screen. The patch
+redirects that one write to 25. Attract free-runs the whole table on a
+~5760-frame period and holds step 23 for about 200 frames each lap, so leaving
+entry 23 alone is what keeps the screen out of attract — **structurally**, not by
+a guard that has to be right. `[0103]`, the in-game flag, reads `0x00` in attract
+too, so it could not have made that distinction on its own.
+
+Holding is a `ret` that skips the advance tail at `E000:50D5`: `[017D]` stays 25
+and the dispatcher re-enters the stub on the next tick, with every interrupt, the
+J1 link service and the screen refresh still running for as long as the player
+takes. Releasing sets `[017D] = 23` and jumps to `0x5090`, so the stock step
+draws LOTERIA and its own tail advances 23 to 24 exactly as it would have.
+
+The stub lives in segment E000 because the table entry is a near offset there, at
+`E000:50EB`, the start of a 44,821-byte `0xFF` run reaching the end of the
+segment. The drawing code stays in F000, which it must, to near-call `F000:550D`
+and read the face at `F000:85EB` through `CS`.
+
+Rejected: **repointing entry 23** and gating on `[0103]`, which cannot tell a
+finished game from attract and would have shown the screen every ~96 seconds in
+attract. Also rejected: **hooking `F000:0B02`'s entry**, its sole caller path —
+smaller and entirely within F000, but a wait there is a blocking hold of the Bike
+Race kind, and an indefinite stall of the 80188 main loop is untested on this
+machine.
+
+(The VDB coil-current watchdog is *not* an argument either way: it is scanned on
+the Z80's port 0x87 and read back on `IN 0x01`, so it keeps running whatever the
+80188 does.)
 
 ### Cave placement
 
