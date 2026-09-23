@@ -4,7 +4,7 @@
 
 **Goal:** Patch Sleic Pin-Ball's `sp03` ROM so the end of a game shows every player's final score and holds it until START is pressed.
 
-**Architecture:** A code cave in `sp03`'s `0xFF` padding, installed as a handler in the ROM's own cooperative screen state machine rather than as a blocking hold. The cave composes a screen the firmware does not have: player labels in the machine's 8-row font, scores in a 4x7 digit font the cave carries, two players per row, with a steady `PULSE START`. It polls the switch FIFO for code `0x05` and chains to the original next-handler when it arrives.
+**Architecture:** A code cave in `sp03`'s `0xFF` padding, installed as a handler in the ROM's own cooperative screen state machine rather than as a blocking hold. The cave composes a screen the firmware does not have: two 8-digit scores per row in the machine's own 8-row font, no player labels, with a steady `PRESS START` on the bottom band. It polls the switch FIFO for code `0x05` and chains to the original next-handler when it arrives.
 
 **Tech Stack:** Python 3 (the patch script, matching the other `scripts/*_patch.py`), 8086/80188 assembly hand-assembled into a Python byte list and cross-checked with `nasm`, PinMAME (`build-probe/sdl3pinmame` with `DEBUG_SLEIC`) for headless verification with `-key_script` and `SLEIC_DMD_DUMP`.
 
@@ -74,13 +74,15 @@ Two things this changes for Phase 2:
 
 - **The ROM already has four 8-digit score renderers**, `F000:4234`, `43C5`,
   `4556` and `46E7`, one per player, each self-contained and taking no
-  arguments. They draw into panel rows `0xC13`, `0xD13`, `0xE13` and `0xF13` —
-  one player per row, four rows of eight pixel rows filling the panel exactly,
-  which leaves no room for labels or a `PULSE START` line. So they are usable
-  as a fallback layout but do **not** replace Task 9's cave: the two-per-row
-  layout this plan specifies still needs the cave's own smaller digit font.
-  What they do supply is the digit source and a worked example of the draw
-  loop.
+  arguments. They draw one player per row at a hardcoded position in the second
+  plane (`0xC13`, `0xD13`, `0xE13`, `0xF13`), four bands filling the panel
+  exactly, so they cannot be reused for a screen that also carries a prompt.
+  What they supply is the worked draw loop and the proof of how the face is
+  indexed: `0x85EB + 8*digit`.
+- **`F000:550D` draws a whole string record in that same face** and sets
+  `ES = 0x6000` itself, but reads the record through `CS`, so it draws static
+  ROM strings only. That covers the prompt; the scores need the cave's own
+  copy of the same loop reading digits from RAM (Task 7).
 - **`REDRAW_PER_TICK` is `false`** (Task 5), so a cave that draws once and then
   only polls is correct.
 
@@ -569,7 +571,7 @@ git commit -m "scripts: Sleic Pin-Ball PRESS START patch skeleton and its byte t
 
 ---
 
-### Task 7: The narrow digit font and its blitter
+### Task 7: The digit-string blitter
 
 **Files:**
 - Modify: `sleic-iomoon/scripts/sleic_pin_ball_press_start_patch.py`
@@ -577,118 +579,71 @@ git commit -m "scripts: Sleic Pin-Ball PRESS START patch skeleton and its byte t
 
 **Interfaces:**
 - Consumes: `CAVES` from Task 6
-- Produces: `NARROW_FONT` (70 bytes, ten 7-row glyphs, 4 px ink left-aligned in the high nibble), `NARROW_FONT_ADDR`, and a cave routine `narrow_draw` at `NARROW_DRAW_ADDR` called with `AL` = digit 0-9, `DI` = buffer offset, `CL` = bit shift 0-7, `ES` = `0x6000`; draws 7 rows at a `0x20` stride, OR-ing into the buffer so two glyphs can share a byte column
+- Produces: a cave routine `digits_draw` at `DIGITS_DRAW_ADDR`, called with
+  `SI` = an 8-byte digit buffer in segment 0 (values `0`-`9`, or `0xFF` for a
+  blanked leading zero), `DI` = the buffer offset of the leftmost cell, and
+  `ES` = `0x6000`; draws eight glyphs of the 8-row face at `F000:85EB`, one
+  byte column apart, eight rows at a `0x20` stride, into **both** planes
+  (`DI` and `DI+0x800`)
+
+**No font and no bit shifting.** The face at `F000:85EB` is 8 px wide in 8 px
+cells with 50 glyphs — digits, space at index 10, then `A` onward — so every
+glyph is byte-aligned and a glyph's address is `0x85EB + 8*index`, exactly as
+the ROM's own score renderers compute it. A blanked leading zero draws index 10
+(space). This routine is the RAM-sourced twin of `F000:550D`, which does the
+same copy but reads its glyph pointers through `CS` and so can only draw static
+ROM strings.
 
 - [ ] **Step 1: Write the failing test**
 
 Add to the test file:
 
 ```python
-def test_narrow_font_is_ten_seven_row_glyphs():
+def test_digits_draw_assembles_as_written():
     m = load()
-    assert len(m.NARROW_FONT) == 70
-    for d in range(10):
-        rows = m.NARROW_FONT[d*7:(d+1)*7]
-        assert any(rows), f'digit {d} is blank'
-        assert all(r & 0x0F == 0 for r in rows), f'digit {d} has ink outside the top nibble'
-
-def test_narrow_draw_assembles_as_written():
-    m = load()
-    asm = m.NARROW_DRAW_ASM
     with tempfile.TemporaryDirectory() as t:
         src = pathlib.Path(t) / 'a.asm'; out = pathlib.Path(t) / 'a.bin'
-        src.write_text(asm)
+        src.write_text(m.DIGITS_DRAW_ASM)
         subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
-        assert out.read_bytes() == bytes(m.NARROW_DRAW), 'byte list != nasm output'
+        assert out.read_bytes() == bytes(m.DIGITS_DRAW), 'byte list != nasm output'
+
+def test_prompt_record_is_eleven_glyph_pointers():
+    m = load()
+    assert m.PROMPT_RECORD[:2] == bytes([11, 0]), 'count word is not 11'
+    assert len(m.PROMPT_RECORD) == 2 + 22, 'record is not count + 11 words'
+    want = 'PRESS START'
+    for k, ch in enumerate(want):
+        idx = 10 if ch == ' ' else 11 + (ord(ch) - ord('A'))
+        ptr = int.from_bytes(m.PROMPT_RECORD[2+2*k:4+2*k], 'little')
+        assert ptr == 0x85EB + 8*idx, f'glyph {k} ({ch!r}) points at {ptr:#06x}'
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Expected: `FAIL test_narrow_font_is_ten_seven_row_glyphs: ...` — `NARROW_FONT`
-is not defined.
+Expected: `FAIL` — `DIGITS_DRAW_ASM` and `PROMPT_RECORD` are not defined.
 
-- [ ] **Step 3: Add the font and the blitter**
+- [ ] **Step 3: Write the blitter and the prompt record**
 
-The font is ten glyphs, seven bytes each, ink in the top four bits:
+Build `PROMPT_RECORD` in Python from the string `PRESS START` and the index
+scheme, so the test above checks the generator rather than a hand-typed table.
 
-```python
-# 4 px x 7 row digits, ink left-aligned so a 0-7 bit shift places them at a 5 px
-# pitch.  Drawn by narrow_draw, which ORs into the buffer.
-NARROW_FONT = bytes([
-    0x60,0x90,0x90,0x90,0x90,0x90,0x60,   # 0
-    0x20,0x60,0x20,0x20,0x20,0x20,0x70,   # 1
-    0x60,0x90,0x10,0x20,0x40,0x80,0xF0,   # 2
-    0xE0,0x10,0x10,0x60,0x10,0x10,0xE0,   # 3
-    0x20,0x60,0xA0,0xF0,0x20,0x20,0x20,   # 4
-    0xF0,0x80,0xE0,0x10,0x10,0x90,0x60,   # 5
-    0x60,0x80,0xE0,0x90,0x90,0x90,0x60,   # 6
-    0xF0,0x10,0x20,0x20,0x40,0x40,0x40,   # 7
-    0x60,0x90,0x90,0x60,0x90,0x90,0x60,   # 8
-    0x60,0x90,0x90,0x70,0x10,0x10,0x60,   # 9
-])
-```
+The blitter is one glyph loop around one row loop, the row loop being the copy
+the ROM already uses (`mov al, cs:[si] / mov es:[di], al / add di, 0x20`), with
+the second-plane write alongside it. Write it as `DIGITS_DRAW_ASM` and
+hand-assemble it into `DIGITS_DRAW`.
 
-and the blitter, written as assembly **and** as the byte list the test compares:
-
-```python
-NARROW_DRAW_ASM = """bits 16
-org 0
-        push si
-        push di
-        push bx
-        push ax
-        mov  bl, 7
-        mul  bl                  ; AX = 7 * digit
-        mov  si, NARROW_FONT_ADDR_LO
-        add  si, ax
-        mov  bl, 7               ; 7 rows
-.row:   mov  al, [cs:si]
-        xor  ah, ah
-        shr  ax, cl              ; slide the 4 px glyph into place
-        or   [es:di], ah         ; the byte the shift carried into
-        or   [es:di+1], al
-        inc  si
-        add  di, 0x20
-        dec  bl
-        jnz  .row
-        pop  ax
-        pop  bx
-        pop  di
-        pop  si
-        ret
-"""
-```
-
-`NARROW_FONT_ADDR_LO` is the font's offset within segment F000, filled in once
-Task 11 fixes the cave layout — until then assemble with a `%define` of the
-final value so the test is meaningful. Hand-assemble the same sequence into
-`NARROW_DRAW`.
-
-Note the shift direction: `shr ax, cl` with `al` holding the glyph and `ah`
-zero moves ink *right* into `ah`, so `ah` is the left-hand byte. Verify that
-against the test in Step 4 rather than trusting this paragraph.
-
-- [ ] **Step 4: Run the tests and a pixel check**
+- [ ] **Step 4: Run the tests**
 
 ```bash
 python3 scripts/tests/test_sleicpin_press_start.py
 ```
-Expected: all `PASS`. Then render the font from the byte list and confirm the
-ten glyphs read `0`–`9`:
-
-```python
-f = NARROW_FONT
-for d in range(10):
-    print(d)
-    for r in f[d*7:(d+1)*7]:
-        print('  ' + ''.join('#' if r & (0x80>>k) else '.' for k in range(4)))
-```
+Expected: all `PASS`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add scripts/sleic_pin_ball_press_start_patch.py scripts/tests/test_sleicpin_press_start.py
-git commit -m "scripts: the Pin-Ball patch's 4x7 digit font and its shift blitter"
+git commit -m "scripts: the Pin-Ball patch's digit blitter and PRESS START record"
 ```
 
 ---
@@ -766,29 +721,28 @@ git commit -m "scripts: the Pin-Ball patch's per-player score digit reader"
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Tasks 7 and 8, plus Task 2's `PLAYER_COUNT` and Task 5's `GLYPH_PERIOD`
-- Produces: `PROMPT_RECORD` (a `word` count plus eleven `word` glyph pointers spelling `PULSE START` in the 8-row font) and a cave routine `draw_screen` at `DRAW_SCREEN_ADDR`, taking no arguments, which clears the visible buffer and draws the whole screen
+- Consumes: Task 7's `digits_draw` and `PROMPT_RECORD`, Task 8's `score_digits`, the block table at `E000:190F` and `PLAYER_COUNT`
+- Produces: a cave routine `draw_screen` at `DRAW_SCREEN_ADDR`, taking no arguments, which clears the display buffer and draws the whole screen
 
-**The layout**, from the spec: player labels in the machine's 8-row font via
-`F000:550D`; scores in the narrow font via Task 7; two players per row, player
-*n* at column `(n & 1) * 66` px and row `2 + (n >> 1) * 11`; the prompt centred
-on row 24. Rows 0-31, byte column *c*, is buffer offset `0x410 + row*0x20 + c`.
+**The layout**, from the spec. The buffer is segment `0x6000`, visible from
+offset `0x410`, row stride `0x20`, second plane at `+0x800`, so the four bands of
+eight rows start at `0x410`, `0x510`, `0x610` and `0x710`. A score is eight
+glyphs, eight byte columns, half of the sixteen a row holds:
+
+| what | plane 1 | plane 2 |
+|---|---|---|
+| player 1 | `0x410` | `0xC10` |
+| player 2 | `0x418` | `0xC18` |
+| player 3 | `0x510` | `0xD10` |
+| player 4 | `0x518` | `0xD18` |
+| `PRESS START`, centred | `0x712` | `0xF12` |
+
+Eleven glyphs centred in sixteen columns leaves a two-column left margin, hence
+`0x712`. Band 2 (`0x610`) stays blank.
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-def test_prompt_record_spells_pulse_start():
-    m = load()
-    rec = m.PROMPT_RECORD
-    n = int.from_bytes(rec[0:2], 'little')
-    assert n == 11
-    SMALL, STRIDE = 0x85EB, 8
-    idx = [ (int.from_bytes(rec[2+2*k:4+2*k], 'little') - SMALL) // STRIDE
-            for k in range(n) ]
-    alpha = {10: ' '}
-    for i, c in enumerate('ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'): alpha[11+i] = c
-    assert ''.join(alpha[i] for i in idx) == 'PULSE START'
-
 def test_draw_screen_assembles_as_written():
     m = load()
     with tempfile.TemporaryDirectory() as t:
@@ -796,21 +750,28 @@ def test_draw_screen_assembles_as_written():
         src.write_text(m.DRAW_SCREEN_ASM)
         subprocess.run(['nasm', '-f', 'bin', '-o', str(out), str(src)], check=True)
         assert out.read_bytes() == bytes(m.DRAW_SCREEN)
+
+def test_draw_screen_uses_the_documented_slots():
+    m = load()
+    for off in (0x410, 0x418, 0x510, 0x518, 0x712):
+        assert off.to_bytes(2, 'little') in bytes(m.DRAW_SCREEN), f'{off:#05x} missing'
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Expected: `FAIL` — `PROMPT_RECORD` undefined.
+Expected: `FAIL` — `DRAW_SCREEN_ASM` undefined.
 
-- [ ] **Step 3: Build the record and the composer**
+- [ ] **Step 3: Write the composer**
 
-`PULSE START` in the 8-row font is indices `P U L S E (space) S T A R T` =
-`27 32 22 30 15 10 30 31 11 29 31`, so each pointer is `0x85EB + 8*index`.
-Write `PROMPT_RECORD` from those indices computed in Python, not hand-typed.
+Far-call `F000:DEFC` to clear the buffer, then for each player `1` to
+`PLAYER_COUNT` index the block table at `E000:190F`, call `score_digits` to get
+eight digits into a scratch buffer with the leading zeros blanked, and call
+`digits_draw` with that player's slot offset from the table above. Then draw the
+prompt twice with `F000:550D`, at `0x712` and `0xF12`, since that routine writes
+one plane per call.
 
-`draw_screen` clears offsets `0x410`-`0xC0F` in both planes, then loops players
-`1` to `PLAYER_COUNT` drawing a label and eight digits each, then draws the
-prompt with `F000:550D`.
+Take the scratch digit buffer from the cave's own segment-0 workspace, not from
+the live player block — the live block is real game state.
 
 - [ ] **Step 4: Run the tests**
 
@@ -929,7 +890,7 @@ make the test also assert `len(m.HOOKS) >= 1` so it fails honestly.
 
 - [ ] **Step 3: Lay out the cave and write the hook**
 
-Assign final addresses from `0xFDFF0` upward: `NARROW_FONT`, `NARROW_DRAW`,
+Assign final addresses from `0xFDFF0` upward: `DIGITS_DRAW`,
 `SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN`, `HANDLER`, then the hook
 trampoline. Re-assemble every blob with the real addresses substituted and
 confirm the `nasm` cross-checks still pass.
@@ -1102,7 +1063,7 @@ here by construction.
 
 **Type consistency.** `physical_to_file`, `validate_rom`, `is_already_patched`,
 `apply_patches`, `CAVES`, `HOOKS` are the names Task 6 defines and every later
-task uses. `NARROW_FONT`/`NARROW_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`,
+task uses. `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`,
 `DRAW_SCREEN`, `HANDLER` each have a matching `*_ASM` string for the `nasm`
 cross-check and a matching `*_ADDR` assigned in Task 11.
 

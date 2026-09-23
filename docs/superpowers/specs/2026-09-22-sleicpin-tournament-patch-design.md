@@ -41,32 +41,43 @@ threshold to make a stricter competition build, and skipping everything after th
 bonus count so the scores are the last image before attract. Both change documented
 machine behaviour for a benefit the operator has not asked for.
 
-**2. Two players per row, with a digit font carried in the cave.** Both ROM fonts
-are 8 px wide, giving sixteen characters per line, and the 8-row font's four lines
-consume all thirty-two rows — so a four-player screen drawn with the stock font
-leaves nowhere for a prompt. Measured: the glyph ink is 7 px in an 8 px cell and 7
-rows in an 8-row cell, one spare column and one spare row, so tightening the pitch
-to 7 px makes adjacent glyphs touch and is unreadable. Rendering it proved that.
+**2. Two scores per row in the machine's own font, and no player labels.** The
+8-row face at `F000:85EB` holds 50 glyphs — `0`-`9`, space at index 10, then `A`
+onward with `Ñ` at 25 — in 8 px × 8 row cells, so a 128 px row is exactly sixteen
+cells and the 32-row panel is exactly four bands of eight rows.
 
-The patch therefore carries its own **4 px × 7 row digit font**, ten glyphs, 70
-bytes, drawn at a 5 px pitch by a small bit-shifting blitter in the cave. Digit
-*height* is unchanged from stock — only the width drops — so legibility holds.
-Player labels use the machine's own 8-row font. Four scores and a steady prompt
-then fit with room to spare:
+A score is eight digits, so it is eight cells, half a row. Two scores fill a band
+exactly and the four players need two bands, which leaves two bands over:
 
 ```
 +--------------------------------+
-| 1  12.345.670   2   1.234.560  |
+| 12345670         1234560       |   band 0:  player 1   player 2
 |                                |
-| 3      12.340   4         120  |
+|    12340             120       |   band 1:  player 3   player 4
 |                                |
-|         PULSE START            |
+|                                |   band 2:  blank
+|          PRESS START           |   band 3:  the prompt
 +--------------------------------+
 ```
 
-Nothing alternates and nothing is ever hidden. Rejected: one player per row in the
-stock font, which needs no new code but must alternate player 4's score with the
-prompt, hiding a score one second in three.
+The player is identified by position — top-left, top-right, bottom-left,
+bottom-right — rather than by a label, and leading zeros are blanked so each score
+right-aligns in its half. A one-, two- or three-player game simply leaves the
+later positions empty.
+
+This choice is what keeps the cave small. **Every glyph lands on a byte
+boundary**, so the blitter is the plain byte copy the ROM's own digit renderers
+already use (`mov es:[di], al`, `add di, 0x20` per row) with no bit shifting
+across byte boundaries — and no font has to be designed, drawn or carried, since
+the same face draws the digits and the prompt.
+
+Rejected: **carrying a 4 px × 7 row digit font** at a 5 px pitch to make room for
+`1`-`4` labels beside each score. It reads slightly better, but it needs a
+shift-and-OR blitter, which is the most error-prone assembly in the cave, plus 70
+bytes of hand-drawn glyphs — for a label that position already conveys. Also
+rejected: **one player per row in the stock font with labels**, which needs no new
+code but consumes all four bands, leaving the prompt to alternate with player 4's
+score and hiding a score one second in three.
 
 **3. The screen sits after the `¿ CONTINUAS ?` offer resolves.** That offer is
 itself START-gated (manual §3.14, above 1,000,000 points, ten-second timeout, and
@@ -155,28 +166,45 @@ the whole cave is expected to be 250–400 bytes.
 | component | size (est.) | what it does |
 |---|---|---|
 | screen handler | ~120 B | draw once, re-install, poll START, chain on |
-| narrow digit font | 70 B | ten 4 × 7 glyphs |
-| narrow blitter | ~80 B | draw a digit string at 5 px pitch with bit shifting |
-| score formatter | ~40 B | 32-bit binary → decimal digits, most significant first, leading zeros suppressed |
-| `PULSE START` record | ~24 B | `word count` + eleven glyph pointers |
+| digit-string blitter | ~30 B | draw eight glyphs from a RAM digit buffer in the 8-row face |
+| score digit reader | ~30 B | reverse a block's eight digits, blank the leading zeros |
+| `PRESS START` record | 24 B | `word count` + eleven glyph pointers, drawn by `F000:550D` |
+
+No font and no bit-shifting blitter: the machine's own 8-row face draws both the
+digits and the prompt, and at an 8 px pitch every glyph is byte-aligned.
 
 ### Primitives the cave uses
 
 | address | calling convention |
 |---|---|
-| `F000:015E` | draw a string record, 10-row font. `SI` = record, `DI` = buffer offset. Sets `ES` itself. Near. |
-| `F000:550D` | the same, 8-row font. Near. |
+| `F000:550D` | **draw a whole string record in the 8-row face.** `SI` = record, `DI` = buffer offset. Sets `ES = 0x6000` itself. Reads the count word and each glyph pointer through `CS`, advances `DI` by one byte per glyph, and copies eight rows per glyph at a `0x20` stride. Near `ret`. |
+| `F000:015E` | the same for the 10-row face. `SI` = record, `DI` = buffer offset. Sets `ES` itself. Near. |
 | `F000:0E8C` | draw one 10-row glyph by index in `AL`; computes `SI = 0x83D9 + 10*AL`. Caller sets `ES`. Near. |
+| `F000:DEFC` | clear the display buffer. Far. |
 | `F000:54EF` | pop one switch code, returned in `AL`, zero meaning the queue is empty. **Far.** |
 
+`F000:550D` reads its record through `CS`, so it can only draw a string that is
+**static in ROM**. That is exactly right for the prompt and unusable for a score,
+whose digits are only known at run time — hence the cave's own small blitter,
+which is the same eight-row copy loop reading its glyph index from RAM instead.
+
 String records are a `word` count followed by that many `word` glyph pointers,
-resolved against CS = F000. Fonts: 10 rows at `F000:83D9`, 8 rows at `F000:85EB`,
-both 8 px wide, one byte per row, MSB leftmost. Glyph index 0–9 are the digits,
-10 is space, 11 onward are `A`–`Z` with `Ñ` at 25.
+resolved against `CS = F000`. Fonts: 10 rows at `F000:83D9` (stride 10), 8 rows at
+`F000:85EB` (stride 8), both 8 px wide, one byte per row, MSB leftmost, 50 glyphs
+each. Glyph index 0-9 are the digits, 10 is space, 11 onward are `A`-`Z` with `Ñ`
+at 25 — so a glyph's address in the 8-row face is `0x85EB + 8*index`, which is how
+the ROM's own score renderers index it.
 
 The display buffer is segment `0x6000`, visible area from offset `0x410`, row
-stride `0x20`, sixteen bytes used per row, second plane at `+0x800`. Row *r*,
-byte column *c* is `0x410 + r*0x20 + c`.
+stride `0x20`, sixteen bytes used per row, second plane at `+0x800`. Row *r*, byte
+column *c* is `0x410 + r*0x20 + c`. The four bands of the screen therefore start at
+`0x410`, `0x510`, `0x610` and `0x710`.
+
+The screen is drawn into **both planes**, at `DI` and `DI+0x800`. The driver models
+the panel's two raster fields as equal and the core integrates them, so a pixel set
+in one plane only renders at half brightness — which is what the stock in-game
+score does, drawing into the second plane alone at `0xC13`. Writing both planes
+costs one extra call per string and makes the screen full brightness.
 
 ### Data
 
