@@ -615,12 +615,20 @@ def test_prompt_record_is_eleven_glyph_pointers():
     m = load()
     assert m.PROMPT_RECORD[:2] == bytes([11, 0]), 'count word is not 11'
     assert len(m.PROMPT_RECORD) == 2 + 22, 'record is not count + 11 words'
-    want = 'PRESS START'
-    for k, ch in enumerate(want):
-        idx = 10 if ch == ' ' else 11 + (ord(ch) - ord('A'))
+    # 'N with tilde' sits between N and O, so every letter from O on is one
+    # higher than its position in the plain Latin alphabet would suggest.
+    ALPHA = 'ABCDEFGHIJKLMN\u00d1OPQRSTUVWXYZ'
+    for k, ch in enumerate('PRESS START'):
+        idx = 10 if ch == ' ' else 11 + ALPHA.index(ch)
         ptr = int.from_bytes(m.PROMPT_RECORD[2+2*k:4+2*k], 'little')
         assert ptr == 0x85EB + 8*idx, f'glyph {k} ({ch!r}) points at {ptr:#06x}'
 ```
+
+The eleven indices are `27 29 15 30 30 10 30 31 11 29 31` and the eleven pointers
+are `0x86C3 0x86D3 0x8663 0x86DB 0x86DB 0x863B 0x86DB 0x86E3 0x8643 0x86D3
+0x86E3` — confirmed by rendering those cells out of the ROM, where they read
+`PRESS START`. Build the record from the alphabet in Python rather than typing
+the pointers, so the test checks the generator.
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -855,11 +863,19 @@ F000:550C  cb           retf                   ;   and return with AL = 0
 So it needs `DS = 0`, clobbers `AX` and `SI`, returns `AL = 0` on an empty queue,
 and is safe to call in a loop — which is what the drain below does.
 
-**The state byte.** `STATE_ADDR` holds 0 = not yet drawn, 1 = drawn and holding.
-The release path sets it back to 0, so a later game gets its screen. Whether that
-is sufficient depends on whether the `[017D]` sequence revisits step 23 during
-attract — if it does, a game-start reset hook is needed as well, which Task 11
-adds. The answer is recorded in the ledger before this task runs.
+**The state byte.** `STATE_ADDR` holds 0 = not yet drawn, 1 = drawn and holding,
+2 = done for this game.
+
+The `[017D]` sequence **free-runs continuously through the whole table in
+attract**, measured: with no input at all it cycles 0-24 on a ~5760-frame period
+and holds step 23 for about 200 frames each lap, while `[0103]` reads `0x00`
+throughout. So `[0103] == 0` alone does not mean "a game just ended" — it is
+equally true in attract, and a stub that released by resetting `STATE_ADDR` to 0
+would put the score screen up in attract every ~96 seconds.
+
+The release path therefore sets `STATE_ADDR` to **2**, not 0, and only the
+game-start hook Task 11 adds clears it back to 0. That gives exactly one hold per
+game, which is the Bike Race two-hook shape.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -897,8 +913,10 @@ Expected: `FAIL` — `STUB_ASM` undefined.
 ```
 stub:   cmp byte [0x103], 0        ; in-game flag: 0 means the game is over
         jne stock                  ;   a game is running: behave exactly as stock
+        cmp byte [STATE_ADDR], 1
+        je holding                 ;   already drawn: poll for START
         cmp byte [STATE_ADDR], 0
-        jne holding
+        jne stock                  ;   2 = this game already had its screen
         lcall F000:<draw_screen>   ; compose the screen once
         mov byte [STATE_ADDR], 1
         jmp hold
@@ -911,7 +929,7 @@ holding:
 drain:  lcall F000:0x54EF          ; scrub duplicate START codes before moving on
         or al, al
         jne drain
-        mov byte [STATE_ADDR], 0
+        mov byte [STATE_ADDR], 2   ; one hold per game; the game-start hook resets it
         jmp stock
 hold:   mov word [0x4df], <dwell>  ; this step's dwell in ticks
         ret                        ; [017D] untouched: step 23 runs again
@@ -962,7 +980,7 @@ Two cave regions, so `CAVES` spans two padding runs:
 
 | region | physical | holds |
 |---|---|---|
-| E000 padding | `0xE50EB` upward | `STUB` |
+| E000 padding | `0xE50EB` upward | `STUB`, the game-start trampoline |
 | F000 padding | `0xFDFF0` upward | `DIGITS_DRAW`, `SCORE_DIGITS`, `PROMPT_RECORD`, `DRAW_SCREEN` |
 
 - [ ] **Step 1: Write the failing test**
@@ -1012,10 +1030,11 @@ empty.
 
 Assign the F000 blobs from `0xFDFF0` upward and the stub at `0xE50EB`,
 re-assemble every blob with the real addresses substituted, and confirm the
-`nasm` cross-checks still pass. Add the game-start reset hook only if the ledger
-records that the `[017D]` sequence revisits step 23 during attract; if it does,
-clear `STATE_ADDR` from `E000:0706`, where the stock code already writes
-`[0103] = 0xFF` and `[0105] = 1`.
+`nasm` cross-checks still pass. Add the game-start reset hook: the `[017D]` sequence is measured to revisit step
+23 every lap in attract, so the patch needs `STATE_ADDR` cleared when a game
+starts. Hook `E000:0706`, where the stock code writes `[0103] = 0xFF` and
+`[0105] = 1`, and have the trampoline clear `STATE_ADDR` before rejoining. So
+`HOOKS` has two entries: the two-byte table entry and this one.
 
 - [ ] **Step 4: Run the tests and apply the patch for real**
 
