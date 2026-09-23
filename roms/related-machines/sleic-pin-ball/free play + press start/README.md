@@ -70,17 +70,21 @@ wipes `0x1C5`-`0x26E`, every player's score block.
 Full mechanism detail is in
 [`research/sleicpin_disasm/sleicpin_endgame.md`](../../../../research/sleicpin_disasm/sleicpin_endgame.md).
 
-## Verified, and what isn't
+## Verified
 
-Verified in emulation, headless: the screen appears at game over for 1 and 4
-players with the scores rendering correctly, one START press releases it, a
-press reported twice does not disturb anything, it works with credits standing
-and exhausted, a coin inserted while held is not lost, three games back to back
-each show their own scores, the service menu still opens and closes, and free
-play starts a game with no coin.
+In emulation, headless: the screen appears at game over for 1 and 4 players with
+the scores rendering correctly, one START press releases it, a press reported
+twice does not disturb anything, it works with credits standing and exhausted, a
+coin inserted while held is not lost, three games back to back each show their
+own scores, the service menu still opens and closes, and free play starts a game
+with no coin.
 
-Two paths are untested either way: a record-beating score reaching name entry,
-and whether the `¿ CONTINUAS ?` offer (above 1,000,000 points) resolves.
+On a real machine: both patches in play, and a record-beating score still reaches
+name entry.
+
+Whether the `¿ CONTINUAS ?` offer (above 1,000,000 points) resolves is not
+established. It is armed and blinking identically in stock and patched builds
+well past where it should time out, and nothing headless settles it.
 
 ## Installing it
 
