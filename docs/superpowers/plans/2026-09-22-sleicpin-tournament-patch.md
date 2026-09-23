@@ -755,7 +755,7 @@ git commit -m "scripts: the Pin-Ball patch's per-player score digit reader"
 - Modify: `sleic-iomoon/scripts/tests/test_sleicpin_press_start.py`
 
 **Interfaces:**
-- Consumes: Task 7's `digits_draw` and `PROMPT_RECORD`, Task 8's `score_digits`, the block table at `E000:190F` and `PLAYER_COUNT`
+- Consumes: Task 7's `digits_draw` and `PROMPT_RECORD`, Task 8's `score_digits` and `WORKSPACE_ADDR`, and `PLAYER_COUNT` at `[0000:0106]`
 - Produces: a cave routine `draw_screen` at `DRAW_SCREEN_ADDR`, taking no arguments, which clears the display buffer and draws the whole screen
 
 **The layout**, from the spec. The buffer is segment `0x6000`, visible from
@@ -773,6 +773,22 @@ glyphs, eight byte columns, half of the sixteen a row holds:
 
 Eleven glyphs centred in sixteen columns leaves a two-column left margin, hence
 `0x712`. Band 2 (`0x610`) stays blank.
+
+**Call `digits_draw` once per player, with the plane-1 offset only.** It writes
+both planes itself, at `DI` and `DI+0x800`. The plane-2 column above is what it
+produces, not a second call to make. `F000:550D` is the opposite — it writes one
+plane per call — so the prompt takes two calls, at `0x712` and `0xF12`.
+
+**Do not read the block table at `E000:190F`.** This routine lives in the F000
+cave and runs with `CS = F000`, so a `cs:`-relative read of `0x190F` would fetch
+`F000:190F`, not the table. The four block bases are constants: player *n* is at
+`0x1E7 + 0x22*(n-1)`, so `0x1E7`, `0x209`, `0x22B`, `0x24D`. Either compute that
+or keep a four-word table **inside the cave**, where `CS` reaches it.
+
+**Registers on entry.** The stub far-calls this routine with `DS = 0`, which is
+what `PLAYER_COUNT` and the score blocks need. Calling `F000:DEFC` first also
+leaves `ES = 0x6000`, which is what `digits_draw` requires its caller to have
+set — so clear the buffer before drawing anything, not after.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -800,11 +816,17 @@ Expected: `FAIL` — `DRAW_SCREEN_ASM` undefined.
 Far-call `F000:DEFC` to clear the buffer — it sets `ES = 0x6000` itself and
 `stosb`s 0xFFF zero bytes from `DI = 0x410`, which covers `0x410`-`0x140E` and so
 clears **both** planes in one call, ending in `retf`. Then for each player `1` to
-`PLAYER_COUNT` index the block table at `E000:190F`, call `score_digits` to get
-eight digits into a scratch buffer with the leading zeros blanked, and call
-`digits_draw` with that player's slot offset from the table above. Then draw the
-prompt twice with `F000:550D`, at `0x712` and `0xF12`, since that routine writes
-one plane per call.
+`PLAYER_COUNT`, call `score_digits` with `BX` = that player's block base and
+`DI` = `WORKSPACE_ADDR`, then call `digits_draw` with `SI` = `WORKSPACE_ADDR` and
+`DI` = that player's plane-1 slot. Then draw the prompt twice with `F000:550D`,
+at `0x712` and `0xF12`.
+
+Both callees are **near** calls and both are in this same F000 cave or in F000
+ROM, so `CS = F000` throughout. Mind the clobber lists in the two reports:
+`score_digits` clobbers `AX/CX/SI` and restores `DI`; `digits_draw` clobbers
+`AX/BX/CX/DX` and advances both `SI` and `DI` by 8. Neither preserves a loop
+counter for you, so keep the player index somewhere they do not touch, or on the
+stack.
 
 Take the scratch digit buffer from `WORKSPACE_ADDR` (Task 8), not from the live
 player block — the live block is real game state.
