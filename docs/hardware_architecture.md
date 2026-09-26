@@ -57,7 +57,7 @@ From the service manual, section 7.1:
 | Plasma display power | — | Display PSU | Head |
 | Visualizador Plasma | `011-022` | The DMD itself (gas plasma panel) | Head |
 | Plasma display power supply | `011-023` | Display HV PSU | Head |
-| Light/Solenoid PSU | `011-028` | +24V/+44V supplies | Cabinet |
+| Aliment. luces y bobinas | `011-028` | Two relays gating the coil and general-illumination supplies | Cabinet |
 | Electronic coin mechanism | `N-50` | Coin entry | Door |
 
 The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 58 V AC supply requirement (connectors TW3–TW6).
@@ -79,6 +79,42 @@ The DMD is a **gas plasma panel**, not an LED dot matrix — note the 95 V AC / 
   <br>
   <em>011-024 — audio power amplifier board.</em>
 </p>
+
+### Relay board (`011-028`)
+
+<p align="center">
+  <a href="../images/relay_board_sleic_011-028.jpg" target="_blank" rel="noopener">
+    <img src="../images/relay_board_sleic_011-028_thumb.jpg" alt="011-028 relay board in the cabinet — click for full resolution" width="620">
+  </a>
+  <br>
+  <em>011-028 in the cabinet. Two Finder 40.61 relays, 24 V coil / 16 A contacts, hand-labelled <strong>Solenoid</strong> (RELE 1) and <strong>Lamp</strong> (RELE 2) by a previous owner.</em>
+</p>
+
+Despite the manual's name for it — *Placa alimentación luces y bobinas*, §7.2.9 and
+figure 7-17 — this is not a power supply. Its own parts list titles it **`PLACA DE
+RELES 011-028`** and the general-wiring sheet labels it **POWER RELAYS BOARD**: it
+switches supplies that are generated elsewhere, through two relays.
+
+> *"…sirve para dar tensión por medio de dos relés a las luces fijas y a las
+> bobinas. De ella se sirve el sistema VDB para anular la alimentación de las
+> bobinas cuando detecta una anomalía en los transistores Drivers."* — §7.2.9
+
+So the second sentence is the interesting one: **`011-028` is the VDB's kill path.**
+When the driver-transistor monitor (§2.4) sees a shorted driver, it drops the coil
+relay and the coils lose power while the rest of the machine keeps running.
+
+| Item | Detail |
+|---|---|
+| RELE 1 / RELE 2 | 24 V coil, 16 A contacts — parts list says RALUX ZVTX, this machine carries Finder 40.61 |
+| T1, T2 | BDX53 NPN Darlingtons — the relay drivers |
+| Control inputs | `BOBON` (solenoid relay signal) and `LUZGEN` (general-illumination relay signal), both from the driver board |
+| Switched | +44 V DC to the solenoids, 6.3 V AC to the general illumination |
+| C1 | 4700 µF 50 V bulk capacitor |
+| Connectors | CON 1 and CON 2, screw/faston terminal strips |
+| Note (1) | This board is the point where electronic ground and earth ground are joined |
+
+The board inventory's *"+5 V / lamp / solenoid power supply"* entry is a **different**
+cabinet board — see [`../research/board_inventory.md`](../research/board_inventory.md).
 
 ---
 
@@ -277,6 +313,28 @@ The 80188 does **not** see the two ROMs flat. Three windows carry them
 | TW13 | Protective wire |
 | TW14–TW16 | Audio amplifier (±12V, 0V) |
 | TW17–TW18 | AC mains (220V) |
+
+Those supplies come off the cabinet transformer (`025-033`, parts-list item 55). Its
+secondary tag strip carries the taps the table above consumes — 6.3, 12, 18, 38, 44
+and 58 V among them — and the six cartridge fuses above it protect them.
+
+<p align="center">
+  <a href="../images/iomoon-cabinet-transformer.jpg" target="_blank" rel="noopener">
+    <img src="../images/iomoon-cabinet-transformer_thumb.jpg" alt="IO Moon cabinet transformer and fuse block — click for full resolution" width="470">
+  </a>
+  <a href="../images/iomoon-cabinet-wiring-label.jpg" target="_blank" rel="noopener">
+    <img src="../images/iomoon-cabinet-wiring-label_thumb.jpg" alt="Cabinet wiring label — click for full resolution" width="470">
+  </a>
+  <br>
+  <em>Left: the <code>025-033</code> transformer with its two tag strips and the fuse block.
+  Right: the wiring label pasted beside it — ① the fuse block (F16 8 A, F17 7 A, F18 1 A,
+  F19 1 A, F20 8 A, F21 7 A), ② the <code>011-028</code> relay board, ③ the transformer,
+  ④ the relay/terminal matrix, each with its wire colours.</em>
+</p>
+
+Wire-colour abbreviations on that label are Spanish: `AZ` azul (blue), `AM` amarillo
+(yellow), `BL` blanco (white), `GR` gris (grey), `MA` marrón (brown), `NA` naranja
+(orange), `NE` negro (black), `RO` rojo (red), `VE` verde (green), `VI` violeta.
 
 ---
 

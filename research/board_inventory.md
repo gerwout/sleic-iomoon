@@ -75,8 +75,10 @@ No chip-level entries possible from this image.
 
 ### 2. `IMG_20260527_212457.jpg` — +5 V / lamp / solenoid power supply (cabinet)
 
-This is the cabinet PSU board (designator `011-028` per service manual, but
-designator not visible on this photo). Components visible:
+This is the cabinet PSU board. Its designator is not visible in this photo, and it
+is **not** `011-028`: that reference belongs to the two-relay board in
+[`../images/relay_board_sleic_011-028.jpg`](../images/relay_board_sleic_011-028.jpg),
+whose silkscreen reads `SLEIC-PETACO REF 011-028`. Components visible:
 
 | Component | Description |
 |-----------|-------------|

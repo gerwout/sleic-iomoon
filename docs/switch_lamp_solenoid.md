@@ -233,6 +233,16 @@ of figure 7-7 legible enough to read, with no disagreement found.
 
 ## Drivers (solenoids)
 
+<p align="center">
+  <a href="../images/iomoon-playfield-underside.jpg" target="_blank" rel="noopener">
+    <img src="../images/iomoon-playfield-underside_thumb.jpg" alt="IO Moon playfield underside — coils, drop-target bank and trough — click for full resolution" width="620">
+  </a>
+  <br>
+  <em>The playfield underside: every coil in the table below is on this board, with the
+  five-target drop bank at centre-left, the flippers and the ball trough along the
+  bottom edge.</em>
+</p>
+
 Two 8-bit latches on Z80 ports `0x85` and `0x86`, **active LOW** — `boot_port_init`
 `041B` writes `0xFF` to both at reset, so a cleared bit fires a driver. The 16
 bits map onto the service manual's coil numbers 1–16 in the simplest possible
