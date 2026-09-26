@@ -82,6 +82,6 @@ Eight 74LS374 latches × 8 bits = 64 bits of output across lamps, solenoids and 
 | IC  | Part            | Status                                                |
 |-----|-----------------|-------------------------------------------------------|
 | IC5 | EPROM 27C256 ([datasheet](../datasheets/27c256.pdf)) | Archived as `v1_3_05.bin` in [`../roms/1.3 IPDB latest/`](../roms/1.3%20IPDB%20latest/). |
-| IC8 | PAL16L8A-2CN ([datasheet](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf)) | **Undumped.** See [`chips_to_dump.md`](chips_to_dump.md). |
+| IC8 | PAL16L8A-2CN ([datasheet](../datasheets/pal20l10_pal16l8_mmi_pal_handbook_1983.pdf)) | **Dumped** — truth table, equations and a JEDEC at [`../roms/PAL16L8/`](../roms/PAL16L8/). |
 
 `0x8000`–`0xBFFF` is the IC6 expansion-ROM window. The inspected board carries no IC6 chip at that position — the socket is either vacant or absent on this revision — and no Z80 code reads the range.

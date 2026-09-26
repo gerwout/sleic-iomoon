@@ -138,11 +138,11 @@ IC13 and IC54 are unpopulated 32-pin DIP sockets — both are expansion options 
 
 ### Sound/Switch CPU Board — Z80 (8-bit) — SLEIC-PETACO 011-030A
 
-The Z80 board carries the 8-bit I/O CPU (`Goldstar Z8400A PS`, a Z80A), its 32 KB program ROM (IC5) and 2 KB work RAM (Goldstar GM76C28-10 at IC7), the lamp / solenoid / switch-matrix latches and buffers, two ULN2803 Darlington arrays for current drive, four GL339 quad comparators for switch-return level sensing, a hardware watchdog (CD4040 counter + 74LS133 NAND + ADM699 supervisor) and a PAL16L8 at IC8 that does the Z80 memory and I/O decode.
+The Z80 board carries the 8-bit I/O CPU (`Goldstar Z8400A PS`, a Z80A), its 32 KB program ROM (IC5) and 2 KB work RAM (Goldstar GM76C28-10 at IC7), the lamp / solenoid / switch-matrix latches and buffers, two ULN2803 Darlington arrays for current drive, four GL339 quad comparators for switch-return level sensing, a hardware watchdog (CD4040 counter + 74LS133 NAND + ADM699 supervisor) and a PAL16L8 at IC8 that decodes the Z80's bus cycles.
 
-For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-030A_ics.md`](board_011-030A_ics.md). The PAL at IC8 is undumped: see [`chips_to_dump.md`](chips_to_dump.md).
+For the per-chip inventory — every IC populated on this board with its part number and function — see [`board_011-030A_ics.md`](board_011-030A_ics.md). The PAL at IC8 is dumped: [`../roms/PAL16L8/`](../roms/PAL16L8/).
 
-The Z80 board itself does not generate its own periodic IRQ — the 977 Hz rate the firmware expects comes from the divider chain on the 16-bit board described above and reaches the Z80 through the J3 ribbon.
+The Z80 board generates its own periodic IRQ. `ZCLK` (2 MHz) clocks the free-running CD4040 at IC12, IC13's 13-input NAND fires at terminal count, the IC14A/B latch holds `/INT`, and IC8's `/RI` clears it on the interrupt-acknowledge cycle — **488.28 Hz**, off schematic sheet `011-030-02`. See [`../research/z80_irq_timing.md`](../research/z80_irq_timing.md).
 
 | Reference | Component | Notes |
 |-----------|-----------|-------|

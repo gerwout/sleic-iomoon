@@ -151,9 +151,9 @@ identifications apply. The two views combined give clearer reads on:
   crystal divided by 2 internally this is the standard Z80 clocking)
 - IC5: 28-pin UV-erasable EPROM, white quartz window visible, paper label
   reads `IO MOON V1.2-04`
-- IC8: 20-pin DIP — the `AMD PAL16L8A-2CN` that does the Z80 memory and I/O
-  decode (settled by direct inspection; the top-mark is not legible in either
-  photograph). Undumped — see [`../docs/chips_to_dump.md`](../docs/chips_to_dump.md)
+- IC8: 20-pin DIP — the `AMD PAL16L8A-2CN` bus-cycle decoder (settled by direct
+  inspection; the top-mark is not legible in either photograph). Dumped — measured
+  truth table, equations and JEDEC at [`../roms/PAL16L8/`](../roms/PAL16L8/)
 - IC15: 8-pin DIP near top edge — ADM699AN (Analog Devices watchdog supervisor)
 - IC41, IC51: bottom row, 18-pin DIPs — ULN2803A
 
@@ -347,7 +347,7 @@ dumping / firmware work.
 | IC5 | 27C256 — `IO MOON V1.2-04` | — | PDIP-28 windowed | Z80 ROM | Yes | High |
 | IC6 | (socket — population unclear, covered by tape on photo) | — | PDIP-28 socket | Z80 expansion-ROM window `0x8000`-`0xBFFF`; no Z80 code reads it | Unclear — needs photo with tape removed | Low |
 | IC7 | Goldstar GM76C28-10 | Goldstar | PDIP-24 | 2K×8 Z80 work RAM | Yes | Settled |
-| IC8 | AMD PAL16L8A-2CN | AMD | PDIP-20 | Z80 memory / I/O address decode — **undumped** | Yes | Settled |
+| IC8 | AMD PAL16L8A-2CN | AMD | PDIP-20 | Z80 bus-cycle decoder — `/CEI`, `/CEO` and an interrupt-acknowledge decode, no memory chip select ([dumped](../roms/PAL16L8/)) | Yes | Settled |
 | IC15 | ADM699AN | Analog Devices | DIP-8 | Watchdog supervisor (pin-compatible with the MAX699, which is IC6 on the 16-bit board) | Yes | Settled |
 | IC41 | ULN2803A | TI / ST | PDIP-18 | Driver buffer | Yes | High |
 | IC51 | ULN2803A | TI / ST | PDIP-18 | Driver buffer | Yes | High |

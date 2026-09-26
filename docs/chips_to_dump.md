@@ -259,7 +259,7 @@ IC8's fuse is blown, so this path does not apply to it either; it is kept for an
 
 **Programmers that will *not* help on the bipolar PALs** (sometimes marketed in ways that suggest otherwise): XGecu TL866II+ / T48, Retro Chip Tester Professional, Batronix BX48 Batego II, Conitec Galep-3 / Galep-4 / Galep-5 / Galep-5D, Elnec BeeProg2C, Elnec BeeProg3, Hi-Lo ALL-100, Wellon VP-598 / VP-998. All of these are CMOS PALCE / GAL only in their current device files.
 
-The bipolar PALs are the awkward case: there is no cheap modern programmer that reads them, and there is no software workaround once the security fuse is blown. On IC7 the cheap route is the one that worked — a ~€30–80 dupico rig recovered a locked part that no programmer on the confirmed-capable list could have read, and the same rig is what IC8 needs.
+The bipolar PALs are the awkward case: there is no cheap modern programmer that reads them, and there is no software workaround once the security fuse is blown. The cheap route is the one that worked on both — a ~€30–80 dupico rig recovered two locked parts that no programmer on the confirmed-capable list could have read.
 
 ---
 
