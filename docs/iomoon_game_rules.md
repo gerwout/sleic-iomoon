@@ -777,6 +777,13 @@ targets are not down**.
 **Ends** when only one ball is left. LD2 and LR21 go out, so the Jackpot and
 Superjackpot are Multiball-only awards.
 
+Measured, in [`../dmd/multiball-end/`](../dmd/multiball-end/): the mode ends on the
+drain that leaves one ball, and the firmware clears the ORBITS letter count
+`[413C:0102]` from 6 to 0 at that same drain — so a further Multiball needs the
+letters spelled again. The awards going out is what makes the end measurable:
+bull's-eye 2 pays **50,001** and Ramp 2 **11,111** once the mode has ended, against
+40,050,001 and 80,000,000 inside it.
+
 ### Wonderful Thing (§3.2.2)
 
 **Starts** when the **second** ball is locked in Jupiter **and all five bank

@@ -218,6 +218,18 @@ its key script is ball-shepherding: the multiball start is a chain of blocking
 waits and the released ball must report at a **scoop**, not a lane.
 `dmd/jackpot/README.md` has the measured values and the wait-by-wait table.
 
+## Multiball played to the end (`multiball-end/`), captured against `iomoon`
+
+The same route as `jackpot/` plus the tail it stops short of: the mode **ending**,
+the ball ending under it, and the game carrying on. **351 distinct screens, 118 new
+to the corpus.** Multiball ends on the drain that leaves one ball, and the firmware
+clears the ORBITS letter count `[413C:0102]` 6 -> 0 at that same drain; the awards
+go out with it, so bull's-eye 2 pays 50,001 and Ramp 2 11,111 afterwards instead of
+40,050,001 and 80,000,000. An extra ball falls out of the walk, and its
+`PLAYER EXTRA BALL` banner stands for about 70 s of play before the display settles
+back to `1 2 / PLAYER BALL` — a capture that stops sooner looks hung on it.
+`dmd/multiball-end/README.md` has the measured sequence and the shepherding.
+
 ## Monolith awards (`monolith/`), captured against `iomoon`
 
 Every position the Monolith can cash, and every mode played rather than just
