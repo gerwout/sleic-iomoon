@@ -6,9 +6,10 @@ The two boards this set came out of are photographed in
 [`../../../../docs/bikerace_boards.md`](../../../../docs/bikerace_boards.md), and
 every chip here wears a `V4.1` sticker in those pictures.
 
-`BK01`, the I8039 display-coprocessor ROM, lives on a third board and is **not**
-part of this dump. The parent set's `BK01`
-([`../bkdsp01.bin`](../bkdsp01.bin)) is what PinMAME uses for V4.1.
+`BK01`, the I8039 display-coprocessor ROM, lives on a third board and is not part of
+this dump. It is dumped elsewhere — [`../bkdsp01.bin`](../bkdsp01.bin), CRC
+`9b220fcb`, the same 8 KB image in every Bike Race archive — and that image is what
+PinMAME uses for V4.1.
 
 ## Files
 
@@ -50,7 +51,9 @@ four-chip clone: it lists only the chips that differ and inherits `01`, `02` and
 "assume these are the parent's" — and until this dump nothing had checked it for
 V4.1, because no complete V4.1 pull existed. A complete six-chip pull off one
 machine now confirms two thirds of it directly: `BK02` and `BK05` on a V4.1 board
-carry the parent's bytes. `BK01` is still inherited on the assumption alone.
+carry the parent's bytes. `BK01` is inherited from a chip that is itself dumped —
+`9b220fcb` in every Bike Race archive, including the independent seven-chip one — so
+no part of this set rests on an undumped ROM.
 
 **That V4.1 has no fourth graphics ROM.** The 16-bit board holds exactly three
 128 KB positions and they are `BK04`, `BK05` and `BK06`; the next devices along are

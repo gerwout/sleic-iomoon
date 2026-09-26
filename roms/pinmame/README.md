@@ -88,8 +88,9 @@ Chips 01/02/03/05/06 are the parent's.
 
 Chips 01/02/05/06 are the parent's. For `02` and `05` that is verified rather than
 assumed, against the complete six-chip V4.1 pull at
-[`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/). ROM
-01 of this revision has never been dumped.
+[`../related-machines/bike-race/v4.1/`](../related-machines/bike-race/v4.1/). Chip
+01 is the 8 KB display ROM, which sits on a third board and was outside that pull;
+it is dumped all the same, and reads CRC `9b220fcb` in every Bike Race archive.
 
 **ROM 06 is inherited because a re-dump confirmed it is the parent's.** The first
 V4.1 read of ROM 06, CRC `ad48a30a`, was defective; it used to be a member of this

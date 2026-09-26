@@ -3,9 +3,10 @@
 The Bike Race ROM set. Bike Race is PinMAME's `SLEIC3` family: an 80188 game CPU,
 a Z80 I/O CPU, an Intel 8039 display coprocessor, a YM3812 (OPL2) for FM music and
 an OKI MSM6376 for ADPCM speech/effects — the same architecture IO Moon (`SLEIC2`)
-uses, with the notable difference that Bike Race's display coprocessor is a
-**fully dumped I8039** where IO Moon's is an undumped PIC16C5x. That is what makes
-this set valuable here: it is the live oracle for the shared SLEIC hardware model.
+uses, with the notable difference that Bike Race's display coprocessor is an
+**I8039 with its ROM on the board** where IO Moon's is a PIC16C57 carrying internal
+ROM ([dumped](../../PIC16C57/)). That is what makes this set valuable here: it is
+the live oracle for the shared SLEIC hardware model.
 
 ## Files
 
@@ -34,7 +35,9 @@ one running V4.1: `BK02`–`BK06` off its 16-bit board and `BK07` off its Z80 bo
 Three of them are the `bikerac3` clone chips; `bk02` and `bk05` are byte-identical
 to this directory's `bksnd02.bin` and `bkcpu05.bin` — the first direct confirmation
 that V4.1 leaves those two alone rather than an inheritance assumed by the clone
-set. `BK01` was not part of that pull.
+set. `BK01` sits on a third board and was not part of that pull; it is dumped all the
+same — `bkdsp01.bin` in this directory, CRC `9b220fcb`, the same 8 KB image in every
+Bike Race archive. **No Bike Race ROM is undumped.**
 
 **The sixth, ROM 06, came out of the reader corrupt.** It is archived there as
 `bk06.baddump.bin`, CRC32 `ad48a30a`, and must not be used; the `bk06.bin` beside
