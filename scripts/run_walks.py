@@ -23,7 +23,18 @@ walk captures a static screen and nothing else.
 import argparse, json, os, shutil, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root
-PINMAME = os.environ.get("PINMAME_DIR", os.path.join(os.path.dirname(HERE), "pinmame"))
+def _find_pinmame():
+    """pinmame sits inside this directory in one layout and beside it in the other."""
+    env = os.environ.get("PINMAME_DIR")
+    if env:
+        return env
+    for c in (os.path.join(HERE, "pinmame"), os.path.join(os.path.dirname(HERE), "pinmame")):
+        if os.path.isdir(c):
+            return c
+    return os.path.join(os.path.dirname(HERE), "pinmame")
+
+
+PINMAME = _find_pinmame()
 
 
 def log(msg, *a):
@@ -119,7 +130,13 @@ def split(walk, args, dump, outdir):
     marks = os.path.join(os.path.dirname(dump), "%s.marks" % walk["set"])
     if os.path.exists(marks_src):
         shutil.copyfile(marks_src, marks)
-    cmd = [sys.executable, os.path.join(HERE, "scripts", "dmd_dump_split.py"),
+    splitter = next((os.path.join(HERE, d, "dmd_dump_split.py")
+                     for d in ("tools", "scripts")
+                     if os.path.exists(os.path.join(HERE, d, "dmd_dump_split.py"))), None)
+    if not splitter:
+        log("    ! dmd_dump_split.py not found in tools/ or scripts/")
+        return "no splitter"
+    cmd = [sys.executable, splitter,
            dump, "--out", outdir]
     if os.path.exists(marks):
         cmd += ["--marks", marks]
