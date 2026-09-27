@@ -1,0 +1,232 @@
+# Io Moon, the whole game in ONE run, on the parent set `iomoon` at the
+# Netherlands country default (SW40-2/3/4 = country 4, English, F11).
+#
+# Every other walk in walks/iomoon.json captures one area. This one plays a
+# complete three-ball game covering the branches that matter, visits the service
+# menu, then changes the country DIP live and replays the game in Spanish -- all
+# inside a single process, so one dump holds the lot.
+#
+# Why each ball is what it is:
+#
+#   BALL 1  MULTIBALL.  The drop bank resets only at ball start (3.3.6) and it
+#           selects between the two two-ball-lock modes (3.3.7): standing gives
+#           Multiball, flat gives Wonderful Thing. Ball 1 leaves it standing.
+#           ORBITS x6 first, because Jupiter retains nothing until the letter
+#           count [413C:0102] reaches 6. Then two locks, the shepherding the
+#           start needs (below), the Jackpot at bull's-eye 2 and the
+#           Superjackpot at Ramp 2, then drain out of the mode.
+#
+#   BALL 2  WONDERFUL THING -- the Black Hole branch. The bank comes back up at
+#           ball start, so this ball flattens it (Z X C V N) before locking.
+#           The inner target with the bank already flat starts Special Drop
+#           Probe (3.2.7). Two locks with the bank down is Wonderful Thing
+#           (3.2.2), whose own shot is Ramp 2: it lights lane 8's extra ball and
+#           releases the held balls one after another instead of together.
+#
+#   BALL 3  THE MONOLITH.  Lane 6 arms it, scoop 1 cashes whatever position is
+#           lit at that instant (3.3.3) -- the cycle runs continuously, so the
+#           award is whatever it lands on. Then both shooters, which alternate
+#           LPA11/LPA12, the Lagrange pair that is never cashed.
+#
+# The shepherding, which is most of the lock sequences: the Multiball start is a
+# chain of blocking waits (F22) and the simulator's keys act on ONE ball at a
+# time. `Down` steps to the next ball. sub_DC6AC releases with 0xEE and waits for
+# the released ball to report at a SCOOP -- sub_DC675 accepts codes 0x21/0x22 and
+# nothing else -- and re-issues 0xEE every five seconds forever if none comes. A
+# lane will not answer it.
+#
+# LANGUAGE. This script is language-neutral -- it presses no key that depends on
+# the text on screen -- so the same walk captures the Spanish corpus by running it
+# against a country-5 cfg. That is the `full-run-es` walk in walks/iomoon.json,
+# and `run_walks.py iomoon --only full-run,full-run-es` captures both.
+#
+# Changing the country *inside* one run does not work. There is no command-line
+# DIP option in this build, so the only lever is MAME's own menu, and a key script
+# cannot drive it: nine combinations of DOWN counts into TAB -> Dip Switches ->
+# SW40-2/3/4 Country -> RIGHT left the country byte in the written cfg unchanged at
+# 8 (country 4) every time, where the Spanish cfg holds 10. The script itself keeps
+# running -- marks after the TAB are still written -- and key injection sits at the
+# bottom of the input system (`internal_code_pressed`, input.c), so the UI ought to
+# see the presses; what is not established is why `input_ui_pressed`'s edge
+# detection does not act on them. KEYCODE_F3 (soft reset) DOES work from a key
+# script and the dump continues in the same file, so if that edge case is ever
+# solved, a single-run language switch becomes possible.
+#
+# Keys: S lane 4, L lane 6; LCtrl+B bull's-eye 1, RCtrl+B bull's-eye 2;
+#       LCtrl+R ramp 1, RCtrl+R ramp 2; LCtrl+H scoop 1; J Jupiter; I inner bank;
+#       Z/X/C/V/N drop targets A-E; W/E/D bumpers; O lane 10; Y/U lanes 1/2;
+#       LCtrl+- / RCtrl+- shooters; Q drain; Down next ball; Space plunge;
+#       7 test/service; LShift scroll, RShift select; 5 coin; 1 start.
+    40 tap 8 KEYCODE_1
+   500 mark boot
+
+# ---- credit and ball 1 -------------------------------------------------------
+  1400 tap 10 KEYCODE_5
+  1480 tap 10 KEYCODE_5
+  1560 tap 10 KEYCODE_5
+  1640 tap 10 KEYCODE_5
+  1720 tap 10 KEYCODE_5
+  1800 tap 10 KEYCODE_5
+  1950 mark credit
+  1960 tap 10 KEYCODE_1
+  2200 mark ball-1-start
+  2210 tap 40 KEYCODE_SPACE
+  2450 mark plunged
+
+# general play, for the ordinary in-play screens
+  2600 tap 6 KEYCODE_W
+  2750 tap 6 KEYCODE_E
+  2900 tap 6 KEYCODE_D
+  3050 tap 6 KEYCODE_Y
+  3200 tap 6 KEYCODE_U
+  3350 tap 6 KEYCODE_O
+  3550 mark general-play
+  3700 tap 6 KEYCODE_LCONTROL,KEYCODE_R
+  3900 mark ramp-1
+
+# ORBITS x6 -- lane 4 lights LD1, bull's-eye 1 takes one letter
+  4100 tap 6 KEYCODE_S
+  4200 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+  4300 tap 6 KEYCODE_S
+  4400 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+  4500 tap 6 KEYCODE_S
+  4600 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+  4700 tap 6 KEYCODE_S
+  4800 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+  4900 tap 6 KEYCODE_S
+  5000 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+  5100 tap 6 KEYCODE_S
+  5200 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+  5400 mark orbits-complete
+
+# two locks, bank standing -> MULTIBALL
+  5600 mark jupiter-lock-1
+  5610 tap 10 KEYCODE_J
+  5800 mark replacement-ball-1
+  5810 tap 10 KEYCODE_DOWN
+  5880 tap 40 KEYCODE_SPACE
+  6050 mark jupiter-lock-2-multiball
+  6060 tap 10 KEYCODE_J
+  6260 mark follow-the-released-ball
+  6270 tap 10 KEYCODE_DOWN
+  6350 tap 10 KEYCODE_DOWN
+  6460 mark scoop-1-takes-the-released-ball
+  6470 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+  6620 mark plunge-the-served-ball
+  6630 tap 40 KEYCODE_SPACE
+  6720 tap 10 KEYCODE_DOWN
+  6790 tap 10 KEYCODE_DOWN
+  6870 mark multiball-running
+  6880 tap 10 KEYCODE_Y
+  7060 mark scoop-1-takes-the-second-released-ball
+  7070 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+  7260 tap 40 KEYCODE_SPACE
+  7460 mark jackpot
+  7470 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+  7760 mark superjackpot
+  7770 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+  8060 mark both-awards-paid
+
+# drain out of Multiball: 3 -> 2 -> 1 ends the mode, the last ends the ball
+  8300 tap 10 KEYCODE_Q
+  8600 mark two-balls-left
+  8610 tap 10 KEYCODE_DOWN
+  8700 tap 10 KEYCODE_Q
+  9000 mark multiball-over
+  9100 tap 10 KEYCODE_DOWN
+  9200 tap 10 KEYCODE_RCONTROL,KEYCODE_B
+  9400 mark bullseye2-base-value-again
+  9600 tap 10 KEYCODE_Q
+ 10100 mark ball-1-over
+
+# ---- ball 2: the drop bank and WONDERFUL THING (Black Hole) -------------------
+ 10300 tap 10 KEYCODE_DOWN
+ 10550 tap 40 KEYCODE_SPACE
+ 10900 mark ball-2-plunged
+
+# ORBITS again -- the count reset when Multiball ended
+ 11100 tap 6 KEYCODE_S
+ 11200 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+ 11300 tap 6 KEYCODE_S
+ 11400 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+ 11500 tap 6 KEYCODE_S
+ 11600 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+ 11700 tap 6 KEYCODE_S
+ 11800 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+ 11900 tap 6 KEYCODE_S
+ 12000 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+ 12100 tap 6 KEYCODE_S
+ 12200 tap 6 KEYCODE_LCONTROL,KEYCODE_B
+ 12400 mark orbits-complete-again
+
+# flatten the bank, then the inner target -> SPECIAL DROP PROBE
+ 12600 tap 6 KEYCODE_Z
+ 12700 tap 6 KEYCODE_X
+ 12800 tap 6 KEYCODE_C
+ 12900 tap 6 KEYCODE_V
+ 13000 tap 6 KEYCODE_N
+ 13200 mark bank-flat
+ 13400 tap 6 KEYCODE_I
+ 13500 mark special-drop-probe
+ 14300 mark probe-expired
+
+# two locks with the bank DOWN -> WONDERFUL THING
+ 14500 mark wonderful-lock-1
+ 14510 tap 10 KEYCODE_J
+ 14700 mark wonderful-replacement
+ 14710 tap 10 KEYCODE_DOWN
+ 14790 tap 40 KEYCODE_SPACE
+ 14980 mark wonderful-thing-lock-2
+ 14990 tap 10 KEYCODE_J
+ 15250 mark wonderful-thing-running
+ 15260 tap 10 KEYCODE_DOWN
+ 15340 tap 10 KEYCODE_DOWN
+ 15450 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+ 15650 tap 40 KEYCODE_SPACE
+ 15900 mark black-hole-ramp-2
+ 15910 tap 10 KEYCODE_RCONTROL,KEYCODE_R
+ 16200 mark ramp-2-in-wonderful-thing
+ 16400 tap 10 KEYCODE_PERIOD
+ 16650 mark lane-8-extra-ball
+ 17000 tap 10 KEYCODE_Q
+ 17400 tap 10 KEYCODE_DOWN
+ 17500 tap 10 KEYCODE_Q
+ 17900 tap 10 KEYCODE_DOWN
+ 18000 tap 10 KEYCODE_Q
+ 18600 mark ball-2-over
+
+# ---- ball 3: the Monolith ----------------------------------------------------
+ 18800 tap 10 KEYCODE_DOWN
+ 19050 tap 40 KEYCODE_SPACE
+ 19400 mark ball-3-plunged
+ 19600 tap 6 KEYCODE_L
+ 19800 mark monolith-armed-1
+ 19900 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+ 20200 mark monolith-cashed-1
+ 20500 tap 40 KEYCODE_SPACE
+ 20800 tap 6 KEYCODE_L
+ 21000 mark monolith-armed-2
+ 21100 tap 10 KEYCODE_LCONTROL,KEYCODE_H
+ 21400 mark monolith-cashed-2
+ 21700 tap 40 KEYCODE_SPACE
+ 22000 tap 6 KEYCODE_LCONTROL,KEYCODE_MINUS
+ 22200 mark lagrange-shooter-1
+ 22400 tap 6 KEYCODE_RCONTROL,KEYCODE_MINUS
+ 22600 mark lagrange-shooter-2
+ 23000 tap 10 KEYCODE_Q
+ 23800 mark ball-3-over-game-over
+ 25000 mark attract-after-game
+
+# ---- the service menu --------------------------------------------------------
+ 25400 tap 12 KEYCODE_7
+ 26000 mark service-menu-open
+ 26200 tap 12 KEYCODE_LSHIFT
+ 26500 tap 12 KEYCODE_LSHIFT
+ 26800 tap 12 KEYCODE_RSHIFT
+ 27300 mark service-record-3-technical
+ 27600 tap 12 KEYCODE_LSHIFT
+ 27900 tap 12 KEYCODE_RSHIFT
+ 28400 mark service-record-selected
+ 29000 tap 12 KEYCODE_7
+ 29600 mark service-menu-closed
+ 30400 mark end

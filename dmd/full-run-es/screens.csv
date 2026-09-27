@@ -1,0 +1,826 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,666,3,ESPERANDO / CPU 8 BITS,1
+2,unlabelled,0002-unlabelled,699,699,1,BOLAS OK,2
+3,unlabelled,0003-unlabelled,1783,1783,1,,3
+4,unlabelled,0004-unlabelled,1849,1849,1,,4
+5,unlabelled,0005-unlabelled,2299,2299,1,,3
+6,unlabelled,0006-unlabelled,2349,2349,1,,6
+7,unlabelled,0007-unlabelled,2400,8283,253,,7
+8,boot,0008-boot,8316,11250,123,,8
+9,boot,0009-boot,11283,11283,1,,3
+10,boot,0010-boot,11316,12750,2,,10
+11,boot,0011-boot,14183,15616,2,,11
+12,boot,0012-boot,17050,17050,1,,12
+13,boot,0013-boot,18483,18483,1,,13
+14,boot,0014-boot,19899,19899,1,,3
+15,boot,0015-boot,19916,19916,1,,15
+16,boot,0016-boot,19933,20083,4,,16
+17,boot,0017-boot,20149,20316,4,,16
+18,boot,0018-boot,20366,20533,4,,16
+19,boot,0019-boot,20583,20749,4,,16
+20,boot,0020-boot,20799,21533,15,,20
+21,boot,0021-boot,21566,21566,1,,21
+22,boot,0022-boot,21583,21583,1,,3
+23,boot,0023-boot,21599,21616,2,,23
+24,boot,0024-boot,22466,22466,1,,3
+25,boot,0025-boot,22483,23483,6,,25
+26,boot,0026-boot,23499,23933,4,,26
+27,boot,0027-boot,23949,23949,1,,3
+28,boot,0028-boot,23983,24016,2,,28
+29,boot,0029-boot,24416,24416,1,,3
+30,boot,0030-boot,24466,24466,1,,6
+31,boot,0031-boot,24533,24833,12,,31
+32,boot,0032-boot,24849,24849,1,,28
+33,boot,0033-boot,25299,25299,1,,3
+34,boot,0034-boot,25349,25349,1,,6
+35,boot,0035-boot,25399,26133,42,,35
+36,boot,0036-boot,26166,26166,1,,36
+37,boot,0037-boot,26183,26183,1,,37
+38,boot,0038-boot,26616,26616,1,,38
+39,boot,0039-boot,26649,26649,1,,3
+40,boot,0040-boot,26683,26683,1,,40
+41,boot,0041-boot,26699,27149,2,,41
+42,boot,0042-boot,27166,27166,1,,3
+43,boot,0043-boot,27199,27199,1,,6
+44,boot,0044-boot,27249,27483,11,,44
+45,boot,0045-boot,27499,27933,3,,45
+46,boot,0046-boot,27949,27949,1,,3
+47,boot,0047-boot,28016,28016,1,,47
+48,boot,0048-boot,28449,28449,1,,3
+49,boot,0049-boot,28499,28499,1,,6
+50,boot,0050-boot,28549,28799,10,,50
+51,boot,0051-boot,28833,28833,1,,51
+52,boot,0052-boot,29266,29266,1,,3
+53,boot,0053-boot,29316,29316,1,,51
+54,boot,0054-boot,29766,29766,1,,54
+55,boot,0055-boot,29783,29783,1,,3
+56,boot,0056-boot,29816,29816,1,,56
+57,boot,0057-boot,29833,30133,15,,50
+58,boot,0058-boot,30166,30166,1,,58
+59,boot,0059-boot,30183,30183,1,,59
+60,boot,0060-boot,30616,30616,1,,3
+61,boot,0061-boot,30683,31116,2,,61
+62,boot,0062-boot,31149,31149,1,,3
+63,boot,0063-boot,31166,31166,1,,6
+64,boot,0064-boot,31233,32449,58,,64
+65,credit,0065-credit,32466,32666,8,,65
+66,credit,0066-credit,32699,32699,1,,66
+67,credit,0067-credit,32716,32716,1,,67
+68,credit,0068-credit,32749,32749,1,1 1 / JUGADOR BOLA,68
+69,credit,0069-credit,32783,32783,1,JUGADOR BOLA,69
+70,credit,0070-credit,32833,32833,1,JUGADOR BOLA,70
+71,credit,0071-credit,32883,32883,1,JUGADOR BOLA,71
+72,credit,0072-credit,32933,32933,1,JUGADOR BOLA,72
+73,credit,0073-credit,32999,32999,1,JUGADOR BOLA,73
+74,credit,0074-credit,33049,33049,1,JUGADOR BOLA,74
+75,credit,0075-credit,33099,33099,1,JUGADOR BOLA,75
+76,credit,0076-credit,33166,33166,1,JUGADOR BOLA,76
+77,credit,0077-credit,33216,33216,1,JUGADOR BOLA,77
+78,credit,0078-credit,33266,33266,1,JUGADOR BOLA,78
+79,credit,0079-credit,33316,33316,1,JUGADOR BOLA,79
+80,credit,0080-credit,33383,33399,2,JUGADOR BOLA,80
+81,credit,0081-credit,33433,33449,2,JUGADOR BOLA,81
+82,credit,0082-credit,33483,33499,2,JUGADOR BOLA,82
+83,credit,0083-credit,33549,33549,1,JUGADOR BOLA,83
+84,credit,0084-credit,33599,33616,2,JUGADOR BOLA,84
+85,credit,0085-credit,33649,33666,2,JUGADOR BOLA,85
+86,credit,0086-credit,33699,33866,7,JUGADOR BOLA,86
+87,credit,0087-credit,33883,33883,1,JUGADOR BOLA,87
+88,credit,0088-credit,33933,33983,2,JUGADOR BOLA,88
+89,credit,0089-credit,33999,33999,1,JUGADOR BOLA,89
+90,credit,0090-credit,34049,34049,1,JUGADOR BOLA,90
+91,credit,0091-credit,34099,34099,1,JUGADOR BOLA,91
+92,credit,0092-credit,34166,34166,1,JUGADOR BOLA,92
+93,credit,0093-credit,34216,34216,1,JUGADOR BOLA,93
+94,credit,0094-credit,34266,34266,1,JUGADOR BOLA,94
+95,credit,0095-credit,34316,34316,1,JUGADOR BOLA,95
+96,credit,0096-credit,34383,34383,1,JUGADOR BOLA,96
+97,credit,0097-credit,34433,34433,1,JUGADOR BOLA,97
+98,credit,0098-credit,34483,34483,1,JUGADOR BOLA,98
+99,credit,0099-credit,34549,34549,1,JUGADOR BOLA,99
+100,credit,0100-credit,34599,34599,1,JUGADOR BOLA,100
+101,credit,0101-credit,34649,34649,1,JUGADOR BOLA,101
+102,credit,0102-credit,34699,34699,1,JUGADOR BOLA,102
+103,credit,0103-credit,34766,34766,1,JUGADOR BOLA,103
+104,credit,0104-credit,34816,34816,1,JUGADOR BOLA,104
+105,credit,0105-credit,34866,34866,1,JUGADOR BOLA,105
+106,credit,0106-credit,34933,34933,1,JUGADOR BOLA,106
+107,credit,0107-credit,34983,34983,1,JUGADOR BOLA,107
+108,credit,0108-credit,35033,35033,1,JUGADOR BOLA,108
+109,credit,0109-credit,35083,35083,1,JUGADOR BOLA,109
+110,credit,0110-credit,35149,35149,1,JUGADOR BOLA,110
+111,credit,0111-credit,35199,35199,1,JUGADOR BOLA,111
+112,credit,0112-credit,35249,35249,1,JUGADOR BOLA,112
+113,credit,0113-credit,35316,35316,1,JUGADOR BOLA,113
+114,credit,0114-credit,35366,36616,29,1 1 / JUGADOR BOLA,114
+115,ball-1-start,0115-ball-1-start,36699,40666,48,1 1 / JUGADOR BOLA,115
+116,plunged,0116-plunged,40833,43316,28,1 1 / JUGADOR BOLA,116
+117,plunged,0117-plunged,43400,43400,1,,3
+118,plunged,0118-plunged,43416,45166,27,,118
+119,plunged,0119-plunged,45233,45900,21,1 1 / JUGADOR BOLA,119
+120,plunged,0120-plunged,45916,45916,1,,3
+121,plunged,0121-plunged,45933,47766,27,,121
+122,plunged,0122-plunged,47783,48333,16,1 1 / JUGADOR BOLA,122
+123,plunged,0123-plunged,48400,48400,1,,123
+124,plunged,0124-plunged,48416,50233,30,,124
+125,plunged,0125-plunged,50266,50266,1,1 1 / JUGADOR BOLA,125
+126,plunged,0126-plunged,50300,55883,92,1 1 / JUGADOR BOLA,126
+127,plunged,0127-plunged,55900,55900,1,,3
+128,plunged,0128-plunged,55916,55916,1,,128
+129,plunged,0129-plunged,55933,55933,1,,13
+130,plunged,0130-plunged,55983,55983,1,,130
+131,plunged,0131-plunged,56066,56066,1,,13
+132,plunged,0132-plunged,56116,56116,1,,130
+133,plunged,0133-plunged,56200,56200,1,,13
+134,plunged,0134-plunged,56250,56250,1,,130
+135,plunged,0135-plunged,56333,56333,1,,13
+136,plunged,0136-plunged,56400,56400,1,,130
+137,plunged,0137-plunged,56466,56466,1,,13
+138,plunged,0138-plunged,56533,56533,1,,130
+139,plunged,0139-plunged,56616,56616,1,,13
+140,plunged,0140-plunged,56666,56666,1,,130
+141,plunged,0141-plunged,56750,56750,1,,13
+142,plunged,0142-plunged,56800,56800,1,,130
+143,plunged,0143-plunged,56883,56883,1,,13
+144,plunged,0144-plunged,56933,56933,1,,130
+145,plunged,0145-plunged,57000,58516,2,1 1 / JUGADOR BOLA,145
+146,plunged,0146-plunged,58550,59116,4,1 1 / JUGADOR BOLA,146
+147,general-play,0147-general-play,59316,61900,22,. . / 1 1 / JUGADOR BOLA,147
+148,general-play,0148-general-play,61916,61933,2,,148
+149,general-play,0149-general-play,62466,62466,1,,3
+150,general-play,0150-general-play,62483,63016,2,1 1 / JUGADOR BOLA,150
+151,general-play,0151-general-play,63033,64783,11,. . / 1 1 / JUGADOR BOLA,151
+152,ramp-1,0152-ramp-1,64966,70016,32,. . / 1 1 / JUGADOR BOLA,152
+153,ramp-1,0153-ramp-1,70083,70083,1,,3
+154,ramp-1,0154-ramp-1,70100,70233,2,,154
+155,ramp-1,0155-ramp-1,72250,73383,9,1 1 / JUGADOR BOLA,155
+156,ramp-1,0156-ramp-1,73400,73400,1,,156
+157,ramp-1,0157-ramp-1,73416,73416,1,,3
+158,ramp-1,0158-ramp-1,73433,75583,6,,158
+159,ramp-1,0159-ramp-1,75616,76583,8,1 1 / JUGADOR BOLA,159
+160,ramp-1,0160-ramp-1,76716,76716,1,,160
+161,ramp-1,0161-ramp-1,76750,76750,1,,3
+162,ramp-1,0162-ramp-1,76783,77183,4,,162
+163,ramp-1,0163-ramp-1,78933,79933,10,1 1 / JUGADOR BOLA,163
+164,ramp-1,0164-ramp-1,80066,80066,1,,3
+165,ramp-1,0165-ramp-1,80083,80633,5,,165
+166,ramp-1,0166-ramp-1,82216,83200,7,1 1 / JUGADOR BOLA,166
+167,ramp-1,0167-ramp-1,83400,83400,1,,167
+168,ramp-1,0168-ramp-1,83416,84116,9,,168
+169,ramp-1,0169-ramp-1,85600,86600,9,1 1 / JUGADOR BOLA,169
+170,ramp-1,0170-ramp-1,86733,86733,1,,3
+171,ramp-1,0171-ramp-1,86766,87600,8,,171
+172,ramp-1,0172-ramp-1,88916,89916,10,1 1 / JUGADOR BOLA,172
+173,orbits-complete,0173-orbits-complete,90100,93183,19,1 1 / JUGADOR BOLA,173
+174,jupiter-lock-1,0174-jupiter-lock-1,93383,94000,8,1 1 / JUGADOR BOLA,174
+175,jupiter-lock-1,0175-jupiter-lock-1,94016,94016,1,,3
+176,jupiter-lock-1,0176-jupiter-lock-1,94050,94050,1,,176
+177,jupiter-lock-1,0177-jupiter-lock-1,94166,94166,1,,177
+178,jupiter-lock-1,0178-jupiter-lock-1,94300,94300,1,,176
+179,jupiter-lock-1,0179-jupiter-lock-1,94400,94400,1,,177
+180,jupiter-lock-1,0180-jupiter-lock-1,94550,94550,1,,176
+181,jupiter-lock-1,0181-jupiter-lock-1,94650,94650,1,,177
+182,jupiter-lock-1,0182-jupiter-lock-1,94783,94783,1,,176
+183,jupiter-lock-1,0183-jupiter-lock-1,94900,94900,1,,177
+184,jupiter-lock-1,0184-jupiter-lock-1,95033,95033,1,,176
+185,jupiter-lock-1,0185-jupiter-lock-1,95150,95150,1,,177
+186,jupiter-lock-1,0186-jupiter-lock-1,95283,95283,1,,176
+187,jupiter-lock-1,0187-jupiter-lock-1,95400,95400,1,,177
+188,jupiter-lock-1,0188-jupiter-lock-1,95533,95650,4,,177
+189,jupiter-lock-1,0189-jupiter-lock-1,95783,96583,7,1 1 / JUGADOR BOLA,189
+190,replacement-ball-1,0190-replacement-ball-1,96783,100666,26,1 1 / JUGADOR BOLA,190
+191,jupiter-lock-2-multiball,0191-jupiter-lock-2-multiball,100850,101516,7,. . / 1 1 / JUGADOR BOLA,191
+192,jupiter-lock-2-multiball,0192-jupiter-lock-2-multiball,101533,101533,1,,3
+193,jupiter-lock-2-multiball,0193-jupiter-lock-2-multiball,101550,101900,6,,193
+194,jupiter-lock-2-multiball,0194-jupiter-lock-2-multiball,101916,101916,1,,177
+195,jupiter-lock-2-multiball,0195-jupiter-lock-2-multiball,102050,102050,1,,176
+196,jupiter-lock-2-multiball,0196-jupiter-lock-2-multiball,102166,102166,1,,177
+197,jupiter-lock-2-multiball,0197-jupiter-lock-2-multiball,102300,102300,1,,176
+198,jupiter-lock-2-multiball,0198-jupiter-lock-2-multiball,102400,102400,1,,177
+199,jupiter-lock-2-multiball,0199-jupiter-lock-2-multiball,102550,102550,1,,176
+200,jupiter-lock-2-multiball,0200-jupiter-lock-2-multiball,102650,102650,1,,177
+201,jupiter-lock-2-multiball,0201-jupiter-lock-2-multiball,102783,102783,1,,176
+202,jupiter-lock-2-multiball,0202-jupiter-lock-2-multiball,102900,102900,1,,177
+203,jupiter-lock-2-multiball,0203-jupiter-lock-2-multiball,103033,103033,1,,176
+204,jupiter-lock-2-multiball,0204-jupiter-lock-2-multiball,103150,103150,1,,177
+205,jupiter-lock-2-multiball,0205-jupiter-lock-2-multiball,103250,103250,1,,3
+206,jupiter-lock-2-multiball,0206-jupiter-lock-2-multiball,103283,103283,1,,206
+207,jupiter-lock-2-multiball,0207-jupiter-lock-2-multiball,103366,103366,1,,207
+208,jupiter-lock-2-multiball,0208-jupiter-lock-2-multiball,103450,103466,2,,206
+209,jupiter-lock-2-multiball,0209-jupiter-lock-2-multiball,103533,103550,2,,207
+210,jupiter-lock-2-multiball,0210-jupiter-lock-2-multiball,103616,103616,1,,206
+211,jupiter-lock-2-multiball,0211-jupiter-lock-2-multiball,103700,103700,1,,207
+212,jupiter-lock-2-multiball,0212-jupiter-lock-2-multiball,103783,103850,2,,212
+213,jupiter-lock-2-multiball,0213-jupiter-lock-2-multiball,103866,103933,2,,213
+214,jupiter-lock-2-multiball,0214-jupiter-lock-2-multiball,103950,103950,1,,206
+215,jupiter-lock-2-multiball,0215-jupiter-lock-2-multiball,104033,104033,1,,207
+216,jupiter-lock-2-multiball,0216-jupiter-lock-2-multiball,104116,104116,1,,206
+217,jupiter-lock-2-multiball,0217-jupiter-lock-2-multiball,104200,104200,1,,207
+218,jupiter-lock-2-multiball,0218-jupiter-lock-2-multiball,104283,104283,1,,206
+219,follow-the-released-ball,0219-follow-the-released-ball,104366,104366,1,,207
+220,follow-the-released-ball,0220-follow-the-released-ball,104450,104450,1,,206
+221,follow-the-released-ball,0221-follow-the-released-ball,104533,104533,1,,207
+222,follow-the-released-ball,0222-follow-the-released-ball,104616,104616,1,,206
+223,follow-the-released-ball,0223-follow-the-released-ball,104700,104700,1,,207
+224,follow-the-released-ball,0224-follow-the-released-ball,104783,104783,1,,206
+225,follow-the-released-ball,0225-follow-the-released-ball,104850,104850,1,,207
+226,follow-the-released-ball,0226-follow-the-released-ball,104933,104933,1,,206
+227,follow-the-released-ball,0227-follow-the-released-ball,105016,105016,1,,207
+228,follow-the-released-ball,0228-follow-the-released-ball,105100,105100,1,,206
+229,follow-the-released-ball,0229-follow-the-released-ball,105183,105183,1,,207
+230,follow-the-released-ball,0230-follow-the-released-ball,105266,105266,1,,206
+231,follow-the-released-ball,0231-follow-the-released-ball,105350,105350,1,,207
+232,follow-the-released-ball,0232-follow-the-released-ball,105433,105450,2,,206
+233,follow-the-released-ball,0233-follow-the-released-ball,105516,105533,2,,207
+234,follow-the-released-ball,0234-follow-the-released-ball,105600,105616,2,,206
+235,follow-the-released-ball,0235-follow-the-released-ball,105683,105683,1,,235
+236,follow-the-released-ball,0236-follow-the-released-ball,105700,105700,1,,207
+237,follow-the-released-ball,0237-follow-the-released-ball,105766,105766,1,,237
+238,follow-the-released-ball,0238-follow-the-released-ball,105783,105783,1,,206
+239,follow-the-released-ball,0239-follow-the-released-ball,105850,105850,1,,207
+240,follow-the-released-ball,0240-follow-the-released-ball,105933,105933,1,,206
+241,follow-the-released-ball,0241-follow-the-released-ball,106016,106016,1,,207
+242,follow-the-released-ball,0242-follow-the-released-ball,106100,106100,1,,206
+243,follow-the-released-ball,0243-follow-the-released-ball,106183,106183,1,,207
+244,follow-the-released-ball,0244-follow-the-released-ball,106266,106266,1,,206
+245,follow-the-released-ball,0245-follow-the-released-ball,106350,106350,1,,207
+246,follow-the-released-ball,0246-follow-the-released-ball,106433,106433,1,,206
+247,follow-the-released-ball,0247-follow-the-released-ball,106516,106516,1,,207
+248,follow-the-released-ball,0248-follow-the-released-ball,106600,106600,1,,206
+249,follow-the-released-ball,0249-follow-the-released-ball,106683,106683,1,,207
+250,follow-the-released-ball,0250-follow-the-released-ball,106766,106766,1,,206
+251,follow-the-released-ball,0251-follow-the-released-ball,106850,106850,1,,207
+252,follow-the-released-ball,0252-follow-the-released-ball,106933,106933,1,,206
+253,follow-the-released-ball,0253-follow-the-released-ball,107016,107016,1,,207
+254,follow-the-released-ball,0254-follow-the-released-ball,107083,107083,1,,206
+255,follow-the-released-ball,0255-follow-the-released-ball,107166,107166,1,,207
+256,follow-the-released-ball,0256-follow-the-released-ball,107250,107250,1,,206
+257,follow-the-released-ball,0257-follow-the-released-ball,107333,107333,1,,207
+258,follow-the-released-ball,0258-follow-the-released-ball,107416,107433,2,,206
+259,follow-the-released-ball,0259-follow-the-released-ball,107500,107516,2,,207
+260,follow-the-released-ball,0260-follow-the-released-ball,107583,107600,2,,206
+261,scoop-1-takes-the-released-ball,0261-scoop-1-takes-the-released-ball,107666,107666,1,,261
+262,scoop-1-takes-the-released-ball,0262-scoop-1-takes-the-released-ball,107683,107683,1,,207
+263,scoop-1-takes-the-released-ball,0263-scoop-1-takes-the-released-ball,107750,107750,1,,263
+264,scoop-1-takes-the-released-ball,0264-scoop-1-takes-the-released-ball,107766,107833,2,,212
+265,scoop-1-takes-the-released-ball,0265-scoop-1-takes-the-released-ball,107850,107916,2,,265
+266,scoop-1-takes-the-released-ball,0266-scoop-1-takes-the-released-ball,107933,107933,1,,206
+267,scoop-1-takes-the-released-ball,0267-scoop-1-takes-the-released-ball,108016,108016,1,,207
+268,scoop-1-takes-the-released-ball,0268-scoop-1-takes-the-released-ball,108083,108083,1,,206
+269,scoop-1-takes-the-released-ball,0269-scoop-1-takes-the-released-ball,108166,108166,1,,207
+270,scoop-1-takes-the-released-ball,0270-scoop-1-takes-the-released-ball,108250,108250,1,,206
+271,scoop-1-takes-the-released-ball,0271-scoop-1-takes-the-released-ball,108333,108333,1,,207
+272,scoop-1-takes-the-released-ball,0272-scoop-1-takes-the-released-ball,108416,108416,1,,206
+273,scoop-1-takes-the-released-ball,0273-scoop-1-takes-the-released-ball,108500,108500,1,,207
+274,scoop-1-takes-the-released-ball,0274-scoop-1-takes-the-released-ball,108583,108583,1,,206
+275,scoop-1-takes-the-released-ball,0275-scoop-1-takes-the-released-ball,108666,108666,1,,207
+276,scoop-1-takes-the-released-ball,0276-scoop-1-takes-the-released-ball,108750,108750,1,,206
+277,scoop-1-takes-the-released-ball,0277-scoop-1-takes-the-released-ball,108833,108833,1,,207
+278,scoop-1-takes-the-released-ball,0278-scoop-1-takes-the-released-ball,108916,108916,1,,206
+279,scoop-1-takes-the-released-ball,0279-scoop-1-takes-the-released-ball,109000,109000,1,,207
+280,scoop-1-takes-the-released-ball,0280-scoop-1-takes-the-released-ball,109083,109083,1,,206
+281,scoop-1-takes-the-released-ball,0281-scoop-1-takes-the-released-ball,109166,109166,1,,207
+282,scoop-1-takes-the-released-ball,0282-scoop-1-takes-the-released-ball,109233,109233,1,,206
+283,scoop-1-takes-the-released-ball,0283-scoop-1-takes-the-released-ball,109316,109316,1,,207
+284,scoop-1-takes-the-released-ball,0284-scoop-1-takes-the-released-ball,109400,109416,2,,206
+285,scoop-1-takes-the-released-ball,0285-scoop-1-takes-the-released-ball,109483,109500,2,,207
+286,scoop-1-takes-the-released-ball,0286-scoop-1-takes-the-released-ball,109566,109583,2,,206
+287,scoop-1-takes-the-released-ball,0287-scoop-1-takes-the-released-ball,109650,109650,1,,235
+288,scoop-1-takes-the-released-ball,0288-scoop-1-takes-the-released-ball,109666,109666,1,,207
+289,scoop-1-takes-the-released-ball,0289-scoop-1-takes-the-released-ball,109733,109733,1,,263
+290,scoop-1-takes-the-released-ball,0290-scoop-1-takes-the-released-ball,109750,109750,1,,206
+291,scoop-1-takes-the-released-ball,0291-scoop-1-takes-the-released-ball,109816,109816,1,,291
+292,scoop-1-takes-the-released-ball,0292-scoop-1-takes-the-released-ball,109833,109900,2,,213
+293,scoop-1-takes-the-released-ball,0293-scoop-1-takes-the-released-ball,109916,109983,2,,293
+294,scoop-1-takes-the-released-ball,0294-scoop-1-takes-the-released-ball,110000,110000,1,,207
+295,scoop-1-takes-the-released-ball,0295-scoop-1-takes-the-released-ball,110083,110083,1,,206
+296,scoop-1-takes-the-released-ball,0296-scoop-1-takes-the-released-ball,110166,110166,1,,207
+297,scoop-1-takes-the-released-ball,0297-scoop-1-takes-the-released-ball,110216,110216,1,,3
+298,scoop-1-takes-the-released-ball,0298-scoop-1-takes-the-released-ball,110233,110233,1,,206
+299,plunge-the-served-ball,0299-plunge-the-served-ball,110316,110316,1,,207
+300,plunge-the-served-ball,0300-plunge-the-served-ball,110400,110400,1,,206
+301,plunge-the-served-ball,0301-plunge-the-served-ball,110483,110483,1,,207
+302,plunge-the-served-ball,0302-plunge-the-served-ball,110566,110566,1,,206
+303,plunge-the-served-ball,0303-plunge-the-served-ball,110650,110650,1,,207
+304,plunge-the-served-ball,0304-plunge-the-served-ball,110733,110733,1,,206
+305,plunge-the-served-ball,0305-plunge-the-served-ball,110816,110816,1,,207
+306,plunge-the-served-ball,0306-plunge-the-served-ball,110900,110900,1,,206
+307,plunge-the-served-ball,0307-plunge-the-served-ball,110983,110983,1,,207
+308,plunge-the-served-ball,0308-plunge-the-served-ball,111066,111066,1,,206
+309,plunge-the-served-ball,0309-plunge-the-served-ball,111150,111150,1,,207
+310,plunge-the-served-ball,0310-plunge-the-served-ball,111233,111233,1,,206
+311,plunge-the-served-ball,0311-plunge-the-served-ball,111316,111316,1,,207
+312,plunge-the-served-ball,0312-plunge-the-served-ball,111400,111400,1,,206
+313,plunge-the-served-ball,0313-plunge-the-served-ball,111466,111483,2,,207
+314,plunge-the-served-ball,0314-plunge-the-served-ball,111550,111566,2,,206
+315,plunge-the-served-ball,0315-plunge-the-served-ball,111633,111633,1,,235
+316,plunge-the-served-ball,0316-plunge-the-served-ball,111650,111650,1,,207
+317,plunge-the-served-ball,0317-plunge-the-served-ball,111716,111716,1,,263
+318,plunge-the-served-ball,0318-plunge-the-served-ball,111733,111733,1,,206
+319,plunge-the-served-ball,0319-plunge-the-served-ball,111800,111800,1,,291
+320,plunge-the-served-ball,0320-plunge-the-served-ball,111816,111883,2,,265
+321,plunge-the-served-ball,0321-plunge-the-served-ball,111900,111900,1,,206
+322,plunge-the-served-ball,0322-plunge-the-served-ball,111983,111983,1,,207
+323,plunge-the-served-ball,0323-plunge-the-served-ball,112066,112066,1,,206
+324,plunge-the-served-ball,0324-plunge-the-served-ball,112150,112150,1,,207
+325,plunge-the-served-ball,0325-plunge-the-served-ball,112233,112233,1,,206
+326,plunge-the-served-ball,0326-plunge-the-served-ball,112316,112316,1,,207
+327,plunge-the-served-ball,0327-plunge-the-served-ball,112400,112400,1,,206
+328,plunge-the-served-ball,0328-plunge-the-served-ball,112466,112466,1,,207
+329,plunge-the-served-ball,0329-plunge-the-served-ball,112550,112550,1,,206
+330,plunge-the-served-ball,0330-plunge-the-served-ball,112633,112633,1,,207
+331,plunge-the-served-ball,0331-plunge-the-served-ball,112716,112716,1,,206
+332,plunge-the-served-ball,0332-plunge-the-served-ball,112800,112800,1,,207
+333,plunge-the-served-ball,0333-plunge-the-served-ball,112883,112883,1,,206
+334,plunge-the-served-ball,0334-plunge-the-served-ball,112966,112966,1,,207
+335,plunge-the-served-ball,0335-plunge-the-served-ball,113050,113050,1,,206
+336,plunge-the-served-ball,0336-plunge-the-served-ball,113133,113133,1,,207
+337,plunge-the-served-ball,0337-plunge-the-served-ball,113216,113216,1,,206
+338,plunge-the-served-ball,0338-plunge-the-served-ball,113300,113300,1,,207
+339,plunge-the-served-ball,0339-plunge-the-served-ball,113383,113400,2,,206
+340,plunge-the-served-ball,0340-plunge-the-served-ball,113466,113466,1,,207
+341,plunge-the-served-ball,0341-plunge-the-served-ball,113550,113550,1,,206
+342,plunge-the-served-ball,0342-plunge-the-served-ball,113616,113616,1,,235
+343,plunge-the-served-ball,0343-plunge-the-served-ball,113633,113633,1,,207
+344,plunge-the-served-ball,0344-plunge-the-served-ball,113700,113700,1,,263
+345,plunge-the-served-ball,0345-plunge-the-served-ball,113716,113716,1,,206
+346,plunge-the-served-ball,0346-plunge-the-served-ball,113783,113783,1,,291
+347,plunge-the-served-ball,0347-plunge-the-served-ball,113800,113866,2,,265
+348,plunge-the-served-ball,0348-plunge-the-served-ball,113883,113950,2,,293
+349,plunge-the-served-ball,0349-plunge-the-served-ball,113966,113966,1,,207
+350,plunge-the-served-ball,0350-plunge-the-served-ball,114050,114050,1,,206
+351,plunge-the-served-ball,0351-plunge-the-served-ball,114133,114133,1,,207
+352,plunge-the-served-ball,0352-plunge-the-served-ball,114216,114216,1,,206
+353,plunge-the-served-ball,0353-plunge-the-served-ball,114300,114300,1,,207
+354,plunge-the-served-ball,0354-plunge-the-served-ball,114383,114383,1,,206
+355,multiball-running,0355-multiball-running,114466,114466,1,,207
+356,multiball-running,0356-multiball-running,114550,114550,1,,206
+357,multiball-running,0357-multiball-running,114616,114616,1,,207
+358,multiball-running,0358-multiball-running,114700,114700,1,,206
+359,multiball-running,0359-multiball-running,114766,117466,19,1 1 / JUGADOR BOLA,359
+360,scoop-1-takes-the-second-released-ball,0360-scoop-1-takes-the-second-released-ball,117650,124283,41,1 1 / JUGADOR BOLA,360
+361,jackpot,0361-jackpot,124466,124466,1,1 1 / JUGADOR BOLA,361
+362,jackpot,0362-jackpot,124550,124550,1,,362
+363,jackpot,0363-jackpot,124583,127333,43,4,363
+364,jackpot,0364-jackpot,127400,127400,1,,364
+365,jackpot,0365-jackpot,127416,129183,13,1 1 / JUGADOR BOLA,365
+366,superjackpot,0366-superjackpot,129383,129966,8,1 1 / JUGADOR BOLA,366
+367,superjackpot,0367-superjackpot,130083,130083,1,,367
+368,superjackpot,0368-superjackpot,130099,132916,45,8,368
+369,superjackpot,0369-superjackpot,132933,132933,1,,3
+370,superjackpot,0370-superjackpot,132999,132999,1,,370
+371,superjackpot,0371-superjackpot,133049,133049,1,,371
+372,superjackpot,0372-superjackpot,133133,133133,1,,370
+373,superjackpot,0373-superjackpot,133183,133183,1,,371
+374,superjackpot,0374-superjackpot,133266,133266,1,,370
+375,superjackpot,0375-superjackpot,133316,133316,1,,371
+376,superjackpot,0376-superjackpot,133399,133416,2,,370
+377,superjackpot,0377-superjackpot,133466,133466,1,,371
+378,superjackpot,0378-superjackpot,133549,133549,1,,370
+379,superjackpot,0379-superjackpot,133599,133616,2,,371
+380,superjackpot,0380-superjackpot,133683,133683,1,,380
+381,superjackpot,0381-superjackpot,133699,133699,1,,370
+382,superjackpot,0382-superjackpot,133733,133733,1,,382
+383,superjackpot,0383-superjackpot,133749,133749,1,,371
+384,superjackpot,0384-superjackpot,133816,133816,1,,384
+385,superjackpot,0385-superjackpot,133833,133866,2,,385
+386,superjackpot,0386-superjackpot,133883,133949,2,,386
+387,superjackpot,0387-superjackpot,133966,133966,1,,370
+388,superjackpot,0388-superjackpot,134016,134016,1,,371
+389,superjackpot,0389-superjackpot,134099,134099,1,,370
+390,superjackpot,0390-superjackpot,134166,134166,1,,371
+391,superjackpot,0391-superjackpot,134233,134233,1,,370
+392,both-awards-paid,0392-both-awards-paid,134299,134299,1,,371
+393,both-awards-paid,0393-both-awards-paid,134383,134383,1,,370
+394,both-awards-paid,0394-both-awards-paid,134433,134433,1,,371
+395,both-awards-paid,0395-both-awards-paid,134516,134516,1,,370
+396,both-awards-paid,0396-both-awards-paid,134566,134566,1,,371
+397,both-awards-paid,0397-both-awards-paid,134649,134649,1,,370
+398,both-awards-paid,0398-both-awards-paid,134699,134699,1,,371
+399,both-awards-paid,0399-both-awards-paid,134783,134783,1,,370
+400,both-awards-paid,0400-both-awards-paid,134849,134849,1,,371
+401,both-awards-paid,0401-both-awards-paid,134933,134933,1,,370
+402,both-awards-paid,0402-both-awards-paid,134983,134983,1,,371
+403,both-awards-paid,0403-both-awards-paid,135066,135066,1,,370
+404,both-awards-paid,0404-both-awards-paid,135116,135116,1,,371
+405,both-awards-paid,0405-both-awards-paid,135199,135199,1,,370
+406,both-awards-paid,0406-both-awards-paid,135249,135249,1,,371
+407,both-awards-paid,0407-both-awards-paid,135333,135333,1,,370
+408,both-awards-paid,0408-both-awards-paid,135399,135399,1,,371
+409,both-awards-paid,0409-both-awards-paid,135466,135483,2,,370
+410,both-awards-paid,0410-both-awards-paid,135533,135549,2,,371
+411,both-awards-paid,0411-both-awards-paid,135616,135616,1,,370
+412,both-awards-paid,0412-both-awards-paid,135666,135666,1,,412
+413,both-awards-paid,0413-both-awards-paid,135683,135683,1,,371
+414,both-awards-paid,0414-both-awards-paid,135749,135749,1,,414
+415,both-awards-paid,0415-both-awards-paid,135766,135766,1,,370
+416,both-awards-paid,0416-both-awards-paid,135799,135799,1,,416
+417,both-awards-paid,0417-both-awards-paid,135816,135883,2,,417
+418,both-awards-paid,0418-both-awards-paid,135899,135933,2,,418
+419,both-awards-paid,0419-both-awards-paid,135949,135949,1,,371
+420,both-awards-paid,0420-both-awards-paid,136033,136033,1,,370
+421,both-awards-paid,0421-both-awards-paid,136083,136083,1,,371
+422,both-awards-paid,0422-both-awards-paid,136166,136166,1,,370
+423,both-awards-paid,0423-both-awards-paid,136233,136233,1,,371
+424,both-awards-paid,0424-both-awards-paid,136316,136316,1,,370
+425,both-awards-paid,0425-both-awards-paid,136366,136366,1,,371
+426,both-awards-paid,0426-both-awards-paid,136449,136449,1,,370
+427,both-awards-paid,0427-both-awards-paid,136466,136466,1,1 1 / JUGADOR BOLA,68
+428,both-awards-paid,0428-both-awards-paid,136499,138433,12,1 1 / JUGADOR BOLA,428
+429,both-awards-paid,0429-both-awards-paid,138516,138516,1,,3
+430,both-awards-paid,0430-both-awards-paid,138549,138549,1,,430
+431,both-awards-paid,0431-both-awards-paid,138599,138599,1,,431
+432,both-awards-paid,0432-both-awards-paid,138683,138683,1,,430
+433,both-awards-paid,0433-both-awards-paid,138733,138733,1,,431
+434,both-awards-paid,0434-both-awards-paid,138816,138816,1,,430
+435,both-awards-paid,0435-both-awards-paid,138866,138866,1,,431
+436,both-awards-paid,0436-both-awards-paid,138949,138949,1,,430
+437,both-awards-paid,0437-both-awards-paid,139016,139016,1,,431
+438,both-awards-paid,0438-both-awards-paid,139083,139083,1,,430
+439,both-awards-paid,0439-both-awards-paid,139149,139149,1,,431
+440,both-awards-paid,0440-both-awards-paid,139233,139233,1,,430
+441,both-awards-paid,0441-both-awards-paid,139283,139283,1,,431
+442,both-awards-paid,0442-both-awards-paid,139366,139366,1,,430
+443,both-awards-paid,0443-both-awards-paid,139416,139433,2,,431
+444,both-awards-paid,0444-both-awards-paid,139499,139516,2,,430
+445,both-awards-paid,0445-both-awards-paid,139549,139566,2,,431
+446,both-awards-paid,0446-both-awards-paid,139633,139633,1,,446
+447,both-awards-paid,0447-both-awards-paid,139649,139649,1,,430
+448,both-awards-paid,0448-both-awards-paid,139699,139699,1,,431
+449,both-awards-paid,0449-both-awards-paid,139783,139833,2,,449
+450,both-awards-paid,0450-both-awards-paid,139849,139916,2,,450
+451,both-awards-paid,0451-both-awards-paid,139933,139933,1,,430
+452,both-awards-paid,0452-both-awards-paid,139983,139983,1,,431
+453,both-awards-paid,0453-both-awards-paid,140066,140066,1,,430
+454,both-awards-paid,0454-both-awards-paid,140116,140116,1,,431
+455,both-awards-paid,0455-both-awards-paid,140199,140199,1,,430
+456,both-awards-paid,0456-both-awards-paid,140249,140249,1,,431
+457,both-awards-paid,0457-both-awards-paid,140333,140333,1,,430
+458,both-awards-paid,0458-both-awards-paid,140399,140399,1,,431
+459,both-awards-paid,0459-both-awards-paid,140466,140466,1,,430
+460,both-awards-paid,0460-both-awards-paid,140533,140533,1,,431
+461,both-awards-paid,0461-both-awards-paid,140616,140616,1,,430
+462,both-awards-paid,0462-both-awards-paid,140666,140666,1,,431
+463,both-awards-paid,0463-both-awards-paid,140749,140749,1,,430
+464,both-awards-paid,0464-both-awards-paid,140799,140799,1,,431
+465,both-awards-paid,0465-both-awards-paid,140883,140883,1,,430
+466,both-awards-paid,0466-both-awards-paid,140933,140933,1,,431
+467,both-awards-paid,0467-both-awards-paid,141016,141016,1,,430
+468,both-awards-paid,0468-both-awards-paid,141083,141083,1,,431
+469,both-awards-paid,0469-both-awards-paid,141166,141166,1,,430
+470,both-awards-paid,0470-both-awards-paid,141216,141216,1,,431
+471,both-awards-paid,0471-both-awards-paid,141299,141299,1,,430
+472,both-awards-paid,0472-both-awards-paid,141349,141349,1,,431
+473,both-awards-paid,0473-both-awards-paid,141433,141449,2,,430
+474,both-awards-paid,0474-both-awards-paid,141483,141499,2,,431
+475,both-awards-paid,0475-both-awards-paid,141566,141583,2,,430
+476,both-awards-paid,0476-both-awards-paid,141616,141616,1,,476
+477,both-awards-paid,0477-both-awards-paid,141633,141633,1,,431
+478,both-awards-paid,0478-both-awards-paid,141699,141699,1,,478
+479,both-awards-paid,0479-both-awards-paid,141716,141716,1,,430
+480,both-awards-paid,0480-both-awards-paid,141766,141766,1,,480
+481,both-awards-paid,0481-both-awards-paid,141783,141783,1,,431
+482,both-awards-paid,0482-both-awards-paid,141849,141899,2,,482
+483,both-awards-paid,0483-both-awards-paid,141916,141949,2,,483
+484,both-awards-paid,0484-both-awards-paid,141966,143149,9,1 1 / JUGADOR BOLA,484
+485,two-balls-left,0485-two-balls-left,143333,149933,42,1 1 / JUGADOR BOLA,485
+486,multiball-over,0486-multiball-over,150133,153383,20,1 1 / JUGADOR BOLA,486
+487,multiball-over,0487-multiball-over,153399,153949,4,,487
+488,multiball-over,0488-multiball-over,153966,156499,20,1 1 / JUGADOR BOLA,488
+489,bullseye2-base-value-again,0489-bullseye2-base-value-again,156699,160199,22,1 1 / JUGADOR BOLA,489
+490,bullseye2-base-value-again,0490-bullseye2-base-value-again,160233,161799,5,,490
+491,bullseye2-base-value-again,0491-bullseye2-base-value-again,162466,162466,1,,491
+492,bullseye2-base-value-again,0492-bullseye2-base-value-again,162483,162933,2,,492
+493,bullseye2-base-value-again,0493-bullseye2-base-value-again,163549,163566,2,,493
+494,bullseye2-base-value-again,0494-bullseye2-base-value-again,163583,164699,4,JUGADOR BOLA EXTRA,494
+495,bullseye2-base-value-again,0495-bullseye2-base-value-again,164749,164783,2,JUGADOR BOLA EXTRA,495
+496,bullseye2-base-value-again,0496-bullseye2-base-value-again,164799,164916,3,JUGADOR BOLA EXTRA,496
+497,bullseye2-base-value-again,0497-bullseye2-base-value-again,164966,164966,1,JUGADOR BOLA EXTRA,497
+498,bullseye2-base-value-again,0498-bullseye2-base-value-again,165016,165016,1,JUGADOR BOLA EXTRA,498
+499,bullseye2-base-value-again,0499-bullseye2-base-value-again,165083,165083,1,JUGADOR BOLA EXTRA,499
+500,bullseye2-base-value-again,0500-bullseye2-base-value-again,165133,165133,1,JUGADOR BOLA EXTRA,500
+501,bullseye2-base-value-again,0501-bullseye2-base-value-again,165183,165183,1,JUGADOR BOLA EXTRA,501
+502,bullseye2-base-value-again,0502-bullseye2-base-value-again,165233,165233,1,JUGADOR BOLA EXTRA,502
+503,bullseye2-base-value-again,0503-bullseye2-base-value-again,165299,165299,1,JUGADOR BOLA EXTRA,503
+504,bullseye2-base-value-again,0504-bullseye2-base-value-again,165349,165349,1,JUGADOR BOLA EXTRA,504
+505,bullseye2-base-value-again,0505-bullseye2-base-value-again,165399,165399,1,JUGADOR BOLA EXTRA,505
+506,bullseye2-base-value-again,0506-bullseye2-base-value-again,165466,165466,1,JUGADOR BOLA EXTRA,506
+507,bullseye2-base-value-again,0507-bullseye2-base-value-again,165516,165533,2,JUGADOR BOLA EXTRA,507
+508,bullseye2-base-value-again,0508-bullseye2-base-value-again,165566,165583,2,JUGADOR BOLA EXTRA,508
+509,bullseye2-base-value-again,0509-bullseye2-base-value-again,165616,165633,2,JUGADOR BOLA EXTRA,509
+510,bullseye2-base-value-again,0510-bullseye2-base-value-again,165683,165799,6,JUGADOR BOLA EXTRA,510
+511,bullseye2-base-value-again,0511-bullseye2-base-value-again,165849,165899,2,JUGADOR BOLA EXTRA,511
+512,bullseye2-base-value-again,0512-bullseye2-base-value-again,165916,165949,2,JUGADOR BOLA EXTRA,512
+513,bullseye2-base-value-again,0513-bullseye2-base-value-again,165966,165966,1,JUGADOR BOLA EXTRA,513
+514,bullseye2-base-value-again,0514-bullseye2-base-value-again,166016,166016,1,JUGADOR BOLA EXTRA,514
+515,bullseye2-base-value-again,0515-bullseye2-base-value-again,166083,166083,1,JUGADOR BOLA EXTRA,515
+516,bullseye2-base-value-again,0516-bullseye2-base-value-again,166133,166133,1,JUGADOR BOLA EXTRA,516
+517,bullseye2-base-value-again,0517-bullseye2-base-value-again,166183,166183,1,JUGADOR BOLA EXTRA,517
+518,bullseye2-base-value-again,0518-bullseye2-base-value-again,166233,166233,1,JUGADOR BOLA EXTRA,518
+519,bullseye2-base-value-again,0519-bullseye2-base-value-again,166299,166299,1,JUGADOR BOLA EXTRA,519
+520,bullseye2-base-value-again,0520-bullseye2-base-value-again,166349,166349,1,JUGADOR BOLA EXTRA,520
+521,bullseye2-base-value-again,0521-bullseye2-base-value-again,166399,166399,1,JUGADOR BOLA EXTRA,521
+522,bullseye2-base-value-again,0522-bullseye2-base-value-again,166466,166466,1,JUGADOR BOLA EXTRA,522
+523,bullseye2-base-value-again,0523-bullseye2-base-value-again,166516,166516,1,JUGADOR BOLA EXTRA,523
+524,bullseye2-base-value-again,0524-bullseye2-base-value-again,166566,166566,1,JUGADOR BOLA EXTRA,524
+525,bullseye2-base-value-again,0525-bullseye2-base-value-again,166616,166616,1,JUGADOR BOLA EXTRA,525
+526,bullseye2-base-value-again,0526-bullseye2-base-value-again,166683,166683,1,JUGADOR BOLA EXTRA,526
+527,bullseye2-base-value-again,0527-bullseye2-base-value-again,166733,166733,1,JUGADOR BOLA EXTRA,527
+528,bullseye2-base-value-again,0528-bullseye2-base-value-again,166783,166783,1,JUGADOR BOLA EXTRA,528
+529,bullseye2-base-value-again,0529-bullseye2-base-value-again,166849,166849,1,JUGADOR BOLA EXTRA,529
+530,bullseye2-base-value-again,0530-bullseye2-base-value-again,166899,166899,1,JUGADOR BOLA EXTRA,530
+531,bullseye2-base-value-again,0531-bullseye2-base-value-again,166949,166949,1,JUGADOR BOLA EXTRA,531
+532,bullseye2-base-value-again,0532-bullseye2-base-value-again,167016,167016,1,JUGADOR BOLA EXTRA,532
+533,bullseye2-base-value-again,0533-bullseye2-base-value-again,167066,167066,1,JUGADOR BOLA EXTRA,533
+534,bullseye2-base-value-again,0534-bullseye2-base-value-again,167116,167116,1,JUGADOR BOLA EXTRA,534
+535,bullseye2-base-value-again,0535-bullseye2-base-value-again,167166,167166,1,JUGADOR BOLA EXTRA,535
+536,bullseye2-base-value-again,0536-bullseye2-base-value-again,167233,167233,1,JUGADOR BOLA EXTRA,536
+537,bullseye2-base-value-again,0537-bullseye2-base-value-again,167283,167283,1,JUGADOR BOLA EXTRA,537
+538,bullseye2-base-value-again,0538-bullseye2-base-value-again,167333,167333,1,JUGADOR BOLA EXTRA,538
+539,bullseye2-base-value-again,0539-bullseye2-base-value-again,167399,168249,23,JUGADOR BOLA EXTRA,539
+540,ball-1-over,0540-ball-1-over,168449,181616,86,JUGADOR BOLA EXTRA,540
+541,ball-2-plunged,0541-ball-2-plunged,181633,186566,38,JUGADOR BOLA EXTRA,541
+542,ball-2-plunged,0542-ball-2-plunged,186733,186733,1,,3
+543,ball-2-plunged,0543-ball-2-plunged,186766,186899,2,,154
+544,ball-2-plunged,0544-ball-2-plunged,188883,188883,1,,544
+545,ball-2-plunged,0545-ball-2-plunged,188916,189883,10,JUGADOR BOLA EXTRA,545
+546,ball-2-plunged,0546-ball-2-plunged,190083,190083,1,,3
+547,ball-2-plunged,0547-ball-2-plunged,190099,190383,3,,547
+548,ball-2-plunged,0548-ball-2-plunged,192249,193233,7,JUGADOR BOLA EXTRA,548
+549,ball-2-plunged,0549-ball-2-plunged,193399,193399,1,,3
+550,ball-2-plunged,0550-ball-2-plunged,193433,193849,6,,162
+551,ball-2-plunged,0551-ball-2-plunged,195583,196583,9,JUGADOR BOLA EXTRA,551
+552,ball-2-plunged,0552-ball-2-plunged,196716,196716,1,,552
+553,ball-2-plunged,0553-ball-2-plunged,196749,197299,5,,165
+554,ball-2-plunged,0554-ball-2-plunged,198933,198933,1,,554
+555,ball-2-plunged,0555-ball-2-plunged,198949,199933,11,JUGADOR BOLA EXTRA,555
+556,ball-2-plunged,0556-ball-2-plunged,200066,200066,1,,3
+557,ball-2-plunged,0557-ball-2-plunged,200083,200783,6,,168
+558,ball-2-plunged,0558-ball-2-plunged,202233,203233,7,JUGADOR BOLA EXTRA,558
+559,ball-2-plunged,0559-ball-2-plunged,203399,203399,1,,3
+560,ball-2-plunged,0560-ball-2-plunged,203416,204249,9,,171
+561,ball-2-plunged,0561-ball-2-plunged,205549,206549,10,JUGADOR BOLA EXTRA,561
+562,orbits-complete-again,0562-orbits-complete-again,206733,210083,24,47 2 / JUGADOR BOLA EXTRA,562
+563,orbits-complete-again,0563-orbits-complete-again,210099,210866,15,JUGADOR BOLA EXTRA,563
+564,orbits-complete-again,0564-orbits-complete-again,210933,210933,1,JUGADOR BOLA EXTRA,564
+565,orbits-complete-again,0565-orbits-complete-again,210949,211749,8,504.2 / JUGADOR BOLA EXTRA,565
+566,orbits-complete-again,0566-orbits-complete-again,211783,212549,18,JUGADOR BOLA EXTRA,566
+567,orbits-complete-again,0567-orbits-complete-again,212616,212616,1,JUGADOR BOLA EXTRA,567
+568,orbits-complete-again,0568-orbits-complete-again,212633,213416,8,529.7 / JUGADOR BOLA EXTRA,568
+569,orbits-complete-again,0569-orbits-complete-again,213433,214216,24,JUGADOR BOLA EXTRA,569
+570,orbits-complete-again,0570-orbits-complete-again,214266,214266,1,JUGADOR BOLA EXTRA,570
+571,orbits-complete-again,0571-orbits-complete-again,214299,215083,6,555.2 / JUGADOR BOLA EXTRA,571
+572,orbits-complete-again,0572-orbits-complete-again,215116,215949,24,JUGADOR BOLA EXTRA,572
+573,orbits-complete-again,0573-orbits-complete-again,215983,216749,6,5 :8 / JUGADOR BOLA EXTRA,573
+574,orbits-complete-again,0574-orbits-complete-again,216783,217549,16,JUGADOR BOLA EXTRA,574
+575,orbits-complete-again,0575-orbits-complete-again,217599,217599,1,JUGADOR BOLA EXTRA,575
+576,orbits-complete-again,0576-orbits-complete-again,217616,219949,18,JUGADOR BOLA EXTRA,576
+577,bank-flat,0577-bank-flat,220149,223249,20,JUGADOR BOLA EXTRA,577
+578,bank-flat,0578-bank-flat,223399,223399,1,,3
+579,bank-flat,0579-bank-flat,223416,223416,1,,579
+580,bank-flat,0580-bank-flat,223533,223683,4,,579
+581,bank-flat,0581-bank-flat,223783,223916,2,,581
+582,bank-flat,0582-bank-flat,223933,223933,1,,579
+583,bank-flat,0583-bank-flat,224033,224033,1,,583
+584,bank-flat,0584-bank-flat,224166,224166,1,,579
+585,bank-flat,0585-bank-flat,224283,224283,1,,583
+586,bank-flat,0586-bank-flat,224416,224416,1,,579
+587,bank-flat,0587-bank-flat,224533,224533,1,,583
+588,bank-flat,0588-bank-flat,224666,224666,1,,579
+589,bank-flat,0589-bank-flat,224783,224783,1,,583
+590,bank-flat,0590-bank-flat,224916,224916,1,,579
+591,special-drop-probe,0591-special-drop-probe,225016,225016,1,,583
+592,special-drop-probe,0592-special-drop-probe,225166,225166,1,,579
+593,special-drop-probe,0593-special-drop-probe,225266,225266,1,,583
+594,special-drop-probe,0594-special-drop-probe,225383,225383,1,- -,594
+595,special-drop-probe,0595-special-drop-probe,225399,225399,1,,595
+596,special-drop-probe,0596-special-drop-probe,225433,238266,563,,596
+597,probe-expired,0597-probe-expired,238299,241616,140,,597
+598,wonderful-lock-1,0598-wonderful-lock-1,241633,241716,6,,598
+599,wonderful-lock-1,0599-wonderful-lock-1,241733,241733,1,,599
+600,wonderful-lock-1,0600-wonderful-lock-1,241749,242166,9,JUGADOR BOLA EXTRA,600
+601,wonderful-lock-1,0601-wonderful-lock-1,242349,242349,1,,3
+602,wonderful-lock-1,0602-wonderful-lock-1,242383,242383,1,,176
+603,wonderful-lock-1,0603-wonderful-lock-1,242483,242483,1,,177
+604,wonderful-lock-1,0604-wonderful-lock-1,242616,242616,1,,176
+605,wonderful-lock-1,0605-wonderful-lock-1,242733,242733,1,,177
+606,wonderful-lock-1,0606-wonderful-lock-1,242866,242866,1,,176
+607,wonderful-lock-1,0607-wonderful-lock-1,242983,242983,1,,177
+608,wonderful-lock-1,0608-wonderful-lock-1,243116,243116,1,,176
+609,wonderful-lock-1,0609-wonderful-lock-1,243233,243233,1,,177
+610,wonderful-lock-1,0610-wonderful-lock-1,243366,243366,1,,176
+611,wonderful-lock-1,0611-wonderful-lock-1,243466,243483,2,,177
+612,wonderful-lock-1,0612-wonderful-lock-1,243616,243849,4,,612
+613,wonderful-lock-1,0613-wonderful-lock-1,243866,243866,1,,176
+614,wonderful-lock-1,0614-wonderful-lock-1,243983,243983,1,,177
+615,wonderful-lock-1,0615-wonderful-lock-1,244116,244883,5,JUGADOR BOLA EXTRA,615
+616,wonderful-replacement,0616-wonderful-replacement,245083,249549,28,JUGADOR BOLA EXTRA,616
+617,wonderful-thing-lock-2,0617-wonderful-thing-lock-2,249733,250316,7,JUGADOR BOLA EXTRA,617
+618,wonderful-thing-lock-2,0618-wonderful-thing-lock-2,250349,250349,1,,3
+619,wonderful-thing-lock-2,0619-wonderful-thing-lock-2,250383,250383,1,,176
+620,wonderful-thing-lock-2,0620-wonderful-thing-lock-2,250483,250483,1,,177
+621,wonderful-thing-lock-2,0621-wonderful-thing-lock-2,250616,250616,1,,176
+622,wonderful-thing-lock-2,0622-wonderful-thing-lock-2,250733,250733,1,,177
+623,wonderful-thing-lock-2,0623-wonderful-thing-lock-2,250866,250866,1,,176
+624,wonderful-thing-lock-2,0624-wonderful-thing-lock-2,250983,250983,1,,177
+625,wonderful-thing-lock-2,0625-wonderful-thing-lock-2,251116,251116,1,,176
+626,wonderful-thing-lock-2,0626-wonderful-thing-lock-2,251233,251233,1,,177
+627,wonderful-thing-lock-2,0627-wonderful-thing-lock-2,251366,251366,1,,176
+628,wonderful-thing-lock-2,0628-wonderful-thing-lock-2,251466,251483,2,,177
+629,wonderful-thing-lock-2,0629-wonderful-thing-lock-2,251616,251849,4,,612
+630,wonderful-thing-lock-2,0630-wonderful-thing-lock-2,251866,251866,1,,176
+631,wonderful-thing-lock-2,0631-wonderful-thing-lock-2,251983,251983,1,,177
+632,wonderful-thing-lock-2,0632-wonderful-thing-lock-2,252116,252116,1,,3
+633,wonderful-thing-lock-2,0633-wonderful-thing-lock-2,252149,252149,1,,633
+634,wonderful-thing-lock-2,0634-wonderful-thing-lock-2,252249,252249,1,,634
+635,wonderful-thing-lock-2,0635-wonderful-thing-lock-2,252399,252399,1,,633
+636,wonderful-thing-lock-2,0636-wonderful-thing-lock-2,252499,252499,1,,634
+637,wonderful-thing-lock-2,0637-wonderful-thing-lock-2,252633,252633,1,,633
+638,wonderful-thing-lock-2,0638-wonderful-thing-lock-2,252749,252749,1,,634
+639,wonderful-thing-lock-2,0639-wonderful-thing-lock-2,252883,252883,1,,633
+640,wonderful-thing-lock-2,0640-wonderful-thing-lock-2,252999,252999,1,,634
+641,wonderful-thing-lock-2,0641-wonderful-thing-lock-2,253133,253133,1,,633
+642,wonderful-thing-lock-2,0642-wonderful-thing-lock-2,253233,253233,1,,634
+643,wonderful-thing-lock-2,0643-wonderful-thing-lock-2,253383,253383,1,,633
+644,wonderful-thing-lock-2,0644-wonderful-thing-lock-2,253483,253866,6,,644
+645,wonderful-thing-lock-2,0645-wonderful-thing-lock-2,253883,253883,1,,633
+646,wonderful-thing-lock-2,0646-wonderful-thing-lock-2,253999,253999,1,,634
+647,wonderful-thing-lock-2,0647-wonderful-thing-lock-2,254099,254099,1,JUGADOR BOLA EXTRA,647
+648,wonderful-thing-running,0648-wonderful-thing-running,254133,264799,74,JUGADOR BOLA EXTRA,648
+649,black-hole-ramp-2,0649-black-hole-ramp-2,264999,265733,7,JUGADOR BOLA EXTRA,649
+650,black-hole-ramp-2,0650-black-hole-ramp-2,265749,265749,1,,3
+651,black-hole-ramp-2,0651-black-hole-ramp-2,265766,265766,1,,651
+652,black-hole-ramp-2,0652-black-hole-ramp-2,265783,265949,2,,652
+653,black-hole-ramp-2,0653-black-hole-ramp-2,265966,269016,39,,653
+654,black-hole-ramp-2,0654-black-hole-ramp-2,269099,269099,1,,654
+655,black-hole-ramp-2,0655-black-hole-ramp-2,269183,269183,1,,655
+656,black-hole-ramp-2,0656-black-hole-ramp-2,269266,269266,1,,656
+657,black-hole-ramp-2,0657-black-hole-ramp-2,269349,269349,1,,657
+658,black-hole-ramp-2,0658-black-hole-ramp-2,269433,269449,2,,658
+659,black-hole-ramp-2,0659-black-hole-ramp-2,269516,269533,2,,659
+660,black-hole-ramp-2,0660-black-hole-ramp-2,269599,269949,8,,660
+661,ramp-2-in-wonderful-thing,0661-ramp-2-in-wonderful-thing,269966,269966,1,,661
+662,ramp-2-in-wonderful-thing,0662-ramp-2-in-wonderful-thing,272199,272199,1,,662
+663,ramp-2-in-wonderful-thing,0663-ramp-2-in-wonderful-thing,274433,277349,19,JUGADOR BOLA EXTRA,663
+664,lane-8-extra-ball,0664-lane-8-extra-ball,277549,300199,149,JUGADOR BOLA EXTRA,664
+665,lane-8-extra-ball,0665-lane-8-extra-ball,300233,301349,4,1 2 / JUGADOR BOLA,665
+666,lane-8-extra-ball,0666-lane-8-extra-ball,301383,301399,2,1 2 / JUGADOR BOLA,666
+667,lane-8-extra-ball,0667-lane-8-extra-ball,301433,301549,4,JUGADOR BOLA,667
+668,lane-8-extra-ball,0668-lane-8-extra-ball,301599,301866,11,JUGADOR BOLA,668
+669,lane-8-extra-ball,0669-lane-8-extra-ball,301883,301883,1,JUGADOR BOLA,669
+670,lane-8-extra-ball,0670-lane-8-extra-ball,301933,301983,2,JUGADOR BOLA,670
+671,lane-8-extra-ball,0671-lane-8-extra-ball,301999,301999,1,JUGADOR BOLA,671
+672,lane-8-extra-ball,0672-lane-8-extra-ball,302049,302049,1,JUGADOR BOLA,672
+673,lane-8-extra-ball,0673-lane-8-extra-ball,302099,302099,1,JUGADOR BOLA,673
+674,lane-8-extra-ball,0674-lane-8-extra-ball,302166,302166,1,JUGADOR BOLA,674
+675,lane-8-extra-ball,0675-lane-8-extra-ball,302216,302216,1,JUGADOR BOLA,675
+676,lane-8-extra-ball,0676-lane-8-extra-ball,302266,302266,1,JUGADOR BOLA,676
+677,lane-8-extra-ball,0677-lane-8-extra-ball,302316,302316,1,JUGADOR BOLA,677
+678,lane-8-extra-ball,0678-lane-8-extra-ball,302383,302383,1,JUGADOR BOLA,678
+679,lane-8-extra-ball,0679-lane-8-extra-ball,302433,302433,1,JUGADOR BOLA,679
+680,lane-8-extra-ball,0680-lane-8-extra-ball,302483,302483,1,JUGADOR BOLA,680
+681,lane-8-extra-ball,0681-lane-8-extra-ball,302549,302549,1,JUGADOR BOLA,681
+682,lane-8-extra-ball,0682-lane-8-extra-ball,302599,302599,1,JUGADOR BOLA,682
+683,lane-8-extra-ball,0683-lane-8-extra-ball,302649,302649,1,JUGADOR BOLA,683
+684,lane-8-extra-ball,0684-lane-8-extra-ball,302699,302699,1,JUGADOR BOLA,684
+685,lane-8-extra-ball,0685-lane-8-extra-ball,302766,302766,1,JUGADOR BOLA,685
+686,lane-8-extra-ball,0686-lane-8-extra-ball,302816,302816,1,JUGADOR BOLA,686
+687,lane-8-extra-ball,0687-lane-8-extra-ball,302866,302866,1,JUGADOR BOLA,687
+688,lane-8-extra-ball,0688-lane-8-extra-ball,302933,302933,1,JUGADOR BOLA,688
+689,lane-8-extra-ball,0689-lane-8-extra-ball,302983,302983,1,JUGADOR BOLA,689
+690,lane-8-extra-ball,0690-lane-8-extra-ball,303033,303033,1,JUGADOR BOLA,690
+691,lane-8-extra-ball,0691-lane-8-extra-ball,303083,303083,1,JUGADOR BOLA,691
+692,lane-8-extra-ball,0692-lane-8-extra-ball,303149,303149,1,JUGADOR BOLA,692
+693,lane-8-extra-ball,0693-lane-8-extra-ball,303199,303199,1,JUGADOR BOLA,693
+694,lane-8-extra-ball,0694-lane-8-extra-ball,303249,303249,1,JUGADOR BOLA,694
+695,lane-8-extra-ball,0695-lane-8-extra-ball,303316,303316,1,JUGADOR BOLA,695
+696,lane-8-extra-ball,0696-lane-8-extra-ball,303366,303366,1,JUGADOR BOLA,696
+697,lane-8-extra-ball,0697-lane-8-extra-ball,303416,303416,1,JUGADOR BOLA,697
+698,lane-8-extra-ball,0698-lane-8-extra-ball,303466,303483,2,JUGADOR BOLA,698
+699,lane-8-extra-ball,0699-lane-8-extra-ball,303533,303549,2,JUGADOR BOLA,699
+700,lane-8-extra-ball,0700-lane-8-extra-ball,303583,303599,2,JUGADOR BOLA,700
+701,lane-8-extra-ball,0701-lane-8-extra-ball,303633,303649,2,JUGADOR BOLA,701
+702,lane-8-extra-ball,0702-lane-8-extra-ball,303699,303849,6,JUGADOR BOLA,702
+703,lane-8-extra-ball,0703-lane-8-extra-ball,303866,303933,3,JUGADOR BOLA,703
+704,lane-8-extra-ball,0704-lane-8-extra-ball,303983,303983,1,JUGADOR BOLA,704
+705,lane-8-extra-ball,0705-lane-8-extra-ball,304033,309933,45,1 2 / JUGADOR BOLA,705
+706,ball-2-over,0706-ball-2-over,310133,323116,87,1 2 / JUGADOR BOLA,706
+707,ball-3-plunged,0707-ball-3-plunged,323316,329799,50,1 2 / JUGADOR BOLA,707
+708,monolith-armed-1,0708-monolith-armed-1,329983,334849,33,1 2 / JUGADOR BOLA,708
+709,monolith-armed-1,0709-monolith-armed-1,334933,334933,1,,3
+710,monolith-armed-1,0710-monolith-armed-1,334949,334949,1,,370
+711,monolith-armed-1,0711-monolith-armed-1,335016,335016,1,,371
+712,monolith-armed-1,0712-monolith-armed-1,335083,335083,1,,370
+713,monolith-armed-1,0713-monolith-armed-1,335149,335149,1,,371
+714,monolith-armed-1,0714-monolith-armed-1,335233,335233,1,,370
+715,monolith-armed-1,0715-monolith-armed-1,335283,335283,1,,371
+716,monolith-armed-1,0716-monolith-armed-1,335366,335366,1,,370
+717,monolith-armed-1,0717-monolith-armed-1,335416,335433,2,,371
+718,monolith-armed-1,0718-monolith-armed-1,335499,335516,2,,370
+719,monolith-armed-1,0719-monolith-armed-1,335549,335566,2,,371
+720,monolith-armed-1,0720-monolith-armed-1,335633,335633,1,,380
+721,monolith-armed-1,0721-monolith-armed-1,335649,335649,1,,370
+722,monolith-armed-1,0722-monolith-armed-1,335699,335699,1,,371
+723,monolith-armed-1,0723-monolith-armed-1,335783,335833,2,,385
+724,monolith-armed-1,0724-monolith-armed-1,335849,335916,2,,417
+725,monolith-armed-1,0725-monolith-armed-1,335933,335933,1,,370
+726,monolith-armed-1,0726-monolith-armed-1,335983,335983,1,,371
+727,monolith-armed-1,0727-monolith-armed-1,336066,336066,1,,370
+728,monolith-armed-1,0728-monolith-armed-1,336116,336116,1,,371
+729,monolith-armed-1,0729-monolith-armed-1,336199,336199,1,,370
+730,monolith-armed-1,0730-monolith-armed-1,336249,336249,1,,371
+731,monolith-armed-1,0731-monolith-armed-1,336333,336333,1,,370
+732,monolith-armed-1,0732-monolith-armed-1,336399,336399,1,,371
+733,monolith-armed-1,0733-monolith-armed-1,336466,336466,1,,370
+734,monolith-armed-1,0734-monolith-armed-1,336533,336533,1,,371
+735,monolith-armed-1,0735-monolith-armed-1,336616,336616,1,,370
+736,monolith-cashed-1,0736-monolith-cashed-1,336666,336666,1,,371
+737,monolith-cashed-1,0737-monolith-cashed-1,336749,336749,1,,370
+738,monolith-cashed-1,0738-monolith-cashed-1,336799,336799,1,,371
+739,monolith-cashed-1,0739-monolith-cashed-1,336883,336883,1,,370
+740,monolith-cashed-1,0740-monolith-cashed-1,336933,336933,1,,371
+741,monolith-cashed-1,0741-monolith-cashed-1,337016,337016,1,,370
+742,monolith-cashed-1,0742-monolith-cashed-1,337083,337083,1,,371
+743,monolith-cashed-1,0743-monolith-cashed-1,337166,337166,1,,370
+744,monolith-cashed-1,0744-monolith-cashed-1,337216,337216,1,,371
+745,monolith-cashed-1,0745-monolith-cashed-1,337299,337299,1,,370
+746,monolith-cashed-1,0746-monolith-cashed-1,337349,337349,1,,371
+747,monolith-cashed-1,0747-monolith-cashed-1,337433,337449,2,,370
+748,monolith-cashed-1,0748-monolith-cashed-1,337483,337499,2,,371
+749,monolith-cashed-1,0749-monolith-cashed-1,337566,337583,2,,370
+750,monolith-cashed-1,0750-monolith-cashed-1,337616,337616,1,,412
+751,monolith-cashed-1,0751-monolith-cashed-1,337633,337633,1,,371
+752,monolith-cashed-1,0752-monolith-cashed-1,337699,337699,1,,752
+753,monolith-cashed-1,0753-monolith-cashed-1,337716,337716,1,,370
+754,monolith-cashed-1,0754-monolith-cashed-1,337766,337766,1,,754
+755,monolith-cashed-1,0755-monolith-cashed-1,337783,337783,1,,371
+756,monolith-cashed-1,0756-monolith-cashed-1,337849,337899,2,,418
+757,monolith-cashed-1,0757-monolith-cashed-1,337916,337983,2,,386
+758,monolith-cashed-1,0758-monolith-cashed-1,337999,337999,1,,370
+759,monolith-cashed-1,0759-monolith-cashed-1,338049,338049,1,,371
+760,monolith-cashed-1,0760-monolith-cashed-1,338133,338133,1,,370
+761,monolith-cashed-1,0761-monolith-cashed-1,338183,338183,1,,371
+762,monolith-cashed-1,0762-monolith-cashed-1,338266,338266,1,,370
+763,monolith-cashed-1,0763-monolith-cashed-1,338316,338316,1,,371
+764,monolith-cashed-1,0764-monolith-cashed-1,338399,338399,1,,370
+765,monolith-cashed-1,0765-monolith-cashed-1,338433,349916,75,1 2 / JUGADOR BOLA,765
+766,monolith-armed-2,0766-monolith-armed-2,350099,356499,46,1 2 / JUGADOR BOLA,766
+767,monolith-cashed-2,0767-monolith-cashed-2,356699,369916,85,1 2 / JUGADOR BOLA,767
+768,lagrange-shooter-1,0768-lagrange-shooter-1,370099,376533,43,1 2 / JUGADOR BOLA,768
+769,lagrange-shooter-2,0769-lagrange-shooter-2,376716,384249,52,,769
+770,lagrange-shooter-2,0770-lagrange-shooter-2,384466,384466,1,,770
+771,lagrange-shooter-2,0771-lagrange-shooter-2,384499,384933,2,,771
+772,lagrange-shooter-2,0772-lagrange-shooter-2,385599,386699,4,JUGADOR BOLA EXTRA,494
+773,lagrange-shooter-2,0773-lagrange-shooter-2,386733,386766,2,JUGADOR BOLA EXTRA,773
+774,lagrange-shooter-2,0774-lagrange-shooter-2,386783,386899,3,JUGADOR BOLA EXTRA,774
+775,lagrange-shooter-2,0775-lagrange-shooter-2,386949,386949,1,JUGADOR BOLA EXTRA,775
+776,lagrange-shooter-2,0776-lagrange-shooter-2,387016,387016,1,JUGADOR BOLA EXTRA,776
+777,lagrange-shooter-2,0777-lagrange-shooter-2,387066,387066,1,JUGADOR BOLA EXTRA,777
+778,lagrange-shooter-2,0778-lagrange-shooter-2,387116,387116,1,JUGADOR BOLA EXTRA,778
+779,lagrange-shooter-2,0779-lagrange-shooter-2,387166,387166,1,JUGADOR BOLA EXTRA,779
+780,lagrange-shooter-2,0780-lagrange-shooter-2,387233,387233,1,JUGADOR BOLA EXTRA,780
+781,lagrange-shooter-2,0781-lagrange-shooter-2,387283,387283,1,JUGADOR BOLA EXTRA,781
+782,lagrange-shooter-2,0782-lagrange-shooter-2,387333,387333,1,JUGADOR BOLA EXTRA,782
+783,lagrange-shooter-2,0783-lagrange-shooter-2,387399,387399,1,JUGADOR BOLA EXTRA,783
+784,lagrange-shooter-2,0784-lagrange-shooter-2,387449,387466,2,JUGADOR BOLA EXTRA,784
+785,lagrange-shooter-2,0785-lagrange-shooter-2,387499,387516,2,JUGADOR BOLA EXTRA,785
+786,lagrange-shooter-2,0786-lagrange-shooter-2,387549,387566,2,JUGADOR BOLA EXTRA,786
+787,lagrange-shooter-2,0787-lagrange-shooter-2,387616,387616,1,JUGADOR BOLA EXTRA,787
+788,lagrange-shooter-2,0788-lagrange-shooter-2,387666,387733,4,JUGADOR BOLA EXTRA,788
+789,lagrange-shooter-2,0789-lagrange-shooter-2,387783,387833,2,JUGADOR BOLA EXTRA,789
+790,lagrange-shooter-2,0790-lagrange-shooter-2,387849,387883,2,JUGADOR BOLA EXTRA,790
+791,lagrange-shooter-2,0791-lagrange-shooter-2,387899,387933,2,JUGADOR BOLA EXTRA,791
+792,lagrange-shooter-2,0792-lagrange-shooter-2,387949,387949,1,JUGADOR BOLA EXTRA,792
+793,lagrange-shooter-2,0793-lagrange-shooter-2,388016,388016,1,JUGADOR BOLA EXTRA,793
+794,lagrange-shooter-2,0794-lagrange-shooter-2,388066,388066,1,JUGADOR BOLA EXTRA,794
+795,lagrange-shooter-2,0795-lagrange-shooter-2,388116,388116,1,JUGADOR BOLA EXTRA,795
+796,lagrange-shooter-2,0796-lagrange-shooter-2,388166,388166,1,JUGADOR BOLA EXTRA,796
+797,lagrange-shooter-2,0797-lagrange-shooter-2,388233,388233,1,JUGADOR BOLA EXTRA,797
+798,lagrange-shooter-2,0798-lagrange-shooter-2,388283,388283,1,JUGADOR BOLA EXTRA,798
+799,lagrange-shooter-2,0799-lagrange-shooter-2,388333,388333,1,JUGADOR BOLA EXTRA,799
+800,lagrange-shooter-2,0800-lagrange-shooter-2,388399,388399,1,JUGADOR BOLA EXTRA,800
+801,lagrange-shooter-2,0801-lagrange-shooter-2,388449,388449,1,JUGADOR BOLA EXTRA,801
+802,lagrange-shooter-2,0802-lagrange-shooter-2,388499,388499,1,JUGADOR BOLA EXTRA,802
+803,lagrange-shooter-2,0803-lagrange-shooter-2,388549,388549,1,JUGADOR BOLA EXTRA,803
+804,lagrange-shooter-2,0804-lagrange-shooter-2,388616,388616,1,JUGADOR BOLA EXTRA,804
+805,lagrange-shooter-2,0805-lagrange-shooter-2,388666,388666,1,JUGADOR BOLA EXTRA,805
+806,lagrange-shooter-2,0806-lagrange-shooter-2,388716,388716,1,JUGADOR BOLA EXTRA,806
+807,lagrange-shooter-2,0807-lagrange-shooter-2,388783,388783,1,JUGADOR BOLA EXTRA,807
+808,lagrange-shooter-2,0808-lagrange-shooter-2,388833,388833,1,JUGADOR BOLA EXTRA,808
+809,lagrange-shooter-2,0809-lagrange-shooter-2,388883,388883,1,JUGADOR BOLA EXTRA,809
+810,lagrange-shooter-2,0810-lagrange-shooter-2,388933,388933,1,JUGADOR BOLA EXTRA,810
+811,lagrange-shooter-2,0811-lagrange-shooter-2,388999,388999,1,JUGADOR BOLA EXTRA,811
+812,lagrange-shooter-2,0812-lagrange-shooter-2,389049,389049,1,JUGADOR BOLA EXTRA,812
+813,lagrange-shooter-2,0813-lagrange-shooter-2,389099,389099,1,JUGADOR BOLA EXTRA,813
+814,lagrange-shooter-2,0814-lagrange-shooter-2,389166,389166,1,JUGADOR BOLA EXTRA,814
+815,lagrange-shooter-2,0815-lagrange-shooter-2,389216,389216,1,JUGADOR BOLA EXTRA,815
+816,lagrange-shooter-2,0816-lagrange-shooter-2,389266,389266,1,JUGADOR BOLA EXTRA,816
+817,lagrange-shooter-2,0817-lagrange-shooter-2,389316,389316,1,JUGADOR BOLA EXTRA,817
+818,lagrange-shooter-2,0818-lagrange-shooter-2,389383,396449,63,JUGADOR BOLA EXTRA,818
+819,ball-3-over-game-over,0819-ball-3-over-game-over,396633,416449,126,JUGADOR BOLA EXTRA,819
+820,attract-after-game,0820-attract-after-game,416633,433166,107,JUGADOR BOLA EXTRA,820
+821,service-menu-open,0821-service-menu-open,433349,454899,138,JUGADOR BOLA EXTRA,821
+822,service-record-3-technical,0822-service-record-3-technical,455083,473166,117,JUGADOR BOLA EXTRA,822
+823,service-record-selected,0823-service-record-selected,473349,493183,125,JUGADOR BOLA EXTRA,823
+824,service-menu-closed,0824-service-menu-closed,493383,506566,86,JUGADOR BOLA EXTRA,824
+825,end,0825-end,506783,517666,71,JUGADOR BOLA EXTRA,818

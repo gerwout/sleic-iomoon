@@ -218,6 +218,16 @@ its key script is ball-shepherding: the multiball start is a chain of blocking
 waits and the released ball must report at a **scoop**, not a lane.
 `dmd/jackpot/README.md` has the measured values and the wait-by-wait table.
 
+## The full game in one run (`full-run/`, `full-run-es/`), captured against `iomoon`
+
+A complete three-ball game in a single pass -- Multiball with both jackpots on ball
+1, Wonderful Thing (the Black Hole branch) on ball 2 after flattening the drop
+bank, the Monolith on ball 3, then the service menu. **387 distinct screens, 256
+new to the corpus**, and the Spanish twin `full-run-es/` adds **396 screens, 308
+new**, from the same key script at country 5. These two are the worked example of a
+whole-game walk, and the walk to copy when starting a new machine.
+`dmd/full-run/README.md` has the ball-by-ball reasoning.
+
 ## Multiball played to the end (`multiball-end/`), captured against `iomoon`
 
 The same route as `jackpot/` plus the tail it stops short of: the mode **ending**,

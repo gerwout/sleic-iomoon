@@ -1,0 +1,807 @@
+id,label,dir,first_ms,last_ms,frames,text,repr_id
+1,unlabelled,0001-unlabelled,316,333,2,WAITING FOR / 8 BITS CPU,1
+2,unlabelled,0002-unlabelled,416,449,2,SETTING / DEFAULT VALUES / PRESS START,2
+3,unlabelled,0003-unlabelled,699,699,1,,3
+4,unlabelled,0004-unlabelled,1133,1133,1,BALLS OK,4
+5,unlabelled,0005-unlabelled,2233,2233,1,,3
+6,unlabelled,0006-unlabelled,2299,2299,1,,6
+7,unlabelled,0007-unlabelled,2349,8283,255,,7
+8,boot,0008-boot,8316,11200,121,,8
+9,boot,0009-boot,11233,11233,1,,3
+10,boot,0010-boot,11250,12700,2,,10
+11,boot,0011-boot,14133,15566,3,,11
+12,boot,0012-boot,17000,17000,1,,12
+13,boot,0013-boot,18433,18433,1,,13
+14,boot,0014-boot,19849,19849,1,,14
+15,boot,0015-boot,19866,20033,5,,15
+16,boot,0016-boot,20083,20249,4,,15
+17,boot,0017-boot,20316,20466,4,,15
+18,boot,0018-boot,20533,20699,4,,15
+19,boot,0019-boot,20749,21466,14,,19
+20,boot,0020-boot,21516,21516,1,,20
+21,boot,0021-boot,21533,21533,1,,3
+22,boot,0022-boot,21549,21549,1,,22
+23,boot,0023-boot,22399,22399,1,,3
+24,boot,0024-boot,22433,23483,8,,24
+25,boot,0025-boot,23499,23933,3,,25
+26,boot,0026-boot,23949,23949,1,,3
+27,boot,0027-boot,24016,24016,1,,6
+28,boot,0028-boot,24066,24799,28,,28
+29,boot,0029-boot,24833,24833,1,,29
+30,boot,0030-boot,24849,25266,2,,30
+31,boot,0031-boot,25299,25299,1,,3
+32,boot,0032-boot,25349,25349,1,,6
+33,boot,0033-boot,25399,26133,42,,33
+34,boot,0034-boot,26166,26166,1,,34
+35,boot,0035-boot,26183,26183,1,,35
+36,boot,0036-boot,26616,26616,1,,36
+37,boot,0037-boot,26649,26649,1,,3
+38,boot,0038-boot,26683,26683,1,,38
+39,boot,0039-boot,26699,27149,2,,39
+40,boot,0040-boot,27166,27166,1,,3
+41,boot,0041-boot,27199,27199,1,,6
+42,boot,0042-boot,27249,27483,11,,42
+43,boot,0043-boot,27499,27933,3,,43
+44,boot,0044-boot,27949,27949,1,,3
+45,boot,0045-boot,28016,28016,1,,6
+46,boot,0046-boot,28066,28799,28,,28
+47,boot,0047-boot,28833,28833,1,,47
+48,boot,0048-boot,29266,29266,1,,3
+49,boot,0049-boot,29316,29316,1,,6
+50,boot,0050-boot,29383,30133,43,,28
+51,boot,0051-boot,30166,30166,1,,51
+52,boot,0052-boot,30183,30183,1,,52
+53,boot,0053-boot,30616,30616,1,,3
+54,boot,0054-boot,30683,31116,2,,54
+55,boot,0055-boot,31149,31149,1,,3
+56,boot,0056-boot,31166,31166,1,,6
+57,boot,0057-boot,31233,32449,58,,57
+58,credit,0058-credit,32466,32666,8,,58
+59,credit,0059-credit,32699,32699,1,,59
+60,credit,0060-credit,32716,32716,1,,60
+61,credit,0061-credit,32749,32749,1,1 1 / PLAYER BALL,61
+62,credit,0062-credit,32783,32783,1,PLAYER BALL,62
+63,credit,0063-credit,32833,32833,1,PLAYER BALL,63
+64,credit,0064-credit,32883,32883,1,PLAYER BALL,64
+65,credit,0065-credit,32933,32933,1,PLAYER BALL,65
+66,credit,0066-credit,32999,32999,1,PLAYER,66
+67,credit,0067-credit,33049,33049,1,PLAYER,67
+68,credit,0068-credit,33099,33099,1,PLAYER,68
+69,credit,0069-credit,33166,33166,1,PLAYER BALL,69
+70,credit,0070-credit,33216,33216,1,BALL,70
+71,credit,0071-credit,33266,33266,1,BALL,71
+72,credit,0072-credit,33316,33316,1,PLAYER BALL,72
+73,credit,0073-credit,33383,33399,2,PLAYER BALL,73
+74,credit,0074-credit,33433,33449,2,PLAYER BALL,74
+75,credit,0075-credit,33483,33499,2,BALL,75
+76,credit,0076-credit,33549,33549,1,BALL,76
+77,credit,0077-credit,33599,33616,2,PLAYER BALL,77
+78,credit,0078-credit,33649,33666,2,PLAYER BALL,78
+79,credit,0079-credit,33699,33866,7,PLAYER BALL,79
+80,credit,0080-credit,33883,33883,1,PLAYER BALL,80
+81,credit,0081-credit,33933,33983,2,BALL,81
+82,credit,0082-credit,33999,33999,1,PLAYER BALL,82
+83,credit,0083-credit,34049,34049,1,PLAYER BALL,83
+84,credit,0084-credit,34099,34099,1,PLAYER BALL,84
+85,credit,0085-credit,34166,34166,1,PLAYER BALL,85
+86,credit,0086-credit,34216,34216,1,PLAYER BALL,86
+87,credit,0087-credit,34266,34266,1,PLAYER BALL,87
+88,credit,0088-credit,34316,34316,1,PLAYER BALL,88
+89,credit,0089-credit,34383,34383,1,PLAYER BALL,89
+90,credit,0090-credit,34433,34433,1,PLAYER BALL,90
+91,credit,0091-credit,34483,34483,1,BALL,91
+92,credit,0092-credit,34549,34549,1,PLAYER BALL,92
+93,credit,0093-credit,34599,34599,1,PLAYER BALL,93
+94,credit,0094-credit,34649,34649,1,PLAYER BALL,94
+95,credit,0095-credit,34699,34699,1,PLAYER BALL,95
+96,credit,0096-credit,34766,34766,1,PLAYER BALL,96
+97,credit,0097-credit,34816,34816,1,PLAYER BALL,97
+98,credit,0098-credit,34866,34866,1,PLAYER BALL,98
+99,credit,0099-credit,34933,34933,1,PLAYER BALL,99
+100,credit,0100-credit,34983,34983,1,PLAYER BALL,100
+101,credit,0101-credit,35033,35033,1,PLAYER BALL,101
+102,credit,0102-credit,35083,35083,1,PLAYER BALL,102
+103,credit,0103-credit,35149,35149,1,PLAYER BALL,103
+104,credit,0104-credit,35199,35199,1,PLAYER BALL,104
+105,credit,0105-credit,35249,35249,1,PLAYER BALL,105
+106,credit,0106-credit,35316,35316,1,PLAYER BALL,106
+107,credit,0107-credit,35366,36616,29,1 1 / PLAYER BALL,107
+108,ball-1-start,0108-ball-1-start,36699,40666,48,1 1 / PLAYER BALL,108
+109,plunged,0109-plunged,40833,43316,28,1 1 / PLAYER BALL,109
+110,plunged,0110-plunged,43400,43400,1,,3
+111,plunged,0111-plunged,43416,45166,27,,111
+112,plunged,0112-plunged,45233,45900,21,1 1 / PLAYER BALL,112
+113,plunged,0113-plunged,45916,45916,1,,3
+114,plunged,0114-plunged,45933,47766,27,,114
+115,plunged,0115-plunged,47783,48333,16,1 1 / PLAYER BALL,115
+116,plunged,0116-plunged,48400,48400,1,,116
+117,plunged,0117-plunged,48416,50233,30,,117
+118,plunged,0118-plunged,50266,50266,1,1 1 / PLAYER BALL,118
+119,plunged,0119-plunged,50300,55883,92,1 1 / PLAYER BALL,119
+120,plunged,0120-plunged,55900,55900,1,,3
+121,plunged,0121-plunged,55916,55916,1,,121
+122,plunged,0122-plunged,55933,55933,1,,13
+123,plunged,0123-plunged,55983,55983,1,,123
+124,plunged,0124-plunged,56066,56066,1,,13
+125,plunged,0125-plunged,56116,56116,1,,123
+126,plunged,0126-plunged,56200,56200,1,,13
+127,plunged,0127-plunged,56250,56250,1,,123
+128,plunged,0128-plunged,56333,56333,1,,13
+129,plunged,0129-plunged,56400,56400,1,,123
+130,plunged,0130-plunged,56466,56466,1,,13
+131,plunged,0131-plunged,56533,56533,1,,123
+132,plunged,0132-plunged,56616,56616,1,,13
+133,plunged,0133-plunged,56666,56666,1,,123
+134,plunged,0134-plunged,56750,56750,1,,13
+135,plunged,0135-plunged,56800,56800,1,,123
+136,plunged,0136-plunged,56883,56883,1,,13
+137,plunged,0137-plunged,56933,56933,1,,123
+138,plunged,0138-plunged,57000,58516,2,1 1 / PLAYER BALL,138
+139,plunged,0139-plunged,58550,59116,4,1 1 / PLAYER BALL,139
+140,general-play,0140-general-play,59316,61900,22,. . / 1 1 / PLAYER BALL,140
+141,general-play,0141-general-play,61916,61933,2,,141
+142,general-play,0142-general-play,62466,62466,1,,3
+143,general-play,0143-general-play,62483,63016,2,1 1 / PLAYER BALL,143
+144,general-play,0144-general-play,63033,64783,11,. . / 1 1 / PLAYER BALL,144
+145,ramp-1,0145-ramp-1,64966,70016,32,. . / 1 1 / PLAYER BALL,145
+146,ramp-1,0146-ramp-1,70083,70083,1,,3
+147,ramp-1,0147-ramp-1,70100,70233,2,,147
+148,ramp-1,0148-ramp-1,72250,73383,9,1 1 / PLAYER BALL,148
+149,ramp-1,0149-ramp-1,73400,73400,1,,149
+150,ramp-1,0150-ramp-1,73416,73416,1,,3
+151,ramp-1,0151-ramp-1,73433,75583,6,,151
+152,ramp-1,0152-ramp-1,75616,76583,8,1 1 / PLAYER BALL,152
+153,ramp-1,0153-ramp-1,76716,76716,1,,153
+154,ramp-1,0154-ramp-1,76750,77166,4,,154
+155,ramp-1,0155-ramp-1,78900,79900,9,1 1 / PLAYER BALL,155
+156,ramp-1,0156-ramp-1,80066,80066,1,,3
+157,ramp-1,0157-ramp-1,80083,80633,5,,157
+158,ramp-1,0158-ramp-1,82216,83200,7,1 1 / PLAYER BALL,158
+159,ramp-1,0159-ramp-1,83400,83400,1,,3
+160,ramp-1,0160-ramp-1,83416,84116,8,,160
+161,ramp-1,0161-ramp-1,85566,85566,1,,161
+162,ramp-1,0162-ramp-1,85583,86566,10,1 1 / PLAYER BALL,162
+163,ramp-1,0163-ramp-1,86733,86733,1,,3
+164,ramp-1,0164-ramp-1,86766,87600,8,,164
+165,ramp-1,0165-ramp-1,88916,89916,10,1 1 / PLAYER BALL,165
+166,orbits-complete,0166-orbits-complete,90100,93183,19,1 1 / PLAYER BALL,166
+167,jupiter-lock-1,0167-jupiter-lock-1,93383,94000,8,1 1 / PLAYER BALL,167
+168,jupiter-lock-1,0168-jupiter-lock-1,94016,94016,1,,3
+169,jupiter-lock-1,0169-jupiter-lock-1,94050,94050,1,,169
+170,jupiter-lock-1,0170-jupiter-lock-1,94166,94166,1,,170
+171,jupiter-lock-1,0171-jupiter-lock-1,94300,94300,1,,169
+172,jupiter-lock-1,0172-jupiter-lock-1,94400,94400,1,,170
+173,jupiter-lock-1,0173-jupiter-lock-1,94550,94550,1,,169
+174,jupiter-lock-1,0174-jupiter-lock-1,94650,94650,1,,170
+175,jupiter-lock-1,0175-jupiter-lock-1,94783,94783,1,,169
+176,jupiter-lock-1,0176-jupiter-lock-1,94900,94900,1,,170
+177,jupiter-lock-1,0177-jupiter-lock-1,95033,95033,1,,169
+178,jupiter-lock-1,0178-jupiter-lock-1,95150,95150,1,,170
+179,jupiter-lock-1,0179-jupiter-lock-1,95283,95283,1,,169
+180,jupiter-lock-1,0180-jupiter-lock-1,95400,95400,1,,170
+181,jupiter-lock-1,0181-jupiter-lock-1,95533,95650,4,,170
+182,jupiter-lock-1,0182-jupiter-lock-1,95783,96583,7,1 1 / PLAYER BALL,182
+183,replacement-ball-1,0183-replacement-ball-1,96783,100666,26,1 1 / PLAYER BALL,183
+184,jupiter-lock-2-multiball,0184-jupiter-lock-2-multiball,100850,101483,7,. . / 1 1 / PLAYER BALL,184
+185,jupiter-lock-2-multiball,0185-jupiter-lock-2-multiball,101500,101500,1,,3
+186,jupiter-lock-2-multiball,0186-jupiter-lock-2-multiball,101516,101883,8,,170
+187,jupiter-lock-2-multiball,0187-jupiter-lock-2-multiball,102016,102016,1,,169
+188,jupiter-lock-2-multiball,0188-jupiter-lock-2-multiball,102133,102133,1,,170
+189,jupiter-lock-2-multiball,0189-jupiter-lock-2-multiball,102266,102266,1,,169
+190,jupiter-lock-2-multiball,0190-jupiter-lock-2-multiball,102383,102383,1,,170
+191,jupiter-lock-2-multiball,0191-jupiter-lock-2-multiball,102516,102516,1,,169
+192,jupiter-lock-2-multiball,0192-jupiter-lock-2-multiball,102616,102616,1,,170
+193,jupiter-lock-2-multiball,0193-jupiter-lock-2-multiball,102766,102766,1,,169
+194,jupiter-lock-2-multiball,0194-jupiter-lock-2-multiball,102866,102866,1,,170
+195,jupiter-lock-2-multiball,0195-jupiter-lock-2-multiball,103016,103016,1,,169
+196,jupiter-lock-2-multiball,0196-jupiter-lock-2-multiball,103116,103116,1,,170
+197,jupiter-lock-2-multiball,0197-jupiter-lock-2-multiball,103233,103233,1,,3
+198,jupiter-lock-2-multiball,0198-jupiter-lock-2-multiball,103250,103250,1,,198
+199,jupiter-lock-2-multiball,0199-jupiter-lock-2-multiball,103333,103333,1,,199
+200,jupiter-lock-2-multiball,0200-jupiter-lock-2-multiball,103416,103433,2,,198
+201,jupiter-lock-2-multiball,0201-jupiter-lock-2-multiball,103500,103516,2,,199
+202,jupiter-lock-2-multiball,0202-jupiter-lock-2-multiball,103583,103600,2,,198
+203,jupiter-lock-2-multiball,0203-jupiter-lock-2-multiball,103666,103666,1,,203
+204,jupiter-lock-2-multiball,0204-jupiter-lock-2-multiball,103683,103683,1,,199
+205,jupiter-lock-2-multiball,0205-jupiter-lock-2-multiball,103750,103750,1,,205
+206,jupiter-lock-2-multiball,0206-jupiter-lock-2-multiball,103766,103833,2,,206
+207,jupiter-lock-2-multiball,0207-jupiter-lock-2-multiball,103850,103916,2,,207
+208,jupiter-lock-2-multiball,0208-jupiter-lock-2-multiball,103933,103933,1,,198
+209,jupiter-lock-2-multiball,0209-jupiter-lock-2-multiball,104016,104016,1,,199
+210,jupiter-lock-2-multiball,0210-jupiter-lock-2-multiball,104083,104083,1,,198
+211,jupiter-lock-2-multiball,0211-jupiter-lock-2-multiball,104166,104166,1,,199
+212,jupiter-lock-2-multiball,0212-jupiter-lock-2-multiball,104250,104250,1,,198
+213,follow-the-released-ball,0213-follow-the-released-ball,104333,104333,1,,199
+214,follow-the-released-ball,0214-follow-the-released-ball,104416,104416,1,,198
+215,follow-the-released-ball,0215-follow-the-released-ball,104500,104500,1,,199
+216,follow-the-released-ball,0216-follow-the-released-ball,104583,104583,1,,198
+217,follow-the-released-ball,0217-follow-the-released-ball,104666,104666,1,,199
+218,follow-the-released-ball,0218-follow-the-released-ball,104750,104750,1,,198
+219,follow-the-released-ball,0219-follow-the-released-ball,104833,104833,1,,199
+220,follow-the-released-ball,0220-follow-the-released-ball,104916,104916,1,,198
+221,follow-the-released-ball,0221-follow-the-released-ball,105000,105000,1,,199
+222,follow-the-released-ball,0222-follow-the-released-ball,105083,105083,1,,198
+223,follow-the-released-ball,0223-follow-the-released-ball,105166,105166,1,,199
+224,follow-the-released-ball,0224-follow-the-released-ball,105233,105233,1,,198
+225,follow-the-released-ball,0225-follow-the-released-ball,105316,105316,1,,199
+226,follow-the-released-ball,0226-follow-the-released-ball,105400,105416,2,,198
+227,follow-the-released-ball,0227-follow-the-released-ball,105483,105500,2,,199
+228,follow-the-released-ball,0228-follow-the-released-ball,105566,105583,2,,198
+229,follow-the-released-ball,0229-follow-the-released-ball,105650,105650,1,,203
+230,follow-the-released-ball,0230-follow-the-released-ball,105666,105666,1,,199
+231,follow-the-released-ball,0231-follow-the-released-ball,105733,105733,1,,205
+232,follow-the-released-ball,0232-follow-the-released-ball,105750,105750,1,,198
+233,follow-the-released-ball,0233-follow-the-released-ball,105816,105816,1,,233
+234,follow-the-released-ball,0234-follow-the-released-ball,105833,105900,2,,234
+235,follow-the-released-ball,0235-follow-the-released-ball,105916,105983,2,,235
+236,follow-the-released-ball,0236-follow-the-released-ball,106000,106000,1,,199
+237,follow-the-released-ball,0237-follow-the-released-ball,106083,106083,1,,198
+238,follow-the-released-ball,0238-follow-the-released-ball,106166,106166,1,,199
+239,follow-the-released-ball,0239-follow-the-released-ball,106233,106233,1,,198
+240,follow-the-released-ball,0240-follow-the-released-ball,106316,106316,1,,199
+241,follow-the-released-ball,0241-follow-the-released-ball,106400,106400,1,,198
+242,follow-the-released-ball,0242-follow-the-released-ball,106483,106483,1,,199
+243,follow-the-released-ball,0243-follow-the-released-ball,106566,106566,1,,198
+244,follow-the-released-ball,0244-follow-the-released-ball,106650,106650,1,,199
+245,follow-the-released-ball,0245-follow-the-released-ball,106733,106733,1,,198
+246,follow-the-released-ball,0246-follow-the-released-ball,106816,106816,1,,199
+247,follow-the-released-ball,0247-follow-the-released-ball,106900,106900,1,,198
+248,follow-the-released-ball,0248-follow-the-released-ball,106983,106983,1,,199
+249,follow-the-released-ball,0249-follow-the-released-ball,107066,107066,1,,198
+250,follow-the-released-ball,0250-follow-the-released-ball,107150,107150,1,,199
+251,follow-the-released-ball,0251-follow-the-released-ball,107233,107233,1,,198
+252,follow-the-released-ball,0252-follow-the-released-ball,107316,107316,1,,199
+253,follow-the-released-ball,0253-follow-the-released-ball,107400,107400,1,,198
+254,follow-the-released-ball,0254-follow-the-released-ball,107466,107483,2,,199
+255,follow-the-released-ball,0255-follow-the-released-ball,107550,107550,1,,255
+256,follow-the-released-ball,0256-follow-the-released-ball,107566,107566,1,,198
+257,scoop-1-takes-the-released-ball,0257-scoop-1-takes-the-released-ball,107633,107633,1,,203
+258,scoop-1-takes-the-released-ball,0258-scoop-1-takes-the-released-ball,107650,107650,1,,199
+259,scoop-1-takes-the-released-ball,0259-scoop-1-takes-the-released-ball,107716,107716,1,,205
+260,scoop-1-takes-the-released-ball,0260-scoop-1-takes-the-released-ball,107733,107733,1,,198
+261,scoop-1-takes-the-released-ball,0261-scoop-1-takes-the-released-ball,107800,107800,1,,261
+262,scoop-1-takes-the-released-ball,0262-scoop-1-takes-the-released-ball,107816,107883,2,,207
+263,scoop-1-takes-the-released-ball,0263-scoop-1-takes-the-released-ball,107900,107900,1,,198
+264,scoop-1-takes-the-released-ball,0264-scoop-1-takes-the-released-ball,107983,107983,1,,199
+265,scoop-1-takes-the-released-ball,0265-scoop-1-takes-the-released-ball,108066,108066,1,,198
+266,scoop-1-takes-the-released-ball,0266-scoop-1-takes-the-released-ball,108150,108150,1,,199
+267,scoop-1-takes-the-released-ball,0267-scoop-1-takes-the-released-ball,108233,108233,1,,198
+268,scoop-1-takes-the-released-ball,0268-scoop-1-takes-the-released-ball,108316,108316,1,,199
+269,scoop-1-takes-the-released-ball,0269-scoop-1-takes-the-released-ball,108400,108400,1,,198
+270,scoop-1-takes-the-released-ball,0270-scoop-1-takes-the-released-ball,108466,108466,1,,199
+271,scoop-1-takes-the-released-ball,0271-scoop-1-takes-the-released-ball,108550,108550,1,,198
+272,scoop-1-takes-the-released-ball,0272-scoop-1-takes-the-released-ball,108633,108633,1,,199
+273,scoop-1-takes-the-released-ball,0273-scoop-1-takes-the-released-ball,108716,108716,1,,198
+274,scoop-1-takes-the-released-ball,0274-scoop-1-takes-the-released-ball,108800,108800,1,,199
+275,scoop-1-takes-the-released-ball,0275-scoop-1-takes-the-released-ball,108883,108883,1,,198
+276,scoop-1-takes-the-released-ball,0276-scoop-1-takes-the-released-ball,108966,108966,1,,199
+277,scoop-1-takes-the-released-ball,0277-scoop-1-takes-the-released-ball,109050,109050,1,,198
+278,scoop-1-takes-the-released-ball,0278-scoop-1-takes-the-released-ball,109133,109133,1,,199
+279,scoop-1-takes-the-released-ball,0279-scoop-1-takes-the-released-ball,109216,109216,1,,198
+280,scoop-1-takes-the-released-ball,0280-scoop-1-takes-the-released-ball,109300,109300,1,,199
+281,scoop-1-takes-the-released-ball,0281-scoop-1-takes-the-released-ball,109383,109400,2,,198
+282,scoop-1-takes-the-released-ball,0282-scoop-1-takes-the-released-ball,109466,109466,1,,199
+283,scoop-1-takes-the-released-ball,0283-scoop-1-takes-the-released-ball,109550,109550,1,,198
+284,scoop-1-takes-the-released-ball,0284-scoop-1-takes-the-released-ball,109616,109616,1,,203
+285,scoop-1-takes-the-released-ball,0285-scoop-1-takes-the-released-ball,109633,109633,1,,199
+286,scoop-1-takes-the-released-ball,0286-scoop-1-takes-the-released-ball,109700,109700,1,,205
+287,scoop-1-takes-the-released-ball,0287-scoop-1-takes-the-released-ball,109716,109716,1,,198
+288,scoop-1-takes-the-released-ball,0288-scoop-1-takes-the-released-ball,109783,109783,1,,233
+289,scoop-1-takes-the-released-ball,0289-scoop-1-takes-the-released-ball,109800,109866,2,,207
+290,scoop-1-takes-the-released-ball,0290-scoop-1-takes-the-released-ball,109883,109950,2,,235
+291,scoop-1-takes-the-released-ball,0291-scoop-1-takes-the-released-ball,109966,109966,1,,199
+292,scoop-1-takes-the-released-ball,0292-scoop-1-takes-the-released-ball,110050,110050,1,,198
+293,scoop-1-takes-the-released-ball,0293-scoop-1-takes-the-released-ball,110133,110133,1,,199
+294,scoop-1-takes-the-released-ball,0294-scoop-1-takes-the-released-ball,110216,110216,1,,198
+295,plunge-the-served-ball,0295-plunge-the-served-ball,110316,110316,1,,199
+296,plunge-the-served-ball,0296-plunge-the-served-ball,110400,110400,1,,198
+297,plunge-the-served-ball,0297-plunge-the-served-ball,110483,110483,1,,199
+298,plunge-the-served-ball,0298-plunge-the-served-ball,110566,110566,1,,198
+299,plunge-the-served-ball,0299-plunge-the-served-ball,110650,110650,1,,199
+300,plunge-the-served-ball,0300-plunge-the-served-ball,110733,110733,1,,198
+301,plunge-the-served-ball,0301-plunge-the-served-ball,110816,110816,1,,199
+302,plunge-the-served-ball,0302-plunge-the-served-ball,110900,110900,1,,198
+303,plunge-the-served-ball,0303-plunge-the-served-ball,110983,110983,1,,199
+304,plunge-the-served-ball,0304-plunge-the-served-ball,111066,111066,1,,198
+305,plunge-the-served-ball,0305-plunge-the-served-ball,111150,111150,1,,199
+306,plunge-the-served-ball,0306-plunge-the-served-ball,111233,111233,1,,198
+307,plunge-the-served-ball,0307-plunge-the-served-ball,111316,111316,1,,199
+308,plunge-the-served-ball,0308-plunge-the-served-ball,111400,111400,1,,198
+309,plunge-the-served-ball,0309-plunge-the-served-ball,111466,111483,2,,199
+310,plunge-the-served-ball,0310-plunge-the-served-ball,111550,111566,2,,198
+311,plunge-the-served-ball,0311-plunge-the-served-ball,111633,111633,1,,203
+312,plunge-the-served-ball,0312-plunge-the-served-ball,111650,111650,1,,199
+313,plunge-the-served-ball,0313-plunge-the-served-ball,111716,111716,1,,205
+314,plunge-the-served-ball,0314-plunge-the-served-ball,111733,111733,1,,198
+315,plunge-the-served-ball,0315-plunge-the-served-ball,111800,111800,1,,261
+316,plunge-the-served-ball,0316-plunge-the-served-ball,111816,111883,2,,207
+317,plunge-the-served-ball,0317-plunge-the-served-ball,111900,111900,1,,198
+318,plunge-the-served-ball,0318-plunge-the-served-ball,111983,111983,1,,199
+319,plunge-the-served-ball,0319-plunge-the-served-ball,112066,112066,1,,198
+320,plunge-the-served-ball,0320-plunge-the-served-ball,112150,112150,1,,199
+321,plunge-the-served-ball,0321-plunge-the-served-ball,112233,112233,1,,198
+322,plunge-the-served-ball,0322-plunge-the-served-ball,112316,112316,1,,199
+323,plunge-the-served-ball,0323-plunge-the-served-ball,112400,112400,1,,198
+324,plunge-the-served-ball,0324-plunge-the-served-ball,112466,112466,1,,199
+325,plunge-the-served-ball,0325-plunge-the-served-ball,112550,112550,1,,198
+326,plunge-the-served-ball,0326-plunge-the-served-ball,112633,112633,1,,199
+327,plunge-the-served-ball,0327-plunge-the-served-ball,112716,112716,1,,198
+328,plunge-the-served-ball,0328-plunge-the-served-ball,112800,112800,1,,199
+329,plunge-the-served-ball,0329-plunge-the-served-ball,112883,112883,1,,198
+330,plunge-the-served-ball,0330-plunge-the-served-ball,112966,112966,1,,199
+331,plunge-the-served-ball,0331-plunge-the-served-ball,113050,113050,1,,198
+332,plunge-the-served-ball,0332-plunge-the-served-ball,113133,113133,1,,199
+333,plunge-the-served-ball,0333-plunge-the-served-ball,113216,113216,1,,198
+334,plunge-the-served-ball,0334-plunge-the-served-ball,113300,113300,1,,199
+335,plunge-the-served-ball,0335-plunge-the-served-ball,113383,113400,2,,198
+336,plunge-the-served-ball,0336-plunge-the-served-ball,113466,113466,1,,199
+337,plunge-the-served-ball,0337-plunge-the-served-ball,113550,113550,1,,198
+338,plunge-the-served-ball,0338-plunge-the-served-ball,113616,113616,1,,203
+339,plunge-the-served-ball,0339-plunge-the-served-ball,113633,113633,1,,199
+340,plunge-the-served-ball,0340-plunge-the-served-ball,113700,113700,1,,205
+341,plunge-the-served-ball,0341-plunge-the-served-ball,113716,113716,1,,198
+342,plunge-the-served-ball,0342-plunge-the-served-ball,113783,113783,1,,233
+343,plunge-the-served-ball,0343-plunge-the-served-ball,113800,113866,2,,207
+344,plunge-the-served-ball,0344-plunge-the-served-ball,113883,113950,2,,235
+345,plunge-the-served-ball,0345-plunge-the-served-ball,113966,113966,1,,199
+346,plunge-the-served-ball,0346-plunge-the-served-ball,114050,114050,1,,198
+347,plunge-the-served-ball,0347-plunge-the-served-ball,114133,114133,1,,199
+348,plunge-the-served-ball,0348-plunge-the-served-ball,114216,114216,1,,198
+349,plunge-the-served-ball,0349-plunge-the-served-ball,114300,114300,1,,199
+350,plunge-the-served-ball,0350-plunge-the-served-ball,114383,114383,1,,198
+351,multiball-running,0351-multiball-running,114466,114466,1,,199
+352,multiball-running,0352-multiball-running,114550,114550,1,,198
+353,multiball-running,0353-multiball-running,114616,114616,1,,199
+354,multiball-running,0354-multiball-running,114700,114700,1,,198
+355,multiball-running,0355-multiball-running,114766,117466,19,1 1 / PLAYER BALL,355
+356,scoop-1-takes-the-second-released-ball,0356-scoop-1-takes-the-second-released-ball,117650,124283,41,1 1 / PLAYER BALL,356
+357,jackpot,0357-jackpot,124466,124466,1,1 1 / PLAYER BALL,357
+358,jackpot,0358-jackpot,124550,124550,1,,358
+359,jackpot,0359-jackpot,124583,127333,43,4,359
+360,jackpot,0360-jackpot,127400,127400,1,,360
+361,jackpot,0361-jackpot,127416,129183,13,1 1 / PLAYER BALL,361
+362,superjackpot,0362-superjackpot,129383,129966,8,1 1 / PLAYER BALL,362
+363,superjackpot,0363-superjackpot,130083,130083,1,,363
+364,superjackpot,0364-superjackpot,130099,132916,45,8,364
+365,superjackpot,0365-superjackpot,132933,132933,1,,3
+366,superjackpot,0366-superjackpot,132999,132999,1,,366
+367,superjackpot,0367-superjackpot,133049,133049,1,,367
+368,superjackpot,0368-superjackpot,133133,133133,1,,366
+369,superjackpot,0369-superjackpot,133183,133183,1,,367
+370,superjackpot,0370-superjackpot,133266,133266,1,,366
+371,superjackpot,0371-superjackpot,133316,133316,1,,367
+372,superjackpot,0372-superjackpot,133399,133416,2,,366
+373,superjackpot,0373-superjackpot,133466,133466,1,,367
+374,superjackpot,0374-superjackpot,133549,133549,1,,366
+375,superjackpot,0375-superjackpot,133599,133616,2,,367
+376,superjackpot,0376-superjackpot,133683,133683,1,,376
+377,superjackpot,0377-superjackpot,133699,133699,1,,366
+378,superjackpot,0378-superjackpot,133733,133733,1,,378
+379,superjackpot,0379-superjackpot,133749,133749,1,,367
+380,superjackpot,0380-superjackpot,133816,133816,1,,380
+381,superjackpot,0381-superjackpot,133833,133866,2,,381
+382,superjackpot,0382-superjackpot,133883,133949,2,,382
+383,superjackpot,0383-superjackpot,133966,133966,1,,366
+384,superjackpot,0384-superjackpot,134016,134016,1,,367
+385,superjackpot,0385-superjackpot,134099,134099,1,,366
+386,superjackpot,0386-superjackpot,134166,134166,1,,367
+387,superjackpot,0387-superjackpot,134233,134233,1,,366
+388,both-awards-paid,0388-both-awards-paid,134299,134299,1,,367
+389,both-awards-paid,0389-both-awards-paid,134383,134383,1,,366
+390,both-awards-paid,0390-both-awards-paid,134433,134433,1,,367
+391,both-awards-paid,0391-both-awards-paid,134516,134516,1,,366
+392,both-awards-paid,0392-both-awards-paid,134566,134566,1,,367
+393,both-awards-paid,0393-both-awards-paid,134649,134649,1,,366
+394,both-awards-paid,0394-both-awards-paid,134699,134699,1,,367
+395,both-awards-paid,0395-both-awards-paid,134783,134783,1,,366
+396,both-awards-paid,0396-both-awards-paid,134849,134849,1,,367
+397,both-awards-paid,0397-both-awards-paid,134933,134933,1,,366
+398,both-awards-paid,0398-both-awards-paid,134983,134983,1,,367
+399,both-awards-paid,0399-both-awards-paid,135066,135066,1,,366
+400,both-awards-paid,0400-both-awards-paid,135116,135116,1,,367
+401,both-awards-paid,0401-both-awards-paid,135199,135199,1,,366
+402,both-awards-paid,0402-both-awards-paid,135249,135249,1,,367
+403,both-awards-paid,0403-both-awards-paid,135333,135333,1,,366
+404,both-awards-paid,0404-both-awards-paid,135399,135399,1,,367
+405,both-awards-paid,0405-both-awards-paid,135466,135483,2,,366
+406,both-awards-paid,0406-both-awards-paid,135533,135549,2,,367
+407,both-awards-paid,0407-both-awards-paid,135616,135616,1,,366
+408,both-awards-paid,0408-both-awards-paid,135666,135666,1,,408
+409,both-awards-paid,0409-both-awards-paid,135683,135683,1,,367
+410,both-awards-paid,0410-both-awards-paid,135749,135749,1,,410
+411,both-awards-paid,0411-both-awards-paid,135766,135766,1,,366
+412,both-awards-paid,0412-both-awards-paid,135799,135799,1,,412
+413,both-awards-paid,0413-both-awards-paid,135816,135883,2,,413
+414,both-awards-paid,0414-both-awards-paid,135899,135933,2,,414
+415,both-awards-paid,0415-both-awards-paid,135949,135949,1,,367
+416,both-awards-paid,0416-both-awards-paid,136033,136033,1,,366
+417,both-awards-paid,0417-both-awards-paid,136083,136083,1,,367
+418,both-awards-paid,0418-both-awards-paid,136166,136166,1,,366
+419,both-awards-paid,0419-both-awards-paid,136233,136233,1,,367
+420,both-awards-paid,0420-both-awards-paid,136316,136316,1,,366
+421,both-awards-paid,0421-both-awards-paid,136366,136366,1,,367
+422,both-awards-paid,0422-both-awards-paid,136449,136449,1,,366
+423,both-awards-paid,0423-both-awards-paid,136466,136466,1,1 1 / PLAYER BALL,61
+424,both-awards-paid,0424-both-awards-paid,136499,138433,12,1 1 / PLAYER BALL,424
+425,both-awards-paid,0425-both-awards-paid,138516,138516,1,,3
+426,both-awards-paid,0426-both-awards-paid,138549,138549,1,,426
+427,both-awards-paid,0427-both-awards-paid,138599,138599,1,,427
+428,both-awards-paid,0428-both-awards-paid,138683,138683,1,,426
+429,both-awards-paid,0429-both-awards-paid,138733,138733,1,,427
+430,both-awards-paid,0430-both-awards-paid,138816,138816,1,,426
+431,both-awards-paid,0431-both-awards-paid,138866,138866,1,,427
+432,both-awards-paid,0432-both-awards-paid,138949,138949,1,,426
+433,both-awards-paid,0433-both-awards-paid,139016,139016,1,,427
+434,both-awards-paid,0434-both-awards-paid,139083,139083,1,,426
+435,both-awards-paid,0435-both-awards-paid,139149,139149,1,,427
+436,both-awards-paid,0436-both-awards-paid,139233,139233,1,,426
+437,both-awards-paid,0437-both-awards-paid,139283,139283,1,,427
+438,both-awards-paid,0438-both-awards-paid,139366,139366,1,,426
+439,both-awards-paid,0439-both-awards-paid,139416,139433,2,,427
+440,both-awards-paid,0440-both-awards-paid,139499,139516,2,,426
+441,both-awards-paid,0441-both-awards-paid,139549,139566,2,,427
+442,both-awards-paid,0442-both-awards-paid,139633,139633,1,,442
+443,both-awards-paid,0443-both-awards-paid,139649,139649,1,,426
+444,both-awards-paid,0444-both-awards-paid,139699,139699,1,,427
+445,both-awards-paid,0445-both-awards-paid,139783,139833,2,,445
+446,both-awards-paid,0446-both-awards-paid,139849,139916,2,,446
+447,both-awards-paid,0447-both-awards-paid,139933,139933,1,,426
+448,both-awards-paid,0448-both-awards-paid,139983,139983,1,,427
+449,both-awards-paid,0449-both-awards-paid,140066,140066,1,,426
+450,both-awards-paid,0450-both-awards-paid,140116,140116,1,,427
+451,both-awards-paid,0451-both-awards-paid,140199,140199,1,,426
+452,both-awards-paid,0452-both-awards-paid,140249,140249,1,,427
+453,both-awards-paid,0453-both-awards-paid,140333,140333,1,,426
+454,both-awards-paid,0454-both-awards-paid,140399,140399,1,,427
+455,both-awards-paid,0455-both-awards-paid,140466,140466,1,,426
+456,both-awards-paid,0456-both-awards-paid,140533,140533,1,,427
+457,both-awards-paid,0457-both-awards-paid,140616,140616,1,,426
+458,both-awards-paid,0458-both-awards-paid,140666,140666,1,,427
+459,both-awards-paid,0459-both-awards-paid,140749,140749,1,,426
+460,both-awards-paid,0460-both-awards-paid,140799,140799,1,,427
+461,both-awards-paid,0461-both-awards-paid,140883,140883,1,,426
+462,both-awards-paid,0462-both-awards-paid,140933,140933,1,,427
+463,both-awards-paid,0463-both-awards-paid,141016,141016,1,,426
+464,both-awards-paid,0464-both-awards-paid,141083,141083,1,,427
+465,both-awards-paid,0465-both-awards-paid,141166,141166,1,,426
+466,both-awards-paid,0466-both-awards-paid,141216,141216,1,,427
+467,both-awards-paid,0467-both-awards-paid,141299,141299,1,,426
+468,both-awards-paid,0468-both-awards-paid,141349,141349,1,,427
+469,both-awards-paid,0469-both-awards-paid,141433,141449,2,,426
+470,both-awards-paid,0470-both-awards-paid,141483,141499,2,,427
+471,both-awards-paid,0471-both-awards-paid,141566,141583,2,,426
+472,both-awards-paid,0472-both-awards-paid,141616,141616,1,,472
+473,both-awards-paid,0473-both-awards-paid,141633,141633,1,,427
+474,both-awards-paid,0474-both-awards-paid,141699,141699,1,,474
+475,both-awards-paid,0475-both-awards-paid,141716,141716,1,,426
+476,both-awards-paid,0476-both-awards-paid,141766,141766,1,,476
+477,both-awards-paid,0477-both-awards-paid,141783,141783,1,,427
+478,both-awards-paid,0478-both-awards-paid,141849,141899,2,,478
+479,both-awards-paid,0479-both-awards-paid,141916,141949,2,,479
+480,both-awards-paid,0480-both-awards-paid,141966,143149,9,1 1 / PLAYER BALL,480
+481,two-balls-left,0481-two-balls-left,143333,149933,42,1 1 / PLAYER BALL,481
+482,multiball-over,0482-multiball-over,150133,153233,19,1 1 / PLAYER BALL,424
+483,multiball-over,0483-multiball-over,153399,153949,4,,483
+484,multiball-over,0484-multiball-over,153966,156499,20,1 1 / PLAYER BALL,484
+485,bullseye2-base-value-again,0485-bullseye2-base-value-again,156699,160199,22,1 1 / PLAYER BALL,485
+486,bullseye2-base-value-again,0486-bullseye2-base-value-again,160233,161799,5,,486
+487,bullseye2-base-value-again,0487-bullseye2-base-value-again,162466,162466,1,,487
+488,bullseye2-base-value-again,0488-bullseye2-base-value-again,162483,163566,4,,488
+489,bullseye2-base-value-again,0489-bullseye2-base-value-again,163583,164699,4,PLAYER EXTRA BALL,489
+490,bullseye2-base-value-again,0490-bullseye2-base-value-again,164749,164783,2,PLAYER EXTRA BALL,490
+491,bullseye2-base-value-again,0491-bullseye2-base-value-again,164799,164916,3,PLAYER EXTRA BALL,491
+492,bullseye2-base-value-again,0492-bullseye2-base-value-again,164966,164966,1,PLAYER EXTRA BALL,492
+493,bullseye2-base-value-again,0493-bullseye2-base-value-again,165016,165016,1,PLAYER EXTRA BALL,493
+494,bullseye2-base-value-again,0494-bullseye2-base-value-again,165083,165083,1,PLAYER EXTRA BALL,494
+495,bullseye2-base-value-again,0495-bullseye2-base-value-again,165133,165133,1,PLAYER EXTRA BALL,495
+496,bullseye2-base-value-again,0496-bullseye2-base-value-again,165183,165183,1,PLAYER EXTRA BALL,496
+497,bullseye2-base-value-again,0497-bullseye2-base-value-again,165233,165233,1,EXTRA BALL,497
+498,bullseye2-base-value-again,0498-bullseye2-base-value-again,165299,165299,1,EXTRA BALL,498
+499,bullseye2-base-value-again,0499-bullseye2-base-value-again,165349,165349,1,PLAYER EXTRA BALL,499
+500,bullseye2-base-value-again,0500-bullseye2-base-value-again,165399,165399,1,PLAYER EXTRA BALL,500
+501,bullseye2-base-value-again,0501-bullseye2-base-value-again,165466,165466,1,PLAYER EXTRA BALL,501
+502,bullseye2-base-value-again,0502-bullseye2-base-value-again,165516,165533,2,EXTRA BALL,502
+503,bullseye2-base-value-again,0503-bullseye2-base-value-again,165566,165583,2,EXTRA BALL,503
+504,bullseye2-base-value-again,0504-bullseye2-base-value-again,165616,165633,2,PLAYER EXTRA BALL,504
+505,bullseye2-base-value-again,0505-bullseye2-base-value-again,165683,165799,6,EXTRA BALL,505
+506,bullseye2-base-value-again,0506-bullseye2-base-value-again,165849,165899,2,PLAYER EXTRA BALL,506
+507,bullseye2-base-value-again,0507-bullseye2-base-value-again,165916,165949,2,PLAYER EXTRA BALL,507
+508,bullseye2-base-value-again,0508-bullseye2-base-value-again,165966,165966,1,EXTRA BALL,508
+509,bullseye2-base-value-again,0509-bullseye2-base-value-again,166016,166016,1,PLAYER EXTRA BALL,509
+510,bullseye2-base-value-again,0510-bullseye2-base-value-again,166083,166083,1,PLAYER EXTRA BALL,510
+511,bullseye2-base-value-again,0511-bullseye2-base-value-again,166133,166133,1,PLAYER EXTRA BALL,511
+512,bullseye2-base-value-again,0512-bullseye2-base-value-again,166183,166183,1,PLAYER EXTRA BALL,512
+513,bullseye2-base-value-again,0513-bullseye2-base-value-again,166233,166233,1,PLAYER EXTRA BALL,513
+514,bullseye2-base-value-again,0514-bullseye2-base-value-again,166299,166299,1,PLAYER EXTRA BALL,514
+515,bullseye2-base-value-again,0515-bullseye2-base-value-again,166349,166349,1,PLAYER EXTRA BALL,515
+516,bullseye2-base-value-again,0516-bullseye2-base-value-again,166399,166399,1,PLAYER EXTRA BALL,516
+517,bullseye2-base-value-again,0517-bullseye2-base-value-again,166466,166466,1,PLAYER EXTRA BALL,517
+518,bullseye2-base-value-again,0518-bullseye2-base-value-again,166516,166516,1,EXTRA BALL,518
+519,bullseye2-base-value-again,0519-bullseye2-base-value-again,166566,166566,1,PLAYER EXTRA BALL,519
+520,bullseye2-base-value-again,0520-bullseye2-base-value-again,166616,166616,1,PLAYER EXTRA BALL,520
+521,bullseye2-base-value-again,0521-bullseye2-base-value-again,166683,166683,1,PLAYER EXTRA BALL,521
+522,bullseye2-base-value-again,0522-bullseye2-base-value-again,166733,166733,1,PLAYER EXTRA BALL,522
+523,bullseye2-base-value-again,0523-bullseye2-base-value-again,166783,166783,1,PLAYER EXTRA BALL,523
+524,bullseye2-base-value-again,0524-bullseye2-base-value-again,166849,166849,1,PLAYER EXTRA BALL,524
+525,bullseye2-base-value-again,0525-bullseye2-base-value-again,166899,166899,1,PLAYER EXTRA BALL,525
+526,bullseye2-base-value-again,0526-bullseye2-base-value-again,166949,166949,1,PLAYER EXTRA BALL,526
+527,bullseye2-base-value-again,0527-bullseye2-base-value-again,167016,167016,1,PLAYER EXTRA BALL,527
+528,bullseye2-base-value-again,0528-bullseye2-base-value-again,167066,167066,1,PLAYER EXTRA BALL,528
+529,bullseye2-base-value-again,0529-bullseye2-base-value-again,167116,167116,1,PLAYER EXTRA BALL,529
+530,bullseye2-base-value-again,0530-bullseye2-base-value-again,167166,167166,1,PLAYER EXTRA BALL,530
+531,bullseye2-base-value-again,0531-bullseye2-base-value-again,167233,167233,1,PLAYER EXTRA BALL,531
+532,bullseye2-base-value-again,0532-bullseye2-base-value-again,167283,167283,1,PLAYER EXTRA BALL,532
+533,bullseye2-base-value-again,0533-bullseye2-base-value-again,167333,167333,1,PLAYER EXTRA BALL,533
+534,bullseye2-base-value-again,0534-bullseye2-base-value-again,167399,168249,23,PLAYER EXTRA BALL,534
+535,ball-1-over,0535-ball-1-over,168449,181616,85,PLAYER EXTRA BALL,535
+536,ball-2-plunged,0536-ball-2-plunged,181633,186566,38,PLAYER EXTRA BALL,536
+537,ball-2-plunged,0537-ball-2-plunged,186733,186733,1,,3
+538,ball-2-plunged,0538-ball-2-plunged,186766,186899,2,,147
+539,ball-2-plunged,0539-ball-2-plunged,188883,188883,1,,539
+540,ball-2-plunged,0540-ball-2-plunged,188916,189883,10,PLAYER EXTRA BALL,540
+541,ball-2-plunged,0541-ball-2-plunged,190083,190083,1,,3
+542,ball-2-plunged,0542-ball-2-plunged,190099,190383,3,,542
+543,ball-2-plunged,0543-ball-2-plunged,192249,193383,8,PLAYER EXTRA BALL,543
+544,ball-2-plunged,0544-ball-2-plunged,193399,193399,1,,3
+545,ball-2-plunged,0545-ball-2-plunged,193433,193849,6,,154
+546,ball-2-plunged,0546-ball-2-plunged,195583,196583,9,PLAYER EXTRA BALL,546
+547,ball-2-plunged,0547-ball-2-plunged,196716,196716,1,,547
+548,ball-2-plunged,0548-ball-2-plunged,196749,196749,1,,3
+549,ball-2-plunged,0549-ball-2-plunged,196783,197316,5,,157
+550,ball-2-plunged,0550-ball-2-plunged,198949,199949,10,PLAYER EXTRA BALL,550
+551,ball-2-plunged,0551-ball-2-plunged,200066,200066,1,,3
+552,ball-2-plunged,0552-ball-2-plunged,200083,200783,6,,160
+553,ball-2-plunged,0553-ball-2-plunged,202233,203233,7,PLAYER EXTRA BALL,553
+554,ball-2-plunged,0554-ball-2-plunged,203399,203399,1,,3
+555,ball-2-plunged,0555-ball-2-plunged,203416,204249,9,,164
+556,ball-2-plunged,0556-ball-2-plunged,205549,206549,10,PLAYER EXTRA BALL,556
+557,orbits-complete-again,0557-orbits-complete-again,206733,210083,24,47 2 / PLAYER EXTRA BALL,557
+558,orbits-complete-again,0558-orbits-complete-again,210099,210866,15,PLAYER EXTRA BALL,558
+559,orbits-complete-again,0559-orbits-complete-again,210933,210933,1,PLAYER EXTRA BALL,559
+560,orbits-complete-again,0560-orbits-complete-again,210949,211749,8,504.2 / PLAYER EXTRA BALL,560
+561,orbits-complete-again,0561-orbits-complete-again,211783,212549,18,PLAYER EXTRA BALL,561
+562,orbits-complete-again,0562-orbits-complete-again,212616,212616,1,PLAYER EXTRA BALL,562
+563,orbits-complete-again,0563-orbits-complete-again,212633,213416,7,PLAYER EXTRA BALL,563
+564,orbits-complete-again,0564-orbits-complete-again,213433,214216,24,PLAYER EXTRA BALL,564
+565,orbits-complete-again,0565-orbits-complete-again,214266,214266,1,PLAYER EXTRA BALL,565
+566,orbits-complete-again,0566-orbits-complete-again,214299,215083,6,555.2 / PLAYER EXTRA BALL,566
+567,orbits-complete-again,0567-orbits-complete-again,215116,215949,24,PLAYER EXTRA BALL,567
+568,orbits-complete-again,0568-orbits-complete-again,215983,216749,6,5 :8 / PLAYER EXTRA BALL,568
+569,orbits-complete-again,0569-orbits-complete-again,216783,217549,16,PLAYER EXTRA BALL,569
+570,orbits-complete-again,0570-orbits-complete-again,217599,217599,1,PLAYER EXTRA BALL,570
+571,orbits-complete-again,0571-orbits-complete-again,217616,219949,18,PLAYER EXTRA BALL,571
+572,bank-flat,0572-bank-flat,220149,223249,20,PLAYER EXTRA BALL,572
+573,bank-flat,0573-bank-flat,223399,223399,1,,3
+574,bank-flat,0574-bank-flat,223416,224916,16,,574
+575,special-drop-probe,0575-special-drop-probe,225016,225266,3,,575
+576,special-drop-probe,0576-special-drop-probe,225383,225383,1,- -,576
+577,special-drop-probe,0577-special-drop-probe,225399,225399,1,,577
+578,special-drop-probe,0578-special-drop-probe,225433,238266,563,,578
+579,probe-expired,0579-probe-expired,238299,241616,140,,579
+580,wonderful-lock-1,0580-wonderful-lock-1,241633,241716,6,,580
+581,wonderful-lock-1,0581-wonderful-lock-1,241733,241733,1,,581
+582,wonderful-lock-1,0582-wonderful-lock-1,241749,242166,9,PLAYER EXTRA BALL,582
+583,wonderful-lock-1,0583-wonderful-lock-1,242349,242349,1,,3
+584,wonderful-lock-1,0584-wonderful-lock-1,242383,242383,1,,169
+585,wonderful-lock-1,0585-wonderful-lock-1,242483,242483,1,,170
+586,wonderful-lock-1,0586-wonderful-lock-1,242616,242616,1,,169
+587,wonderful-lock-1,0587-wonderful-lock-1,242733,242733,1,,170
+588,wonderful-lock-1,0588-wonderful-lock-1,242866,242866,1,,169
+589,wonderful-lock-1,0589-wonderful-lock-1,242983,242983,1,,170
+590,wonderful-lock-1,0590-wonderful-lock-1,243116,243116,1,,169
+591,wonderful-lock-1,0591-wonderful-lock-1,243233,243233,1,,170
+592,wonderful-lock-1,0592-wonderful-lock-1,243366,243366,1,,169
+593,wonderful-lock-1,0593-wonderful-lock-1,243466,243483,2,,170
+594,wonderful-lock-1,0594-wonderful-lock-1,243616,243866,5,,169
+595,wonderful-lock-1,0595-wonderful-lock-1,243983,243983,1,,170
+596,wonderful-lock-1,0596-wonderful-lock-1,244116,244883,5,PLAYER EXTRA BALL,596
+597,wonderful-replacement,0597-wonderful-replacement,245083,249549,28,PLAYER EXTRA BALL,597
+598,wonderful-thing-lock-2,0598-wonderful-thing-lock-2,249733,250316,7,PLAYER EXTRA BALL,598
+599,wonderful-thing-lock-2,0599-wonderful-thing-lock-2,250349,250349,1,,3
+600,wonderful-thing-lock-2,0600-wonderful-thing-lock-2,250383,250383,1,,169
+601,wonderful-thing-lock-2,0601-wonderful-thing-lock-2,250483,250483,1,,170
+602,wonderful-thing-lock-2,0602-wonderful-thing-lock-2,250616,250616,1,,169
+603,wonderful-thing-lock-2,0603-wonderful-thing-lock-2,250733,250733,1,,170
+604,wonderful-thing-lock-2,0604-wonderful-thing-lock-2,250866,250866,1,,169
+605,wonderful-thing-lock-2,0605-wonderful-thing-lock-2,250983,250983,1,,170
+606,wonderful-thing-lock-2,0606-wonderful-thing-lock-2,251116,251116,1,,169
+607,wonderful-thing-lock-2,0607-wonderful-thing-lock-2,251233,251233,1,,170
+608,wonderful-thing-lock-2,0608-wonderful-thing-lock-2,251366,251366,1,,169
+609,wonderful-thing-lock-2,0609-wonderful-thing-lock-2,251466,251483,2,,170
+610,wonderful-thing-lock-2,0610-wonderful-thing-lock-2,251616,251866,5,,169
+611,wonderful-thing-lock-2,0611-wonderful-thing-lock-2,251983,251983,1,,170
+612,wonderful-thing-lock-2,0612-wonderful-thing-lock-2,252116,252116,1,,3
+613,wonderful-thing-lock-2,0613-wonderful-thing-lock-2,252149,252149,1,,613
+614,wonderful-thing-lock-2,0614-wonderful-thing-lock-2,252249,252249,1,,614
+615,wonderful-thing-lock-2,0615-wonderful-thing-lock-2,252399,252399,1,,613
+616,wonderful-thing-lock-2,0616-wonderful-thing-lock-2,252499,252499,1,,614
+617,wonderful-thing-lock-2,0617-wonderful-thing-lock-2,252633,252633,1,,613
+618,wonderful-thing-lock-2,0618-wonderful-thing-lock-2,252749,252749,1,,614
+619,wonderful-thing-lock-2,0619-wonderful-thing-lock-2,252883,252883,1,,613
+620,wonderful-thing-lock-2,0620-wonderful-thing-lock-2,252999,252999,1,,614
+621,wonderful-thing-lock-2,0621-wonderful-thing-lock-2,253133,253133,1,,613
+622,wonderful-thing-lock-2,0622-wonderful-thing-lock-2,253233,253233,1,,614
+623,wonderful-thing-lock-2,0623-wonderful-thing-lock-2,253383,253383,1,,613
+624,wonderful-thing-lock-2,0624-wonderful-thing-lock-2,253483,253866,6,,624
+625,wonderful-thing-lock-2,0625-wonderful-thing-lock-2,253883,253883,1,,613
+626,wonderful-thing-lock-2,0626-wonderful-thing-lock-2,253999,253999,1,,614
+627,wonderful-thing-lock-2,0627-wonderful-thing-lock-2,254099,254099,1,PLAYER EXTRA BALL,627
+628,wonderful-thing-running,0628-wonderful-thing-running,254133,264799,74,PLAYER EXTRA BALL,628
+629,black-hole-ramp-2,0629-black-hole-ramp-2,264999,265733,7,PLAYER EXTRA BALL,629
+630,black-hole-ramp-2,0630-black-hole-ramp-2,265749,265749,1,,3
+631,black-hole-ramp-2,0631-black-hole-ramp-2,265766,265766,1,,631
+632,black-hole-ramp-2,0632-black-hole-ramp-2,265783,265949,2,,632
+633,black-hole-ramp-2,0633-black-hole-ramp-2,265966,269016,39,,633
+634,black-hole-ramp-2,0634-black-hole-ramp-2,269099,269099,1,,634
+635,black-hole-ramp-2,0635-black-hole-ramp-2,269183,269183,1,,635
+636,black-hole-ramp-2,0636-black-hole-ramp-2,269266,269266,1,,636
+637,black-hole-ramp-2,0637-black-hole-ramp-2,269349,269349,1,,637
+638,black-hole-ramp-2,0638-black-hole-ramp-2,269433,269449,2,,638
+639,black-hole-ramp-2,0639-black-hole-ramp-2,269516,269533,2,,639
+640,black-hole-ramp-2,0640-black-hole-ramp-2,269599,269949,8,,640
+641,ramp-2-in-wonderful-thing,0641-ramp-2-in-wonderful-thing,269966,269966,1,,641
+642,ramp-2-in-wonderful-thing,0642-ramp-2-in-wonderful-thing,272199,272199,1,,642
+643,ramp-2-in-wonderful-thing,0643-ramp-2-in-wonderful-thing,274433,277349,19,PLAYER EXTRA BALL,643
+644,lane-8-extra-ball,0644-lane-8-extra-ball,277549,300199,146,PLAYER EXTRA BALL,644
+645,lane-8-extra-ball,0645-lane-8-extra-ball,300233,301349,4,1 2 / PLAYER BALL,645
+646,lane-8-extra-ball,0646-lane-8-extra-ball,301383,301399,2,1 2 / PLAYER BALL,646
+647,lane-8-extra-ball,0647-lane-8-extra-ball,301433,301549,4,PLAYER BALL,647
+648,lane-8-extra-ball,0648-lane-8-extra-ball,301599,301866,11,PLAYER BALL,648
+649,lane-8-extra-ball,0649-lane-8-extra-ball,301883,301883,1,BALL,649
+650,lane-8-extra-ball,0650-lane-8-extra-ball,301933,301983,2,BALL,650
+651,lane-8-extra-ball,0651-lane-8-extra-ball,301999,301999,1,PLAYER BALL,651
+652,lane-8-extra-ball,0652-lane-8-extra-ball,302049,302049,1,PLAYER BALL,652
+653,lane-8-extra-ball,0653-lane-8-extra-ball,302099,302099,1,PLAYER BALL,653
+654,lane-8-extra-ball,0654-lane-8-extra-ball,302166,302166,1,BALL,654
+655,lane-8-extra-ball,0655-lane-8-extra-ball,302216,302216,1,BALL,655
+656,lane-8-extra-ball,0656-lane-8-extra-ball,302266,302266,1,PLAYER BALL,656
+657,lane-8-extra-ball,0657-lane-8-extra-ball,302316,302316,1,PLAYER BALL,657
+658,lane-8-extra-ball,0658-lane-8-extra-ball,302383,302383,1,BALL,658
+659,lane-8-extra-ball,0659-lane-8-extra-ball,302433,302433,1,BALL,659
+660,lane-8-extra-ball,0660-lane-8-extra-ball,302483,302483,1,PLAYER BALL,660
+661,lane-8-extra-ball,0661-lane-8-extra-ball,302549,302549,1,PLAYER BALL,661
+662,lane-8-extra-ball,0662-lane-8-extra-ball,302599,302599,1,BALL,662
+663,lane-8-extra-ball,0663-lane-8-extra-ball,302649,302649,1,PLAYER BALL,663
+664,lane-8-extra-ball,0664-lane-8-extra-ball,302699,302699,1,PLAYER BALL,664
+665,lane-8-extra-ball,0665-lane-8-extra-ball,302766,302766,1,PLAYER BALL,665
+666,lane-8-extra-ball,0666-lane-8-extra-ball,302816,302816,1,PLAYER BALL,666
+667,lane-8-extra-ball,0667-lane-8-extra-ball,302866,302866,1,PLAYER BALL,667
+668,lane-8-extra-ball,0668-lane-8-extra-ball,302933,302933,1,PLAYER BALL,668
+669,lane-8-extra-ball,0669-lane-8-extra-ball,302983,302983,1,PLAYER BALL,669
+670,lane-8-extra-ball,0670-lane-8-extra-ball,303033,303033,1,PLAYER BALL,670
+671,lane-8-extra-ball,0671-lane-8-extra-ball,303083,303083,1,PLAYER BALL,671
+672,lane-8-extra-ball,0672-lane-8-extra-ball,303149,303149,1,BALL,672
+673,lane-8-extra-ball,0673-lane-8-extra-ball,303199,303199,1,PLAYER BALL,673
+674,lane-8-extra-ball,0674-lane-8-extra-ball,303249,303249,1,PLAYER BALL,674
+675,lane-8-extra-ball,0675-lane-8-extra-ball,303316,303316,1,PLAYER BALL,675
+676,lane-8-extra-ball,0676-lane-8-extra-ball,303366,303366,1,PLAYER BALL,676
+677,lane-8-extra-ball,0677-lane-8-extra-ball,303416,303416,1,PLAYER BALL,677
+678,lane-8-extra-ball,0678-lane-8-extra-ball,303466,303483,2,PLAYER BALL,678
+679,lane-8-extra-ball,0679-lane-8-extra-ball,303533,303549,2,PLAYER BALL,679
+680,lane-8-extra-ball,0680-lane-8-extra-ball,303583,303599,2,PLAYER BALL,680
+681,lane-8-extra-ball,0681-lane-8-extra-ball,303633,303649,2,PLAYER BALL,681
+682,lane-8-extra-ball,0682-lane-8-extra-ball,303699,303849,6,PLAYER BALL,682
+683,lane-8-extra-ball,0683-lane-8-extra-ball,303866,303916,2,PLAYER BALL,683
+684,lane-8-extra-ball,0684-lane-8-extra-ball,303933,303933,1,PLAYER BALL,684
+685,lane-8-extra-ball,0685-lane-8-extra-ball,303983,303983,1,PLAYER BALL,685
+686,lane-8-extra-ball,0686-lane-8-extra-ball,304033,309933,45,1 2 / PLAYER BALL,686
+687,ball-2-over,0687-ball-2-over,310133,323116,87,1 2 / PLAYER BALL,687
+688,ball-3-plunged,0688-ball-3-plunged,323316,329799,50,1 2 / PLAYER BALL,688
+689,monolith-armed-1,0689-monolith-armed-1,329983,334849,33,1 2 / PLAYER BALL,689
+690,monolith-armed-1,0690-monolith-armed-1,334933,334933,1,,3
+691,monolith-armed-1,0691-monolith-armed-1,334949,334949,1,,366
+692,monolith-armed-1,0692-monolith-armed-1,335016,335016,1,,367
+693,monolith-armed-1,0693-monolith-armed-1,335083,335083,1,,366
+694,monolith-armed-1,0694-monolith-armed-1,335149,335149,1,,367
+695,monolith-armed-1,0695-monolith-armed-1,335233,335233,1,,366
+696,monolith-armed-1,0696-monolith-armed-1,335283,335283,1,,367
+697,monolith-armed-1,0697-monolith-armed-1,335366,335366,1,,366
+698,monolith-armed-1,0698-monolith-armed-1,335416,335433,2,,367
+699,monolith-armed-1,0699-monolith-armed-1,335499,335516,2,,366
+700,monolith-armed-1,0700-monolith-armed-1,335549,335566,2,,367
+701,monolith-armed-1,0701-monolith-armed-1,335633,335633,1,,376
+702,monolith-armed-1,0702-monolith-armed-1,335649,335649,1,,366
+703,monolith-armed-1,0703-monolith-armed-1,335699,335699,1,,367
+704,monolith-armed-1,0704-monolith-armed-1,335783,335833,2,,381
+705,monolith-armed-1,0705-monolith-armed-1,335849,335916,2,,413
+706,monolith-armed-1,0706-monolith-armed-1,335933,335933,1,,366
+707,monolith-armed-1,0707-monolith-armed-1,335983,335983,1,,367
+708,monolith-armed-1,0708-monolith-armed-1,336066,336066,1,,366
+709,monolith-armed-1,0709-monolith-armed-1,336116,336116,1,,367
+710,monolith-armed-1,0710-monolith-armed-1,336199,336199,1,,366
+711,monolith-armed-1,0711-monolith-armed-1,336249,336249,1,,367
+712,monolith-armed-1,0712-monolith-armed-1,336333,336333,1,,366
+713,monolith-armed-1,0713-monolith-armed-1,336399,336399,1,,367
+714,monolith-armed-1,0714-monolith-armed-1,336466,336466,1,,366
+715,monolith-armed-1,0715-monolith-armed-1,336533,336533,1,,367
+716,monolith-armed-1,0716-monolith-armed-1,336616,336616,1,,366
+717,monolith-cashed-1,0717-monolith-cashed-1,336666,336666,1,,367
+718,monolith-cashed-1,0718-monolith-cashed-1,336749,336749,1,,366
+719,monolith-cashed-1,0719-monolith-cashed-1,336799,336799,1,,367
+720,monolith-cashed-1,0720-monolith-cashed-1,336883,336883,1,,366
+721,monolith-cashed-1,0721-monolith-cashed-1,336933,336933,1,,367
+722,monolith-cashed-1,0722-monolith-cashed-1,337016,337016,1,,366
+723,monolith-cashed-1,0723-monolith-cashed-1,337083,337083,1,,367
+724,monolith-cashed-1,0724-monolith-cashed-1,337166,337166,1,,366
+725,monolith-cashed-1,0725-monolith-cashed-1,337216,337216,1,,367
+726,monolith-cashed-1,0726-monolith-cashed-1,337299,337299,1,,366
+727,monolith-cashed-1,0727-monolith-cashed-1,337349,337349,1,,367
+728,monolith-cashed-1,0728-monolith-cashed-1,337433,337449,2,,366
+729,monolith-cashed-1,0729-monolith-cashed-1,337483,337499,2,,367
+730,monolith-cashed-1,0730-monolith-cashed-1,337566,337583,2,,366
+731,monolith-cashed-1,0731-monolith-cashed-1,337616,337616,1,,408
+732,monolith-cashed-1,0732-monolith-cashed-1,337633,337633,1,,367
+733,monolith-cashed-1,0733-monolith-cashed-1,337699,337699,1,,410
+734,monolith-cashed-1,0734-monolith-cashed-1,337716,337716,1,,366
+735,monolith-cashed-1,0735-monolith-cashed-1,337766,337766,1,,735
+736,monolith-cashed-1,0736-monolith-cashed-1,337783,337783,1,,367
+737,monolith-cashed-1,0737-monolith-cashed-1,337849,337899,2,,414
+738,monolith-cashed-1,0738-monolith-cashed-1,337916,337983,2,,382
+739,monolith-cashed-1,0739-monolith-cashed-1,337999,337999,1,,366
+740,monolith-cashed-1,0740-monolith-cashed-1,338049,338049,1,,367
+741,monolith-cashed-1,0741-monolith-cashed-1,338133,338133,1,,366
+742,monolith-cashed-1,0742-monolith-cashed-1,338183,338183,1,,367
+743,monolith-cashed-1,0743-monolith-cashed-1,338266,338266,1,,366
+744,monolith-cashed-1,0744-monolith-cashed-1,338316,338316,1,,367
+745,monolith-cashed-1,0745-monolith-cashed-1,338399,338399,1,,366
+746,monolith-cashed-1,0746-monolith-cashed-1,338433,349916,75,1 2 / PLAYER BALL,746
+747,monolith-armed-2,0747-monolith-armed-2,350099,356499,46,1 2 / PLAYER BALL,747
+748,monolith-cashed-2,0748-monolith-cashed-2,356699,369916,85,1 2 / PLAYER BALL,748
+749,lagrange-shooter-1,0749-lagrange-shooter-1,370099,376533,43,1 2 / PLAYER BALL,749
+750,lagrange-shooter-2,0750-lagrange-shooter-2,376716,384249,52,,750
+751,lagrange-shooter-2,0751-lagrange-shooter-2,384466,384466,1,,751
+752,lagrange-shooter-2,0752-lagrange-shooter-2,384499,384933,2,,752
+753,lagrange-shooter-2,0753-lagrange-shooter-2,385599,386699,4,PLAYER EXTRA BALL,489
+754,lagrange-shooter-2,0754-lagrange-shooter-2,386733,386766,2,PLAYER EXTRA BALL,754
+755,lagrange-shooter-2,0755-lagrange-shooter-2,386783,386899,3,PLAYER EXTRA BALL,755
+756,lagrange-shooter-2,0756-lagrange-shooter-2,386949,386949,1,PLAYER EXTRA BALL,756
+757,lagrange-shooter-2,0757-lagrange-shooter-2,387016,387016,1,PLAYER EXTRA BALL,757
+758,lagrange-shooter-2,0758-lagrange-shooter-2,387066,387066,1,PLAYER EXTRA BALL,758
+759,lagrange-shooter-2,0759-lagrange-shooter-2,387116,387116,1,PLAYER EXTRA BALL,759
+760,lagrange-shooter-2,0760-lagrange-shooter-2,387166,387166,1,PLAYER EXTRA BALL,760
+761,lagrange-shooter-2,0761-lagrange-shooter-2,387233,387233,1,EXTRA BALL,761
+762,lagrange-shooter-2,0762-lagrange-shooter-2,387283,387283,1,EXTRA BALL,762
+763,lagrange-shooter-2,0763-lagrange-shooter-2,387333,387333,1,PLAYER EXTRA BALL,763
+764,lagrange-shooter-2,0764-lagrange-shooter-2,387399,387399,1,PLAYER EXTRA BALL,764
+765,lagrange-shooter-2,0765-lagrange-shooter-2,387449,387449,1,PLAYER EXTRA BALL,765
+766,lagrange-shooter-2,0766-lagrange-shooter-2,387499,387516,2,EXTRA BALL,766
+767,lagrange-shooter-2,0767-lagrange-shooter-2,387549,387566,2,EXTRA BALL,767
+768,lagrange-shooter-2,0768-lagrange-shooter-2,387616,387616,1,PLAYER EXTRA BALL,768
+769,lagrange-shooter-2,0769-lagrange-shooter-2,387666,387733,4,EXTRA BALL,769
+770,lagrange-shooter-2,0770-lagrange-shooter-2,387783,387833,2,EXTRA BALL,770
+771,lagrange-shooter-2,0771-lagrange-shooter-2,387849,387883,2,PLAYER EXTRA BALL,771
+772,lagrange-shooter-2,0772-lagrange-shooter-2,387899,387933,2,PLAYER EXTRA BALL,772
+773,lagrange-shooter-2,0773-lagrange-shooter-2,387949,387949,1,EXTRA BALL,773
+774,lagrange-shooter-2,0774-lagrange-shooter-2,388016,388016,1,PLAYER EXTRA BALL,774
+775,lagrange-shooter-2,0775-lagrange-shooter-2,388066,388066,1,PLAYER EXTRA BALL,775
+776,lagrange-shooter-2,0776-lagrange-shooter-2,388116,388116,1,PLAYER EXTRA BALL,776
+777,lagrange-shooter-2,0777-lagrange-shooter-2,388166,388166,1,PLAYER EXTRA BALL,777
+778,lagrange-shooter-2,0778-lagrange-shooter-2,388233,388233,1,PLAYER EXTRA BALL,778
+779,lagrange-shooter-2,0779-lagrange-shooter-2,388283,388283,1,PLAYER EXTRA BALL,779
+780,lagrange-shooter-2,0780-lagrange-shooter-2,388333,388333,1,PLAYER EXTRA BALL,780
+781,lagrange-shooter-2,0781-lagrange-shooter-2,388399,388399,1,PLAYER EXTRA BALL,781
+782,lagrange-shooter-2,0782-lagrange-shooter-2,388449,388449,1,PLAYER EXTRA BALL,782
+783,lagrange-shooter-2,0783-lagrange-shooter-2,388499,388499,1,EXTRA BALL,783
+784,lagrange-shooter-2,0784-lagrange-shooter-2,388549,388549,1,PLAYER EXTRA BALL,784
+785,lagrange-shooter-2,0785-lagrange-shooter-2,388616,388616,1,PLAYER EXTRA BALL,785
+786,lagrange-shooter-2,0786-lagrange-shooter-2,388666,388666,1,PLAYER EXTRA BALL,786
+787,lagrange-shooter-2,0787-lagrange-shooter-2,388716,388716,1,PLAYER EXTRA BALL,787
+788,lagrange-shooter-2,0788-lagrange-shooter-2,388783,388783,1,PLAYER EXTRA BALL,788
+789,lagrange-shooter-2,0789-lagrange-shooter-2,388833,388833,1,PLAYER EXTRA BALL,789
+790,lagrange-shooter-2,0790-lagrange-shooter-2,388883,388883,1,PLAYER EXTRA BALL,790
+791,lagrange-shooter-2,0791-lagrange-shooter-2,388933,388933,1,PLAYER EXTRA BALL,791
+792,lagrange-shooter-2,0792-lagrange-shooter-2,388999,388999,1,PLAYER EXTRA BALL,792
+793,lagrange-shooter-2,0793-lagrange-shooter-2,389049,389049,1,PLAYER EXTRA BALL,793
+794,lagrange-shooter-2,0794-lagrange-shooter-2,389099,389099,1,PLAYER EXTRA BALL,794
+795,lagrange-shooter-2,0795-lagrange-shooter-2,389166,389166,1,PLAYER EXTRA BALL,795
+796,lagrange-shooter-2,0796-lagrange-shooter-2,389216,389216,1,PLAYER EXTRA BALL,796
+797,lagrange-shooter-2,0797-lagrange-shooter-2,389266,389266,1,PLAYER EXTRA BALL,797
+798,lagrange-shooter-2,0798-lagrange-shooter-2,389316,389316,1,PLAYER EXTRA BALL,798
+799,lagrange-shooter-2,0799-lagrange-shooter-2,389383,396449,63,PLAYER EXTRA BALL,799
+800,ball-3-over-game-over,0800-ball-3-over-game-over,396633,416449,125,PLAYER EXTRA BALL,800
+801,attract-after-game,0801-attract-after-game,416633,433166,107,PLAYER EXTRA BALL,801
+802,service-menu-open,0802-service-menu-open,433349,454899,138,PLAYER EXTRA BALL,802
+803,service-record-3-technical,0803-service-record-3-technical,455083,473166,117,PLAYER EXTRA BALL,803
+804,service-record-selected,0804-service-record-selected,473349,493183,125,PLAYER EXTRA BALL,804
+805,service-menu-closed,0805-service-menu-closed,493383,506566,86,PLAYER EXTRA BALL,805
+806,end,0806-end,506783,517666,71,PLAYER EXTRA BALL,799

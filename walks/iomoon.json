@@ -1,0 +1,203 @@
+{
+  "machine": "iomoon",
+  "description": "SLEIC Io Moon -- every DMD walk in the corpus, with what each one needs.",
+  "defaults": {
+    "set": "iomoon",
+    "nvram": "fresh",
+    "split_rom": "roms/iomoon/v1_3_01.bin",
+    "keyscript_dir": "scripts/keyscripts",
+    "corpus_dir": "dmd"
+  },
+  "notes": [
+    "Most Io Moon walks coin up inside the key script (six presses = one credit at country 4), so 'fresh' is the default and reproduces the committed corpus; a second run does NOT, because the store then carries credits and high scores that change the walk. 'multiball' is the exception -- its script has no coin presses and its README requires a store that already holds credits.",
+    "nvram: 'seed' runs the walk twice against the same store and keeps the second,",
+    "which is what gets past a firmware default-seeding boot; 'fresh' wipes first and",
+    "runs once; 'shared' reuses whatever is there.",
+    "cfg is a saved MAME cfg copied to <cfgdir>/<set>.cfg before the run -- the only",
+    "way to set a DIP in this build, since it has no command-line DIP option.",
+    "probe: the walk needs a binary built with -DDEBUG_SLEIC; the runner refuses it",
+    "unless --probe-binary is given."
+  ],
+  "walks": [
+    {
+      "name": "full-run",
+      "set": "iomoon",
+      "keys": "iomoon-full-run.keys",
+      "frames": 31000,
+      "out": "full-run",
+      "desc": "the whole game in one pass: general play, ORBITS, Multiball with both jackpots, the drop bank and Special Drop Probe, Wonderful Thing (the Black Hole branch), the Monolith, and the service menu"
+    },
+    {
+      "name": "full-run-es",
+      "set": "iomoon",
+      "keys": "iomoon-full-run.keys",
+      "frames": 31000,
+      "out": "full-run-es",
+      "nvram": "seed",
+      "cfg": "iomoon-spain.cfg",
+      "desc": "the same walk at country 5 -- the whole game in Spanish. Needs nvram 'seed': the DIP is applied at boot (D664D) but the store must be written once before the text turns over"
+    },
+    {
+      "name": "en",
+      "set": "iomoont",
+      "keys": "iomoon-en.keys",
+      "frames": 400000,
+      "out": "en",
+      "desc": "the full English walk -- the main corpus"
+    },
+    {
+      "name": "es",
+      "set": "iomoont",
+      "keys": "iomoon-es.keys",
+      "frames": 400000,
+      "out": "es",
+      "cfg": "iomoont-spain.cfg",
+      "desc": "the same walk in Spanish (country 5)"
+    },
+    {
+      "name": "es-menu",
+      "set": "iomoont",
+      "keys": "iomoon-es-menu.keys",
+      "frames": 13700,
+      "out": "es-menu",
+      "cfg": "iomoont-spain.cfg",
+      "desc": "the Spanish service menu"
+    },
+    {
+      "name": "es-menu-full",
+      "set": "iomoont",
+      "keys": "iomoon-es-menu-full.keys",
+      "frames": 39000,
+      "out": "es-menu-full",
+      "cfg": "iomoont-spain.cfg",
+      "desc": "the full Spanish menu tree, all 38 records"
+    },
+    {
+      "name": "es-tilt",
+      "set": "iomoont",
+      "keys": "iomoon-es-tilt.keys",
+      "frames": 12500,
+      "out": "es-tilt",
+      "cfg": "iomoont-spain.cfg",
+      "desc": "Spanish tilt warnings through to a full tilt"
+    },
+    {
+      "name": "contacts",
+      "set": "iomoont",
+      "keys": "iomoon-switchtest.keys",
+      "frames": 9800,
+      "out": "contacts",
+      "desc": "every playfield contact reported in the switch test"
+    },
+    {
+      "name": "solenoid-test",
+      "set": "iomoont",
+      "keys": "iomoon-faults-attract.keys",
+      "frames": 900,
+      "out": "solenoid-test",
+      "desc": "the solenoid test walk"
+    },
+    {
+      "name": "credits",
+      "set": "iomoont",
+      "keys": "iomoon-credits.keys",
+      "frames": 6600,
+      "out": "credits",
+      "desc": "the live coin-pricing page"
+    },
+    {
+      "name": "special",
+      "set": "iomoont",
+      "keys": "iomoon-special.keys",
+      "frames": 15000,
+      "out": "special",
+      "desc": "specials and replays"
+    },
+    {
+      "name": "coverage",
+      "set": "iomoon",
+      "keys": "iomoon-coverage.keys",
+      "frames": 11400,
+      "out": "coverage",
+      "desc": "screens the main walk misses",
+      "nvram": "seed"
+    },
+    {
+      "name": "lanes",
+      "set": "iomoon",
+      "keys": "iomoon-lanes.keys",
+      "frames": 10300,
+      "out": "lanes",
+      "desc": "the eleven lanes"
+    },
+    {
+      "name": "modes",
+      "set": "iomoon",
+      "keys": "iomoon-modes.keys",
+      "frames": 6700,
+      "out": "modes",
+      "desc": "the timed modes, including Wonderful Thing",
+      "nvram": "seed"
+    },
+    {
+      "name": "monolith",
+      "set": "iomoon",
+      "keys": "iomoon-monolith.keys",
+      "frames": 22000,
+      "out": "monolith",
+      "desc": "every Monolith award, played not just announced",
+      "nvram": "seed"
+    },
+    {
+      "name": "players",
+      "set": "iomoon",
+      "keys": "iomoon-players.keys",
+      "frames": 18700,
+      "out": "players",
+      "desc": "two-, three- and four-player games"
+    },
+    {
+      "name": "little-multiball",
+      "set": "iomoon",
+      "keys": "iomoon-little-multiball.keys",
+      "frames": 6800,
+      "out": "little-multiball",
+      "desc": "the one-ball lock branch",
+      "nvram": "seed"
+    },
+    {
+      "name": "multiball",
+      "set": "iomoon",
+      "keys": "iomoon-multiball.keys",
+      "frames": 4200,
+      "out": "multiball",
+      "desc": "first lock and Multiball starting",
+      "nvram": "seed"
+    },
+    {
+      "name": "jackpot",
+      "set": "iomoon",
+      "keys": "iomoon-jackpot.keys",
+      "frames": 12500,
+      "out": "jackpot",
+      "desc": "Jackpot and Superjackpot collected"
+    },
+    {
+      "name": "multiball-end",
+      "set": "iomoon",
+      "keys": "iomoon-multiball-end.keys",
+      "frames": 22000,
+      "out": "multiball-end",
+      "desc": "Multiball played to the end, and the game carrying on"
+    },
+    {
+      "name": "faults",
+      "set": "iomoont",
+      "keys": "iomoon-faults.keys",
+      "frames": 4200,
+      "out": "faults",
+      "probe": true,
+      "desc": "fault screens; each needs its own throwaway probe, see dmd/faults/README.md"
+    }
+  ]
+}
