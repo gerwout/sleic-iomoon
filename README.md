@@ -222,6 +222,7 @@ sleic-io-moon/
 │   ├── iomoon_language_and_service_menu.md   # Language, country DIP, service-menu tree
 │   ├── iomoon_game_rules.md           # Complete rule set (play, lights, modes, adjustables)
 │   ├── bikerace_switch_map.md         # Bike Race (related SLEIC3 machine) switch-code map
+│   ├── bikerace_coils_and_trough.md   # Bike Race V4.1 coil map and two-ball trough
 │   ├── bikerace_boards.md             # Bike Race board photographs and IC complement
 │   ├── sleic_board_family.md          # How IO Moon, Sleic Pin-Ball, Bike Race & Doña Elvira 2 relate
 │   └── dona_elvira_2.md               # Doña Elvira 2: board complement, sound and display, what is still to dump

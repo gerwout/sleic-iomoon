@@ -63,6 +63,8 @@ machine. Only chip 04 changes; the other six are V4.1's. PinMAME loads it as set
   validation / factory-reset analysis.
 - [`../../../docs/bikerace_switch_map.md`](../../../docs/bikerace_switch_map.md) —
   switch-code map recovered from `bkcpu04` and `bkio07`.
+- [`../../../docs/bikerace_coils_and_trough.md`](../../../docs/bikerace_coils_and_trough.md) —
+  the V4.1 coil map and two-ball trough, which PinMAME's Bike Race simulator follows.
 - [`../../../docs/sleic_board_family.md`](../../../docs/sleic_board_family.md) —
   what Bike Race shares with IO Moon and where the two diverge: the same PACS
   peripheral base `0xA0000` and a byte-identical timer-0 setup (`0xE003` /
