@@ -197,6 +197,7 @@ sleic-io-moon/
 │   ├── io_moon_free_play_patch.py     # Free-play ROM patch (stacks on the one above)
 │   ├── bike_race_press_start_patch.py # The same two features for Bike Race V4.1's chip 04
 │   ├── bike_race_free_play_patch.py   #   "
+│   ├── bike_race_english_patch.py     # English translation of that set (chips 04, 05, 06)
 │   ├── sleic_pin_ball_press_start_patch.py # The same two features for Sleic Pin-Ball's chip 03
 │   ├── sleic_pin_ball_free_play_patch.py   #   "
 │   ├── keyscripts/                    # -key_script input scripts for headless PinMAME runs
@@ -382,6 +383,8 @@ sleic-io-moon/
 │   ├── SLEIC_1992_Bike_Race_…pdf      # Bike Race service manual (125 pp, parts list + schematics)
 │   ├── SLEIC_1994_Sleic_Pin_Ball_…pdf # Sleic Pin-Ball service manual (93 pp, no schematics)
 │   └── SLEIC_1996_Dona_Elvira_2_…pdf  # Doña Elvira 2 service manual (142 pp, schematics)
+├── translations/
+│   └── bike-race-en/                  # Bike Race English: string table, artwork, make_art.py
 └── research/                          # Investigative notes that informed the docs
     ├── board_inventory.md             # Original photo-by-photo IC inventory
     ├── 80188_to_z80_mailbox.md        # The 80188→Z80 command queue at 4000:1158
@@ -465,6 +468,15 @@ The same two features for **Bike Race V4.1**, both on chip 04, both in caves in 
 PRESS START needs two hooks into one shared hold, because two different things take the scores down: `F000:10F2`, the screen loader that follows a one-, two- or three-player game, and `E8C5D`, the panel blank ahead of the "Partida" overlay that a four-player game reaches first. Releasing the hold then takes the firmware's own idiom — the switch FIFO can carry more than one START code for a single press, since the Z80's cabinet scan has no time-based debounce (`bkio07:3033`), so the hold settles for sixteen steps of the free-running digit `[0010:000B]` and calls `E9C7:2F47` to scrub every queued `36h`, exactly as the stock START handler does. Each script's docstring carries the full evidence and the measured verification table.
 
 The combined image is in [`roms/related-machines/bike-race/v4.1 - free play + press start/`](roms/related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start/), confirmed working on a real V4.1 machine, and loads in PinMAME as set `bikerc3f`.
+
+### Bike Race English Translation — `scripts/bike_race_english_patch.py`
+
+Translates the free-play + PRESS START set above from Spanish to English. Chip 04
+gets the menu, message, switch-name and fault text, chip 05 the text screens, the
+staff-credits roll and a Freeplay screen in place of the attract's credit count, and
+chip 06 the "UNO" frames. The string table, the artwork and how both are fitted are in
+[`translations/bike-race-en/`](translations/bike-race-en/). Verified in emulation
+screen by screen; not yet run on a real machine, so the chips are not archived here.
 
 ### Sleic Pin-Ball Patches — `scripts/sleic_pin_ball_press_start_patch.py`, `scripts/sleic_pin_ball_free_play_patch.py`
 
