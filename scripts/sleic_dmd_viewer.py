@@ -88,6 +88,8 @@ ASCII_RAMP = " .:#"
 # Header-record plausibility bounds.  32x16 is a full panel frame; 34 bytes per
 # row leaves room for the 17-byte-wide records Bike Race really uses, and 64 rows
 # for the taller-than-panel strips (IO Moon's scrolling credits are 55 rows).
+# --max-rows raises the row bound: Bike Race's staff-credits roll at bkcpu05
+# 0x08276 is 270 rows.  The default stays 64 so the --index numbering does not move
 MAX_ROWS = 64
 MAX_BPR = 34
 MIN_PLANE = 4
@@ -584,6 +586,7 @@ def _panel(di):
 
 
 def main():
+    global MAX_ROWS
     ap = argparse.ArgumentParser(
         description="DMD graphics viewer for IO Moon, Bike Race and Sleic Pin-Ball",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -659,6 +662,10 @@ Examples
                     help="records: drop candidates with fewer lit dots "
                          "(default 32; 0 keeps everything)")
 
+    ap.add_argument("--max-rows", type=int, default=MAX_ROWS,
+                    help=f"records: tallest header accepted (default {MAX_ROWS}; "
+                         "raising it renumbers --index)")
+
     ap.add_argument("--pages", action="store_true",
                     help="render each plane as its own 1-bit image instead of "
                          "combining them (IO Moon ROM1 static screens are an "
@@ -669,6 +676,7 @@ Examples
     ap.add_argument("--dot-scale", type=int, default=4, help="PNG dot size")
     ap.add_argument("--dot-gap", type=int, default=1, help="PNG gap between dots")
     args = ap.parse_args()
+    MAX_ROWS = args.max_rows
 
     roms = []
     for p in args.rom:

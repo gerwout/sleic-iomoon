@@ -279,7 +279,12 @@ Static screens use 1 bitplane only (on/off, no brightness levels).
   records (plane 0, plane 1, mask) in `bkcpu05`/`bkcpu06`, and Sleic Pin-Ball
   has no headers at all, its bitmaps being named by blit immediates inside
   `sp03`. That script also runs headless (ASCII and dependency-free PNG output)
-  and can locate a PinMAME `SLEIC_DMD_DUMP` frame back in the ROM.
+  and can locate a PinMAME `SLEIC_DMD_DUMP` frame back in the ROM. Its record
+  scan accepts headers up to 64 rows by default, which keeps the `--index`
+  numbering stable; `--max-rows 300` also finds Bike Race's four taller records
+  (the 270-row staff-credits roll at `bkcpu05` `0x08276`, a 120-row strip at
+  `0x07EA2`, and two scrolling scenes in `bkcpu06` at `0x091BA` and `0x10000`)
+  and renumbers everything after them.
 ---
 
 ## Example Output
