@@ -77,6 +77,34 @@ arrived.
 The boot check (command `0xD5`) wants two balls including the one at C7, which
 is the at-rest state above.
 
+## Coil monitoring and the fault screens
+
+The Z80 watches the coil drivers (the manual's VDB, §2.4) and reports a failed
+coil to the 80188 as a switch code:
+
+| Code | Meaning | 80188 screen |
+|---|---|---|
+| `0x41`-`0x4C` | coil *code* − `0x40` shorted | coil number, transistor group, "EN CORTO", "IMPOSIBLE SEGUIR"; the game halts (`F000:7C8E`) |
+| `0x4D`-`0x58` | coil *code* − `0x4C` open, or its fuse | coil number, transistor group, "CORTADOS O", the fuse (`F000:7BAE`) |
+| `0x59` / `0x5A` | left / right flipper end-of-stroke switch | its name over "SEPARADO O ROTO" (`F000:7B4D`) |
+
+The group and fuse text come from a 10-byte record per coil at `F000:3878`
+(+10 × coil): a far pointer to the group string, then one to the fuse string.
+The game dispatcher (`E9C7:01C5`) and the coil test both route these codes.
+
+The 80188 acts on them only while `[0116:98]` is 0. That byte is bit 0 of the
+Z80's reply to the boot handshake (command `0xD4`, `E000:9724`), and the reply is
+port `0x04` with the top nibble set, so port `0x04` bit 0 switches the
+monitoring off. PinMAME's driver returns `0xFF` on that port, which is why an
+emulated machine never shows these screens.
+
+Two more faults stop the machine at boot, both over "IMPOSIBLE SEGUIR":
+
+- "FALLO EEPROM" (`E000:93E3`): the non-volatile store fails its check, the
+  factory reset rewrites it, and it fails again (`E000:97DE`).
+- "BK07 ERRONEA" (`E000:9756`): no reply to command `0xD4` within 200 ticks
+  (`E000:957E`).
+
 ## Not established
 
 - Coil 8 (*Taca*): what it acts on. Command `0x9C` fires it together with the
