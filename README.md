@@ -346,6 +346,9 @@ sleic-io-moon/
 │       │   ├── v4.1 - free play + press start/
 │       │   │   ├── README.md          # PRESS START + free play — confirmed on a real machine
 │       │   │   └── bk04f.bin          # Patched 80188 game + sound code
+│       │   ├── v4.1 - free play + press start + english/
+│       │   │   ├── README.md          # That set in English — confirmed on a real machine
+│       │   │   └── bkdsp01.bin … bk07.bin  # All seven chips; bk04e/bk05e/bk06e translated
 │       │   ├── bkdsp01.bin            # I8039 display coprocessor
 │       │   ├── bksnd02.bin            # OKI sample ROM 1
 │       │   ├── bksnd03.bin            # OKI sample ROM 2
@@ -469,14 +472,21 @@ PRESS START needs two hooks into one shared hold, because two different things t
 
 The combined image is in [`roms/related-machines/bike-race/v4.1 - free play + press start/`](roms/related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start/), confirmed working on a real V4.1 machine, and loads in PinMAME as set `bikerc3f`.
 
+These two patches are the base of the English set below; burn that one instead for an English panel.
+
 ### Bike Race English Translation — `scripts/bike_race_english_patch.py`
 
 Translates the free-play + PRESS START set above from Spanish to English. Chip 04
 gets the menu, message, switch-name and fault text, chip 05 the text screens, the
 staff-credits roll and a Freeplay screen in place of the attract's credit count, and
 chip 06 the "UNO" frames. The string table, the artwork and how both are fitted are in
-[`translations/bike-race-en/`](translations/bike-race-en/). Verified in emulation
-screen by screen; not yet run on a real machine, so the chips are not archived here.
+[`translations/bike-race-en/`](translations/bike-race-en/).
+
+The complete seven-chip set is in
+[`roms/related-machines/bike-race/v4.1 - free play + press start + english/`](roms/related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start%20+%20english/),
+confirmed working on a real V4.1 machine, and loads in PinMAME as set `bikerc3e`
+([`roms/pinmame/bikerc3e.zip`](roms/pinmame/bikerc3e.zip)). On a V4.1 machine only
+chips 04, 05 and 06 are burned.
 
 ### Sleic Pin-Ball Patches — `scripts/sleic_pin_ball_press_start_patch.py`, `scripts/sleic_pin_ball_free_play_patch.py`
 

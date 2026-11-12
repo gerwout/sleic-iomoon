@@ -56,6 +56,14 @@ standing so START begins a game with no coin. Confirmed working on a real V4.1
 machine. Only chip 04 changes; the other six are V4.1's. PinMAME loads it as set
 `bikerc3f`.
 
+## The English set
+
+[`v4.1 - free play + press start + english/`](v4.1%20-%20free%20play%20+%20press%20start%20+%20english/)
+holds all seven chips of that set translated into English: chips 04, 05 and 06 carry
+the translation, the other four are V4.1's. Confirmed working on a real V4.1 machine.
+PinMAME loads it as set `bikerc3e`. The translation is in
+[`../../../translations/bike-race-en/`](../../../translations/bike-race-en/).
+
 ## What this set is used for in this repository
 
 - [`../../../research/bikerace_disasm/`](../../../research/bikerace_disasm/) —

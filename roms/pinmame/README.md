@@ -16,8 +16,10 @@ Drop the whole directory on PinMAME's ROM path:
 ./xpinmame.sdl iomoon --rompath /path/to/sleic-iomoon/roms/pinmame
 ```
 
-The set definitions — file names, CRC32s and SHA1s — come from `src/wpc/sleicgames.c`
-in the PinMAME tree.
+The set definitions — file names, CRC32s and SHA1s — come from the PinMAME tree:
+`src/wpc/sleicgames.c`, and for the sets that carry a ball simulator
+`src/wpc/sims/sleic/iomoon.c` (all Io Moon sets) and `src/wpc/sims/sleic/bikerace.c`
+(`bikerac3`, `bikerc3f`, `bikerc3e`).
 
 ## Sets
 
@@ -27,6 +29,7 @@ in the PinMAME tree.
 | `bikerac2.zip` | Bike Race (2-ball play) | `SLEIC3` | `bikerace` |
 | `bikerac3.zip` | Bike Race (V4.1) | `SLEIC3` | `bikerace` |
 | `bikerc3f.zip` | Bike Race (V4.1, free play + press start MOD) | `SLEIC3` | `bikerace` |
+| `bikerc3e.zip` | Bike Race (V4.1, free play + press start MOD, English) | `SLEIC3` | `bikerace` |
 | `sleicpin.zip` | Sleic Pin-Ball (1993) | `SLEIC1` | — |
 | `sleicpnf.zip` | Sleic Pin-Ball (free play + end-of-game scores MOD) — **no PinMAME driver set**, see below | `SLEIC1` | — |
 | `iomoon.zip` | Io Moon | `SLEIC2` | — |
@@ -48,9 +51,10 @@ at a directory holding it renamed to `sleicpin.zip`, against the stock
 03 that `-skip_gamewarnings` suppresses. It does not drop in and work under its
 own name.
 
-`iomoontf.zip` and `bikerc3f.zip` are the exceptions and carry **every chip of
-their machine**, so they load on their own. They are the images handed to a machine
-owner to just run, and the driver declares the full complement for both anyway.
+`iomoontf.zip`, `bikerc3f.zip` and `bikerc3e.zip` are the exceptions and carry
+**every chip of their machine**, so they load on their own. They are the images handed
+to a machine owner to just run, and the driver declares the full complement for all
+three anyway.
 
 ## Members
 
@@ -116,6 +120,24 @@ the bad image is archived as `bk06.baddump.bin` alongside the loose chips.
 the other six are `bikerac3`'s own complement, packed in so the zip loads with no
 `bikerace.zip` beside it. The patched chip and how to reproduce it are documented at
 [`../related-machines/bike-race/v4.1 - free play + press start/README.md`](../related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start/README.md).
+
+### `bikerc3e.zip` — clone (V4.1 MOD, English), 3 chips differ, packed with all seven
+
+| Member | CRC32 | Source image |
+|--------|-------|--------------|
+| `bkdsp01.bin` | `9b220fcb` | `../related-machines/bike-race/v4.1 - free play + press start + english/bkdsp01.bin` |
+| `bksnd02.bin` | `d67b3883` | `../related-machines/bike-race/v4.1 - free play + press start + english/bksnd02.bin` |
+| `bk03.bin` | `74c10536` | `../related-machines/bike-race/v4.1 - free play + press start + english/bk03.bin` |
+| `bk04e.bin` | `99006ab6` | `../related-machines/bike-race/v4.1 - free play + press start + english/bk04e.bin` |
+| `bk05e.bin` | `590aced9` | `../related-machines/bike-race/v4.1 - free play + press start + english/bk05e.bin` |
+| `bk06e.bin` | `47f41c51` | `../related-machines/bike-race/v4.1 - free play + press start + english/bk06e.bin` |
+| `bk07.bin` | `200ff3fc` | `../related-machines/bike-race/v4.1 - free play + press start + english/bk07.bin` |
+
+`bikerc3f` translated into English: chips 04, 05 and 06 change, the other four are
+`bikerc3f`'s. Confirmed working on a real V4.1 machine. The set is documented at
+[`../related-machines/bike-race/v4.1 - free play + press start + english/README.md`](../related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start%20+%20english/README.md),
+the translation and how to reproduce it at
+[`../../translations/bike-race-en/README.md`](../../translations/bike-race-en/README.md).
 
 ### `sleicpin.zip` — 4 chips
 

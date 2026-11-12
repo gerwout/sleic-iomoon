@@ -2,8 +2,8 @@
 
 What the V4.1 set (`bikerac3` and its mods) drives on its two Z80 driver latches,
 and how its two-ball trough works. PinMAME's Bike Race ball simulator
-(`src/wpc/sims/sleic/bikerace.c`, on the fork's `bikerace-english` branch, not
-upstream) follows this page. Switch codes and contact names are in
+(`src/wpc/sims/sleic/bikerace.c`, proposed in
+[vpinball/pinmame#832](https://github.com/vpinball/pinmame/pull/832)) follows this page. Switch codes and contact names are in
 [`bikerace_switch_map.md`](bikerace_switch_map.md).
 
 ## Coils

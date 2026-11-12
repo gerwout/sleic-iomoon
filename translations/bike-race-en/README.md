@@ -10,8 +10,10 @@ An English version of the **Bike Race V4.1 free play + PRESS START** set
 | 06 | `bkcpu06.bin` (`9db436d4`) | `bk06e.bin` (`47f41c51`) | the two "UNO" frames → "ONE" |
 
 The patch script writes the three chips, and the CRC32s above are what it produces.
-The chips themselves, and a PinMAME set for them, stay out of this repository until
-they have run on a real machine.
+The complete set is archived at
+[`roms/related-machines/bike-race/v4.1 - free play + press start + english/`](../../roms/related-machines/bike-race/v4.1%20-%20free%20play%20+%20press%20start%20+%20english/)
+and packed for PinMAME as [`roms/pinmame/bikerc3e.zip`](../../roms/pinmame/bikerc3e.zip).
+It is confirmed working on a real V4.1 machine.
 
 ## Files
 
@@ -80,9 +82,8 @@ Any of these can be redrawn by hand: replace the PNG and run the patch script.
 
 ## Verified in emulation
 
-Headless in PinMAME, as set `bikerc3e` with a Bike Race ball simulator, in scripted
-and randomised games. Neither is in PinMAME yet; both wait for the same real-machine
-test. Every captured frame was matched against the translated records, and the
+Headless in PinMAME, as set `bikerc3e` with the Bike Race ball simulator, in scripted
+and randomised games. Every captured frame was matched against the translated records, and the
 frames were looked at.
 
 | Area | What was seen |
@@ -105,7 +106,7 @@ and 06, including the four taller than 64 rows, was also rendered with
 `scripts/sleic_dmd_viewer.py` and checked by eye.
 
 Emulation never produces a fault on its own, so the fault screens were forced with
-debug probes in that PinMAME build: Z80 port `0x04` read as `0xFE` turns the coil
+PinMAME's `DEBUG_SLEIC` probes: Z80 port `0x04` read as `0xFE` turns the coil
 monitoring on, a fault code handed to the 80188 as if the Z80 had sent it, a store
 that refuses writes, and a Z80 boot reply dropped. The codes are in
 [`docs/bikerace_coils_and_trough.md`](../../docs/bikerace_coils_and_trough.md).
